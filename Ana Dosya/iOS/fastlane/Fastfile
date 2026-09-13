@@ -112,6 +112,10 @@ platform :ios do
         begin
           sh("security export -k '#{actual_keychain_path}' -t identities -f pkcs12 -P '#{keychain_password}' -o '#{p12_path}'")
           UI.success("Dağıtım sertifikası önbellek için başarıyla yedeklendi: #{p12_path}")
+          require "base64"
+          b64 = Base64.strict_encode64(File.read(p12_path))
+          File.write(File.join(certs_dir, "dist_certificate.base64"), b64)
+          UI.success("Sertifika Base64 formatında dist_certificate.base64 dosyasına yazıldı.")
         rescue => ex
           UI.important("Sertifika dışa aktarma uyarısı: #{ex.message}")
         end

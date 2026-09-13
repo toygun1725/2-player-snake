@@ -32,11 +32,22 @@ jobs:
           bundler-cache: true
           working-directory: 'Ana Dosya/iOS'
 
+      - name: 🔑 Sabit Dağıtım Sertifikasını Yükle (GitHub Secret'tan)
+        env:
+          DIST_CERT_SECRET: ${{ secrets.DISTRIBUTION_CERTIFICATE || secrets.APPLE_CERT_P12_BASE64 }}
+        if: env.DIST_CERT_SECRET != ''
+        run: |
+          mkdir -p "Ana Dosya/iOS/certs"
+          echo "$DIST_CERT_SECRET" | base64 --decode > "Ana Dosya/iOS/certs/dist_certificate.p12"
+          echo "Sabit dağıtım sertifikası GitHub Secrets üzerinden başarıyla yüklendi."
+
       - name: 🔑 Sertifika Önbelleği (Certificate Cache)
         uses: actions/cache@v4
         with:
           path: Ana Dosya/iOS/certs
-          key: ios-certs-${{ secrets.APPLE_TEAM_ID }}
+          key: ios-certs-${{ secrets.APPLE_TEAM_ID }}-${{ hashFiles('Ana Dosya/iOS/certs/dist_certificate.p12') }}
+          restore-keys: |
+            ios-certs-${{ secrets.APPLE_TEAM_ID }}-
 
       - name: 🚀 Fastlane ile TestFlight'a Derle ve Dağıt
         env:
@@ -55,4 +66,14 @@ jobs:
         with:
           name: 2PlayerSnake-iOS-IPA
           path: 'Ana Dosya/iOS/**/*.ipa'
+          if-no-files-found: ignore
+
+      - name: 🔑 Dağıtım Sertifikasını Artifact Olarak Kaydet (Sabitleme için)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: iOS-Distribution-Certificate-p12
+          path: |
+            Ana Dosya/iOS/certs/*.p12
+            Ana Dosya/iOS/certs/*.base64
           if-no-files-found: ignore
