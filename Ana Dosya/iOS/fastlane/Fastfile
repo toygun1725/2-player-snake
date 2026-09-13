@@ -36,7 +36,7 @@ platform :ios do
 
     # 4. Apple Sertifikalarını ve Dağıtım Profilini Otomatik Çek / Senkronize Et
     # App Store Connect API Key sayesinde Mac olmadan Apple hesabından direkt profil ve sertifika yönetilir
-    if ENV["MATCH_PASSWORD"]
+    if ENV["MATCH_GIT_URL"] && !ENV["MATCH_GIT_URL"].empty?
       # Opsiyon A: Fastlane match kullanılıyorsa
       match(
         type: "appstore",
@@ -47,12 +47,21 @@ platform :ios do
       )
     else
       # Opsiyon B: API Key ile doğrudan App Store sertifikasını ve profilini indir/oluştur
+      # Developer Portal'da App ID'nin varlığını garantiye al
+      produce(
+        api_key: api_key,
+        app_identifier: "com.twoplayersnake.app",
+        app_name: "2 Player Snake",
+        skip_itc: true
+      )
+
       get_certificates(
         api_key: api_key,
         type: "distribution",
         keychain_name: keychain_name,
         keychain_password: keychain_password
       )
+
       get_provisioning_profile(
         api_key: api_key,
         app_identifier: "com.twoplayersnake.app",

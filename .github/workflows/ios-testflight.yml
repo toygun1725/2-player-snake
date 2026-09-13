@@ -29,7 +29,7 @@ jobs:
       - name: 💎 Ruby ve Fastlane Kurulumu
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: '3.3'
           bundler-cache: true
           working-directory: 'Ana Dosya/iOS'
 
@@ -40,7 +40,6 @@ jobs:
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           CI_KEYCHAIN_PASSWORD: ${{ secrets.CI_KEYCHAIN_PASSWORD || 'SnakeCI_Temp_Pass_2026' }}
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         run: |
           cd "Ana Dosya/iOS"
           bundle exec fastlane beta build_number:"${{ github.event.inputs.build_number }}"
@@ -50,5 +49,5 @@ jobs:
         if: always()
         with:
           name: 2PlayerSnake-iOS-IPA
-          path: 'Ana Dosya/iOS/fastlane/build/*.ipa'
+          path: 'Ana Dosya/iOS/**/*.ipa'
           if-no-files-found: ignore
