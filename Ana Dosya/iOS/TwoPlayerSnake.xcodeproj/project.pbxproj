@@ -17,6 +17,7 @@
 		2P0000000000000000000025 /* ios_bridge_bootstrap.js in Resources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000024 /* ios_bridge_bootstrap.js */; };
 		2P0000000000000000000027 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000026 /* LaunchScreen.storyboard */; };
 		2P0000000000000000000030 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000029 /* Assets.xcassets */; };
+		2P0000000000000000000091 /* loading_video.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000090 /* loading_video.mp4 */; };
 		2P0000000000000000000041 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000040 /* WebKit.framework */; };
 		2P0000000000000000000043 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000042 /* AVFoundation.framework */; };
 		2P0000000000000000000045 /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000044 /* Network.framework */; };
@@ -38,6 +39,7 @@
 		2P0000000000000000000028 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2P0000000000000000000029 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2P0000000000000000000031 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2P0000000000000000000090 /* loading_video.mp4 */ = {isa = PBXFileReference; lastKnownFileType = video.mp4; path = loading_video.mp4; sourceTree = "<group>"; };
 		2P0000000000000000000040 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		2P0000000000000000000042 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		2P0000000000000000000044 /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = System/Library/Frameworks/Network.framework; sourceTree = SDKROOT; };
@@ -82,11 +84,20 @@
 				2P0000000000000000000081 /* Network */,
 				2P0000000000000000000082 /* Ads */,
 				2P0000000000000000000083 /* Bridge */,
+				2P0000000000000000000085 /* Resources */,
 				2P0000000000000000000026 /* LaunchScreen.storyboard */,
 				2P0000000000000000000029 /* Assets.xcassets */,
 				2P0000000000000000000031 /* Info.plist */,
 			);
 			path = TwoPlayerSnake;
+			sourceTree = "<group>";
+		};
+		2P0000000000000000000085 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				2P0000000000000000000090 /* loading_video.mp4 */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		2P0000000000000000000080 /* Haptics */ = {
@@ -206,6 +217,7 @@
 				2P0000000000000000000025 /* ios_bridge_bootstrap.js in Resources */,
 				2P0000000000000000000027 /* LaunchScreen.storyboard in Resources */,
 				2P0000000000000000000030 /* Assets.xcassets in Resources */,
+				2P0000000000000000000091 /* loading_video.mp4 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

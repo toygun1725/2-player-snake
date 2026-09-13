@@ -24,6 +24,7 @@
 *.mov
 *.MOV
 *.avi
+!Ana Dosya/iOS/TwoPlayerSnake/Resources/loading_video.mp4
 
 # iOS & Fastlane temporary files
 **/build/

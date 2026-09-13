@@ -2,7 +2,27 @@
 
 ## iOS TestFlight Release Notes
 
-> Durum (2026-09-13): iOS Native Swift kabuğu `v1.0.0` / Build **14** olarak derlendi, Apple App Store profili ile imzalandı ve TestFlight üzerinden fiziksel iPhone cihazında başarıyla test edildi.
+> Durum (2026-09-13): iOS Native Swift kabuğu `v1.0.0` / Build **15** olarak derlendi, Apple App Store profili ile imzalandı ve TestFlight üzerinden fiziksel iPhone cihazında test edildi.
+
+### TestFlight Beta (v1.0.0 / Build 15)
+
+<en-US>
+What's New in iOS v1.0.0 (Build 15):
+• Fullscreen layout fix: eliminated black space at the bottom (edge-to-edge 100dvh).
+• Smooth gameplay start: resolved adBreak callback deadlock and added a 350ms failsafe timer.
+• Added cinematic intro teaser video (`loading_video.mp4` with AVPlayer) matching the Android version with full-screen looping and sound.
+• Removed duplicate native loading screen for seamless, instant splash transition.
+</en-US>
+
+<tr-TR>
+iOS v1.0.0 (Build 15) Yenilikleri:
+• Tam ekran yerleşim düzeltmesi: ekranın altındaki siyah boşluk kaldırıldı (100dvh edge-to-edge).
+• Akıcı oyun başlangıcı: adBreak geri çağırma kilidi çözüldü ve 350ms emniyet zaman aşımı eklendi.
+• Android sürümüyle birebir uyumlu sinematik açılış teaser videosu (`loading_video.mp4` + AVPlayer) sesli ve tam ekran olarak eklendi.
+• Çift splash ekranı sorunu giderildi, doğrudan sinematik videodan oyuna geçiş sağlandı.
+</tr-TR>
+
+---
 
 ### TestFlight Initial Beta (v1.0.0 / Build 14)
 

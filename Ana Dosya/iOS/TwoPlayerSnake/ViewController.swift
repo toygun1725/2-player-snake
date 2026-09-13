@@ -1,5 +1,6 @@
 import UIKit
 import WebKit
+import AVFoundation
 
 final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
 
@@ -7,11 +8,16 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     private var webView: WKWebView!
     private var messageHandler: GameScriptMessageHandler!
 
-    // Native Yükleme Ekranı (Splash / Loading Overlay)
-    private let loadingContainer = UIView()
-    private let logoLabel = UILabel()
-    private let progressBar = UIProgressView(progressViewStyle: .default)
-    private let loadingLabel = UILabel()
+    // Teaser Video Açılış Ekranı (Android ile Birebir)
+    private let teaserContainer = UIView()
+    private var player: AVPlayer?
+    private var playerLayer: AVPlayerLayer?
+    private let teaserGlassPanel = UIView()
+    private let teaserTitleLabel = UILabel()
+    private let teaserSubtitleLabel = UILabel()
+    private let teaserProgressBar = UIProgressView(progressViewStyle: .default)
+    private let teaserPercentLabel = UILabel()
+    private var isTeaserDismissed = false
 
     // Native Çevrimdışı (Offline) Ekranı
     private let offlineContainer = UIView()
@@ -37,7 +43,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         view.backgroundColor = .black
 
         setupWebView()
-        setupLoadingOverlay()
+        setupTeaserVideo()
         setupOfflineOverlay()
         setupNetworkMonitoring()
 
@@ -46,6 +52,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        playerLayer?.frame = teaserContainer.bounds
         injectSafeAreaVariables()
     }
 
@@ -91,9 +98,11 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         // Sayfa yüklenme ilerlemesi takibi (KVO)
         progressObservation = webView.observe(\.estimatedProgress, options: [.new]) { [weak self] _, change in
             guard let self = self, let progress = change.newValue else { return }
-            self.progressBar.setProgress(Float(progress), animated: true)
+            let clamped = max(0.08, min(1.0, Float(progress)))
+            self.teaserProgressBar.setProgress(clamped, animated: true)
+            self.teaserPercentLabel.text = "%\(Int(clamped * 100))"
             if progress >= 1.0 {
-                self.hideLoadingOverlay()
+                self.dismissTeaserVideo()
             }
         }
     }
@@ -115,6 +124,136 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         webView.evaluateJavaScript(css, completionHandler: nil)
     }
 
+    // MARK: - Teaser Video Açılış Sistemi (Android ile Birebir)
+    private func setupTeaserVideo() {
+        teaserContainer.translatesAutoresizingMaskIntoConstraints = false
+        teaserContainer.backgroundColor = .black
+        view.addSubview(teaserContainer)
+
+        NSLayoutConstraint.activate([
+            teaserContainer.topAnchor.constraint(equalTo: view.topAnchor),
+            teaserContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            teaserContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            teaserContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+
+        // loading_video.mp4 dosyasını bul
+        let videoUrl = Bundle.main.url(forResource: "loading_video", withExtension: "mp4", subdirectory: "Resources")
+            ?? Bundle.main.url(forResource: "loading_video", withExtension: "mp4")
+
+        if let url = videoUrl {
+            // Ses ayarını yapılandır
+            try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
+            try? AVAudioSession.sharedInstance().setActive(true)
+
+            let playerItem = AVPlayerItem(url: url)
+            player = AVPlayer(playerItem: playerItem)
+            playerLayer = AVPlayerLayer(player: player)
+            playerLayer?.videoGravity = .resizeAspectFill
+            playerLayer?.frame = view.bounds
+            if let layer = playerLayer {
+                teaserContainer.layer.addSublayer(layer)
+            }
+
+            // Döngüsel oynatma (Loop)
+            NotificationCenter.default.addObserver(
+                forName: .AVPlayerItemDidPlayToEndTime,
+                object: playerItem,
+                queue: .main
+            ) { [weak self] _ in
+                self?.player?.seek(to: .zero)
+                self?.player?.play()
+            }
+
+            player?.play()
+        }
+
+        // Alt Cam Panel (Android ile aynı tasarım)
+        teaserGlassPanel.translatesAutoresizingMaskIntoConstraints = false
+        teaserGlassPanel.backgroundColor = UIColor(white: 0.05, alpha: 0.65)
+        teaserGlassPanel.layer.cornerRadius = 16
+        teaserGlassPanel.layer.borderWidth = 1
+        teaserGlassPanel.layer.borderColor = UIColor(white: 1.0, alpha: 0.15).cgColor
+        teaserGlassPanel.clipsToBounds = true
+
+        let blurEffect = UIBlurEffect(style: .dark)
+        let blurView = UIVisualEffectView(effect: blurEffect)
+        blurView.translatesAutoresizingMaskIntoConstraints = false
+        teaserGlassPanel.addSubview(blurView)
+
+        teaserTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        teaserTitleLabel.text = "2 PLAYER SNAKE"
+        teaserTitleLabel.font = .systemFont(ofSize: 18, weight: .black)
+        teaserTitleLabel.textColor = .white
+        teaserTitleLabel.textAlignment = .center
+
+        teaserSubtitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        teaserSubtitleLabel.text = "HAZIRLANIYOR..."
+        teaserSubtitleLabel.font = .systemFont(ofSize: 13, weight: .semibold)
+        teaserSubtitleLabel.textColor = UIColor(white: 0.8, alpha: 1.0)
+        teaserSubtitleLabel.textAlignment = .center
+
+        teaserProgressBar.translatesAutoresizingMaskIntoConstraints = false
+        teaserProgressBar.progressTintColor = UIColor(red: 0.208, green: 0.902, blue: 0.902, alpha: 1.0) // Neon Cyan
+        teaserProgressBar.trackTintColor = UIColor(white: 1.0, alpha: 0.2)
+        teaserProgressBar.layer.cornerRadius = 3
+        teaserProgressBar.clipsToBounds = true
+        teaserProgressBar.setProgress(0.08, animated: false)
+
+        teaserPercentLabel.translatesAutoresizingMaskIntoConstraints = false
+        teaserPercentLabel.text = "%8"
+        teaserPercentLabel.font = .systemFont(ofSize: 12, weight: .bold)
+        teaserPercentLabel.textColor = .white
+        teaserPercentLabel.textAlignment = .center
+
+        teaserGlassPanel.addSubview(teaserTitleLabel)
+        teaserGlassPanel.addSubview(teaserSubtitleLabel)
+        teaserGlassPanel.addSubview(teaserProgressBar)
+        teaserGlassPanel.addSubview(teaserPercentLabel)
+        teaserContainer.addSubview(teaserGlassPanel)
+
+        NSLayoutConstraint.activate([
+            blurView.topAnchor.constraint(equalTo: teaserGlassPanel.topAnchor),
+            blurView.leadingAnchor.constraint(equalTo: teaserGlassPanel.leadingAnchor),
+            blurView.trailingAnchor.constraint(equalTo: teaserGlassPanel.trailingAnchor),
+            blurView.bottomAnchor.constraint(equalTo: teaserGlassPanel.bottomAnchor),
+
+            teaserGlassPanel.centerXAnchor.constraint(equalTo: teaserContainer.centerXAnchor),
+            teaserGlassPanel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -28),
+            teaserGlassPanel.widthAnchor.constraint(equalTo: teaserContainer.widthAnchor, multiplier: 0.88),
+            teaserGlassPanel.heightAnchor.constraint(equalToConstant: 130),
+
+            teaserTitleLabel.topAnchor.constraint(equalTo: teaserGlassPanel.topAnchor, constant: 14),
+            teaserTitleLabel.centerXAnchor.constraint(equalTo: teaserGlassPanel.centerXAnchor),
+
+            teaserSubtitleLabel.topAnchor.constraint(equalTo: teaserTitleLabel.bottomAnchor, constant: 4),
+            teaserSubtitleLabel.centerXAnchor.constraint(equalTo: teaserGlassPanel.centerXAnchor),
+
+            teaserProgressBar.topAnchor.constraint(equalTo: teaserSubtitleLabel.bottomAnchor, constant: 16),
+            teaserProgressBar.leadingAnchor.constraint(equalTo: teaserGlassPanel.leadingAnchor, constant: 24),
+            teaserProgressBar.trailingAnchor.constraint(equalTo: teaserGlassPanel.trailingAnchor, constant: -24),
+            teaserProgressBar.heightAnchor.constraint(equalToConstant: 6),
+
+            teaserPercentLabel.topAnchor.constraint(equalTo: teaserProgressBar.bottomAnchor, constant: 8),
+            teaserPercentLabel.centerXAnchor.constraint(equalTo: teaserGlassPanel.centerXAnchor)
+        ])
+    }
+
+    private func dismissTeaserVideo() {
+        guard !isTeaserDismissed else { return }
+        isTeaserDismissed = true
+        isGameLoaded = true
+
+        UIView.animate(withDuration: 0.35, delay: 0.1, options: .curveEaseOut, animations: {
+            self.teaserContainer.alpha = 0.0
+        }) { [weak self] _ in
+            self?.player?.pause()
+            self?.player = nil
+            self?.playerLayer?.removeFromSuperlayer()
+            self?.teaserContainer.removeFromSuperview()
+        }
+    }
+
     // MARK: - Oyun URL'i Oluşturma & Yükleme
     private func loadGame() {
         guard NetworkMonitor.shared.isOnline() else {
@@ -123,7 +262,6 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         }
 
         hideOfflineOverlay()
-        showLoadingOverlay()
 
         guard var components = URLComponents(string: baseGameUrl) else { return }
 
@@ -140,67 +278,6 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         if let finalUrl = components.url {
             let request = URLRequest(url: finalUrl, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30)
             webView.load(request)
-        }
-    }
-
-    // MARK: - Native Splash / Loading Arayüzü
-    private func setupLoadingOverlay() {
-        loadingContainer.translatesAutoresizingMaskIntoConstraints = false
-        loadingContainer.backgroundColor = .black
-        view.addSubview(loadingContainer)
-
-        logoLabel.translatesAutoresizingMaskIntoConstraints = false
-        logoLabel.text = "2 PLAYER SNAKE"
-        logoLabel.font = .systemFont(ofSize: 28, weight: .black)
-        logoLabel.textColor = UIColor(red: 0.133, green: 0.773, blue: 0.369, alpha: 1.0)
-        logoLabel.textAlignment = .center
-        loadingContainer.addSubview(logoLabel)
-
-        progressBar.translatesAutoresizingMaskIntoConstraints = false
-        progressBar.progressTintColor = UIColor(red: 0.133, green: 0.773, blue: 0.369, alpha: 1.0)
-        progressBar.trackTintColor = UIColor.darkGray.withAlphaComponent(0.4)
-        progressBar.layer.cornerRadius = 3
-        progressBar.clipsToBounds = true
-        loadingContainer.addSubview(progressBar)
-
-        loadingLabel.translatesAutoresizingMaskIntoConstraints = false
-        loadingLabel.text = "Yükleniyor..."
-        loadingLabel.font = .systemFont(ofSize: 14, weight: .medium)
-        loadingLabel.textColor = .lightGray
-        loadingLabel.textAlignment = .center
-        loadingContainer.addSubview(loadingLabel)
-
-        NSLayoutConstraint.activate([
-            loadingContainer.topAnchor.constraint(equalTo: view.topAnchor),
-            loadingContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            loadingContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            loadingContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-
-            logoLabel.centerXAnchor.constraint(equalTo: loadingContainer.centerXAnchor),
-            logoLabel.centerYAnchor.constraint(equalTo: loadingContainer.centerYAnchor, constant: -30),
-
-            progressBar.centerXAnchor.constraint(equalTo: loadingContainer.centerXAnchor),
-            progressBar.topAnchor.constraint(equalTo: logoLabel.bottomAnchor, constant: 25),
-            progressBar.widthAnchor.constraint(equalToConstant: 220),
-            progressBar.heightAnchor.constraint(equalToConstant: 6),
-
-            loadingLabel.centerXAnchor.constraint(equalTo: loadingContainer.centerXAnchor),
-            loadingLabel.topAnchor.constraint(equalTo: progressBar.bottomAnchor, constant: 12)
-        ])
-    }
-
-    private func showLoadingOverlay() {
-        loadingContainer.alpha = 1.0
-        loadingContainer.isHidden = false
-        progressBar.setProgress(0.1, animated: false)
-    }
-
-    private func hideLoadingOverlay() {
-        UIView.animate(withDuration: 0.4, delay: 0.2, options: .curveEaseOut, animations: {
-            self.loadingContainer.alpha = 0.0
-        }) { _ in
-            self.loadingContainer.isHidden = true
-            self.isGameLoaded = true
         }
     }
 
@@ -257,7 +334,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
     private func showOfflineOverlay() {
         offlineContainer.isHidden = false
-        loadingContainer.isHidden = true
+        teaserContainer.isHidden = true
     }
 
     private func hideOfflineOverlay() {
@@ -301,8 +378,9 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         injectSafeAreaVariables()
-        // Sayfa yüklendiğinde ayarları gönder
         publishSettingsToGame()
+        // Sayfa bittiğinde videoyu kapat
+        dismissTeaserVideo()
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
@@ -330,8 +408,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     }
 
     // MARK: - JavaScript Helper
-    func evaluateJavaScript(_ script: String) {
-        webView.evaluateJavaScript(script, completionHandler: nil)
+    func evaluateJavaScript(_ script: String, completionHandler: ((Any?, Error?) -> Void)? = nil) {
+        webView.evaluateJavaScript(script, completionHandler: completionHandler)
     }
 
     private func publishSettingsToGame() {

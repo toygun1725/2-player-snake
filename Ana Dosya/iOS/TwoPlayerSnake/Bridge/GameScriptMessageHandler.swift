@@ -99,9 +99,18 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
     }
 
     private func finishAd(callbackId: String?, success: Bool) {
-        guard let cid = callbackId else { return }
-        let js = "window.__onNativeAdDone('\(cid)', \(success));"
-        viewController?.evaluateJavaScript(js)
+        let cid = callbackId ?? ""
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+            guard let self = self, let vc = self.viewController else { return }
+            let js = "if (typeof window.__onNativeAdDone === 'function') { window.__onNativeAdDone('\(cid)', \(success)); }"
+            vc.evaluateJavaScript(js) { result, error in
+                if let error = error {
+                    print("Bridge: __onNativeAdDone evaluateJavaScript hatası: \(error.localizedDescription)")
+                } else {
+                    print("Bridge: __onNativeAdDone başarıyla iletildi (cid: \(cid), success: \(success))")
+                }
+            }
+        }
     }
 
     private func requestInAppReview() {

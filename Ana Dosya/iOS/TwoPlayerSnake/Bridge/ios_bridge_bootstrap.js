@@ -159,8 +159,16 @@
     }
 
     var callbackId = "adb_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+    var fallbackTimer = setTimeout(function () {
+      if (window.__nativeAdCallbacks && window.__nativeAdCallbacks[callbackId]) {
+        console.warn("iOS Bridge: adBreak timeout (350ms) - auto continuing game for", callbackId);
+        window.__onNativeAdDone(callbackId, true);
+      }
+    }, 350);
+
     window.__nativeAdCallbacks[callbackId] = {
       type: req.type || "next",
+      timer: fallbackTimer,
       beforeAd: (typeof req.beforeAd === "function") ? req.beforeAd : null,
       afterAd: (typeof req.afterAd === "function") ? req.afterAd : null,
       adBreakDone: (typeof req.adBreakDone === "function") ? req.adBreakDone : null,
@@ -205,6 +213,9 @@
   window.__onNativeAdDone = function (adBreakDoneCallbackName, success) {
     var callbacks = adBreakDoneCallbackName ? window.__nativeAdCallbacks[adBreakDoneCallbackName] : null;
     if (callbacks) {
+      if (callbacks.timer) {
+        clearTimeout(callbacks.timer);
+      }
       if (callbacks.type === "reward") {
         try {
           if (success && callbacks.adViewed) callbacks.adViewed();
@@ -223,18 +234,34 @@
     }
   };
 
-  // Safe Area & Top Controls Fix CSS Injection
+  // iOS Fullscreen, Safe Area & Edge-to-Edge Fix (alttaki siyah boşluğu yok eder)
   (function () {
-    var styleId = "ios-safe-area-top-controls-fix";
+    var styleId = "ios-fullscreen-and-safe-area-fix";
     if (document.getElementById(styleId)) return;
     var style = document.createElement("style");
     style.id = styleId;
     style.textContent = `
+      html, body {
+        height: 100% !important;
+        min-height: 100% !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        background-color: var(--bg, #0b0f14) !important;
+        overflow: hidden !important;
+      }
+      #game, #canvasWrap {
+        height: 100% !important;
+        min-height: 100% !important;
+        height: 100dvh !important;
+      }
       #p2-controls {
         padding-top: 0 !important;
       }
       #p2-controls .p2-panel {
         padding-top: calc(4px + env(safe-area-inset-top, 0px)) !important;
+      }
+      #p1-controls {
+        padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px)) !important;
       }
     `;
     document.head.appendChild(style);
