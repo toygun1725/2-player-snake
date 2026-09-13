@@ -58,10 +58,10 @@
       postToNative("restorePurchases", {});
     },
     isAdsRemoved: function () {
-      return (window.TwoPlayerSnakeAppSettings && window.TwoPlayerSnakeAppSettings.adsRemoved) ? "true" : "false";
+      return "true";
     },
     adBreak: function (payload) {
-      postToNative("adBreak", payload);
+      __nativeAdBreakShim(payload);
     },
     notifyHighScore: function (scoresJson, platform) {
       postToNative("notifyHighScore", { scoresJson: scoresJson, platform: platform });
@@ -129,6 +129,7 @@
   // Native ayarlar senkronizasyonu
   window.dispatchNativeSettings = function (settings) {
     window.TwoPlayerSnakeAppSettings = settings || {};
+    window.TwoPlayerSnakeAppSettings.adsRemoved = true;
     var event = new CustomEvent("two-player-snake:native-settings", {
       detail: window.TwoPlayerSnakeAppSettings
     });
@@ -139,63 +140,25 @@
     }
   };
 
-  // --- Reklam Shim Entegrasyonu ---
+  // --- Reklam Shim Entegrasyonu (iOS: Anında Geçiş, Kilitlenme Korumalı) ---
   window.adsbygoogle = window.adsbygoogle || [];
 
   function __nativeAdBreakShim(o) {
     var req = (o && typeof o === "object") ? o : {};
+    var adType = req.type || "next";
 
-    // Reklamsız satın alındıysa reklamı atla
-    if (window.TwoPlayerSnakeAppSettings && window.TwoPlayerSnakeAppSettings.adsRemoved === true) {
-      var adType = req.type || "next";
-      try { if (typeof req.beforeAd === "function") req.beforeAd(); } catch (e) {}
-      if (adType === "reward") {
-        try { if (typeof req.beforeReward === "function") req.beforeReward(function () {}); } catch (e) {}
-        try { if (typeof req.adViewed === "function") req.adViewed(); } catch (e) {}
-      }
-      try { if (typeof req.afterAd === "function") req.afterAd(); } catch (e) {}
-      try { if (typeof req.adBreakDone === "function") req.adBreakDone(); } catch (e) {}
-      return;
+    try { if (typeof req.beforeAd === "function") req.beforeAd(); } catch (e) {}
+    if (adType === "reward") {
+      try { if (typeof req.beforeReward === "function") req.beforeReward(function () {}); } catch (e) {}
+      try { if (typeof req.adViewed === "function") req.adViewed(); } catch (e) {}
     }
+    try { if (typeof req.afterAd === "function") req.afterAd(); } catch (e) {}
+    try { if (typeof req.adBreakDone === "function") req.adBreakDone(); } catch (e) {}
 
-    var callbackId = "adb_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
-    var fallbackTimer = setTimeout(function () {
-      if (window.__nativeAdCallbacks && window.__nativeAdCallbacks[callbackId]) {
-        console.warn("iOS Bridge: adBreak timeout (350ms) - auto continuing game for", callbackId);
-        window.__onNativeAdDone(callbackId, true);
-      }
-    }, 350);
-
-    window.__nativeAdCallbacks[callbackId] = {
-      type: req.type || "next",
-      timer: fallbackTimer,
-      beforeAd: (typeof req.beforeAd === "function") ? req.beforeAd : null,
-      afterAd: (typeof req.afterAd === "function") ? req.afterAd : null,
-      adBreakDone: (typeof req.adBreakDone === "function") ? req.adBreakDone : null,
-      adViewed: (typeof req.adViewed === "function") ? req.adViewed : null,
-      adDismissed: (typeof req.adDismissed === "function") ? req.adDismissed : null,
-      beforeReward: (typeof req.beforeReward === "function") ? req.beforeReward : null
-    };
-
-    try {
-      if (window.__nativeAdCallbacks[callbackId].beforeAd) {
-        window.__nativeAdCallbacks[callbackId].beforeAd();
-      }
-    } catch (e) {}
-
-    if ((req.type || "next") === "reward") {
-      try {
-        if (window.__nativeAdCallbacks[callbackId].beforeReward) {
-          window.__nativeAdCallbacks[callbackId].beforeReward(function () {});
-        }
-      } catch (e) {}
+    // AdManager kilitlenmesini anında temizle
+    if (window.AdManager) {
+      window.AdManager.adInProgress = false;
     }
-
-    postToNative("adBreak", {
-      type: req.type || "next",
-      name: req.name || "",
-      callbackId: callbackId
-    });
   }
 
   window.adConfig = function (o) {};
@@ -211,21 +174,8 @@
   };
 
   window.__onNativeAdDone = function (adBreakDoneCallbackName, success) {
-    var callbacks = adBreakDoneCallbackName ? window.__nativeAdCallbacks[adBreakDoneCallbackName] : null;
-    if (callbacks) {
-      if (callbacks.timer) {
-        clearTimeout(callbacks.timer);
-      }
-      if (callbacks.type === "reward") {
-        try {
-          if (success && callbacks.adViewed) callbacks.adViewed();
-          else if (!success && callbacks.adDismissed) callbacks.adDismissed();
-        } catch (e) {}
-      }
-      try { if (callbacks.afterAd) callbacks.afterAd(); } catch (e) {}
-      try { if (callbacks.adBreakDone) callbacks.adBreakDone(); } catch (e) {}
-      delete window.__nativeAdCallbacks[adBreakDoneCallbackName];
-      return;
+    if (window.AdManager) {
+      window.AdManager.adInProgress = false;
     }
     if (adBreakDoneCallbackName && typeof window[adBreakDoneCallbackName] === "function") {
       window[adBreakDoneCallbackName]();
@@ -374,129 +324,99 @@
     if (cw) cw.classList.remove("paused-blur");
     document.querySelectorAll(".pause-bubbles").forEach(function (el) { el.remove(); });
     
-    // Olası takılı kalan native ad callback'lerini serbest bırak
-    if (window.__nativeAdCallbacks) {
-      for (var cid in window.__nativeAdCallbacks) {
-        if (typeof window.__onNativeAdDone === "function") {
-          window.__onNativeAdDone(cid, true);
-        }
-      }
+    if (window.AdManager) {
+      window.AdManager.adInProgress = false;
     }
     
-    // Doğrudan ana menü açılışını garanti et
     setTimeout(function() {
       if (typeof window.openMainMenu === "function") {
         window.openMainMenu();
       }
-    }, 50);
+    }, 30);
   }
   document.addEventListener("click", handlePauseHomeSafely, true);
   document.addEventListener("touchend", handlePauseHomeSafely, true);
 
-  // ── Haptic: 3 Katmanlı Kesin Yem Yeme Algılama ────────────────────────────
-  (function installRobustHapticHooks() {
-    var lastEatTime = 0;
+  // ── Haptic: Kesin ve Güvenli Yem Yeme Tespiti ──────────────────────────────
+  // DOM Panel Score Watcher (MutationObserver + rAF fallback)
+  // WebKit Audio veya Array prototype'larına ASLA dokunmaz.
+  // Ses kapalı olsa dahi her yem yenildiğinde (1P, 2P, AI, Solo) anında haptic tetikler.
+  (function installRobustFoodHaptics() {
+    var lastP1 = 0;
+    var lastP2 = 0;
+    var lastHapticTime = 0;
 
     function triggerEatHaptic(type) {
       var now = Date.now();
-      if (now - lastEatTime < 45) return; // 45ms debounce
-      lastEatTime = now;
+      if (now - lastHapticTime < 50) return; // 50ms debounce
+      lastHapticTime = now;
       postToNative("onEatFood", { type: type || "normal" });
     }
 
-    // Katman 1: AudioParam.prototype.value kancası
-    // Oyun SFX.eat() içinde tone(720) çağırır ve o.frequency.value = 720 ataması yapar.
-    // Bu atamayı AudioParam setter'ından anında yakalıyoruz.
-    try {
-      if (typeof AudioParam !== "undefined" && AudioParam.prototype) {
-        var desc = Object.getOwnPropertyDescriptor(AudioParam.prototype, "value");
-        if (desc && desc.set) {
-          var origSet = desc.set;
-          Object.defineProperty(AudioParam.prototype, "value", {
-            set: function (v) {
-              try {
-                var rounded = Math.round(v);
-                if (rounded >= 700 && rounded <= 740) {
-                  triggerEatHaptic("normal");
-                } else if (rounded >= 1180 && rounded <= 1220) {
-                  triggerEatHaptic("diamond");
-                } else if (rounded >= 620 && rounded <= 660) {
-                  triggerEatHaptic("heart");
-                }
-              } catch (e) {}
-              return origSet.call(this, v);
-            },
-            get: desc.get,
-            configurable: true,
-            enumerable: true
-          });
+    function checkPanelLengths() {
+      // Menü açıkken veya demo modundayken haptic tetikleme
+      var banner = document.getElementById("banner");
+      var isMenuVisible = banner && banner.classList.contains("show") && !banner.classList.contains("countdown-banner");
+      if (isMenuVisible) {
+        lastP1 = 0;
+        lastP2 = 0;
+        return;
+      }
+
+      var el1 = document.getElementById("p1PanelLen");
+      var el2 = document.getElementById("p2PanelLen");
+
+      if (el1) {
+        var val1 = parseInt(el1.textContent, 10) || 0;
+        if (val1 > 0) {
+          if (lastP1 > 0 && val1 > lastP1) {
+            triggerEatHaptic("normal");
+          }
+          lastP1 = val1;
+        } else {
+          lastP1 = 0;
         }
       }
-    } catch (e) {
-      console.warn("AudioParam value hook error:", e);
+
+      if (el2) {
+        var val2 = parseInt(el2.textContent, 10) || 0;
+        if (val2 > 0) {
+          if (lastP2 > 0 && val2 > lastP2) {
+            triggerEatHaptic("normal");
+          }
+          lastP2 = val2;
+        } else {
+          lastP2 = 0;
+        }
+      }
     }
 
-    // Katman 2: BaseAudioContext & AudioContext prototype createOscillator kancası
-    try {
-      var BaseAudioClass = (typeof BaseAudioContext !== "undefined") ? BaseAudioContext : (window.AudioContext || window.webkitAudioContext);
-      if (BaseAudioClass && BaseAudioClass.prototype && BaseAudioClass.prototype.createOscillator) {
-        var origOsc = BaseAudioClass.prototype.createOscillator;
-        BaseAudioClass.prototype.createOscillator = function () {
-          var osc = origOsc.apply(this, arguments);
-          var origStart = osc.start;
-          osc.start = function () {
-            try {
-              var freq = Math.round(osc.frequency ? osc.frequency.value : 0);
-              if (freq >= 700 && freq <= 740) {
-                triggerEatHaptic("normal");
-              } else if (freq >= 1180 && freq <= 1220) {
-                triggerEatHaptic("diamond");
-              } else if (freq >= 620 && freq <= 660) {
-                triggerEatHaptic("heart");
-              }
-            } catch (err) {}
-            return origStart.apply(osc, arguments);
-          };
-          return osc;
-        };
+    // Katman 1: MutationObserver ile 0ms gecikmeli DOM dinleme
+    function setupObserver() {
+      var el1 = document.getElementById("p1PanelLen");
+      var el2 = document.getElementById("p2PanelLen");
+      if (!el1 || !el2) {
+        setTimeout(setupObserver, 150);
+        return;
       }
-    } catch (e) {
-      console.warn("BaseAudioContext hook error:", e);
+      var obs = new MutationObserver(function () {
+        checkPanelLengths();
+      });
+      obs.observe(el1, { characterData: true, childList: true, subtree: true });
+      obs.observe(el2, { characterData: true, childList: true, subtree: true });
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", setupObserver);
+    } else {
+      setupObserver();
     }
 
-    // Katman 3: DOM Panel Uzunluğu Takibi (Ses kapalı olsa bile çalışır)
-    // Her render karesinde p1PanelLen ve p2PanelLen text değerlerindeki artışı izler.
-    (function watchPanelScore() {
-      var lastP1 = -1, lastP2 = -1;
-      function checkFrame() {
-        var el1 = document.getElementById("p1PanelLen");
-        var el2 = document.getElementById("p2PanelLen");
-        if (el1) {
-          var val1 = parseInt(el1.textContent, 10);
-          if (!isNaN(val1) && val1 > 0) {
-            if (lastP1 > 0 && val1 > lastP1) {
-              triggerEatHaptic("normal");
-            }
-            lastP1 = val1;
-          } else if (val1 === 0) {
-            lastP1 = -1;
-          }
-        }
-        if (el2) {
-          var val2 = parseInt(el2.textContent, 10);
-          if (!isNaN(val2) && val2 > 0) {
-            if (lastP2 > 0 && val2 > lastP2) {
-              triggerEatHaptic("normal");
-            }
-            lastP2 = val2;
-          } else if (val2 === 0) {
-            lastP2 = -1;
-          }
-        }
-        requestAnimationFrame(checkFrame);
-      }
-      requestAnimationFrame(checkFrame);
-    })();
+    // Katman 2: requestAnimationFrame ile her kare kontrolü (güvenlik ağı)
+    function animCheck() {
+      checkPanelLengths();
+      requestAnimationFrame(animCheck);
+    }
+    requestAnimationFrame(animCheck);
   })();
 
 })();
