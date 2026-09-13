@@ -82,7 +82,8 @@ platform :ios do
       build_num = ENV["GITHUB_RUN_NUMBER"] || "1"
     end
 
-    proj_path = File.exist?("../TwoPlayerSnake.xcodeproj") ? "../TwoPlayerSnake.xcodeproj" : "TwoPlayerSnake.xcodeproj"
+    proj_path = File.expand_path("../TwoPlayerSnake.xcodeproj", __dir__)
+    UI.message("Xcode Proje Yolu: #{proj_path}")
 
     if File.exist?(proj_path)
       begin
@@ -95,7 +96,8 @@ platform :ios do
       end
 
       # 6. Kod İmzalama Ayarlarını Güncelle
-      profile_name = lane_context[SharedValues::SIGH_PROFILE_NAME] || ENV["sigh_com.twoplayersnake.app_app-store_profile-name"]
+      profile_name = lane_context[SharedValues::SIGH_NAME] || ENV["sigh_com.twoplayersnake.app_app-store_profile-name"] || "com.twoplayersnake.app AppStore"
+      UI.message("Kullanılacak Dağıtım Profili: #{profile_name}")
 
       begin
         update_code_signing_settings(
@@ -120,10 +122,11 @@ platform :ios do
       end
 
       # 7. Uygulamayı Derle (.ipa Üretimi)
+      build_output_dir = File.expand_path("../build", __dir__)
       build_app(
         scheme: "TwoPlayerSnake",
         project: proj_path,
-        output_directory: "./build",
+        output_directory: build_output_dir,
         output_name: "2PlayerSnake.ipa",
         clean: true,
         export_method: "app-store",
@@ -133,15 +136,16 @@ platform :ios do
       )
 
       # 8. TestFlight'a Yükle
+      ipa_path = lane_context[SharedValues::IPA_OUTPUT_PATH] || File.join(build_output_dir, "2PlayerSnake.ipa")
       upload_to_testflight(
         api_key: api_key,
-        ipa: "./build/2PlayerSnake.ipa",
+        ipa: ipa_path,
         skip_waiting_for_build_processing: true, # CI runner'ın boş yere beklemesini önler
         changelog: "2 Player Snake iOS Beta Derlemesi (#{build_num})"
       )
       UI.success("2 Player Snake başarıyla TestFlight'a yüklendi!")
     else
-      UI.user_error!("TwoPlayerSnake.xcodeproj bulunamadı! Lütfen proje yolunu kontrol edin.")
+      UI.user_error!("TwoPlayerSnake.xcodeproj bulunamadı! Lütfen proje yolunu kontrol edin: #{proj_path}")
     end
   end
 end
