@@ -25,7 +25,7 @@ platform :ios do
     keychain_name = "github_actions_keychain"
     keychain_password = ENV["CI_KEYCHAIN_PASSWORD"] || "SnakeCI_Temporary_Pass_2026!"
 
-    keychain_path = create_keychain(
+    create_keychain(
       name: keychain_name,
       password: keychain_password,
       default_keychain: true,
@@ -33,7 +33,23 @@ platform :ios do
       timeout: 3600,
       lock_when_sleeps: false
     )
-    keychain_path = lane_context[SharedValues::KEYCHAIN_PATH] || keychain_path
+
+    # macOS Sierra'dan beri anahtarlık dosyaları '-db' uzantısıyla kaydedilir.
+    # Fastlane create_keychain bazen '-db' olmadan yol döner, dosya varlığını garantiye alalım:
+    raw_path = File.expand_path("~/Library/Keychains/#{keychain_name}")
+    actual_keychain_path = if File.exist?("#{raw_path}-db")
+      "#{raw_path}-db"
+    elsif File.exist?(raw_path)
+      raw_path
+    else
+      `security default-keychain`.strip.tr('"', '').strip
+    end
+
+    UI.message("Aktif Anahtarlık Dosyası: #{actual_keychain_path}")
+
+    # Anahtarlığı listeye ekle ve kilidini aç
+    sh("security unlock-keychain -p '#{keychain_password}' '#{actual_keychain_path}'") rescue nil
+    sh("security default-keychain -s '#{actual_keychain_path}'") rescue nil
 
     # 4. Apple Sertifikalarını ve Dağıtım Profilini Otomatik Çek / Senkronize Et
     # App Store Connect API Key sayesinde Mac olmadan Apple hesabından direkt profil ve sertifika yönetilir
@@ -50,7 +66,7 @@ platform :ios do
       # Opsiyon B: API Key ile doğrudan App Store sertifikasını ve profilini indir/oluştur
       get_certificates(
         api_key: api_key,
-        keychain_path: keychain_path,
+        keychain_path: actual_keychain_path,
         keychain_password: keychain_password
       )
 
