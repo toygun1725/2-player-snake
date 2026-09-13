@@ -33,6 +33,12 @@ jobs:
           bundler-cache: true
           working-directory: 'Ana Dosya/iOS'
 
+      - name: 🔑 Sertifika Önbelleği (Certificate Cache)
+        uses: actions/cache@v4
+        with:
+          path: Ana Dosya/iOS/certs
+          key: ios-certs-${{ secrets.APPLE_TEAM_ID }}
+
       - name: 🚀 Fastlane ile TestFlight'a Derle ve Dağıt
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}

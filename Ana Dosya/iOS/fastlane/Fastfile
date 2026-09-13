@@ -63,12 +63,54 @@ platform :ios do
         keychain_password: keychain_password
       )
     else
-      # Opsiyon B: API Key ile doğrudan App Store sertifikasını ve profilini indir/oluştur
-      get_certificates(
-        api_key: api_key,
-        keychain_path: actual_keychain_path,
-        keychain_password: keychain_password
-      )
+      # Opsiyon B: API Key ile doğrudan App Store sertifikasını ve profilini yönet
+      certs_dir = File.expand_path("../certs", __dir__)
+      FileUtils.mkdir_p(certs_dir)
+      p12_path = File.join(certs_dir, "dist_certificate.p12")
+
+      if File.exist?(p12_path)
+        UI.success("Önbellekten kayıtlı dağıtım sertifikası bulundu: #{p12_path}")
+        sh("security import '#{p12_path}' -k '#{actual_keychain_path}' -P '#{keychain_password}' -T /usr/bin/codesign -T /usr/bin/security")
+        sh("security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '#{keychain_password}' '#{actual_keychain_path}'") rescue nil
+      else
+        UI.important("Önbellekte sertifika bulunamadı. Apple API üzerinden sertifika yönetimi başlatılıyor...")
+
+        # 1. Eski yetim sertifikaları (private key'i olmayan) temizle
+        begin
+          require "spaceship"
+          Spaceship::ConnectAPI.token = api_key
+          existing_certs = Spaceship::ConnectAPI::Certificate.all(filter: { certificateType: "DISTRIBUTION,IOS_DISTRIBUTION" })
+          UI.message("Apple Developer hesabında #{existing_certs.count} adet dağıtım sertifikası bulundu.")
+
+          if existing_certs.count >= 2
+            existing_certs.each do |c|
+              UI.important("Eski yetim sertifika siliniyor: #{c.id} (#{c.name})")
+              begin
+                c.delete!
+              rescue => del_err
+                Spaceship::ConnectAPI.delete_certificate(certificate_id: c.id) rescue nil
+              end
+            end
+          end
+        rescue => ex
+          UI.important("Sertifika temizleme kontrolü uyarısı: #{ex.message}")
+        end
+
+        # 2. Yeni sertifikayı üret ve indir
+        get_certificates(
+          api_key: api_key,
+          keychain_path: actual_keychain_path,
+          keychain_password: keychain_password
+        )
+
+        # 3. Üretilen sertifika ve özel anahtarı gelecek derlemeler için p12 olarak yedekle
+        begin
+          sh("security export -k '#{actual_keychain_path}' -t identities -f pkcs12 -P '#{keychain_password}' -o '#{p12_path}'")
+          UI.success("Dağıtım sertifikası önbellek için başarıyla yedeklendi: #{p12_path}")
+        rescue => ex
+          UI.important("Sertifika dışa aktarma uyarısı: #{ex.message}")
+        end
+      end
 
       get_provisioning_profile(
         api_key: api_key,
