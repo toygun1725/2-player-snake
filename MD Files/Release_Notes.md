@@ -2,7 +2,27 @@
 
 ## iOS TestFlight Release Notes
 
-> Durum (2026-09-13): iOS Native Swift kabuğu `v3.3.5` / Build **27** (`ios-v3.3.5-b27`) olarak derlendi, Apple App Store profili ile imzalandı ve TestFlight üzerinden fiziksel iPhone cihazında test edildi. Aşama 4 (Fiziksel Cihaz Oyun & UX Testleri) tamamlandı/donduruldu.
+> Durum (2026-09-13): iOS Native Swift kabuğu `v3.3.5` / Build **28** (`ios-v3.3.5-b28`) olarak derlendi. Aşama 5 (Canlı AdMob iOS Birimleri & ATT İzin Akışı) tamamlandı, Apple ATT izin diyaloğu, Google Mobile Ads SDK, canlı Geçiş/Ödüllü reklam birimleri ve CocoaPods entegre edildi.
+
+### TestFlight Release (v3.3.5 / Build 28)
+
+<en-US>
+What's New in iOS v3.3.5 (Build 28):
+• Live Google AdMob Integration: Integrated Google Mobile Ads iOS SDK via CocoaPods with live Interstitial & Rewarded ad units.
+• Apple App Tracking Transparency (ATT): Integrated native ATT authorization request dialog upon entering the main menu.
+• Deadlock Protection: Dual-layer watchdog timers (9.0s native, 8.5s JS) ensure the match always starts seamlessly even with slow network or ad fill drops.
+• Preloaded Ads: Interstitial and Rewarded ads preload automatically in the background with exponential backoff retry.
+</en-US>
+
+<tr-TR>
+iOS v3.3.5 (Build 28) Yenilikleri:
+• Canlı Google AdMob Entegrasyonu: CocoaPods ile Google Mobile Ads SDK, canlı Geçiş ve Ödüllü reklam birimleriyle entegre edildi.
+• Apple App Tracking Transparency (ATT): Ana menüye inildiğinde Apple'ın resmi takip izni penceresi gösterilerek kullanıcı gizliliği tam olarak sağlandı.
+• Çift Katmanlı Kilitlenme Koruması (Watchdog): Swift (9.0s) ve JS (8.5s) zaman aşımı koruması ile reklam yüklenemese veya internet kopsa dahi maçların anında başlaması garanti altına alındı.
+• Reklam Önyükleme (Preload): Geçiş ve Ödüllü reklamlar arka planda otomatik olarak önden yüklenir ve oynanışı aksatmaz.
+</tr-TR>
+
+---
 
 ### TestFlight Release (v3.3.5 / Build 27)
 

@@ -54,6 +54,11 @@ jobs:
           restore-keys: |
             ios-certs-${{ secrets.APPLE_TEAM_ID }}-
 
+      - name: 📦 CocoaPods Kurulumu (Google Mobile Ads SDK)
+        run: |
+          cd "Ana Dosya/iOS"
+          pod install --repo-update
+
       - name: 🚀 Fastlane ile TestFlight'a Derle ve Dağıt
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}

@@ -21,6 +21,12 @@ AdMob eslestirme notu (Android shell):
 - app-ads.txt URL: `https://2playersnake.com/app-ads.txt`
 - app-ads.txt satiri: `google.com, pub-4114535776207741, DIRECT, f08c47fec0942fa0`
 
+AdMob eslestirme notu (iOS shell - v3.3.5):
+- App ID: `ca-app-pub-4114535776207741~3769407896`
+- Interstitial ID: `ca-app-pub-4114535776207741/6012427858`
+- Rewarded ID: `ca-app-pub-4114535776207741/7193260548`
+- ATT İzin Metni: `Bu izin, oyun deneyiminizi geliştirmek ve size uygun kişiselleştirilmiş reklamlar sunmak için kullanılır.`
+
 ---
 
 ## Platform Mimarisi
@@ -29,6 +35,7 @@ AdMob eslestirme notu (Android shell):
 |---|---|---|
 | Web (PC + Mobil) | Google AdSense H5 Games Ads (Beta) | `adBreak()` ve `adConfig()` cagrilari ayni HTML dosyasindan yonetilir |
 | Android (APK) | Native bridge + Web oyun mantigi | Web oyundaki reklam cagrilari Android tarafinda native katmana yonlendirilebilir |
+| iOS (IPA) | Native Google Mobile Ads + ATT | Swift AdManager ve bridge ile tam ekran ve ödüllü reklam entegrasyonu |
 
 ---
 

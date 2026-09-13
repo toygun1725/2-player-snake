@@ -58,7 +58,7 @@
       postToNative("restorePurchases", {});
     },
     isAdsRemoved: function () {
-      return "true";
+      return (window.TwoPlayerSnakeAppSettings && window.TwoPlayerSnakeAppSettings.adsRemoved === true) ? "true" : "false";
     },
     adBreak: function (payload) {
       __nativeAdBreakShim(payload);
@@ -129,7 +129,6 @@
   // Native ayarlar senkronizasyonu
   window.dispatchNativeSettings = function (settings) {
     window.TwoPlayerSnakeAppSettings = settings || {};
-    window.TwoPlayerSnakeAppSettings.adsRemoved = true;
     var event = new CustomEvent("two-player-snake:native-settings", {
       detail: window.TwoPlayerSnakeAppSettings
     });
@@ -140,25 +139,72 @@
     }
   };
 
-  // --- Reklam Shim Entegrasyonu (iOS: Anında Geçiş, Kilitlenme Korumalı) ---
+  // --- Reklam Shim Entegrasyonu (iOS: Canlı Native AdMob & Kilitlenme Korumalı) ---
   window.adsbygoogle = window.adsbygoogle || [];
 
   function __nativeAdBreakShim(o) {
     var req = (o && typeof o === "object") ? o : {};
     var adType = req.type || "next";
 
-    try { if (typeof req.beforeAd === "function") req.beforeAd(); } catch (e) {}
-    if (adType === "reward") {
-      try { if (typeof req.beforeReward === "function") req.beforeReward(function () {}); } catch (e) {}
-      try { if (typeof req.adViewed === "function") req.adViewed(); } catch (e) {}
+    // 1. Premium veya reklamsız sürüm kontrolü: Anında atla
+    if (window.Android.isAdsRemoved() === "true") {
+      console.log("iOS Bridge: Reklamlar kaldırılmış, anında atlanıyor:", adType);
+      try { if (typeof req.beforeAd === "function") req.beforeAd(); } catch (e) {}
+      if (adType === "reward") {
+        try { if (typeof req.beforeReward === "function") req.beforeReward(function () {}); } catch (e) {}
+        try { if (typeof req.adViewed === "function") req.adViewed(); } catch (e) {}
+      }
+      try { if (typeof req.afterAd === "function") req.afterAd(); } catch (e) {}
+      try { if (typeof req.adBreakDone === "function") req.adBreakDone(); } catch (e) {}
+      if (window.AdManager) { window.AdManager.adInProgress = false; }
+      return;
     }
-    try { if (typeof req.afterAd === "function") req.afterAd(); } catch (e) {}
-    try { if (typeof req.adBreakDone === "function") req.adBreakDone(); } catch (e) {}
 
-    // AdManager kilitlenmesini anında temizle
-    if (window.AdManager) {
-      window.AdManager.adInProgress = false;
+    // 2. Canlı Native AdMob Akışı
+    var callbackId = "adb_ios_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+    window.__nativeAdCallbacks[callbackId] = {
+      type: adType,
+      beforeAd: (typeof req.beforeAd === "function") ? req.beforeAd : null,
+      afterAd: (typeof req.afterAd === "function") ? req.afterAd : null,
+      adBreakDone: (typeof req.adBreakDone === "function") ? req.adBreakDone : null,
+      adViewed: (typeof req.adViewed === "function") ? req.adViewed : null,
+      adDismissed: (typeof req.adDismissed === "function") ? req.adDismissed : null,
+      beforeReward: (typeof req.beforeReward === "function") ? req.beforeReward : null
+    };
+
+    try {
+      if (window.__nativeAdCallbacks[callbackId].beforeAd) {
+        window.__nativeAdCallbacks[callbackId].beforeAd();
+      }
+    } catch (e) {
+      console.warn("iOS Bridge: beforeAd callback error:", e);
     }
+
+    if (adType === "reward") {
+      try {
+        if (window.__nativeAdCallbacks[callbackId].beforeReward) {
+          window.__nativeAdCallbacks[callbackId].beforeReward(function () {});
+        }
+      } catch (e) {
+        console.warn("iOS Bridge: beforeReward callback error:", e);
+      }
+    }
+
+    // JS Emniyet Zamanlayıcısı: 8.5 saniye içinde native yanıt vermezse maçı otomatik kurtar
+    var safetyTimer = setTimeout(function () {
+      if (window.__nativeAdCallbacks[callbackId]) {
+        console.warn("iOS Bridge: ⚠️ AdBreak JS zaman aşımı (8.5s), oyun kilitlenmesin diye devam ettiriliyor.");
+        window.__onNativeAdDone(callbackId, true);
+      }
+    }, 8500);
+    window.__nativeAdCallbacks[callbackId].safetyTimer = safetyTimer;
+
+    // Swift tarafına reklam gösterim isteğini ilet
+    postToNative("adBreak", {
+      type: adType,
+      name: req.name || "",
+      callbackId: callbackId
+    });
   }
 
   window.adConfig = function (o) {};
@@ -174,9 +220,50 @@
   };
 
   window.__onNativeAdDone = function (adBreakDoneCallbackName, success) {
+    console.log("iOS Bridge: Native reklam tamamlandı callback:", adBreakDoneCallbackName, "success:", success);
     if (window.AdManager) {
       window.AdManager.adInProgress = false;
     }
+
+    var callbacks = adBreakDoneCallbackName ? window.__nativeAdCallbacks[adBreakDoneCallbackName] : null;
+    if (callbacks) {
+      if (callbacks.safetyTimer) {
+        clearTimeout(callbacks.safetyTimer);
+      }
+
+      if (callbacks.type === "reward") {
+        try {
+          if (success && typeof callbacks.adViewed === "function") {
+            callbacks.adViewed();
+          } else if (!success && typeof callbacks.adDismissed === "function") {
+            callbacks.adDismissed();
+          }
+        } catch (e) {
+          console.warn("iOS Bridge: reward callback error:", e);
+        }
+      }
+
+      try {
+        if (typeof callbacks.afterAd === "function") {
+          callbacks.afterAd();
+        }
+      } catch (e) {
+        console.warn("iOS Bridge: afterAd callback error:", e);
+      }
+
+      try {
+        if (typeof callbacks.adBreakDone === "function") {
+          callbacks.adBreakDone();
+        }
+      } catch (e) {
+        console.warn("iOS Bridge: adBreakDone callback error:", e);
+      }
+
+      delete window.__nativeAdCallbacks[adBreakDoneCallbackName];
+      return;
+    }
+
+    // Legacy fallback
     if (adBreakDoneCallbackName && typeof window[adBreakDoneCallbackName] === "function") {
       window[adBreakDoneCallbackName]();
     } else if (typeof window.adBreakDone === "function") {

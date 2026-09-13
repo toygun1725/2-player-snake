@@ -347,6 +347,9 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             self?.player = nil
             self?.playerLayer?.removeFromSuperlayer()
             self?.teaserContainer.removeFromSuperview()
+
+            // Aşama 5: Ana menüye inildiğinde Apple ATT izin penceresi ve AdMob başlatılır
+            AdManager.shared.requestTrackingAuthorization()
         }
     }
 

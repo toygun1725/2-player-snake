@@ -28,6 +28,8 @@
 
 # iOS & Fastlane temporary files
 **/build/
+**/Pods/
+**/*.xcworkspace/
 fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots

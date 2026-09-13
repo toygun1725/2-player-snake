@@ -179,11 +179,27 @@ platform :ios do
         }
       end
 
+      # 6.5. CocoaPods Bağımlılıklarını Doğrula (Google Mobile Ads SDK)
+      podfile_path = File.expand_path("../Podfile", __dir__)
+      if File.exist?(podfile_path)
+        UI.message("Podfile bulundu. CocoaPods bağımlılıkları kontrol ediliyor...")
+        begin
+          cocoapods(
+            clean_install: false,
+            podfile: podfile_path,
+            try_repo_update_on_error: true
+          )
+        rescue => ex
+          UI.important("Fastlane cocoapods uyarısı: #{ex.message}. Mevcut workspace ile devam ediliyor.")
+        end
+      end
+
       # 7. Uygulamayı Derle (.ipa Üretimi)
       build_output_dir = File.expand_path("../build", __dir__)
-      build_app(
+      workspace_path = File.expand_path("../TwoPlayerSnake.xcworkspace", __dir__)
+
+      build_params = {
         scheme: "TwoPlayerSnake",
-        project: proj_path,
         output_directory: build_output_dir,
         output_name: "2PlayerSnake.ipa",
         clean: true,
@@ -191,7 +207,17 @@ platform :ios do
         export_options: export_opts,
         codesigning_identity: "Apple Distribution",
         xcargs: "CURRENT_PROJECT_VERSION=#{build_num}"
-      )
+      }
+
+      if File.exist?(workspace_path)
+        UI.message("CocoaPods Workspace bulundu: #{workspace_path}")
+        build_params[:workspace] = workspace_path
+      else
+        UI.message("Xcode Projesi üzerinden derleniyor: #{proj_path}")
+        build_params[:project] = proj_path
+      end
+
+      build_app(build_params)
 
       # 8. TestFlight'a Yükle
       ipa_path = lane_context[SharedValues::IPA_OUTPUT_PATH] || File.join(build_output_dir, "2PlayerSnake.ipa")
