@@ -274,12 +274,18 @@
         border-top-right-radius: 0 !important;
       }
 
-      /* 2-Player Local Mode: Symmetrical equal-height bars for both players */
-      #p2-controls:not(.hud-hidden),
-      #p1-controls:not(.hud-hidden):not(.dual-ai) {
+      /* 2-Player: P2 (üst panel) → Dynamic Island için top inset */
+      #p2-controls:not(.hud-hidden) {
         height: calc(var(--control-bar-base-height) + env(safe-area-inset-top, 0px)) !important;
         max-height: 220px !important;
         min-height: calc(105px + env(safe-area-inset-top, 0px)) !important;
+      }
+
+      /* 2-Player: P1 (alt panel) → Home Indicator için bottom inset */
+      #p1-controls:not(.hud-hidden):not(.dual-ai) {
+        height: calc(var(--control-bar-base-height) + env(safe-area-inset-bottom, 0px)) !important;
+        max-height: 220px !important;
+        min-height: calc(105px + env(safe-area-inset-bottom, 0px)) !important;
       }
 
       /* Top player: insets from Dynamic Island */

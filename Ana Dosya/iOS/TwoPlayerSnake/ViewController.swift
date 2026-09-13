@@ -213,18 +213,20 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         teaserPercentLabel.textColor = .white
         teaserPercentLabel.textAlignment = .center
 
+        // Android parity: sadece büyük neon glow metin, kutu/border yok
         teaserStartButton.translatesAutoresizingMaskIntoConstraints = false
         teaserStartButton.setTitle("START >", for: .normal)
         teaserStartButton.setTitleColor(UIColor(red: 0.0, green: 0.898, blue: 1.0, alpha: 1.0), for: .normal)
-        teaserStartButton.titleLabel?.font = .systemFont(ofSize: 34, weight: .heavy)
-        teaserStartButton.backgroundColor = UIColor(red: 0.0, green: 0.898, blue: 1.0, alpha: 0.15)
-        teaserStartButton.layer.cornerRadius = 24
-        teaserStartButton.layer.borderWidth = 2
-        teaserStartButton.layer.borderColor = UIColor(red: 0.0, green: 0.898, blue: 1.0, alpha: 0.8).cgColor
+        teaserStartButton.titleLabel?.font = .systemFont(ofSize: 42, weight: .heavy)
+        teaserStartButton.backgroundColor = .clear             // kutu yok
+        teaserStartButton.layer.cornerRadius = 0               // köşe yuvarlama yok
+        teaserStartButton.layer.borderWidth = 0                // kenarlık yok
+        // Neon glow shadow — Android shadowRadius:20 + #00E5FF
         teaserStartButton.layer.shadowColor = UIColor(red: 0.0, green: 0.898, blue: 1.0, alpha: 1.0).cgColor
         teaserStartButton.layer.shadowOffset = .zero
-        teaserStartButton.layer.shadowRadius = 16
-        teaserStartButton.layer.shadowOpacity = 0.9
+        teaserStartButton.layer.shadowRadius = 20
+        teaserStartButton.layer.shadowOpacity = 1.0
+        teaserStartButton.contentEdgeInsets = UIEdgeInsets(top: 12, left: 40, bottom: 12, right: 40)
         teaserStartButton.isHidden = true
         teaserStartButton.addTarget(self, action: #selector(startButtonTapped), for: .touchUpInside)
 
@@ -260,10 +262,9 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             teaserPercentLabel.topAnchor.constraint(equalTo: teaserProgressBar.bottomAnchor, constant: 8),
             teaserPercentLabel.centerXAnchor.constraint(equalTo: teaserGlassPanel.centerXAnchor),
 
+            // Buton: intrinsicContentSize kullan, panel ortasına sabitle
             teaserStartButton.centerXAnchor.constraint(equalTo: teaserGlassPanel.centerXAnchor),
-            teaserStartButton.centerYAnchor.constraint(equalTo: teaserGlassPanel.centerYAnchor),
-            teaserStartButton.widthAnchor.constraint(equalTo: teaserGlassPanel.widthAnchor, multiplier: 0.85),
-            teaserStartButton.heightAnchor.constraint(equalToConstant: 58)
+            teaserStartButton.centerYAnchor.constraint(equalTo: teaserGlassPanel.centerYAnchor)
         ])
     }
 
@@ -316,6 +317,18 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             NotificationCenter.default.removeObserver(observer)
             playerLoopObserver = nil
         }
+
+        // Oyun JS ortamına hazır sinyali gönder (race condition önlemi)
+        let readyPing = """
+        (function() {
+            if (typeof window.__iosAppReady === 'function') {
+                try { window.__iosAppReady(); } catch(e) {}
+            }
+            // Oyun HTML'i data-ios-shell attribute'unu kontrol edebilir
+            document.documentElement.setAttribute('data-ios-ready', 'true');
+        })();
+        """
+        webView.evaluateJavaScript(readyPing, completionHandler: nil)
 
         UIView.animate(withDuration: 0.35, delay: 0.05, options: .curveEaseOut, animations: {
             self.teaserContainer.alpha = 0.0
