@@ -59,7 +59,9 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        playerLayer?.frame = teaserContainer.bounds
+        // view.bounds kullan — teaserContainer.bounds değil
+        // Böylece video Home Indicator alanı dahil tam ekranı kaplar, alt siyah bant olmaz
+        playerLayer?.frame = view.bounds
         injectSafeAreaVariables()
     }
 
@@ -177,13 +179,14 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
         // Alt Cam Panel (Android ile aynı tasarım)
         teaserGlassPanel.translatesAutoresizingMaskIntoConstraints = false
-        teaserGlassPanel.backgroundColor = UIColor(white: 0.04, alpha: 0.55)
+        teaserGlassPanel.backgroundColor = UIColor(white: 0.15, alpha: 0.25)
         teaserGlassPanel.layer.cornerRadius = 16
         teaserGlassPanel.layer.borderWidth = 1
-        teaserGlassPanel.layer.borderColor = UIColor(white: 1.0, alpha: 0.15).cgColor
+        teaserGlassPanel.layer.borderColor = UIColor(white: 1.0, alpha: 0.25).cgColor
         teaserGlassPanel.clipsToBounds = true
 
-        let blurEffect = UIBlurEffect(style: .dark)
+        // Ultra-ince material blur — video arkadan net görünsün (Android parity)
+        let blurEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
         let blurView = UIVisualEffectView(effect: blurEffect)
         blurView.translatesAutoresizingMaskIntoConstraints = false
         teaserGlassPanel.addSubview(blurView)

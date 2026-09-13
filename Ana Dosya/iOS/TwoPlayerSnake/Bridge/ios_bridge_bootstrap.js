@@ -318,6 +318,30 @@
       #p1-controls.dual-ai .panel-with-btns {
         padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
       }
+
+      /* Canvas: flex alanı tam doldursun, gap bırakmasın */
+      #canvasWrap {
+        flex: 1 1 auto !important;
+        overflow: hidden !important;
+        min-height: 0 !important;
+      }
+
+      /* P1 panelinin arka planını ekranın dibine uzat (::after trick) */
+      #p1-controls {
+        position: relative !important;
+      }
+      #p1-controls::after {
+        content: '' !important;
+        display: block !important;
+        position: absolute !important;
+        bottom: -80px !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 80px !important;
+        background: inherit !important;
+        pointer-events: none !important;
+        z-index: 0 !important;
+      }
     `;
     document.head.appendChild(style);
   })();
@@ -326,59 +350,81 @@
   document.documentElement.setAttribute("data-ios-app", "true");
   document.documentElement.setAttribute("data-ios-shell", "true");
 
-  // SFX Haptic Patch: SFX.eat() / SFX.diamond() / SFX.heart() intercept
-  // eatFoodIfAny() Android.onEatFood() çağırmıyor — sadece SFX.eat() çağırıyor.
-  // Bu patch SFX fonksiyonlarını override ederek native haptic'i tetikler.
-  (function patchSFXForHaptic() {
-    var patched = false;
-    var attempts = 0;
-    var MAX_ATTEMPTS = 50; // 5 saniye
+  // ── Haptic: MutationObserver on score panel ──────────────────────────────
+  // SFX, IIFE scope içinde const olarak tanımlı → window.SFX erişilemiyor.
+  // Bunun yerine p1PanelLen/p2PanelLen DOM elementlerini izle:
+  // oyun yem yenince bu elementlerin textContent'ini günceller.
+  (function watchFoodScoreForHaptic() {
+    var lastP1 = -1, lastP2 = -1;
 
-    function tryPatch() {
-      if (patched || attempts >= MAX_ATTEMPTS) return;
-      attempts++;
-
-      if (typeof window.SFX === "undefined") {
-        setTimeout(tryPatch, 100);
+    function observe() {
+      var p1El = document.getElementById("p1PanelLen");
+      var p2El = document.getElementById("p2PanelLen");
+      if (!p1El || !p2El) {
+        setTimeout(observe, 400);
         return;
       }
 
-      // Normal yem — hafif haptic
-      if (typeof window.SFX.eat === "function") {
-        var _origEat = window.SFX.eat.bind(window.SFX);
-        window.SFX.eat = function() {
-          _origEat();
+      var mo = new MutationObserver(function() {
+        var p1 = parseInt(p1El.textContent, 10) || 0;
+        var p2 = parseInt(p2El.textContent, 10) || 0;
+        // Sadece sayı ARTTIYSA haptic tetikle (reset'i yoksay)
+        if (p1 > lastP1 && lastP1 >= 0) {
           postToNative("onEatFood", { type: "normal" });
-        };
-      }
+        }
+        if (p2 > lastP2 && lastP2 >= 0) {
+          postToNative("onEatFood", { type: "normal" });
+        }
+        lastP1 = p1;
+        lastP2 = p2;
+      });
 
-      // Diamond / Safir yem — orta haptic
-      if (typeof window.SFX.diamond === "function") {
-        var _origDiamond = window.SFX.diamond.bind(window.SFX);
-        window.SFX.diamond = function() {
-          _origDiamond();
-          postToNative("onEatFood", { type: "diamond" });
-        };
-      }
-
-      // Heart / Beast mode yem — güçlü haptic
-      if (typeof window.SFX.heart === "function") {
-        var _origHeart = window.SFX.heart.bind(window.SFX);
-        window.SFX.heart = function() {
-          _origHeart();
-          postToNative("onEatFood", { type: "heart" });
-        };
-      }
-
-      patched = true;
+      mo.observe(p1El, { childList: true, characterData: true, subtree: true });
+      mo.observe(p2El, { childList: true, characterData: true, subtree: true });
     }
 
-    // DOMContentLoaded sonrası dene, oyun JS'i daha sonra yüklendiğinden retry gerekir
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function() { setTimeout(tryPatch, 200); });
+      document.addEventListener("DOMContentLoaded", function() { setTimeout(observe, 500); });
     } else {
-      setTimeout(tryPatch, 200);
+      setTimeout(observe, 500);
     }
+  })();
+
+  // ── AdManager 2s Hard Timeout Watchdog ───────────────────────────────────
+  // Pause "home" butonunda %30 şansla AdManager.showInterstitial() çağrılır.
+  // Reklam sistemi takılırsa adInProgress = true kalır → oyun donar.
+  // Bu watchdog her showInterstitial çağrısına 2 saniyelik hard timeout ekler.
+  (function patchAdManagerTimeout() {
+    function tryPatch() {
+      if (!window.AdManager || typeof window.AdManager.showInterstitial !== "function") {
+        setTimeout(tryPatch, 300);
+        return;
+      }
+      var _orig = window.AdManager.showInterstitial.bind(window.AdManager);
+      window.AdManager.showInterstitial = function(opts) {
+        var done = false;
+        var origDone = opts && opts.onDone;
+        // 2 saniye sonra zorla tamamla
+        var guard = setTimeout(function() {
+          if (!done) {
+            done = true;
+            window.AdManager.adInProgress = false;
+            if (origDone) origDone();
+          }
+        }, 2000);
+        var newOpts = Object.assign({}, opts, {
+          onDone: function() {
+            if (!done) {
+              done = true;
+              clearTimeout(guard);
+              if (origDone) origDone();
+            }
+          }
+        });
+        _orig(newOpts);
+      };
+    }
+    setTimeout(tryPatch, 600);
   })();
 
 })();
