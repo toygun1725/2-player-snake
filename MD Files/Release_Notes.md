@@ -2,7 +2,31 @@
 
 ## iOS TestFlight Release Notes
 
-> Durum (2026-09-13): iOS Native Swift kabuğu `v1.0.0` / Build **15** olarak derlendi, Apple App Store profili ile imzalandı ve TestFlight üzerinden fiziksel iPhone cihazında test edildi.
+> Durum (2026-09-13): iOS Native Swift kabuğu `v3.3.5` / Build **27** (`ios-v3.3.5-b27`) olarak derlendi, Apple App Store profili ile imzalandı ve TestFlight üzerinden fiziksel iPhone cihazında test edildi. Aşama 4 (Fiziksel Cihaz Oyun & UX Testleri) tamamlandı/donduruldu.
+
+### TestFlight Release (v3.3.5 / Build 27)
+
+<en-US>
+What's New in iOS v3.3.5 (Build 27):
+• Version Parity: Synchronized marketing version to 3.3.5 matching Android & Web releases.
+• Match Start Fix: Resolved game start button deadlock by ensuring immediate synchronous ad callbacks.
+• Hardware Food Haptics: Added Peek haptic feedback via AudioServices and Taptic Engine on food collection during matches.
+• Keyboard & Viewport Restoration: Fixed screen offset staying shifted after keyboard dismiss on player name inputs.
+• Pause Menu: Fixed pause menu "Home" button returning directly to main screen without getting stuck.
+• Android Visual Parity: Added glassmorphism UI panel styles, edge-to-edge layout, and animated start screen.
+</en-US>
+
+<tr-TR>
+iOS v3.3.5 (Build 27) Yenilikleri:
+• Sürüm Eşitlemesi: Pazarlama sürümü Android ve Web ile eşitlenerek 3.3.5 yapıldı.
+• Maç Başlatma Düzeltmesi: Reklam geri çağırmalarının anında tetiklenmesi sağlanarak oyun başlatma butonu kilidi çözüldü.
+• Donanımsal Yem Haptikleri: Maç esnasında yem yendiğinde çalışan donanımsal Peek haptic ve Taptic Engine titreşimi eklendi.
+• Klavye & Ekran Hizalaması: İsim yazarken klavye kapandıktan sonra oyun ekranının yukarıda asılı kalması giderildi.
+• Duraklatma Menüsü: Duraklatma ekranındaki "Ana Menü" butonunun takılmadan ana menüye dönmesi sağlandı.
+• Android Görsel Paritesi: Cyberpunk buzlu cam (glassmorphism) panel stilleri, kenardan kenara (edge-to-edge) yerleşim ve animasyonlu Start ekranı entegre edildi.
+</tr-TR>
+
+---
 
 ### TestFlight Beta (v1.0.0 / Build 15)
 
