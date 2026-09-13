@@ -24,7 +24,24 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
 
         switch action {
         case "onEatFood":
-            HapticManager.shared.playFoodHaptic()
+            // SFX patch'ten gelen type bilgisine göre haptic şiddeti ayarla
+            var foodType = "normal"
+            if let dict = payload as? [String: Any], let t = dict["type"] as? String {
+                foodType = t
+            } else if let str = payload as? String,
+                      let data = str.data(using: .utf8),
+                      let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                      let t = json["type"] as? String {
+                foodType = t
+            }
+            switch foodType {
+            case "heart":
+                HapticManager.shared.playGameOverHaptic() // güçlü — beast mode
+            case "diamond":
+                HapticManager.shared.playSpecialFoodHaptic() // orta
+            default:
+                HapticManager.shared.playFoodHaptic() // hafif — normal yem
+            }
 
         case "onGameStart":
             print("Bridge: Oyun Başladı")

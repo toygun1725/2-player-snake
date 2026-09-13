@@ -93,5 +93,9 @@
 			<string>ydx93a7ass.skadnetwork</string>
 		</dict>
 	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Orbitron-Bold.ttf</string>
+	</array>
 </dict>
 </plist>

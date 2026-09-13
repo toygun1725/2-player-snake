@@ -177,7 +177,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
         // Alt Cam Panel (Android ile aynı tasarım)
         teaserGlassPanel.translatesAutoresizingMaskIntoConstraints = false
-        teaserGlassPanel.backgroundColor = UIColor(white: 0.05, alpha: 0.65)
+        teaserGlassPanel.backgroundColor = UIColor(white: 0.04, alpha: 0.55)
         teaserGlassPanel.layer.cornerRadius = 16
         teaserGlassPanel.layer.borderWidth = 1
         teaserGlassPanel.layer.borderColor = UIColor(white: 1.0, alpha: 0.15).cgColor
@@ -215,9 +215,11 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
         // Android parity: sadece büyük neon glow metin, kutu/border yok
         teaserStartButton.translatesAutoresizingMaskIntoConstraints = false
-        teaserStartButton.setTitle("START >", for: .normal)
+        teaserStartButton.setTitle("START", for: .normal)  // Android gibi ">" yok
         teaserStartButton.setTitleColor(UIColor(red: 0.0, green: 0.898, blue: 1.0, alpha: 1.0), for: .normal)
-        teaserStartButton.titleLabel?.font = .systemFont(ofSize: 42, weight: .heavy)
+        // Orbitron-Bold 46pt — Android ile birebir (android:textSize="46sp", android:fontFamily="@font/orbitron")
+        let orbitronFont = UIFont(name: "Orbitron-Bold", size: 46)
+        teaserStartButton.titleLabel?.font = orbitronFont ?? .systemFont(ofSize: 42, weight: .heavy)
         teaserStartButton.backgroundColor = .clear             // kutu yok
         teaserStartButton.layer.cornerRadius = 0               // köşe yuvarlama yok
         teaserStartButton.layer.borderWidth = 0                // kenarlık yok
@@ -445,6 +447,15 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     // MARK: - WKNavigationDelegate
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         guard let url = navigationAction.request.url else {
+            decisionHandler(.cancel)
+            return
+        }
+
+        // Oyunun versiyon kontrol reload'unu engelle:
+        // Web oyunu ana menüde scheduleVersionCheck() çağırır → sunucudan HTML çeker
+        // → yeni sürüm varsa window.location.replace() → WebView'i reload → JS state sıfırlanır → deadlock
+        // Bu URL'leri iptal ederek mid-session reload önlenir.
+        if let query = url.query, query.contains("__versionCheck") {
             decisionHandler(.cancel)
             return
         }

@@ -325,4 +325,60 @@
   document.documentElement.setAttribute("data-android-app", "true");
   document.documentElement.setAttribute("data-ios-app", "true");
   document.documentElement.setAttribute("data-ios-shell", "true");
+
+  // SFX Haptic Patch: SFX.eat() / SFX.diamond() / SFX.heart() intercept
+  // eatFoodIfAny() Android.onEatFood() çağırmıyor — sadece SFX.eat() çağırıyor.
+  // Bu patch SFX fonksiyonlarını override ederek native haptic'i tetikler.
+  (function patchSFXForHaptic() {
+    var patched = false;
+    var attempts = 0;
+    var MAX_ATTEMPTS = 50; // 5 saniye
+
+    function tryPatch() {
+      if (patched || attempts >= MAX_ATTEMPTS) return;
+      attempts++;
+
+      if (typeof window.SFX === "undefined") {
+        setTimeout(tryPatch, 100);
+        return;
+      }
+
+      // Normal yem — hafif haptic
+      if (typeof window.SFX.eat === "function") {
+        var _origEat = window.SFX.eat.bind(window.SFX);
+        window.SFX.eat = function() {
+          _origEat();
+          postToNative("onEatFood", { type: "normal" });
+        };
+      }
+
+      // Diamond / Safir yem — orta haptic
+      if (typeof window.SFX.diamond === "function") {
+        var _origDiamond = window.SFX.diamond.bind(window.SFX);
+        window.SFX.diamond = function() {
+          _origDiamond();
+          postToNative("onEatFood", { type: "diamond" });
+        };
+      }
+
+      // Heart / Beast mode yem — güçlü haptic
+      if (typeof window.SFX.heart === "function") {
+        var _origHeart = window.SFX.heart.bind(window.SFX);
+        window.SFX.heart = function() {
+          _origHeart();
+          postToNative("onEatFood", { type: "heart" });
+        };
+      }
+
+      patched = true;
+    }
+
+    // DOMContentLoaded sonrası dene, oyun JS'i daha sonra yüklendiğinden retry gerekir
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", function() { setTimeout(tryPatch, 200); });
+    } else {
+      setTimeout(tryPatch, 200);
+    }
+  })();
+
 })();

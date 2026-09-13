@@ -24,6 +24,7 @@
 		2P0000000000000000000047 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000046 /* StoreKit.framework */; };
 		2P0000000000000000000049 /* AppTrackingTransparency.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000048 /* AppTrackingTransparency.framework */; };
 		2P0000000000000000000051 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000050 /* AdSupport.framework */; };
+		2P0000000000000000000092 /* Orbitron-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000093 /* Orbitron-Bold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		2P0000000000000000000029 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2P0000000000000000000031 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2P0000000000000000000090 /* loading_video.mp4 */ = {isa = PBXFileReference; lastKnownFileType = video.mp4; path = loading_video.mp4; sourceTree = "<group>"; };
+		2P0000000000000000000093 /* Orbitron-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Orbitron-Bold.ttf"; sourceTree = "<group>"; };
 		2P0000000000000000000040 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		2P0000000000000000000042 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		2P0000000000000000000044 /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = System/Library/Frameworks/Network.framework; sourceTree = SDKROOT; };
@@ -96,6 +98,7 @@
 			isa = PBXGroup;
 			children = (
 				2P0000000000000000000090 /* loading_video.mp4 */,
+				2P0000000000000000000093 /* Orbitron-Bold.ttf */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -218,6 +221,7 @@
 				2P0000000000000000000027 /* LaunchScreen.storyboard in Resources */,
 				2P0000000000000000000030 /* Assets.xcassets in Resources */,
 				2P0000000000000000000091 /* loading_video.mp4 in Resources */,
+				2P0000000000000000000092 /* Orbitron-Bold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
