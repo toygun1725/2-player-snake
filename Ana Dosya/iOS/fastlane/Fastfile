@@ -49,7 +49,6 @@ platform :ios do
       # Opsiyon B: API Key ile doğrudan App Store sertifikasını ve profilini indir/oluştur
       get_certificates(
         api_key: api_key,
-        type: "distribution",
         keychain_name: keychain_name,
         keychain_password: keychain_password
       )
