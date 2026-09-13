@@ -101,13 +101,14 @@ flowchart TD
 ---
 
 ### 🔄 ŞU ANKİ AŞAMA:
-* **Aşama 4: Fiziksel Cihaz Üzerinde Oyun Deneyimi & İnce Ayarlar (Devam Ediyor)**
-  * **Test Edilecek Unsurlar:**
-    1. **Dokunmatik Kontroller:** Sanal joystick ve yön butonlarının iPhone ekranındaki hassasiyeti ve gecikmesizliği.
-    2. **Taptic Engine (Titreşim):** Yem yendiğinde, duvara çarpıldığında veya oyun bittiğinde titreşimin doğru şiddette gelip gelmediği.
-    3. **Sesler & Müzik:** iOS donanımında WebAudio / arka plan müziklerinin sessiz mod anahtarından (mute switch) nasıl etkilendiği.
-    4. **Ekran & Çentik Oranı:** Çentik (veya Dynamic Island) ve alt çizginin oyun butonlarını örtüp örtmediği.
-    5. **Performans (FPS):** 60/120 FPS akıcılık durumu ve ısınma/pil tüketimi.
+* **Aşama 4: Fiziksel Cihaz Üzerinde Oyun Deneyimi & İnce Ayarlar (Devam Ediyor - Build 16)**
+  * **Build 15 İyileştirmeleri:** Reklam deadlock çözümü (350ms failsafe timeout), `loading_video.mp4` bundle entegrasyonu.
+  * **Build 16 İyileştirmeleri (Kullanıcı Geri Bildirimi Paritesi):**
+    1. **Teaser Video & START Butonu (Android Paritesi):** Video kesintisiz döngüde (`loop`) oynar, dinamik ipuçları (*"İKİ OYUNCU. TEK ARENA. HAZIR OL..."*, *"Kontroller, ses ve performans ayarlanıyor..."*) ve ilerleme akar; sayfa hazır olunca neon `START >` butonu parlar ve oyuncu dokunana kadar video dönmeye devam eder. Dokunulduğunda 0.3s fade-out ve titreşim ile menüye geçilir.
+    2. **Hayalet Yeşil Yazının Silinmesi:** `LaunchScreen.storyboard` içindeki yeşil etiket tamamen kaldırılarak saf siyah `#000000` zemin yapıldı (açılış ve App Switcher temizlendi).
+    3. **Alt Siyah Boşluğun Yok Edilmesi:** `#p1-controls` padding-bottom sıfırlandı, butonlar ekranın en alt kenarına kadar (edge-to-edge) uzatıldı, `prefersHomeIndicatorAutoHidden` ile Home Indicator oyun esnasında gizlendi.
+    4. **1P vs 2P Panel Eşitliği & Simetrisi:** 2 kişilik yerel maçta üst (P2) ve alt (P1) paneller tam eşit yüksekliğe getirilerek kusursuz görsel ve dokunmatik simetri sağlandı.
+    5. **Apple Sertifika Bildirim Koruması:** Fastlane sertifika silme davranışı optimize edilerek toplu silme ve e-posta tetiklenmesi önlendi.
 
 ---
 

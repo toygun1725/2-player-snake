@@ -86,12 +86,14 @@ platform :ios do
           UI.message("Apple Developer hesabında #{dist_certs.count} adet dağıtım sertifikası bulundu.")
 
           if dist_certs.count >= 2
-            dist_certs.each do |c|
-              UI.important("Eski yetim sertifika siliniyor: #{c.id} (#{c.name})")
+            # Kotayı rahatlatmak için sadece en eski TEK sertifikayı temizle
+            oldest_cert = dist_certs.min_by { |c| c.attributes["expirationDate"] || "" }
+            if oldest_cert
+              UI.important("Kotayı rahatlatmak için en eski sertifika temizleniyor: #{oldest_cert.id} (#{oldest_cert.name})")
               begin
-                c.delete!
+                oldest_cert.delete!
               rescue => del_err
-                Spaceship::ConnectAPI.delete_certificate(certificate_id: c.id) rescue nil
+                Spaceship::ConnectAPI.delete_certificate(certificate_id: oldest_cert.id) rescue nil
               end
             end
           end

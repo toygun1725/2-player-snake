@@ -17,7 +17,10 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     private let teaserSubtitleLabel = UILabel()
     private let teaserProgressBar = UIProgressView(progressViewStyle: .default)
     private let teaserPercentLabel = UILabel()
+    private let teaserStartButton = UIButton(type: .custom)
+    private var isStartButtonShown = false
     private var isTeaserDismissed = false
+    private var playerLoopObserver: Any?
 
     // Native Çevrimdışı (Offline) Ekranı
     private let offlineContainer = UIView()
@@ -31,6 +34,10 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     private var isGameLoaded = false
 
     override var prefersStatusBarHidden: Bool {
+        return true
+    }
+
+    override var prefersHomeIndicatorAutoHidden: Bool {
         return true
     }
 
@@ -100,9 +107,9 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             guard let self = self, let progress = change.newValue else { return }
             let clamped = max(0.08, min(1.0, Float(progress)))
             self.teaserProgressBar.setProgress(clamped, animated: true)
-            self.teaserPercentLabel.text = "%\(Int(clamped * 100))"
+            self.teaserPercentLabel.text = "%\(Int(clamped * 100)) hazır"
             if progress >= 1.0 {
-                self.dismissTeaserVideo()
+                self.showStartButton()
             }
         }
     }
@@ -156,7 +163,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             }
 
             // Döngüsel oynatma (Loop)
-            NotificationCenter.default.addObserver(
+            playerLoopObserver = NotificationCenter.default.addObserver(
                 forName: .AVPlayerItemDidPlayToEndTime,
                 object: playerItem,
                 queue: .main
@@ -182,34 +189,50 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         teaserGlassPanel.addSubview(blurView)
 
         teaserTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        teaserTitleLabel.text = "2 PLAYER SNAKE"
-        teaserTitleLabel.font = .systemFont(ofSize: 18, weight: .black)
+        teaserTitleLabel.text = "İKİ OYUNCU. TEK ARENA. HAZIR OL..."
+        teaserTitleLabel.font = .systemFont(ofSize: 15, weight: .black)
         teaserTitleLabel.textColor = .white
         teaserTitleLabel.textAlignment = .center
 
         teaserSubtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        teaserSubtitleLabel.text = "HAZIRLANIYOR..."
-        teaserSubtitleLabel.font = .systemFont(ofSize: 13, weight: .semibold)
-        teaserSubtitleLabel.textColor = UIColor(white: 0.8, alpha: 1.0)
+        teaserSubtitleLabel.text = "Kontroller, ses ve performans ayarlanıyor..."
+        teaserSubtitleLabel.font = .systemFont(ofSize: 12, weight: .semibold)
+        teaserSubtitleLabel.textColor = UIColor(white: 0.82, alpha: 1.0)
         teaserSubtitleLabel.textAlignment = .center
 
         teaserProgressBar.translatesAutoresizingMaskIntoConstraints = false
-        teaserProgressBar.progressTintColor = UIColor(red: 0.208, green: 0.902, blue: 0.902, alpha: 1.0) // Neon Cyan
+        teaserProgressBar.progressTintColor = UIColor(red: 0.0, green: 0.898, blue: 1.0, alpha: 1.0) // Neon Cyan #00E5FF
         teaserProgressBar.trackTintColor = UIColor(white: 1.0, alpha: 0.2)
         teaserProgressBar.layer.cornerRadius = 3
         teaserProgressBar.clipsToBounds = true
         teaserProgressBar.setProgress(0.08, animated: false)
 
         teaserPercentLabel.translatesAutoresizingMaskIntoConstraints = false
-        teaserPercentLabel.text = "%8"
+        teaserPercentLabel.text = "%8 hazır"
         teaserPercentLabel.font = .systemFont(ofSize: 12, weight: .bold)
         teaserPercentLabel.textColor = .white
         teaserPercentLabel.textAlignment = .center
+
+        teaserStartButton.translatesAutoresizingMaskIntoConstraints = false
+        teaserStartButton.setTitle("START >", for: .normal)
+        teaserStartButton.setTitleColor(UIColor(red: 0.0, green: 0.898, blue: 1.0, alpha: 1.0), for: .normal)
+        teaserStartButton.titleLabel?.font = .systemFont(ofSize: 34, weight: .heavy)
+        teaserStartButton.backgroundColor = UIColor(red: 0.0, green: 0.898, blue: 1.0, alpha: 0.15)
+        teaserStartButton.layer.cornerRadius = 24
+        teaserStartButton.layer.borderWidth = 2
+        teaserStartButton.layer.borderColor = UIColor(red: 0.0, green: 0.898, blue: 1.0, alpha: 0.8).cgColor
+        teaserStartButton.layer.shadowColor = UIColor(red: 0.0, green: 0.898, blue: 1.0, alpha: 1.0).cgColor
+        teaserStartButton.layer.shadowOffset = .zero
+        teaserStartButton.layer.shadowRadius = 16
+        teaserStartButton.layer.shadowOpacity = 0.9
+        teaserStartButton.isHidden = true
+        teaserStartButton.addTarget(self, action: #selector(startButtonTapped), for: .touchUpInside)
 
         teaserGlassPanel.addSubview(teaserTitleLabel)
         teaserGlassPanel.addSubview(teaserSubtitleLabel)
         teaserGlassPanel.addSubview(teaserProgressBar)
         teaserGlassPanel.addSubview(teaserPercentLabel)
+        teaserGlassPanel.addSubview(teaserStartButton)
         teaserContainer.addSubview(teaserGlassPanel)
 
         NSLayoutConstraint.activate([
@@ -235,8 +258,53 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             teaserProgressBar.heightAnchor.constraint(equalToConstant: 6),
 
             teaserPercentLabel.topAnchor.constraint(equalTo: teaserProgressBar.bottomAnchor, constant: 8),
-            teaserPercentLabel.centerXAnchor.constraint(equalTo: teaserGlassPanel.centerXAnchor)
+            teaserPercentLabel.centerXAnchor.constraint(equalTo: teaserGlassPanel.centerXAnchor),
+
+            teaserStartButton.centerXAnchor.constraint(equalTo: teaserGlassPanel.centerXAnchor),
+            teaserStartButton.centerYAnchor.constraint(equalTo: teaserGlassPanel.centerYAnchor),
+            teaserStartButton.widthAnchor.constraint(equalTo: teaserGlassPanel.widthAnchor, multiplier: 0.85),
+            teaserStartButton.heightAnchor.constraint(equalToConstant: 58)
         ])
+    }
+
+    private func showStartButton() {
+        guard !isStartButtonShown && !isTeaserDismissed else { return }
+        isStartButtonShown = true
+
+        UIView.animate(withDuration: 0.25, animations: {
+            self.teaserTitleLabel.alpha = 0.0
+            self.teaserSubtitleLabel.alpha = 0.0
+            self.teaserProgressBar.alpha = 0.0
+            self.teaserPercentLabel.alpha = 0.0
+        }) { _ in
+            self.teaserTitleLabel.isHidden = true
+            self.teaserSubtitleLabel.isHidden = true
+            self.teaserProgressBar.isHidden = true
+            self.teaserPercentLabel.isHidden = true
+
+            self.teaserStartButton.alpha = 0.0
+            self.teaserStartButton.isHidden = false
+            self.teaserStartButton.transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
+
+            UIView.animate(withDuration: 0.35, delay: 0.0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .curveEaseOut, animations: {
+                self.teaserStartButton.alpha = 1.0
+                self.teaserStartButton.transform = .identity
+            }) { _ in
+                let pulse = CABasicAnimation(keyPath: "transform.scale")
+                pulse.duration = 0.75
+                pulse.fromValue = 1.0
+                pulse.toValue = 1.06
+                pulse.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                pulse.autoreverses = true
+                pulse.repeatCount = .infinity
+                self.teaserStartButton.layer.add(pulse, forKey: "pulse")
+            }
+        }
+    }
+
+    @objc private func startButtonTapped() {
+        HapticManager.shared.playFoodHaptic()
+        dismissTeaserVideo()
     }
 
     private func dismissTeaserVideo() {
@@ -244,7 +312,12 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         isTeaserDismissed = true
         isGameLoaded = true
 
-        UIView.animate(withDuration: 0.35, delay: 0.1, options: .curveEaseOut, animations: {
+        if let observer = playerLoopObserver {
+            NotificationCenter.default.removeObserver(observer)
+            playerLoopObserver = nil
+        }
+
+        UIView.animate(withDuration: 0.35, delay: 0.05, options: .curveEaseOut, animations: {
             self.teaserContainer.alpha = 0.0
         }) { [weak self] _ in
             self?.player?.pause()
@@ -379,8 +452,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         injectSafeAreaVariables()
         publishSettingsToGame()
-        // Sayfa bittiğinde videoyu kapat
-        dismissTeaserVideo()
+        // Sayfa yüklendiğinde START butonunu göster (videoyu kullanıcı START'a basana kadar döngüde tut)
+        showStartButton()
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {

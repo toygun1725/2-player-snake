@@ -234,7 +234,7 @@
     }
   };
 
-  // iOS Fullscreen, Safe Area & Edge-to-Edge Fix (alttaki siyah boşluğu yok eder)
+  // iOS Fullscreen, Safe Area, Symmetrical 2P & Edge-to-Edge Fix
   (function () {
     var styleId = "ios-fullscreen-and-safe-area-fix";
     if (document.getElementById(styleId)) return;
@@ -248,20 +248,69 @@
         max-height: 100dvh !important;
         background-color: var(--bg, #0b0f14) !important;
         overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
       }
-      #game, #canvasWrap {
+      
+      /* Bottom gap elimination: buttons touch the bottom glass edge */
+      #p1-controls {
+        padding-bottom: 0 !important;
+        padding-top: 0 !important;
+      }
+      #p1-controls .turn-btn,
+      #p2-controls .turn-btn {
         height: 100% !important;
-        min-height: 100% !important;
-        height: 100dvh !important;
       }
+      #p1-controls .turn-btn.left {
+        border-bottom-left-radius: 0 !important;
+      }
+      #p1-controls .turn-btn.right {
+        border-bottom-right-radius: 0 !important;
+      }
+      #p2-controls .turn-btn.left {
+        border-top-left-radius: 0 !important;
+      }
+      #p2-controls .turn-btn.right {
+        border-top-right-radius: 0 !important;
+      }
+
+      /* 2-Player Local Mode: Symmetrical equal-height bars for both players */
+      #p2-controls:not(.hud-hidden),
+      #p1-controls:not(.hud-hidden):not(.dual-ai) {
+        height: calc(var(--control-bar-base-height) + env(safe-area-inset-top, 0px)) !important;
+        max-height: 220px !important;
+        min-height: calc(105px + env(safe-area-inset-top, 0px)) !important;
+      }
+
+      /* Top player: insets from Dynamic Island */
       #p2-controls {
         padding-top: 0 !important;
       }
       #p2-controls .p2-panel {
         padding-top: calc(4px + env(safe-area-inset-top, 0px)) !important;
       }
-      #p1-controls {
-        padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px)) !important;
+      #p2-controls .turn-btn > svg {
+        transform: translateY(calc(0.35 * env(safe-area-inset-top, 0px)));
+      }
+
+      /* Bottom player: insets above Home Indicator */
+      #p1-controls:not(.dual-ai) #p1StatPanel {
+        padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+      }
+      #p1-controls:not(.dual-ai) .turn-btn > svg {
+        transform: translateY(calc(-0.35 * env(safe-area-inset-bottom, 0px)));
+      }
+
+      /* 1P vs AI / Solo Mode */
+      #p1-controls.dual-ai {
+        height: calc(var(--control-bar-base-height) + env(safe-area-inset-bottom, 0px)) !important;
+        padding-bottom: 0 !important;
+      }
+      #p1-controls.dual-ai .turn-btn > svg {
+        transform: translateY(calc(-0.35 * env(safe-area-inset-bottom, 0px)));
+      }
+      #p1-controls.dual-ai .panel-with-btns {
+        padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
       }
     `;
     document.head.appendChild(style);
