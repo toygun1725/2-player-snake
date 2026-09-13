@@ -350,81 +350,105 @@
   document.documentElement.setAttribute("data-ios-app", "true");
   document.documentElement.setAttribute("data-ios-shell", "true");
 
-  // ── Haptic: MutationObserver on score panel ──────────────────────────────
-  // SFX, IIFE scope içinde const olarak tanımlı → window.SFX erişilemiyor.
-  // Bunun yerine p1PanelLen/p2PanelLen DOM elementlerini izle:
-  // oyun yem yenince bu elementlerin textContent'ini günceller.
-  (function watchFoodScoreForHaptic() {
-    var lastP1 = -1, lastP2 = -1;
+  // ── Klavye Kapanınca Scroll Sıfırlama (Focusout) ──────────────────────────
+  window.addEventListener("focusout", function (e) {
+    if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) {
+      window.scrollTo(0, 0);
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+      setTimeout(function () {
+        window.scrollTo(0, 0);
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+      }, 120);
+    }
+  }, true);
 
-    function observe() {
-      var p1El = document.getElementById("p1PanelLen");
-      var p2El = document.getElementById("p2PanelLen");
-      if (!p1El || !p2El) {
-        setTimeout(observe, 400);
-        return;
-      }
-
-      var mo = new MutationObserver(function() {
-        var p1 = parseInt(p1El.textContent, 10) || 0;
-        var p2 = parseInt(p2El.textContent, 10) || 0;
-        // Sadece sayı ARTTIYSA haptic tetikle (reset'i yoksay)
-        if (p1 > lastP1 && lastP1 >= 0) {
-          postToNative("onEatFood", { type: "normal" });
+  // ── Pause "Home" Butonu Güvenli Geçiş Koruması ────────────────────────────
+  // Pause menüsündeki ev butonuna tıklandığında olası reklam/balon takılmalarını baypas eder
+  function handlePauseHomeSafely(e) {
+    var homeBtn = e.target && e.target.closest ? e.target.closest('[data-action="home"]') : null;
+    if (!homeBtn) return;
+    
+    var cw = document.getElementById("canvasWrap");
+    if (cw) cw.classList.remove("paused-blur");
+    document.querySelectorAll(".pause-bubbles").forEach(function (el) { el.remove(); });
+    
+    // Olası takılı kalan native ad callback'lerini serbest bırak
+    if (window.__nativeAdCallbacks) {
+      for (var cid in window.__nativeAdCallbacks) {
+        if (typeof window.__onNativeAdDone === "function") {
+          window.__onNativeAdDone(cid, true);
         }
-        if (p2 > lastP2 && lastP2 >= 0) {
-          postToNative("onEatFood", { type: "normal" });
-        }
-        lastP1 = p1;
-        lastP2 = p2;
-      });
-
-      mo.observe(p1El, { childList: true, characterData: true, subtree: true });
-      mo.observe(p2El, { childList: true, characterData: true, subtree: true });
-    }
-
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function() { setTimeout(observe, 500); });
-    } else {
-      setTimeout(observe, 500);
-    }
-  })();
-
-  // ── AdManager 2s Hard Timeout Watchdog ───────────────────────────────────
-  // Pause "home" butonunda %30 şansla AdManager.showInterstitial() çağrılır.
-  // Reklam sistemi takılırsa adInProgress = true kalır → oyun donar.
-  // Bu watchdog her showInterstitial çağrısına 2 saniyelik hard timeout ekler.
-  (function patchAdManagerTimeout() {
-    function tryPatch() {
-      if (!window.AdManager || typeof window.AdManager.showInterstitial !== "function") {
-        setTimeout(tryPatch, 300);
-        return;
       }
-      var _orig = window.AdManager.showInterstitial.bind(window.AdManager);
-      window.AdManager.showInterstitial = function(opts) {
-        var done = false;
-        var origDone = opts && opts.onDone;
-        // 2 saniye sonra zorla tamamla
-        var guard = setTimeout(function() {
-          if (!done) {
-            done = true;
-            window.AdManager.adInProgress = false;
-            if (origDone) origDone();
-          }
-        }, 2000);
-        var newOpts = Object.assign({}, opts, {
-          onDone: function() {
-            if (!done) {
-              done = true;
-              clearTimeout(guard);
-              if (origDone) origDone();
-            }
-          }
-        });
-        _orig(newOpts);
-      };
     }
-    setTimeout(tryPatch, 600);
+    
+    // Doğrudan ana menü açılışını garanti et
+    setTimeout(function() {
+      if (typeof window.openMainMenu === "function") {
+        window.openMainMenu();
+      }
+    }, 50);
+  }
+  document.addEventListener("click", handlePauseHomeSafely, true);
+  document.addEventListener("touchend", handlePauseHomeSafely, true);
+
+  // ── Haptic: digestAnims & Web Audio Oscillator Hook ───────────────────────
+  // Yılan yem yediğinde digestAnims.push({ startTime, color }) çağrılır.
+  // Bu nesne hook'lanarak ses açık/kapalı fark etmeksizin anında haptic üretilir.
+  (function installHapticHooks() {
+    var lastEatTime = 0;
+
+    function triggerEatHaptic(type) {
+      var now = Date.now();
+      if (now - lastEatTime < 45) return; // 45ms debounce
+      lastEatTime = now;
+      postToNative("onEatFood", { type: type || "normal" });
+    }
+
+    // Hook 1: Array.prototype.push — digestAnims tespiti (oyun içi kesin sinyal)
+    var origPush = Array.prototype.push;
+    Array.prototype.push = function () {
+      if (arguments.length === 1 && arguments[0] && typeof arguments[0] === "object") {
+        var item = arguments[0];
+        if (item.startTime !== undefined && item.color !== undefined) {
+          var c = item.color;
+          var foodType = "normal";
+          if (c === "#ffd166" || c === "#00cfff") foodType = "diamond";
+          else if (c === "#ff1744") foodType = "heart";
+          triggerEatHaptic(foodType);
+        }
+      }
+      return origPush.apply(this, arguments);
+    };
+
+    // Hook 2: AudioContext.prototype.createOscillator (720Hz = SFX.eat)
+    try {
+      var AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtxClass && AudioCtxClass.prototype && AudioCtxClass.prototype.createOscillator) {
+        var origCreateOsc = AudioCtxClass.prototype.createOscillator;
+        AudioCtxClass.prototype.createOscillator = function () {
+          var osc = origCreateOsc.apply(this, arguments);
+          var origStart = osc.start;
+          osc.start = function () {
+            try {
+              var freq = Math.round(osc.frequency.value);
+              if (freq === 720) {
+                triggerEatHaptic("normal");
+              } else if (freq === 1200) {
+                triggerEatHaptic("diamond");
+              } else if (freq === 640) {
+                triggerEatHaptic("heart");
+              }
+            } catch (err) {}
+            return origStart.apply(this, arguments);
+          };
+          return osc;
+        };
+      }
+    } catch (e) {
+      console.warn("AudioContext hook failed:", e);
+    }
   })();
 
 })();

@@ -18,6 +18,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     private let teaserProgressBar = UIProgressView(progressViewStyle: .default)
     private let teaserPercentLabel = UILabel()
     private let teaserStartButton = UIButton(type: .custom)
+    private var glassPanelHeightConstraint: NSLayoutConstraint?
+    private var glassPanelWidthConstraint: NSLayoutConstraint?
     private var isStartButtonShown = false
     private var isTeaserDismissed = false
     private var playerLoopObserver: Any?
@@ -53,6 +55,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         setupTeaserVideo()
         setupOfflineOverlay()
         setupNetworkMonitoring()
+        setupKeyboardHandling()
 
         loadGame()
     }
@@ -177,19 +180,13 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             player?.play()
         }
 
-        // Alt Cam Panel (Android ile aynı tasarım)
+        // Alt Cam Panel — Android ile birebir aynı (#7A101A28, cornerRadius 22dp, border #33FFFFFF, NO BLUR)
         teaserGlassPanel.translatesAutoresizingMaskIntoConstraints = false
-        teaserGlassPanel.backgroundColor = UIColor(white: 0.15, alpha: 0.25)
-        teaserGlassPanel.layer.cornerRadius = 16
+        teaserGlassPanel.backgroundColor = UIColor(red: 16/255.0, green: 26/255.0, blue: 40/255.0, alpha: 0.48)
+        teaserGlassPanel.layer.cornerRadius = 22
         teaserGlassPanel.layer.borderWidth = 1
-        teaserGlassPanel.layer.borderColor = UIColor(white: 1.0, alpha: 0.25).cgColor
+        teaserGlassPanel.layer.borderColor = UIColor(white: 1.0, alpha: 0.20).cgColor
         teaserGlassPanel.clipsToBounds = true
-
-        // Ultra-ince material blur — video arkadan net görünsün (Android parity)
-        let blurEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
-        let blurView = UIVisualEffectView(effect: blurEffect)
-        blurView.translatesAutoresizingMaskIntoConstraints = false
-        teaserGlassPanel.addSubview(blurView)
 
         teaserTitleLabel.translatesAutoresizingMaskIntoConstraints = false
         teaserTitleLabel.text = "İKİ OYUNCU. TEK ARENA. HAZIR OL..."
@@ -231,7 +228,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         teaserStartButton.layer.shadowOffset = .zero
         teaserStartButton.layer.shadowRadius = 20
         teaserStartButton.layer.shadowOpacity = 1.0
-        teaserStartButton.contentEdgeInsets = UIEdgeInsets(top: 12, left: 40, bottom: 12, right: 40)
+        teaserStartButton.contentEdgeInsets = UIEdgeInsets(top: 10, left: 32, bottom: 10, right: 32)
         teaserStartButton.isHidden = true
         teaserStartButton.addTarget(self, action: #selector(startButtonTapped), for: .touchUpInside)
 
@@ -242,16 +239,16 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         teaserGlassPanel.addSubview(teaserStartButton)
         teaserContainer.addSubview(teaserGlassPanel)
 
-        NSLayoutConstraint.activate([
-            blurView.topAnchor.constraint(equalTo: teaserGlassPanel.topAnchor),
-            blurView.leadingAnchor.constraint(equalTo: teaserGlassPanel.leadingAnchor),
-            blurView.trailingAnchor.constraint(equalTo: teaserGlassPanel.trailingAnchor),
-            blurView.bottomAnchor.constraint(equalTo: teaserGlassPanel.bottomAnchor),
+        let initialHeight = teaserGlassPanel.heightAnchor.constraint(equalToConstant: 130)
+        let initialWidth = teaserGlassPanel.widthAnchor.constraint(equalTo: teaserContainer.widthAnchor, multiplier: 0.88)
+        self.glassPanelHeightConstraint = initialHeight
+        self.glassPanelWidthConstraint = initialWidth
 
+        NSLayoutConstraint.activate([
             teaserGlassPanel.centerXAnchor.constraint(equalTo: teaserContainer.centerXAnchor),
             teaserGlassPanel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -28),
-            teaserGlassPanel.widthAnchor.constraint(equalTo: teaserContainer.widthAnchor, multiplier: 0.88),
-            teaserGlassPanel.heightAnchor.constraint(equalToConstant: 130),
+            initialWidth,
+            initialHeight,
 
             teaserTitleLabel.topAnchor.constraint(equalTo: teaserGlassPanel.topAnchor, constant: 14),
             teaserTitleLabel.centerXAnchor.constraint(equalTo: teaserGlassPanel.centerXAnchor),
@@ -292,7 +289,15 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             self.teaserStartButton.isHidden = false
             self.teaserStartButton.transform = CGAffineTransform(scaleX: 0.85, y: 0.85)
 
+            // Android parity: Yükleme bittiğinde cam panel START butonunu saracak boyuta küçülür
+            self.glassPanelHeightConstraint?.constant = 84
+            self.glassPanelWidthConstraint?.isActive = false
+            let compactWidth = self.teaserGlassPanel.widthAnchor.constraint(equalTo: self.teaserStartButton.widthAnchor, constant: 24)
+            compactWidth.isActive = true
+            self.glassPanelWidthConstraint = compactWidth
+
             UIView.animate(withDuration: 0.35, delay: 0.0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: .curveEaseOut, animations: {
+                self.teaserContainer.layoutIfNeeded()
                 self.teaserStartButton.alpha = 1.0
                 self.teaserStartButton.transform = .identity
             }) { _ in
@@ -435,6 +440,31 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     @objc private func retryButtonTapped() {
         HapticManager.shared.playFoodHaptic()
         loadGame()
+    }
+
+    // MARK: - Klavye Takibi ve Scroll Sıfırlama
+    private func setupKeyboardHandling() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardDidHide),
+            name: UIResponder.keyboardDidHideNotification,
+            object: nil
+        )
+    }
+
+    @objc private func keyboardWillHide(_ notification: Notification) {
+        webView.scrollView.setContentOffset(.zero, animated: true)
+    }
+
+    @objc private func keyboardDidHide(_ notification: Notification) {
+        webView.scrollView.setContentOffset(.zero, animated: false)
+        webView.evaluateJavaScript("window.scrollTo(0, 0); document.body.scrollTop = 0; document.documentElement.scrollTop = 0;", completionHandler: nil)
     }
 
     // MARK: - Ağ Durumu Takibi
