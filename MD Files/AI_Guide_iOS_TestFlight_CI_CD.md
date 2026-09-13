@@ -141,11 +141,16 @@ GitHub Secrets tanımlamalarınızı yaptıktan sonra dağıtımı başlatmak i�
 
 ---
 
-## 6. Bir Sonraki Adım: iOS Swift Shell (2. Aşama)
+## 6. iOS Native Proje Yapısı (2. Aşama Tamamlandı)
 
-Kullanıcı tercihi doğrultusunda 2. aşama (iOS Swift / WKWebView kabuk projesinin oluşturulması) bekletilmiştir. 
+iOS native kabuk projesi Android ve Web yapısıyla birebir uyumlu olarak [`Ana Dosya/iOS/TwoPlayerSnake/`](file:///d:/#3%20Vibecoding/AI%20Games/2%20Player%20Snake/Ana%20Dosya/iOS/TwoPlayerSnake) altında oluşturulmuştur:
 
-Bu adıma geçmeye karar verdiğinizde:
-1. `Ana Dosya/iOS/` klasörü altına Android'deki yapıyla birebir uyumlu bir `TwoPlayerSnake.xcodeproj` (Swift + WKWebView) projesi oluşturulacaktır.
-2. Android'deki JS Bridge (`window.Android` / `TwoPlayerSnakeNative`) ile çalışan titreşimler (Taptic Engine `UIImpactFeedbackGenerator`), tam ekran ayarları ve offline ekranı iOS tarafına entegre edilecektir.
-3. Proje klasöre eklendiği anda yukarıda kurduğumuz bu GitHub CI/CD boru hattı otomatik olarak projeyi algılayıp derlemeye başlayacaktır.
+* **`TwoPlayerSnake.xcodeproj`:** Xcode 15/16 ve iOS 15.0+ uyumlu, GitHub Actions üzerinde otomatik derlenen proje ve paylaşılan şema (`xcshareddata/xcschemes/TwoPlayerSnake.xcscheme`).
+* **`ViewController.swift`:** WKWebView motoru, tam ekran portrait kilit, Dynamic Island ve alt çubuk için Safe-Area CSS değişken enjeksiyonu (`--safe-area-top`), native splash/loading overlay ve internet kopmasında otomatik devreye giren native retry ekranı.
+* **`HapticManager.swift`:** Apple Taptic Engine entegrasyonu (`UIImpactFeedbackGenerator`). Yem yeme (light), özel yem (medium), çarpışma (heavy) ve oyun sonu (error) bildirim titreşimleri.
+* **`GameScriptMessageHandler.swift`:** Web oyunundan gelen köprü çağrılarını dinler ve native sistem işlevleriyle (titreşim, reklam, puan kaydı, mağaza oylaması) buluşturur.
+* **`ios_bridge_bootstrap.js`:** Web oyununun kodunu değiştirmeden `window.Android` ve `window.TwoPlayerSnakeNative` objelerini taklit ederek iOS native köprüsüne bağlayan uyumluluk kütüphanesi.
+* **`NetworkMonitor.swift`:** `NWPathMonitor` tabanlı canlı ağ durumu izleyici.
+* **`AdManager.swift`:** Google AdMob ve Apple ATT (App Tracking Transparency) izin ve reklam altyapısı.
+* **`Assets.xcassets`:** 1024x1024 piksel App Store uygulama ikonu (`appstore-1024.png`) ve renk paleti.
+* **`LaunchScreen.storyboard`:** Siyah zemin üzerine yeşil neon "2 PLAYER SNAKE" açılış ekranı.

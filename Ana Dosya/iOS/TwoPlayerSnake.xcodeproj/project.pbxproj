@@ -1,0 +1,429 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2P0000000000000000000011 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000010 /* AppDelegate.swift */; };
+		2P0000000000000000000013 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000012 /* SceneDelegate.swift */; };
+		2P0000000000000000000015 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000014 /* ViewController.swift */; };
+		2P0000000000000000000017 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000016 /* HapticManager.swift */; };
+		2P0000000000000000000019 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000018 /* NetworkMonitor.swift */; };
+		2P0000000000000000000021 /* AdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000020 /* AdManager.swift */; };
+		2P0000000000000000000023 /* GameScriptMessageHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000022 /* GameScriptMessageHandler.swift */; };
+		2P0000000000000000000025 /* ios_bridge_bootstrap.js in Resources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000024 /* ios_bridge_bootstrap.js */; };
+		2P0000000000000000000027 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000026 /* LaunchScreen.storyboard */; };
+		2P0000000000000000000030 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000029 /* Assets.xcassets */; };
+		2P0000000000000000000041 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000040 /* WebKit.framework */; };
+		2P0000000000000000000043 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000042 /* AVFoundation.framework */; };
+		2P0000000000000000000045 /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000044 /* Network.framework */; };
+		2P0000000000000000000047 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000046 /* StoreKit.framework */; };
+		2P0000000000000000000049 /* AppTrackingTransparency.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000048 /* AppTrackingTransparency.framework */; };
+		2P0000000000000000000051 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000050 /* AdSupport.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2P0000000000000000000009 /* TwoPlayerSnake.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TwoPlayerSnake.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2P0000000000000000000010 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		2P0000000000000000000012 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		2P0000000000000000000014 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		2P0000000000000000000016 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		2P0000000000000000000018 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
+		2P0000000000000000000020 /* AdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManager.swift; sourceTree = "<group>"; };
+		2P0000000000000000000022 /* GameScriptMessageHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScriptMessageHandler.swift; sourceTree = "<group>"; };
+		2P0000000000000000000024 /* ios_bridge_bootstrap.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = ios_bridge_bootstrap.js; sourceTree = "<group>"; };
+		2P0000000000000000000028 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		2P0000000000000000000029 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		2P0000000000000000000031 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2P0000000000000000000040 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		2P0000000000000000000042 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		2P0000000000000000000044 /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = System/Library/Frameworks/Network.framework; sourceTree = SDKROOT; };
+		2P0000000000000000000046 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		2P0000000000000000000048 /* AppTrackingTransparency.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppTrackingTransparency.framework; path = System/Library/Frameworks/AppTrackingTransparency.framework; sourceTree = SDKROOT; };
+		2P0000000000000000000050 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2P0000000000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2P0000000000000000000041 /* WebKit.framework in Frameworks */,
+				2P0000000000000000000043 /* AVFoundation.framework in Frameworks */,
+				2P0000000000000000000045 /* Network.framework in Frameworks */,
+				2P0000000000000000000047 /* StoreKit.framework in Frameworks */,
+				2P0000000000000000000049 /* AppTrackingTransparency.framework in Frameworks */,
+				2P0000000000000000000051 /* AdSupport.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2P0000000000000000000006 = {
+			isa = PBXGroup;
+			children = (
+				2P0000000000000000000007 /* TwoPlayerSnake */,
+				2P0000000000000000000084 /* Frameworks */,
+				2P0000000000000000000008 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2P0000000000000000000007 /* TwoPlayerSnake */ = {
+			isa = PBXGroup;
+			children = (
+				2P0000000000000000000010 /* AppDelegate.swift */,
+				2P0000000000000000000012 /* SceneDelegate.swift */,
+				2P0000000000000000000014 /* ViewController.swift */,
+				2P0000000000000000000080 /* Haptics */,
+				2P0000000000000000000081 /* Network */,
+				2P0000000000000000000082 /* Ads */,
+				2P0000000000000000000083 /* Bridge */,
+				2P0000000000000000000026 /* LaunchScreen.storyboard */,
+				2P0000000000000000000029 /* Assets.xcassets */,
+				2P0000000000000000000031 /* Info.plist */,
+			);
+			path = TwoPlayerSnake;
+			sourceTree = "<group>";
+		};
+		2P0000000000000000000080 /* Haptics */ = {
+			isa = PBXGroup;
+			children = (
+				2P0000000000000000000016 /* HapticManager.swift */,
+			);
+			path = Haptics;
+			sourceTree = "<group>";
+		};
+		2P0000000000000000000081 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				2P0000000000000000000018 /* NetworkMonitor.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		2P0000000000000000000082 /* Ads */ = {
+			isa = PBXGroup;
+			children = (
+				2P0000000000000000000020 /* AdManager.swift */,
+			);
+			path = Ads;
+			sourceTree = "<group>";
+		};
+		2P0000000000000000000083 /* Bridge */ = {
+			isa = PBXGroup;
+			children = (
+				2P0000000000000000000022 /* GameScriptMessageHandler.swift */,
+				2P0000000000000000000024 /* ios_bridge_bootstrap.js */,
+			);
+			path = Bridge;
+			sourceTree = "<group>";
+		};
+		2P0000000000000000000084 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2P0000000000000000000040 /* WebKit.framework */,
+				2P0000000000000000000042 /* AVFoundation.framework */,
+				2P0000000000000000000044 /* Network.framework */,
+				2P0000000000000000000046 /* StoreKit.framework */,
+				2P0000000000000000000048 /* AppTrackingTransparency.framework */,
+				2P0000000000000000000050 /* AdSupport.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		2P0000000000000000000008 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2P0000000000000000000009 /* TwoPlayerSnake.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2P0000000000000000000002 /* TwoPlayerSnake */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2P0000000000000000000070 /* Build configuration list for PBXNativeTarget "TwoPlayerSnake" */;
+			buildPhases = (
+				2P0000000000000000000003 /* Sources */,
+				2P0000000000000000000005 /* Frameworks */,
+				2P0000000000000000000004 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TwoPlayerSnake;
+			productName = TwoPlayerSnake;
+			productReference = 2P0000000000000000000009 /* TwoPlayerSnake.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2P0000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					2P0000000000000000000002 = {
+						CreatedOnToolsVersion = 15.0;
+						DevelopmentTeam = GUFQF359Q7;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 2P0000000000000000000060 /* Build configuration list for PBXProject "TwoPlayerSnake" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 2P0000000000000000000006;
+			productRefGroup = 2P0000000000000000000008 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2P0000000000000000000002 /* TwoPlayerSnake */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2P0000000000000000000004 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2P0000000000000000000025 /* ios_bridge_bootstrap.js in Resources */,
+				2P0000000000000000000027 /* LaunchScreen.storyboard in Resources */,
+				2P0000000000000000000030 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2P0000000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2P0000000000000000000011 /* AppDelegate.swift in Sources */,
+				2P0000000000000000000013 /* SceneDelegate.swift in Sources */,
+				2P0000000000000000000015 /* ViewController.swift in Sources */,
+				2P0000000000000000000017 /* HapticManager.swift in Sources */,
+				2P0000000000000000000019 /* NetworkMonitor.swift in Sources */,
+				2P0000000000000000000021 /* AdManager.swift in Sources */,
+				2P0000000000000000000023 /* GameScriptMessageHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		2P0000000000000000000026 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2P0000000000000000000028 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		2P0000000000000000000061 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSIONS = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDEFINED_VARIABLES = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		2P0000000000000000000062 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSIONS = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDEFINED_VARIABLES = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		2P0000000000000000000071 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GUFQF359Q7;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TwoPlayerSnake/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.twoplayersnake.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		2P0000000000000000000072 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GUFQF359Q7;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TwoPlayerSnake/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.twoplayersnake.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2P0000000000000000000060 /* Build configuration list for PBXProject "TwoPlayerSnake" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2P0000000000000000000061 /* Debug */,
+				2P0000000000000000000062 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2P0000000000000000000070 /* Build configuration list for PBXNativeTarget "TwoPlayerSnake" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2P0000000000000000000071 /* Debug */,
+				2P0000000000000000000072 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2P0000000000000000000001 /* Project object */;
+}
