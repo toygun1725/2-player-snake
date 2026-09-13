@@ -33,8 +33,11 @@ jobs:
           working-directory: 'Ana Dosya/iOS'
 
       - name: 🔑 Sabit Dağıtım Sertifikasını Yükle (GitHub Secret'tan)
+        env:
+          DIST_CERT_SECRET: ${{ secrets.DISTRIBUTION_CERTIFICATE }}
+          FALLBACK_CERT_SECRET: ${{ secrets.APPLE_CERT_P12_BASE64 }}
         run: |
-          CERT_DATA="${{ secrets.DISTRIBUTION_CERTIFICATE || secrets.APPLE_CERT_P12_BASE64 }}"
+          CERT_DATA="${DIST_CERT_SECRET:-$FALLBACK_CERT_SECRET}"
           if [ -n "$CERT_DATA" ]; then
             mkdir -p "Ana Dosya/iOS/certs"
             echo "$CERT_DATA" | base64 --decode > "Ana Dosya/iOS/certs/dist_certificate.p12"
