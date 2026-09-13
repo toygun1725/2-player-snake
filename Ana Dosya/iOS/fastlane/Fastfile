@@ -136,6 +136,15 @@ platform :ios do
 
     if File.exist?(proj_path)
       begin
+        increment_version_number(
+          version_number: "3.3.5",
+          xcodeproj: proj_path
+        )
+      rescue => ex
+        UI.important("increment_version_number uyarısı (#{ex.message})")
+      end
+
+      begin
         increment_build_number(
           build_number: build_num,
           xcodeproj: proj_path

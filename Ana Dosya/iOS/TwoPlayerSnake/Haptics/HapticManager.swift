@@ -1,4 +1,5 @@
 import UIKit
+import AudioToolbox
 
 final class HapticManager {
     static let shared = HapticManager()
@@ -21,26 +22,32 @@ final class HapticManager {
             self.heavyImpact = UIImpactFeedbackGenerator(style: .heavy)
             self.notificationFeedback = UINotificationFeedbackGenerator()
 
-            self.lightImpact?.prepare()
             self.mediumImpact?.prepare()
+            self.heavyImpact?.prepare()
         }
     }
 
-    /// Yem yendiğinde (Android: 18ms titreşim karşılığı)
+    /// Yem yendiğinde (Android: 18ms titreşim karşılığı — Taptic Engine Peek 1519 + Medium Impact)
     func playFoodHaptic() {
         guard isHapticsEnabled else { return }
         DispatchQueue.main.async {
-            self.lightImpact?.impactOccurred()
-            self.lightImpact?.prepare()
+            // Fiziksel Taptic Engine Actuator tetikle (Peek — SystemSound 1519)
+            AudioServicesPlaySystemSound(1519)
+            let generator = self.mediumImpact ?? UIImpactFeedbackGenerator(style: .medium)
+            generator.prepare()
+            generator.impactOccurred(intensity: 1.0)
         }
     }
 
-    /// Özel yem / güçlendirici yendiğinde
+    /// Özel yem / güçlendirici yendiğinde (Taptic Engine Pop 1520 + Heavy Impact)
     func playSpecialFoodHaptic() {
         guard isHapticsEnabled else { return }
         DispatchQueue.main.async {
-            self.mediumImpact?.impactOccurred()
-            self.mediumImpact?.prepare()
+            // Fiziksel Taptic Engine Actuator tetikle (Pop — SystemSound 1520)
+            AudioServicesPlaySystemSound(1520)
+            let generator = self.heavyImpact ?? UIImpactFeedbackGenerator(style: .heavy)
+            generator.prepare()
+            generator.impactOccurred(intensity: 1.0)
         }
     }
 

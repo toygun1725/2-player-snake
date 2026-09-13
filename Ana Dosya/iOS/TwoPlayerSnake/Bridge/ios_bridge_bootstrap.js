@@ -393,10 +393,8 @@
   document.addEventListener("click", handlePauseHomeSafely, true);
   document.addEventListener("touchend", handlePauseHomeSafely, true);
 
-  // ── Haptic: digestAnims & Web Audio Oscillator Hook ───────────────────────
-  // Yılan yem yediğinde digestAnims.push({ startTime, color }) çağrılır.
-  // Bu nesne hook'lanarak ses açık/kapalı fark etmeksizin anında haptic üretilir.
-  (function installHapticHooks() {
+  // ── Haptic: 3 Katmanlı Kesin Yem Yeme Algılama ────────────────────────────
+  (function installRobustHapticHooks() {
     var lastEatTime = 0;
 
     function triggerEatHaptic(type) {
@@ -406,49 +404,99 @@
       postToNative("onEatFood", { type: type || "normal" });
     }
 
-    // Hook 1: Array.prototype.push — digestAnims tespiti (oyun içi kesin sinyal)
-    var origPush = Array.prototype.push;
-    Array.prototype.push = function () {
-      if (arguments.length === 1 && arguments[0] && typeof arguments[0] === "object") {
-        var item = arguments[0];
-        if (item.startTime !== undefined && item.color !== undefined) {
-          var c = item.color;
-          var foodType = "normal";
-          if (c === "#ffd166" || c === "#00cfff") foodType = "diamond";
-          else if (c === "#ff1744") foodType = "heart";
-          triggerEatHaptic(foodType);
+    // Katman 1: AudioParam.prototype.value kancası
+    // Oyun SFX.eat() içinde tone(720) çağırır ve o.frequency.value = 720 ataması yapar.
+    // Bu atamayı AudioParam setter'ından anında yakalıyoruz.
+    try {
+      if (typeof AudioParam !== "undefined" && AudioParam.prototype) {
+        var desc = Object.getOwnPropertyDescriptor(AudioParam.prototype, "value");
+        if (desc && desc.set) {
+          var origSet = desc.set;
+          Object.defineProperty(AudioParam.prototype, "value", {
+            set: function (v) {
+              try {
+                var rounded = Math.round(v);
+                if (rounded >= 700 && rounded <= 740) {
+                  triggerEatHaptic("normal");
+                } else if (rounded >= 1180 && rounded <= 1220) {
+                  triggerEatHaptic("diamond");
+                } else if (rounded >= 620 && rounded <= 660) {
+                  triggerEatHaptic("heart");
+                }
+              } catch (e) {}
+              return origSet.call(this, v);
+            },
+            get: desc.get,
+            configurable: true,
+            enumerable: true
+          });
         }
       }
-      return origPush.apply(this, arguments);
-    };
+    } catch (e) {
+      console.warn("AudioParam value hook error:", e);
+    }
 
-    // Hook 2: AudioContext.prototype.createOscillator (720Hz = SFX.eat)
+    // Katman 2: BaseAudioContext & AudioContext prototype createOscillator kancası
     try {
-      var AudioCtxClass = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtxClass && AudioCtxClass.prototype && AudioCtxClass.prototype.createOscillator) {
-        var origCreateOsc = AudioCtxClass.prototype.createOscillator;
-        AudioCtxClass.prototype.createOscillator = function () {
-          var osc = origCreateOsc.apply(this, arguments);
+      var BaseAudioClass = (typeof BaseAudioContext !== "undefined") ? BaseAudioContext : (window.AudioContext || window.webkitAudioContext);
+      if (BaseAudioClass && BaseAudioClass.prototype && BaseAudioClass.prototype.createOscillator) {
+        var origOsc = BaseAudioClass.prototype.createOscillator;
+        BaseAudioClass.prototype.createOscillator = function () {
+          var osc = origOsc.apply(this, arguments);
           var origStart = osc.start;
           osc.start = function () {
             try {
-              var freq = Math.round(osc.frequency.value);
-              if (freq === 720) {
+              var freq = Math.round(osc.frequency ? osc.frequency.value : 0);
+              if (freq >= 700 && freq <= 740) {
                 triggerEatHaptic("normal");
-              } else if (freq === 1200) {
+              } else if (freq >= 1180 && freq <= 1220) {
                 triggerEatHaptic("diamond");
-              } else if (freq === 640) {
+              } else if (freq >= 620 && freq <= 660) {
                 triggerEatHaptic("heart");
               }
             } catch (err) {}
-            return origStart.apply(this, arguments);
+            return origStart.apply(osc, arguments);
           };
           return osc;
         };
       }
     } catch (e) {
-      console.warn("AudioContext hook failed:", e);
+      console.warn("BaseAudioContext hook error:", e);
     }
+
+    // Katman 3: DOM Panel Uzunluğu Takibi (Ses kapalı olsa bile çalışır)
+    // Her render karesinde p1PanelLen ve p2PanelLen text değerlerindeki artışı izler.
+    (function watchPanelScore() {
+      var lastP1 = -1, lastP2 = -1;
+      function checkFrame() {
+        var el1 = document.getElementById("p1PanelLen");
+        var el2 = document.getElementById("p2PanelLen");
+        if (el1) {
+          var val1 = parseInt(el1.textContent, 10);
+          if (!isNaN(val1) && val1 > 0) {
+            if (lastP1 > 0 && val1 > lastP1) {
+              triggerEatHaptic("normal");
+            }
+            lastP1 = val1;
+          } else if (val1 === 0) {
+            lastP1 = -1;
+          }
+        }
+        if (el2) {
+          var val2 = parseInt(el2.textContent, 10);
+          if (!isNaN(val2) && val2 > 0) {
+            if (lastP2 > 0 && val2 > lastP2) {
+              triggerEatHaptic("normal");
+            }
+            lastP2 = val2;
+          } else if (val2 === 0) {
+            lastP2 = -1;
+          }
+        }
+        requestAnimationFrame(checkFrame);
+      }
+      requestAnimationFrame(checkFrame);
+    })();
   })();
 
 })();
