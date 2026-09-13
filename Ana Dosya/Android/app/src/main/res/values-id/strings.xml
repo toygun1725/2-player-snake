@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">Dua pemain. Satu arena. Bersiaplah…</string>
+    <string name="loading_subtitle">Menyesuaikan kontrol, suara, dan kinerja…</string>
+    <string name="shortcut_normal_1p">Normal: 1 Pemain</string>
+    <string name="shortcut_fc_2p">Komp. Cepat: 2 P.</string>
+    <string name="shortcut_fc_1p_ai">Komp. Cepat: 1P vs. AI</string>
+</resources>
+

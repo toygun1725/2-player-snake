@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">Dva hráči. Jedna aréna. Připravte se…</string>
+    <string name="loading_subtitle">Nastavení ovládání, zvuku a výkonu…</string>
+    <string name="shortcut_normal_1p">Normální: 1 hráč</string>
+    <string name="shortcut_fc_2p">Rychlý: 2 hráči</string>
+    <string name="shortcut_fc_1p_ai">Rychlý: 1P vs. AI</string>
+</resources>

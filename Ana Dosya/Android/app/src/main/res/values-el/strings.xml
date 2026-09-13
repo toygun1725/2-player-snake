@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">Δύο παίκτες. Μία αρένα. Ετοιμαστείτε…</string>
+    <string name="loading_subtitle">Προσαρμογή ελέγχων, ήχου και απόδοσης…</string>
+    <string name="shortcut_normal_1p">Κανονικό: 1 Παίκτης</string>
+    <string name="shortcut_fc_2p">Γρήγορο: 2 Παίκτες</string>
+    <string name="shortcut_fc_1p_ai">Γρήγορο: 1P vs. AI</string>
+</resources>
+

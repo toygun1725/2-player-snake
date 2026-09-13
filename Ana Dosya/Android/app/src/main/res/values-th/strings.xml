@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">ผู้เล่นสองคน เวทีเดียว เตรียมพร้อม…</string>
+    <string name="loading_subtitle">กำลังปรับการควบคุม เสียง และประสิทธิภาพ…</string>
+    <string name="shortcut_normal_1p">ปกติ: 1 ผู้เล่น</string>
+    <string name="shortcut_fc_2p">รวดเร็ว: 2 ผู้เล่น</string>
+    <string name="shortcut_fc_1p_ai">รวดเร็ว: 1P vs. AI</string>
+</resources>
+

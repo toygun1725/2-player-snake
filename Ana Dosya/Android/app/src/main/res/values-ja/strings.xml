@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">2人のプレイヤー。1つのアリーナ。準備はいいか…</string>
+    <string name="loading_subtitle">操作、サウンド、パフォーマンスを調整中…</string>
+    <string name="shortcut_normal_1p">ノーマル: 1人</string>
+    <string name="shortcut_fc_2p">ファスト対戦: 2人</string>
+    <string name="shortcut_fc_1p_ai">ファスト対戦: 1P vs. AI</string>
+</resources>
+

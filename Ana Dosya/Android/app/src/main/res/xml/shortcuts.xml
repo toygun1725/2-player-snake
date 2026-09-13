@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="normal_1p"
+        android:enabled="true"
+        android:icon="@drawable/ic_launcher_foreground_inset"
+        android:shortcutShortLabel="@string/shortcut_normal_1p"
+        android:shortcutLongLabel="@string/shortcut_normal_1p">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.twoplayersnake.app"
+            android:targetClass="com.twoplayersnake.app.ui.MainActivity">
+            <extra android:name="shortcut" android:value="normal_1p" />
+        </intent>
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="fc_2p"
+        android:enabled="true"
+        android:icon="@drawable/ic_launcher_foreground_inset"
+        android:shortcutShortLabel="@string/shortcut_fc_2p"
+        android:shortcutLongLabel="@string/shortcut_fc_2p">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.twoplayersnake.app"
+            android:targetClass="com.twoplayersnake.app.ui.MainActivity">
+            <extra android:name="shortcut" android:value="fc_2p" />
+        </intent>
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="fc_1p_ai"
+        android:enabled="true"
+        android:icon="@drawable/ic_launcher_foreground_inset"
+        android:shortcutShortLabel="@string/shortcut_fc_1p_ai"
+        android:shortcutLongLabel="@string/shortcut_fc_1p_ai">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.twoplayersnake.app"
+            android:targetClass="com.twoplayersnake.app.ui.MainActivity">
+            <extra android:name="shortcut" android:value="fc_1p_ai" />
+        </intent>
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+</shortcuts>

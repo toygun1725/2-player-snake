@@ -1,0 +1,2010 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2 Player Snake - Beta v1.06</title>
+  <!-- Import fonts: Orbitron for neon/matrix style, VT323 for digital timer -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=VT323&display=swap" rel="stylesheet">
+  <!-- Version: Beta v1.06 -->
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --grid:#1a2537;
+      --p1:#ff4fbf;       /* Pembe (Player 1) */
+      --p2:#35e6e6;       /* Turkuaz (Player 2) */
+      --gold:#ffd166;     /* Elmas (sarı) */
+      --heart:#ff1744;    /* Yakut kırmızısı */
+      --orange: '#ff9f1c'; /* Turuncu */
+      --green: '#44ff88';    /* Yeşil */
+      --purple: '#9b59b6';   /* Mor */
+      --red: '#e74c3c';      /* Kırmızı */
+      --yellow: '#f1c40f';   /* Sarı */
+      --emerald: '#2ecc71';  /* Zümrüt */
+      --blue: '#3498db';     /* Mavi */
+      --white: '#ffffff';    /* Beyaz */
+      --ui-tile:#0c141f;
+      --ui-tile-border:#1b2a41;
+      --ui-tile-soft:#0f1a2a;
+      --text:#e7f1ff;
+      --muted:#9fb3d1;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;background:var(--bg);color:var(--text);
+      /* Genel yazı tipi Orbitron olarak ayarlandı */
+      font-family:'Orbitron', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      overflow:hidden;
+      text-transform: uppercase; /* BÜYÜK HARF */
+    }
+    .banner p, .banner .small-text {
+        text-transform: none; /* Banner içindeki paragraflar normal kalsın */
+    }
+    #instructionsContainer, #developersContainer {
+        text-transform: none; /* Talimatlar ve geliştiriciler normal kalsın */
+    }
+    .wrap{height:100%;display:grid;grid-template-rows:1fr auto}
+    #stage{position:relative;height:calc(100vh - 180px)}
+    #canvasWrap{
+      position:relative;width:100%;height:100%;border-radius:22px;overflow:hidden;
+      box-shadow:0 44px 130px #000a,0 12px 44px #0009,inset 0 0 0 1px #1a2636;
+      background:#09101a
+    }
+    canvas{width:100%;height:100%;display:block;
+      background:radial-gradient(1200px 900px at 50% -30%, #122034 0%, #0b121c 40%, #081018 75%, #050a10 100%)
+    }
+    #canvasWrap.shake {
+        animation: shake-anim 0.1s 2;
+    }
+    @keyframes shake-anim {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+    }
+    #canvasWrap::before{
+      content:"";position:absolute;inset:0;
+      background:linear-gradient(transparent,rgba(0,0,0,.35)),
+                 repeating-linear-gradient(180deg,#0000 0 2px,#0003 2px 3px);
+      mix-blend-mode:multiply;pointer-events:none
+    }
+
+    /* Hide the old HUD; version info will be shown in main menu */
+    .hudTop{display:none!important}
+
+    .overlay{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:6}
+    .banner{
+      pointer-events:auto;min-width:320px;max-width:92%;text-align:center;
+      transform:translateY(10px) scale(.96);opacity:0;transition:all .45s cubic-bezier(.2,.8,.2,1)
+    }
+    .banner.show{transform:translateY(0) scale(1);opacity:1}
+    .banner.padded {
+      padding:18px 22px;border-radius:18px;
+      background:linear-gradient(180deg,#0d1624ee,#0a111de0);
+      border:1px solid #1b2a41;box-shadow:0 16px 50px #0009;
+    }
+    .banner h1{margin:0 0 6px;font-size:clamp(22px,4.2vw,44px);letter-spacing:1px}
+    .banner p{margin:0;opacity:.9;font-size:14px}
+    .banner .p1{color:var(--p1)} .banner .p2{color:var(--p2)} .banner .draw{color:#9ed0ff}
+
+    /* New footer layout */
+    footer{
+      height:180px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      padding:14px;
+      background:linear-gradient(180deg,#0e1726cc,#0a111dcc);
+      border-top:1px solid #1b2a41;
+      backdrop-filter:blur(6px)
+    }
+    .panel-left, .panel-right{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:flex-start;
+      width: 180px; /* Sabit genişlik */
+    }
+    .panel-left {
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: 370px; /* 2 buton + gap */
+    }
+    .panel-left .btn {
+        width: 180px;
+    }
+    .panel-right{align-items:flex-end}
+    .panel-center{
+      flex:1;
+      display:grid;
+      grid-template-areas:
+        "p1-label time p2-label"
+        "p1-food time p2-food"
+        "series-row series-row series-row";
+      grid-template-columns: 1fr auto 1fr;
+      align-items:center;
+      gap:4px 24px; /* Yatay boşluk artırıldı */
+    }
+    /* 1P Modu için merkezi düzen */
+    .panel-center.single-player {
+        grid-template-areas:
+            "time"
+            "p1-stats"
+            "series-row";
+        grid-template-columns: 1fr;
+        justify-items: center;
+    }
+    .panel-center.single-player .player-label.p1 { grid-area: initial; }
+    
+    .counters-1p {
+        grid-area: p1-stats;
+        display: flex;
+        gap: 24px;
+        justify-content: center;
+    }
+
+    .panel-center.single-player #p1FoodBox { grid-area: initial; }
+
+
+    /* Buttons */
+    .btn{
+      width: 100%; /* Panelin genişliğine uyar */
+      padding:12px 16px;
+      border-radius:12px;
+      background:var(--ui-tile-soft);
+      border:1px solid var(--ui-tile-border);
+      color:#d9e6ff;
+      cursor:pointer;
+      font-weight:800;
+      letter-spacing:.3px;
+      font-size:14px;
+      font-family: 'Orbitron', sans-serif;
+      text-transform: uppercase; /* Butonlar da büyük harf */
+    }
+    .btn:hover{filter:brightness(1.08)}
+    .btn.big{padding:14px 18px;font-size:16px}
+
+    /* Player labels and timer */
+    .players-header{
+      display:contents; /* Grid'e dahil etmek için */
+    }
+    .player-label{
+      text-shadow:0 0 6px rgba(0,0,0,0.6);
+      font-size:24px;
+      font-weight:900;
+      letter-spacing:1px;
+    }
+    .player-label.p1{grid-area: p1-label; text-align: right; justify-self: end;}
+    .player-label.p2{grid-area: p2-label; text-align: left; justify-self: start;}
+
+    #timeLabel{
+      grid-area: time;
+      font-family:'VT323', monospace;
+      font-size:48px;
+      letter-spacing:2px;
+      line-height:1;
+      text-transform: none; /* Zaman etiketi normal kalsın */
+      background: #0b1420;
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--ui-tile-border);
+      box-shadow: inset 0 0 8px #0005;
+      color: var(--white);
+      text-shadow: 0 0 5px #fffa, 0 0 12px var(--p2);
+    }
+
+    /* Score row containing series and time bar */
+    .score-row{
+      grid-area: series-row;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:20px;
+      width:100%;
+      margin-top: 10px; /* Aşağı kaydırma */
+    }
+    .series{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .dot{
+      width:44px; /* Büyütüldü */
+      height:44px; /* Büyütüldü */
+      border-radius:50%;
+      background:#263449;
+      box-shadow:inset 0 0 0 2px #162131;
+    }
+    .dot.win-p1{
+      background:radial-gradient(circle at 30% 30%,#fff,var(--p1) 55%,#300b22 140%);
+      box-shadow:0 0 14px var(--p1), inset 0 0 3px #fff6;
+    }
+    .dot.win-p2{
+      background:radial-gradient(circle at 30% 30%,#fff,var(--p2) 55%,#083033 140%);
+      box-shadow:0 0 14px var(--p2), inset 0 0 3px #fff6;
+    }
+
+    .neon-separator {
+      content:"";
+      width:2px;
+      height: 44px; /* dot yüksekliği ile aynı */
+      background:linear-gradient(to bottom,var(--p2),var(--p1));
+      box-shadow: 0 0 4px var(--p2), 0 0 8px var(--p1);
+    }
+
+    .food-row{
+      display:contents; /* Grid'e dahil etmek için */
+    }
+    .counter{
+      padding:6px 10px;
+      border-radius:10px;
+      background:#0b1420cc;
+      border:1px solid #1a2636;
+      color:var(--muted);
+      font-weight:700;
+      font-size:18px; /* Büyütüldü */
+      text-transform: none; /* Sayaçlar normal kalsın */
+    }
+    #p1FoodBox { grid-area: p1-food; justify-self: end; }
+    #p2FoodBox { grid-area: p2-food; justify-self: start; }
+
+    .counter .val{
+      color:#fff;
+      font-weight:900;
+      margin-left:6px;
+    }
+
+    /* 1P Sayaç Renkleri */
+    #p1Length.val {
+        color: var(--p1);
+    }
+    #p1Food-1P.val {
+        color: var(--p1);
+    }
+    /* 2P Sayaç Renkleri */
+    #p1Food.val {
+        color: var(--p1);
+    }
+    #p2Food.val {
+        color: var(--p2);
+    }
+
+
+    /* Hide language button in UI */
+    /* #langBtn{display:none;} */
+
+    /* Color selection menu styles */
+    .color-options { display: flex; gap: 8px; }
+    .color-btn { 
+        width: 40px; height: 40px; border-radius: 50%; 
+        cursor: pointer; border: 3px solid transparent; 
+        transition: all 0.2s;
+    }
+    .color-menu-separator {
+      width: 2px;
+      background: #1b2a41;
+      align-self: stretch;
+      margin: 0 20px;
+    }
+    .color-btn:hover { transform: scale(1.1); }
+    .color-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+    .banner h2 { font-size: 20px; }
+    .edit-icon { cursor: pointer; font-size: 16px; opacity: 0.6; display: inline-block; margin-left: 8px; vertical-align: middle; }
+    .edit-icon:hover { opacity: 1; }
+    #p1NameInput, #p2NameInput {
+        font-family: 'Orbitron', sans-serif;
+        background: #0c141f99;
+        border: 1px solid #1b2a41;
+        color: var(--text);
+        font-size: 20px;
+        text-align: center;
+        width: 200px;
+        padding: 4px;
+        border-radius: 6px;
+        text-transform: uppercase;
+    }
+
+    /* Countdown banner style */
+    .countdown-text {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 200px;
+        font-weight: 900;
+        /* color: var(--white); */ /* Renk artık JS ile dinamik olarak ayarlanacak */
+        text-shadow: 0 0 2px #fff, 0 0 8px var(--p1);
+        animation: countdown-anim 0.5s cubic-bezier(.25,1.5,.5,1) forwards;
+        transform: scale(0.5);
+        opacity: 0;
+        position: relative;
+    }
+    @keyframes countdown-anim {
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    .countdown-text.start {
+        font-size: 120px;
+        /* color: var(--gold); */ /* Renk artık JS ile dinamik olarak ayarlanacak */
+        text-shadow: 0 0 5px var(--gold), 0 0 10px var(--p1);
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="stage">
+      <div id="canvasWrap">
+        <canvas id="game" aria-label="2 Player Snake canvas"></canvas>
+        <!-- Hidden mode title element to satisfy script references -->
+        <div id="modeTitle" style="display:none"></div>
+        <div class="overlay"><div class="banner" id="banner"></div></div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="panel-left">
+        <button id="pauseBtn" class="btn big" data-i18n="pause">DURAKLAT (SPACE)</button>
+        <button id="menuBtn" class="btn big" data-i18n="menu">ANA MENÜ</button>
+        <button id="resetBtn" class="btn big" data-i18n="reset">MAÇI SIFIRLA (R)</button>
+      </div>
+      <div class="panel-center" id="panel-center">
+        <div class="players-header">
+          <span class="player-label p1" id="p1Label">OYUNCU 1</span>
+          <span id="timeLabel">03:00</span>
+          <span class="player-label p2" id="p2Label">OYUNCU 2</span>
+        </div>
+        <div class="food-row">
+            <div class="counters-1p">
+                <div class="counter" id="p1LengthBox"><span data-i18n="snakeLength">Yılan Uzunluğu</span>: <span class="val" id="p1Length">0</span></div>
+                <div class="counter" id="p1FoodBox-1P"><span data-i18n="foodEaten">Yenen Yem</span>: <span class="val" id="p1Food-1P">0</span></div>
+            </div>
+          <div class="counter" id="p1FoodBox"><span data-i18n="p1Food">P1 YEM</span>: <span class="val" id="p1Food">0</span></div>
+          <div class="counter" id="p2FoodBox"><span data-i18n="p2Food">P2 YEM</span>: <span class="val" id="p2Food">0</span></div>
+        </div>
+        <div class="score-row">
+          <div class="series left" id="p1Series"></div>
+          <div class="neon-separator" id="neon-separator"></div>
+          <div class="series right" id="p2Series"></div>
+        </div>
+
+      </div>
+      <div class="panel-right">
+        <button id="muteBtn" class="btn big">SES: AÇIK (M)</button>
+        <button id="langBtn" class="btn big">LANGUAGE: ENGLISH</button>
+        <span id="version-info" style="font-size: 12px; opacity: 0.5; text-align: right; margin-top: 4px;"></span>
+      </div>
+    </footer>
+  </div>
+
+<script>
+(()=>{
+  /* ===========================
+    2 Player Snake - Beta v1.06
+    =========================== */
+
+  const VERSION = 'Beta v1.06';
+
+  /* === i18n === */
+  const STRINGS = {
+    tr: {
+      language: 'Dil',
+      languageName: 'Türkçe',
+      menu: 'Ana Menü',
+      pause: 'Duraklat (Space)',
+      resume: 'Sürdür (Space)',
+      reset: 'Maçı Sıfırla (R)',
+      resetRound: 'Roundu Sıfırla (R)',
+      modeNone: 'MOD: Seçilmedi',
+      modePick: 'Oyun Modu',
+      playerMode: 'Oyuncu Modu',
+      onePlayer: '1 Oyuncu',
+      twoPlayer: '2 Oyuncu',
+      pickOne: 'Birini seç:',
+      ready: 'Hazır Olun…',
+      start: 'BAŞLA!',
+      p1: 'OYUNCU 1',
+      p2: 'OYUNCU 2',
+      p1Food: 'P1 Yem',
+      p2Food: 'P2 Yem',
+      winP1: '<span class="p1">P1</span> Kazandı!',
+      winP2: '<span class="p2">P2</span> Kazandı!',
+      draw:  '<span class="draw">Berabere</span>',
+      gameOver: 'Oyun Bitti',
+      finalScore: 'Nihai Skor',
+      snakeLength: 'Yılan Uzunluğu',
+      foodEaten: 'Yenen Yem',
+      playAgain: 'Tekrar Oyna',
+      normal: 'NORMAL',
+      fast: 'HIZLI',
+      extreme: 'AŞIRI',
+      play: 'Oyna',
+      settings: 'Ayarlar',
+      instructions: 'Kurallar',
+      developers: 'Geliştiriciler',
+      mainMenu: 'Ana Menü',
+      snakeSpeed: 'Yılan Hızı',
+      wallMode: 'Arena Tipi',
+      walls: 'Duvarlı',
+      noWalls: 'Duvarsız',
+      back: 'Geri',
+      colorPick: 'Renk Seçimi',
+      startMatch: 'Maçı Başlat!',
+      startGame: 'Oyunu Başlat!',
+      suddenDeath: 'ANİ ÖLÜM',
+      instructionsText: `<h3>Oyunun Amacı</h3><p>Bu oyun iki kişilik bir yılan düellosudur. Rakibinizi yok ederek veya süre sonunda ondan daha uzun olarak roundu kazanın. 5 round kazanan maçı alır.</p>
+      <h3>Süre ve Roundlar</h3><p>Her round 3 dakika sürer. Süre dolduğunda, daha uzun olan yılan roundu kazanır. Eğer uzunluklar eşitse, arena kenarlardan daralmaya başlar ve yılanlardan biri elenene kadar oyun devam eder (Ani Ölüm).</p>
+      <h3>Arena Tipleri</h3><p><b>Duvarsız:</b> Arena kenarlarından geçerek karşı taraftan çıkabilirsiniz.<br><b>Duvarlı:</b> Arena kenarları kapalıdır. Duvarlara çarpmak roundu kaybettirir.</p>
+      <h3>Yemler ve Güçlendirmeler</h3><p><b>Normal Yem:</b> Yılanınızı bir kare büyütür.<br><b>Elmas (Altın):</b> Her 5 normal yemden sonra belirir. Sizi 3 kare büyütür, rakibinizi 1 kare küçültür. 3 saniyede bir yer değiştirir.<br><b>Yakut (Kırmızı):</b> Her 10 normal yemden sonra belirir. Sizi 5 saniyeliğine hızlandırır ve dokunulmaz yapar, rakibin içinden geçebilirsiniz. Bu sırada sahaya 10 normal yem daha dökülür.<br><b>Çift Yem:</b> Her 3 normal yemden sonra bir çift yem belirir. Birini yediğinizde diğeri kaybolur.</p>
+      <h3>Temel Mekanikler</h3><p>Uzunluğu sıfıra düşen yılan kaybeder.</p>`,
+      developersText: `<p>Bu oyun Romina Franko Çetin & Toygun Çetin tarafından, yapay zekâ desteğiyle geliştirilmiştir.</p><p>Oyun üzerindeki tüm geliştirme, tasarım ve içerik hakları geliştiricilerine aittir. İzinsiz kopyalama, paylaşma veya ticari amaçlarla kullanma yasaktır.</p><p>Kişisel eğlence amacıyla oynanabilir; ancak geliştiricilerin izni olmadan başka platformlarda yayınlanamaz veya gelir elde etme amacıyla kullanılamaz.</p><p>© 2025 Romina Franko Çetin & Toygun Çetin. Tüm hakları saklıdır.</p>`
+    },
+    en: {
+      language: 'Language',
+      languageName: 'English',
+      menu: 'Main Menu',
+      pause: 'Pause (Space)',
+      resume: 'Resume (Space)',
+      reset: 'Reset Match (R)',
+      resetRound: 'Reset Round (R)',
+      modeNone: 'MODE: Not Selected',
+      modePick: 'Game Mode',
+      playerMode: 'Player Mode',
+      onePlayer: '1 Player',
+      twoPlayer: '2 Player',
+      pickOne: 'Choose one:',
+      ready: 'Get Ready…',
+      start: 'START!',
+      p1: 'PLAYER 1',
+      p2: 'PLAYER 2',
+      p1Food: 'P1 Food',
+      p2Food: 'P2 Food',
+      winP1: '<span class="p1">P1</span> Wins!',
+      winP2: '<span class="p2">P2</span> Wins!',
+      draw:  '<span class="draw">Draw</span>',
+      gameOver: 'Game Over',
+      finalScore: 'Final Score',
+      snakeLength: 'Snake Length',
+      foodEaten: 'Food Eaten',
+      playAgain: 'Play Again',
+      normal: 'NORMAL',
+      fast: 'FAST',
+      extreme: 'EXTREME',
+      play: 'Play',
+      settings: 'Settings',
+      instructions: 'Rules',
+      developers: 'Developers',
+      mainMenu: 'Main Menu',
+      snakeSpeed: 'Snake Speed',
+      wallMode: 'Arena Type',
+      walls: 'Walls',
+      noWalls: 'No Walls',
+      back: 'Back',
+      colorPick: 'Color Selection',
+      startMatch: 'Start Match!',
+      startGame: 'Start Game!',
+      suddenDeath: 'SUDDEN DEATH',
+      instructionsText: `<h3>Objective</h3><p>This is a two-player snake duel. Win a round by eliminating your opponent or by being longer when the time runs out. The first to 5 rounds wins the match.</p>
+      <h3>Timer & Rounds</h3><p>Each round lasts 3 minutes. When the timer expires, the longer snake wins the round. If lengths are equal, the arena starts shrinking from the edges until one snake is eliminated (Sudden Death).</p>
+      <h3>Arena Types</h3><p><b>No Walls:</b> The arena wraps around the edges.<br><b>Walls:</b> The arena edges are closed. Crashing into a wall makes you lose the round.</p>
+      <h3>Food & Power-ups</h3><p><b>Normal Food:</b> Grows your snake by one segment.<br><b>Diamond (Gold):</b> Spawns after every 5 normal foods. Grows you by 3 segments and shrinks your opponent by 1. It relocates every 3 seconds.<br><b>Ruby (Red):</b> Spawns after every 10 normal foods. Makes you faster and intangible for 5 seconds, allowing you to pass through your opponent. Spawns 10 extra normal foods for its duration.<br><b>Double Food:</b> A pair of normal foods spawns after every 3 normal foods. When one is eaten, the other disappears.</p>
+      <h3>Core Mechanics</h3><p>A snake with zero length is eliminated.</p>`,
+      developersText: `<p>This game was developed by Romina Franko Çetin & Toygun Çetin with AI support.</p><p>All development, design, and content rights for the game belong to the developers. Unauthorized copying, sharing, or commercial use is prohibited.</p><p>It can be played for personal entertainment; however, it cannot be published on other platforms or used for revenue-generating purposes without the developers' permission.</p><p>© 2025 Romina Franko Çetin & Toygun Çetin. All rights reserved.</p>`
+    },
+    fr: {
+        language: 'Langue',
+        languageName: 'Français',
+        menu: 'Menu Principal',
+        pause: 'Pause (Espace)',
+        resume: 'Reprendre (Espace)',
+        reset: 'Réinitialiser (R)',
+        resetRound: 'Réinitialiser Round (R)',
+        modePick: 'Mode de Jeu',
+        playerMode: 'Mode Joueur',
+        onePlayer: '1 Joueur',
+        twoPlayer: '2 Joueurs',
+        pickOne: 'Choisissez-en un:',
+        ready: 'Préparez-vous…',
+        start: 'COMMENCEZ!',
+        p1: 'JOUEUR 1',
+        p2: 'JOUEUR 2',
+        p1Food: 'P1 Miam',
+        p2Food: 'P2 Miam',
+        winP1: '<span class="p1">J1</span> Gagne!',
+        winP2: '<span class="p2">J2</span> Gagne!',
+        draw: '<span class="draw">Égalité</span>',
+        gameOver: 'Partie Terminée',
+        finalScore: 'Score Final',
+        snakeLength: 'Longueur Serpent',
+        foodEaten: 'Nourriture Mangée',
+        playAgain: 'Rejouer',
+        normal: 'NORMAL',
+        fast: 'RAPIDE',
+        extreme: 'EXTRÊME',
+        play: 'Jouer',
+        settings: 'Paramètres',
+        instructions: 'Règles',
+        developers: 'Développeurs',
+        mainMenu: 'Menu Principal',
+        snakeSpeed: 'Vitesse du Serpent',
+        wallMode: 'Type d\'Arène',
+        walls: 'Murs',
+        noWalls: 'Sans Murs',
+        back: 'Retour',
+        colorPick: 'Choix des Couleurs',
+        startMatch: 'Commencer le Match!',
+        startGame: 'Commencer la Partie!',
+        suddenDeath: 'MORT SUBITE',
+        instructionsText: `<h3>Objectif</h3><p>Ceci est un duel de serpents à deux joueurs. Gagnez un round en éliminant votre adversaire ou en étant plus long à la fin du temps. Le premier à 5 rounds gagne la partie.</p><h3>Chronomètre & Rounds</h3><p>Chaque round dure 3 minutes. Lorsque le temps est écoulé, le serpent le plus long gagne. En cas d'égalité, l'arène rétrécit jusqu'à ce qu'un serpent soit éliminé (Mort Subite).</p><h3>Types d'Arène</h3><p><b>Sans Murs :</b> Traversez les bords pour réapparaître de l'autre côté.<br><b>Murs :</b> Les bords sont fermés. Frapper un mur vous fait perdre.</p><h3>Nourriture & Bonus</h3><p><b>Normale :</b> Fait grandir votre serpent.<br><b>Diamant (Or) :</b> Apparaît toutes les 5 nourritures normales. Vous grandit de 3, rétrécit l'adversaire de 1.<br><b>Rubis (Rouge) :</b> Apparaît toutes les 10 nourritures normales. Vous rend plus rapide et intangible pendant 5s.</p><h3>Mécaniques</h3><p>Un serpent de longueur zéro est éliminé.</p>`,
+        developersText: `<p>Ce jeu a été développé par Romina Franko Çetin & Toygun Çetin avec le soutien de l'IA.</p><p>Tous les droits de développement, de conception et de contenu du jeu appartiennent aux développeurs. La copie, le partage ou l'utilisation commerciale non autorisés sont interdits.</p><p>Il peut être joué pour un divertissement personnel ; cependant, il ne peut être publié sur d'autres plateformes ou utilisé à des fins lucratives sans l'autorisation des développeurs.</p><p>© 2025 Romina Franko Çetin & Toygun Çetin. Tous droits réservés.</p>`
+    },
+    it: {
+        language: 'Lingua',
+        languageName: 'Italiano',
+        menu: 'Menu Principale',
+        pause: 'Pausa (Spazio)',
+        resume: 'Riprendi (Spazio)',
+        reset: 'Ricomincia (R)',
+        resetRound: 'Ricomincia Round (R)',
+        modePick: 'Modalità di Gioco',
+        playerMode: 'Modalità Giocatore',
+        onePlayer: '1 Giocatore',
+        twoPlayer: '2 Giocatori',
+        pickOne: 'Scegline una:',
+        ready: 'Preparatevi…',
+        start: 'INIZIA!',
+        p1: 'GIOCATORE 1',
+        p2: 'GIOCATORE 2',
+        p1Food: 'P1 Cibo',
+        p2Food: 'P2 Cibo',
+        winP1: '<span class="p1">G1</span> Vince!',
+        winP2: '<span class="p2">G2</span> Vince!',
+        draw: '<span class="draw">Pareggio</span>',
+        gameOver: 'Fine Partita',
+        finalScore: 'Punteggio Finale',
+        snakeLength: 'Lunghezza Serpente',
+        foodEaten: 'Cibo Mangiato',
+        playAgain: 'Gioca Ancora',
+        normal: 'NORMALE',
+        fast: 'VELOCE',
+        extreme: 'ESTREMO',
+        play: 'Gioca',
+        settings: 'Impostazioni',
+        instructions: 'Regole',
+        developers: 'Sviluppatori',
+        mainMenu: 'Menu Principale',
+        snakeSpeed: 'Velocità Serpente',
+        wallMode: 'Tipo di Arena',
+        walls: 'Muri',
+        noWalls: 'Senza Muri',
+        back: 'Indietro',
+        colorPick: 'Selezione Colore',
+        startMatch: 'Inizia la Partita!',
+        startGame: 'Inizia il Gioco!',
+        suddenDeath: 'MORTE SUBITANEA',
+        instructionsText: `<h3>Obiettivo</h3><p>Questo è un duello di serpenti per due giocatori. Vinci un round eliminando il tuo avversario o essendo più lungo alla fine del tempo. Il primo a 5 round vince la partita.</p><h3>Timer & Round</h3><p>Ogni round dura 3 minuti. Allo scadere del tempo, il serpente più lungo vince. In caso di parità, l'arena si restringe finché un serpente non viene eliminato (Morte Subitanea).</p><h3>Tipi di Arena</h3><p><b>Senza Muri:</b> Attraversa i bordi per riapparire dall'altra parte.<br><b>Muri:</b> I bordi sono chiusi. Colpire un muro ti fa perdere.</p><h3>Cibo & Potenziamenti</h3><p><b>Normale:</b> Allunga il tuo serpente.<br><b>Diamante (Oro):</b> Appare ogni 5 cibi normali. Ti allunga di 3, accorcia l'avversario di 1.<br><b>Rubino (Rosso):</b> Appare ogni 10 cibi normali. Ti rende più veloce e intangibile per 5s.</p><h3>Meccaniche</h3><p>Un serpente di lunghezza zero viene eliminato.</p>`,
+        developersText: `<p>Questo gioco è stato sviluppato da Romina Franko Çetin & Toygun Çetin con il supporto dell'IA.</p><p>Tutti i diritti di sviluppo, progettazione e contenuto del gioco appartengono agli sviluppatori. La copia, la condivisione o l'uso commerciale non autorizzati sono vietati.</p><p>Può essere giocato per intrattenimento personale; tuttavia, non può essere pubblicato su altre piattaforme o utilizzato a scopo di lucro senza il permesso degli sviluppatori.</p><p>© 2025 Romina Franko Çetin & Toygun Çetin. Tutti i diritti riservati.</p>`
+    },
+    es: {
+        language: 'Idioma',
+        languageName: 'Español',
+        menu: 'Menú Principal',
+        pause: 'Pausa (Espacio)',
+        resume: 'Reanudar (Espacio)',
+        reset: 'Reiniciar (R)',
+        resetRound: 'Reiniciar Ronda (R)',
+        modePick: 'Modo de Juego',
+        modePlayer: 'Modo de Jugador',
+        onePlayer: '1 Jugador',
+        twoPlayer: '2 Jugadores',
+        pickOne: 'Elige uno:',
+        ready: 'Preparaos…',
+        start: '¡EMPIEZA!',
+        p1: 'JUGADOR 1',
+        p2: 'JUGADOR 2',
+        p1Food: 'P1 Comida',
+        p2Food: 'P2 Comida',
+        winP1: '<span class="p1">¡J1</span> Gana!',
+        winP2: '<span class="p2">¡J2</span> Gana!',
+        draw: '<span class="draw">Empate</span>',
+        gameOver: 'Fin del Juego',
+        finalScore: 'Puntuación Final',
+        snakeLength: 'Longitud Serpiente',
+        foodEaten: 'Comida Comida',
+        playAgain: 'Jugar de Nuevo',
+        normal: 'NORMAL',
+        fast: 'RÁPIDO',
+        extreme: 'EXTREMO',
+        play: 'Jugar',
+        settings: 'Ajustes',
+        instructions: 'Reglas',
+        developers: 'Desarrolladores',
+        mainMenu: 'Menú Principal',
+        snakeSpeed: 'Velocidad Serpiente',
+        wallMode: 'Tipo de Arena',
+        walls: 'Paredes',
+        noWalls: 'Sin Paredes',
+        back: 'Atrás',
+        colorPick: 'Selección de Color',
+        startMatch: '¡Empezar Partida!',
+        startGame: '¡Empezar Juego!',
+        suddenDeath: 'MUERTE SÚBITA',
+        instructionsText: `<h3>Objetivo</h3><p>Este es un duelo de serpientes para dos jugadores. Gana una ronda eliminando a tu oponente o siendo más largo cuando se acabe el tiempo. El primero en ganar 5 rondas gana la partida.</p><h3>Temporizador & Rondas</h3><p>Cada ronda dura 3 minutos. Cuando el tiempo expira, la serpiente más larga gana. Si hay empate, la arena se encoge hasta que una serpiente es eliminada (Muerte Súbita).</p><h3>Tipos de Arena</h3><p><b>Sin Paredes:</b> Atraviesa los bordes para aparecer en el lado opuesto.<br><b>Paredes:</b> Los bordes están cerrados. Chocar contra una pared te hace perder.</p><h3>Comida & Potenciadores</h3><p><b>Normal:</b> Alarga tu serpiente.<br><b>Diamante (Oro):</b> Aparece cada 5 comidas normales. Te alarga 3, acorta al oponente 1.<br><b>Rubí (Rojo):</b> Aparece cada 10 comidas normales. Te hace más rápido e intangible por 5s.</p><h3>Mecánicas</h3><p>Una serpiente de longitud cero es eliminada.</p>`,
+        developersText: `<p>Este juego fue desarrollado por Romina Franko Çetin & Toygun Çetin con apoyo de IA.</p><p>Todos los derechos de desarrollo, diseño y contenido del juego pertenecen a los desarrolladores. Se prohíbe la copia, compartición o uso comercial no autorizados.</p><p>Se puede jugar para entretenimiento personal; sin embargo, no se puede publicar en otras plataformas ni utilizar con fines de lucro sin el permiso de los desarrolladores.</p><p>© 2025 Romina Franko Çetin & Toygun Çetin. Todos los derechos reservados.</p>`
+    },
+    de: {
+        language: 'Sprache',
+        languageName: 'Deutsch',
+        menu: 'Hauptmenü',
+        pause: 'Pause (Leertaste)',
+        resume: 'Fortsetzen (Leertaste)',
+        reset: 'Neustart (R)',
+        resetRound: 'Runde Neustarten (R)',
+        modePick: 'Spielmodus',
+        playerMode: 'Spieler-Modus',
+        onePlayer: '1 Spieler',
+        twoPlayer: '2 Spieler',
+        pickOne: 'Wähle einen:',
+        ready: 'Mach dich bereit…',
+        start: 'START!',
+        p1: 'SPIELER 1',
+        p2: 'SPIELER 2',
+        p1Food: 'S1 Futter',
+        p2Food: 'S2 Futter',
+        winP1: '<span class="p1">S1</span> Gewinnt!',
+        winP2: '<span class="p2">S2</span> Gewinnt!',
+        draw: '<span class="draw">Unentschieden</span>',
+        gameOver: 'Spiel Vorbei',
+        finalScore: 'Endstand',
+        snakeLength: 'Schlangenlänge',
+        foodEaten: 'Gefressenes Futter',
+        playAgain: 'Nochmal Spielen',
+        normal: 'NORMAL',
+        fast: 'SCHNELL',
+        extreme: 'EXTREM',
+        play: 'Spielen',
+        settings: 'Einstellungen',
+        instructions: 'Regeln',
+        developers: 'Entwickler',
+        mainMenu: 'Hauptmenü',
+        snakeSpeed: 'Schlangengeschwindigkeit',
+        wallMode: 'Arena-Typ',
+        walls: 'Wände',
+        noWalls: 'Ohne Wände',
+        back: 'Zurück',
+        colorPick: 'Farbauswahl',
+        startMatch: 'Match starten!',
+        startGame: 'Spiel starten!',
+        suddenDeath: 'PLÖTZLICHER TOD',
+        instructionsText: `<h3>Ziel</h3><p>Dies ist ein Schlangen-Duell für zwei Spieler. Gewinne eine Runde, indem du deinen Gegner eliminierst oder am Ende der Zeit länger bist. Wer zuerst 5 Runden gewinnt, gewinnt das Spiel.</p><h3>Timer & Runden</h3><p>Jede Runde dauert 3 Minuten. Wenn die Zeit abläuft, gewinnt die längere Schlange. Bei Gleichstand schrumpft die Arena, bis eine Schlange eliminiert ist (Plötzlicher Tod).</p><h3>Arena-Typen</h3><p><b>Ohne Wände:</b> Durchquere die Ränder, um auf der anderen Seite wieder zu erscheinen.<br><b>Wände:</b> Die Ränder sind geschlossen. Ein Zusammenstoß mit einer Wand führt zum Verlust.</p><h3>Futter & Power-Ups</h3><p><b>Normal:</b> Lässt deine Schlange wachsen.<br><b>Diamant (Gold):</b> Erscheint alle 5 normalen Futter. Lässt dich um 3 wachsen, schrumpft den Gegner um 1.<br><b>Rubin (Rot):</b> Erscheint alle 10 normalen Futter. Macht dich für 5s schneller und unantastbar.</p><h3>Mechanik</h3><p>Eine Schlange der Länge null wird eliminiert.</p>`,
+        developersText: `<p>Dieses Spiel wurde von Romina Franko Çetin & Toygun Çetin mit KI-Unterstützung entwickelt.</p><p>Alle Entwicklungs-, Design- und Inhaltsrechte für das Spiel liegen bei den Entwicklern. Unerlaubtes Kopieren, Teilen oder kommerzielle Nutzung ist untersagt.</p><p>Es kann zur persönlichen Unterhaltung gespielt werden; es darf jedoch ohne Genehmigung der Entwickler nicht auf anderen Plattformen veröffentlicht oder zu Einnahmezwecken verwendet werden.</p><p>© 2025 Romina Franko Çetin & Toygun Çetin. Alle Rechte vorbehalten.</p>`
+    }
+  };
+  let lang = localStorage.getItem('neoSnakeLang') || 'en';
+  const langCycle = ['tr', 'en', 'fr', 'it', 'es', 'de'];
+  function t(key){ return (STRINGS[lang] && STRINGS[lang][key]) || key; }
+
+  /* === Color Palette & Selection === */
+  const COLOR_PALETTE = [
+    { name: 'Pink', hex: '#ff4fbf' },
+    { name: 'Turquoise', hex: '#35e6e6' },
+    { name: 'Orange', hex: '#ff9f1c' },
+    { name: 'Green', hex: '#44ff88' },
+    { name: 'Purple', hex: '#9b59b6' },
+    { name: 'Red', hex: '#e74c3c' },
+    { name: 'Yellow', hex: '#f1c40f' },
+    { name: 'Emerald', hex: '#2ecc71' },
+    { name: 'Blue', hex: '#3498db' }
+  ];
+  let playerColors = { p1: COLOR_PALETTE[0].hex, p2: COLOR_PALETTE[1].hex };
+  let playerNames = { p1: '', p2: '' };
+  function updatePlayerColors(p1_hex, p2_hex) {
+    document.documentElement.style.setProperty('--p1', p1_hex);
+    if (p2_hex) {
+        document.documentElement.style.setProperty('--p2', p2_hex);
+    }
+    playerColors.p1 = p1_hex;
+    if (p2_hex) {
+        playerColors.p2 = p2_hex;
+    }
+  }
+  /* === Canvas === */
+  const canvas=document.getElementById('game');
+  const canvasWrap = document.getElementById('canvasWrap');
+  const ctx=canvas.getContext('2d');
+  let GRID_COLS=64, GRID_ROWS=36;
+  const BASE_TPS=14.2;
+  let dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+  function resize(){
+    const st=document.getElementById('stage');
+    const r=st.getBoundingClientRect();
+    canvas.width=Math.floor(r.width*dpr); canvas.height=Math.floor(r.height*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  addEventListener('resize',resize,{passive:true}); resize();
+
+  /* === Sound === */
+  let audioCtx; let muted=localStorage.getItem('neoSnakeMuted')==='1'; const muteBtn=document.getElementById('muteBtn');
+
+  function ensureAudio(){ 
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); 
+  }
+  function tone(freq,dur,{type='square',gain=0.06,attack=0.004,release=0.06,sweep=0}={}){
+    if(muted) return; try{
+      ensureAudio(); const now=audioCtx.currentTime;
+      const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
+      o.type=type; o.frequency.value=freq;
+      if(sweep){ o.frequency.linearRampToValueAtTime(freq*(1+sweep), now+dur); }
+      g.gain.value=0; g.gain.linearRampToValueAtTime(gain, now+attack);
+      g.gain.linearRampToValueAtTime(0.0001, now+Math.max(dur-0.01,0)+release);
+      o.connect(g).connect(audioCtx.destination); o.start(now); o.stop(now+dur+release+0.03);
+    }catch(e){}
+  }
+  const SFX={
+    eat(){ tone(720,0.08,{type:'square',gain:0.05}); },
+    diamond(){ tone(1200, 0.1, {type:'triangle', gain:0.07}); setTimeout(()=>tone(1600, 0.15, {type:'sine', gain:0.06}), 80); },
+    heart(){ tone(640, 0.1, {type:'square', gain:0.08}); setTimeout(()=>tone(1240, 0.15, {type:'sawtooth', gain:0.08}), 90); setTimeout(()=>tone(1860, 0.1, {type:'sine', gain:0.07}), 180); },
+    crash(){ tone(180,0.20,{type:'sawtooth',gain:0.08,sweep:-0.35}); },
+    drawCrash(){ tone(220, 0.25, {type:'sawtooth', gain:0.1, sweep:-0.5}); tone(160, 0.25, {type:'square', gain:0.1, sweep:-0.5}); },
+    start(){ tone(420,0.10,{type:'sine',gain:0.05}); setTimeout(()=>tone(640,0.12,{type:'sine',gain:0.05}),120); setTimeout(()=>tone(860,0.14,{type:'sine',gain:0.05}),260); },
+    pause(){ tone(360,0.06,{type:'square',gain:0.04}); },
+    menuClick(){ tone(880, 0.05, {type:'triangle', gain:0.04}); },
+    countdownTick(){ tone(1200, 0.08, {type:'sine', gain:0.03}); },
+    beastMode(){
+        if(muted) return;
+        ensureAudio();
+        const now = audioCtx.currentTime;
+        const base = 160;
+        for(let i=0; i<16; i++){
+            const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
+            o.type='sawtooth';
+            o.frequency.value = base * (1 + i/12);
+            g.gain.setValueAtTime(0.05, now + i*0.2);
+            g.gain.linearRampToValueAtTime(0, now + i*0.2 + 0.2);
+            o.connect(g).connect(audioCtx.destination);
+            o.start(now + i*0.2);
+            o.stop(now + i*0.2 + 0.25);
+        }
+    },
+    gulp(){ tone(420,0.06,{type:'triangle',gain:0.06}); setTimeout(()=>tone(240,0.08,{type:'sine',gain:0.05}),50); },
+    whoosh(){ tone(980,0.05,{type:'triangle',gain:0.04}); setTimeout(()=>tone(820,0.05,{type:'triangle',gain:0.04}),55); setTimeout(()=>tone(680,0.05,{type:'triangle',gain:0.04}),110); },
+    disappear(){
+      tone(560,0.10,{type:'triangle',gain:0.06});
+      setTimeout(()=>tone(340,0.14,{type:'triangle',gain:0.05}),80);
+    },
+    win(){
+      if(muted) return;
+      ensureAudio();
+      const notes=[660,880,660,990,880,660,550,660,770,660,880,990,880,660,550,660,770,880,660,440];
+      notes.forEach((freq,idx)=>{
+        const delay=idx*230;
+        setTimeout(()=>{
+          tone(freq,0.14,{type:'square',gain:0.05});
+        },delay);
+      });
+    },
+    winRound(){
+      if(muted) return;
+      ensureAudio();
+      const notes=[660,880,990,880,660,550,660];
+      notes.forEach((freq,idx)=>{
+        const delay=idx*220;
+        setTimeout(()=>{
+          tone(freq,0.14,{type:'square',gain:0.05});
+        },delay);
+      });
+    }
+  };
+  function updateMuteUI(){
+    const label = lang==='tr' ? (muted?'KAPALI':'AÇIK') : (muted?'OFF':'ON');
+    muteBtn.textContent = (lang==='tr'?'SES':'SOUND')+': '+label+' (M)';
+    localStorage.setItem('neoSnakeMuted', muted?'1':'0');
+  }
+  updateMuteUI();
+
+  /* === UI State === */
+  const banner=document.getElementById('banner');
+  function showBanner(html, padded = true){ 
+    banner.innerHTML=html;
+    if (padded) {
+      banner.classList.add('padded');
+    } else {
+      banner.classList.remove('padded');
+    }
+    banner.classList.add('show'); 
+  }
+  function hideBanner(){ banner.classList.remove('show'); }
+
+  const GAMES_TO_ROUND=5;
+  let games={p1:0,p2:0};
+  const p1Series=document.getElementById('p1Series'), p2Series=document.getElementById('p2Series');
+  function drawSeries(){
+    const render=(el,count,owner)=>{
+      el.innerHTML='';
+      for(let i=0;i<GAMES_TO_ROUND;i++){
+        const dot=document.createElement('div');
+        dot.className='dot'+(i<count?(' win-'+owner):'');
+        el.appendChild(dot);
+      }
+    };
+    render(p1Series,games.p1,'p1');
+    render(p2Series,games.p2,'p2');
+  }
+
+  const MOD_SPEED = { NORMAL:1.00, FAST:1.35, EXTREME:1.80 }; let currentSpeedMode=null;
+  const MOD_WALLS = { NONE: 'no-walls', SOLID: 'walls' }; let currentWallMode=null;
+  let gameMode = null; // '1P' or '2P'
+
+  function updateUIVisibility() {
+    const p2Label = document.getElementById('p2Label');
+    const p2FoodBox = document.getElementById('p2FoodBox');
+    const p1LengthBox = document.getElementById('p1LengthBox');
+    const p1FoodBox1P = document.getElementById('p1FoodBox-1P');
+    const p1FoodBox = document.getElementById('p1FoodBox');
+    const p1Counters1P = document.querySelector('.counters-1p');
+    const p2SeriesEl = document.getElementById('p2Series');
+    const separator = document.getElementById('neon-separator');
+    const panelCenter = document.getElementById('panel-center');
+    const p1Label = document.getElementById('p1Label');
+    const timeLabel = document.getElementById('timeLabel');
+    const resetBtn = document.getElementById('resetBtn');
+
+    if (gameMode === '1P') {
+        p2Label.style.display = 'none';
+        p2FoodBox.style.display = 'none';
+        p1Counters1P.style.display = 'flex';
+        p1FoodBox.style.display = 'none'; // Hide 2P P1 counter
+        p2SeriesEl.style.display = 'none';
+        separator.style.display = 'none';
+        p1Series.style.display = 'none'; // 1P modunda seri gösterilmez
+        panelCenter.classList.add('single-player');
+        p1Label.style.textAlign = 'center';
+        p1Label.style.justifySelf = 'center';
+        timeLabel.style.display = 'none'; // 1P'de zamanlayıcı yok
+        resetBtn.textContent = t('resetRound');
+    } else { // 2P or null (main menu)
+        p2Label.style.display = 'block';
+        p2FoodBox.style.display = 'block';
+        p1Counters1P.style.display = 'none';
+        p1FoodBox.style.display = 'block'; // Show 2P P1 counter
+        p2SeriesEl.style.display = 'flex';
+        separator.style.display = 'block';
+        p1Series.style.display = 'flex';
+        panelCenter.classList.remove('single-player');
+        p1Label.style.textAlign = 'right';
+        p1Label.style.justifySelf = 'end';
+        timeLabel.style.display = 'block';
+        resetBtn.textContent = t('reset');
+    }
+  }
+
+
+  function applyLang(){
+    document.getElementById('menuBtn').textContent = t('menu');
+    document.getElementById('pauseBtn').textContent = paused ? t('resume') : t('pause');
+    document.getElementById('resetBtn').textContent = gameMode === '1P' ? t('resetRound') : t('reset');
+    document.getElementById('p1Label').textContent = playerNames.p1.trim() || t('p1');
+    document.getElementById('p2Label').textContent = playerNames.p2.trim() || t('p2');
+    document.querySelectorAll('[data-i18n="foodEaten"]').forEach(el => el.textContent = t('foodEaten'));
+    document.querySelectorAll('[data-i18n="snakeLength"]').forEach(el => el.textContent = t('snakeLength'));
+    document.querySelectorAll('[data-i18n="p1Food"]').forEach(el => el.textContent = t('p1Food'));
+    document.querySelectorAll('[data-i18n="p2Food"]').forEach(el => el.textContent = t('p2Food'));
+    document.getElementById('version-info').textContent = VERSION;
+    document.getElementById('langBtn').textContent = `${t('language')}: ${t('languageName')}`;
+    updateMuteUI();
+  }
+
+  function openPlayerModeMenu() {
+    paused = true;
+    intermission = true;
+    showBanner(`<h1>${t('playerMode')}</h1><p class="small-text">${t('pickOne')}</p>
+      <div class="modeBtns" style="display:flex;gap:10px;justify-content:center;margin-top:10px">
+        <button class="btn big" id="m1P">${t('onePlayer')}</button>
+        <button class="btn big" id="m2P">${t('twoPlayer')}</button>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:center"><button class="btn" id="modeBack">${t('back')}</button></div>`);
+    const wait=()=>{
+      const p1Btn=document.getElementById('m1P'), p2Btn=document.getElementById('m2P'), back=document.getElementById('modeBack');
+      if(!p1Btn||!p2Btn||!back){ requestAnimationFrame(wait); return; }
+      p1Btn.onclick=()=>{ SFX.menuClick(); gameMode = '1P'; updateUIVisibility(); openWallMenu(); }
+      p2Btn.onclick=()=>{ SFX.menuClick(); gameMode = '2P'; updateUIVisibility(); openWallMenu(); }
+      back.onclick=()=>{ SFX.menuClick(); openMainMenu(); };
+    }; wait();
+  }
+
+  function openWallMenu() {
+    paused = true;
+    intermission = true;
+    showBanner(`<h1>${t('wallMode')}</h1><p class="small-text">${t('pickOne')}</p>
+      <div class="modeBtns" style="display:flex;gap:10px;justify-content:center;margin-top:10px">
+        <button class="btn big" id="mNoWalls">${t('noWalls')}</button>
+        <button class="btn big" id="mWalls">${t('walls')}</button>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:center"><button class="btn" id="modeBack">${t('back')}</button></div>`);
+    const wait=()=>{
+      const noWallsBtn=document.getElementById('mNoWalls'), wallsBtn=document.getElementById('mWalls'), back=document.getElementById('modeBack');
+      if(!noWallsBtn||!wallsBtn||!back){ requestAnimationFrame(wait); return; }
+      noWallsBtn.onclick=()=>{ SFX.menuClick(); selectWallMode(MOD_WALLS.NONE); }
+      wallsBtn.onclick=()=>{ SFX.menuClick(); selectWallMode(MOD_WALLS.SOLID); }
+      back.onclick=()=>{ SFX.menuClick(); openPlayerModeMenu(); };
+    }; wait();
+  }
+
+  function selectWallMode(mode) {
+    currentWallMode = mode;
+    openSpeedMenu();
+  }
+
+  function openSpeedMenu(){
+    paused = true;
+    intermission = true;
+    showBanner(`<h1>${t('snakeSpeed')}</h1><p class="small-text">${t('pickOne')}</p>
+      <div class="modeBtns" style="display:flex;gap:10px;justify-content:center;margin-top:10px">
+        <button class="btn big" id="mNormal">${t('normal')}</button>
+        <button class="btn big" id="mFast">${t('fast')}</button>
+        <button class="btn big" id="mExtreme">${t('extreme')}</button>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:center"><button class="btn" id="modeBack">${t('back')}</button></div>`);
+    const wait=()=>{
+      const n=document.getElementById('mNormal'), f=document.getElementById('mFast'), e=document.getElementById('mExtreme'), back=document.getElementById('modeBack');
+      if(!n||!f||!e||!back){ requestAnimationFrame(wait); return; }
+      n.onclick=()=>{ SFX.menuClick(); selectSpeedMode('NORMAL'); }
+      f.onclick=()=>{ SFX.menuClick(); selectSpeedMode('FAST'); }
+      e.onclick=()=>{ SFX.menuClick(); selectSpeedMode('EXTREME'); }
+      back.onclick=()=>{ SFX.menuClick(); openWallMenu(); };
+    }; wait();
+  }
+  function selectSpeedMode(mode){
+    currentSpeedMode=mode;
+    hideBanner();
+    openColorMenu(); // Renk seçimine git
+  }
+
+  function openColorMenu() {
+    paused = true;
+    intermission = true;
+
+    function renderColorBanner() {
+        let p1Options = COLOR_PALETTE.map(c => 
+            `<button class="color-btn" data-player="p1" data-color="${c.hex}" style="background:${c.hex}; border: 3px solid ${playerColors.p1 === c.hex ? '#fff' : 'transparent'};"></button>`
+        ).join('');
+
+        const p1Name = playerNames.p1.trim() || t('p1');
+        
+        let bannerHTML;
+
+        if (gameMode === '1P') {
+            bannerHTML = `<h1>${t('colorPick')}</h1>
+                <div style="display:flex; justify-content:center; align-items:center; margin: 12px 0;">
+                    <div>
+                        <h2 id="p1NameHeader" style="color:${playerColors.p1}; margin-bottom: 8px; text-shadow: 0 0 5px ${playerColors.p1};">${p1Name}<span class="edit-icon" data-player="p1">&#9998;</span></h2>
+                        <div class="color-options" style="flex-wrap: wrap; width: 140px; justify-content: center;">${p1Options}</div>
+                    </div>
+                </div>
+                <button class="btn big" id="startGameBtn" style="margin-top:16px;">${t('startGame')}</button>`;
+        } else { // 2P
+            let p2Options = COLOR_PALETTE.map(c => {
+                const disabled = c.hex === playerColors.p1;
+                return `<button class="color-btn" data-player="p2" data-color="${c.hex}" style="background:${c.hex}; border: 3px solid ${playerColors.p2 === c.hex ? '#fff' : 'transparent'};" ${disabled ? 'disabled' : ''}></button>`;
+            }).join('');
+            const p2Name = playerNames.p2.trim() || t('p2');
+            bannerHTML = `<h1>${t('colorPick')}</h1>
+                <div style="display:flex; justify-content:space-around; align-items:center; margin: 12px 0;">
+                    <div>
+                        <h2 id="p1NameHeader" style="color:${playerColors.p1}; margin-bottom: 8px; text-shadow: 0 0 5px ${playerColors.p1};">${p1Name}<span class="edit-icon" data-player="p1">&#9998;</span></h2>
+                        <div class="color-options" style="flex-wrap: wrap; width: 140px;">${p1Options}</div>
+                    </div>
+                    <div class="color-menu-separator"></div>
+                    <div>
+                        <h2 id="p2NameHeader" style="color:${playerColors.p2}; margin-bottom: 8px; text-shadow: 0 0 5px ${playerColors.p2};">${p2Name}<span class="edit-icon" data-player="p2">&#9998;</span></h2>
+                        <div class="color-options" style="flex-wrap: wrap; width: 140px;">${p2Options}</div>
+                    </div>
+                </div>
+                <button class="btn big" id="startGameBtn" style="margin-top:16px;">${t('startMatch')}</button>`;
+        }
+        
+        showBanner(bannerHTML);
+
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.onclick = (e) => {
+                SFX.menuClick();
+                ensureAudio();
+                const player = e.target.dataset.player;
+                const color = e.target.dataset.color;
+                if (player === 'p1') { 
+                    playerColors.p1 = color; 
+                    if (gameMode === '2P' && playerColors.p1 === playerColors.p2) { 
+                        const availableColor = COLOR_PALETTE.find(c => c.hex !== playerColors.p1);
+                        if (availableColor) playerColors.p2 = availableColor.hex;
+                    } 
+                } else { 
+                    playerColors.p2 = color; 
+                }
+                updatePlayerColors(playerColors.p1, playerColors.p2);
+                renderColorBanner();
+            };
+        });
+
+        document.querySelectorAll('.edit-icon').forEach(icon => {
+            icon.onclick = (e) => {
+                SFX.menuClick();
+                const player = e.target.dataset.player;
+                startEditingName(player, renderColorBanner);
+            };
+        });
+
+        document.getElementById('startGameBtn').onclick = () => { 
+            SFX.menuClick(); 
+            hideBanner(); 
+            paused = false; 
+            document.getElementById('p1Label').textContent = playerNames.p1.trim() || t('p1');
+            if (gameMode === '2P') {
+                document.getElementById('p2Label').textContent = playerNames.p2.trim() || t('p2');
+            }
+            softReset(true); 
+        };
+    }
+
+    function startEditingName(player, callback) {
+        const header = document.getElementById(`${player}NameHeader`);
+        const currentName = playerNames[player] || t(player);
+        header.innerHTML = `<input type="text" id="${player}NameInput" value="${currentName}" maxlength="10" />`;
+        const input = document.getElementById(`${player}NameInput`);
+        input.focus();
+        input.select();
+
+        const saveName = () => {
+            playerNames[player] = input.value.trim().substring(0, 10);
+            callback();
+        };
+
+        input.onblur = saveName;
+        input.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                saveName();
+            } else if (e.key === 'Escape') {
+                input.value = playerNames[player] || t(player);
+                saveName();
+            }
+        };
+    }
+
+    renderColorBanner();
+  }
+
+  function cycleLang() {
+    SFX.menuClick();
+    const currentIndex = langCycle.indexOf(lang);
+    lang = langCycle[(currentIndex + 1) % langCycle.length];
+    localStorage.setItem('neoSnakeLang', lang);
+    applyLang();
+  }
+
+  document.getElementById('langBtn').onclick = cycleLang;
+
+  /* === Input === */
+  let paused=false, inCountdown=false, intermission=false;
+  addEventListener('keydown',e=>{
+    if (document.activeElement.tagName === 'INPUT') return;
+    ensureAudio(); // İlk ses hatası için
+    if([' ','r','R','m','M','w','a','s','d','W','A','S','D','ArrowUp','ArrowLeft','ArrowDown','ArrowRight'].includes(e.key)) e.preventDefault();
+    if(e.key===' '){ paused=!paused; SFX.pause(); document.getElementById('pauseBtn').textContent=paused ? t('resume') : t('pause'); }
+    if(e.key==='r'||e.key==='R'){ SFX.menuClick(); softReset(true); }
+    if(e.key==='m'||e.key==='M'){ SFX.menuClick(); muted=!muted; updateMuteUI(); }
+    if(!snakes || inCountdown || intermission || paused || !currentSpeedMode) return;
+    if(/^[wasd]$/i.test(e.key)){ const m={w:'up',a:'left',s:'down',d:'right'}; const d=dirMap[m[e.key.toLowerCase()]]; const s=snakes.p1; if(!opposite(d,s.dir)) s.nextDir=d; }
+    if(gameMode === '2P' && /^Arrow/.test(e.key)){ const m={ArrowUp:'up',ArrowLeft:'left',ArrowDown:'down',ArrowRight:'right'}; const d=dirMap[m[e.key]]; const s=snakes.p2; if(!opposite(d,s.dir)) s.nextDir=d; }
+  },{passive:false});
+  document.getElementById('pauseBtn').onclick=()=>{ SFX.menuClick(); paused=!paused; SFX.pause(); document.getElementById('pauseBtn').textContent=paused ? t('resume') : t('pause'); };
+  document.getElementById('resetBtn').onclick=()=>{ SFX.menuClick(); softReset(true); };
+  muteBtn.onclick=()=>{ SFX.menuClick(); muted=!muted; updateMuteUI(); };
+  document.getElementById('menuBtn').onclick=()=>{ SFX.menuClick(); openMainMenu(); };
+
+  /* === Menu Pages === */
+  function openMainMenu(){
+    // Yeni bir maç için skorları ve sayaçları temizle, oyunu duraklat
+    games = { p1:0, p2:0 };
+    drawSeries(); 
+    stats.p1Food = 0; stats.p2Food = 0; updateFoodCounters(); 
+    updatePlayerColors(COLOR_PALETTE[0].hex, COLOR_PALETTE[1].hex); // Renkleri varsayılana sıfırla
+    playerNames = { p1: '', p2: '' }; // İsimleri sıfırla
+    currentSpeedMode = null;
+    currentWallMode = null;
+    gameMode = null;
+    updateUIVisibility();
+    paused = true;
+    intermission = true;
+    timerEnded = false;
+    updateTimerUI(ROUND_DURATION);
+    showBanner(`<h1 style="font-family: 'Orbitron', sans-serif; font-size: clamp(40px, 8vw, 80px); margin-bottom: 20px; text-shadow: 0 0 10px var(--p1), 0 0 20px var(--p2);">2 PLAYER SNAKE</h1>
+      <h2>${t('mainMenu')}</h2>
+      <div class="menuBtns" style="display:flex;flex-direction:column;gap:8px;align-items:center;margin-top:12px">
+        <button class="btn big" id="menuPlay">${t('play')}</button>
+        <button class="btn big" id="menuSettings">${t('settings')}</button>
+        <button class="btn big" id="menuInstructions">${t('instructions')}</button>
+        <button class="btn big" id="menuDevelopers">${t('developers')}</button>
+      </div>
+      <p style="margin-top:16px;font-size:12px;opacity:.5" class="small-text">2PLAYERSNAKE.COM</p>`);
+    const wait=()=>{
+      const p=document.getElementById('menuPlay');
+      const s=document.getElementById('menuSettings');
+      const i=document.getElementById('menuInstructions');
+      const d=document.getElementById('menuDevelopers');
+      if(!p||!s||!i||!d){ requestAnimationFrame(wait); return; }
+      p.onclick=()=>{ SFX.menuClick(); openPlayerModeMenu(); };
+      s.onclick=()=>{ SFX.menuClick(); openSettings(); };
+      i.onclick=()=>{ SFX.menuClick(); openInstructions(); };
+      d.onclick=()=>{ SFX.menuClick(); openDevelopers(); };
+    }; wait();
+  }
+
+  function openSettings(){
+    paused = true;
+    intermission = true;
+    const soundLabel = lang==='tr' ? (muted?'SES: KAPALI':'SES: AÇIK') : (muted?'SOUND: ON':'SOUND: ON');
+    showBanner(`<h1>${t('settings')}</h1>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:center;margin-top:12px">
+        <button class="btn big" id="toggleLang">${t('language')}: ${t('languageName')}</button>
+        <button class="btn big" id="toggleSound">${soundLabel}</button>
+        <button class="btn" id="settingsBack">${t('back')}</button>
+      </div>`);
+    const wait=()=>{
+      const langBtnEl=document.getElementById('toggleLang');
+      const soundBtnEl=document.getElementById('toggleSound');
+      const backBtn=document.getElementById('settingsBack');
+      if(!langBtnEl||!soundBtnEl||!backBtn){ requestAnimationFrame(wait); return; }
+      langBtnEl.onclick=()=>{
+        cycleLang();
+        openSettings();
+      };
+      soundBtnEl.onclick=()=>{
+        SFX.menuClick();
+        muted = !muted;
+        updateMuteUI();
+        openSettings();
+      };
+      backBtn.onclick=()=>{ SFX.menuClick(); openMainMenu(); };
+    }; wait();
+  }
+
+  // Talimatlar sayfası
+  function openInstructions(){
+    paused = true;
+    intermission = true; 
+    showBanner(`<h1>${t('instructions')}</h1><div id="instructionsContainer" style="max-width:500px;max-height: 250px; overflow-y: auto; margin:10px auto;text-align:left; font-size: 14px; line-height: 1.5; padding-right: 10px;">${t('instructionsText')}</div>
+      <div style="display:flex;justify-content:center;margin-top:12px"><button class="btn" id="instructionsBack">${t('back')}</button></div>`);
+    const wait=()=>{
+      const back=document.getElementById('instructionsBack');
+      if(!back){ requestAnimationFrame(wait); return; }
+      back.onclick=()=>{ SFX.menuClick(); openMainMenu(); };
+    }; wait();
+  }
+
+  // Geliştirici bilgileri sayfası
+  function openDevelopers(){
+    paused = true;
+    intermission = true; 
+    showBanner(`<h1>${t('developers')}</h1><div id="developersContainer" style="max-width:500px;margin:10px auto;text-align:left; font-size: 14px; line-height: 1.6;">${t('developersText')}</div>
+      <div style="display:flex;justify-content:center;margin-top:12px"><button class="btn" id="developersBack">${t('back')}</button></div>`);
+    const wait=()=>{
+      const back=document.getElementById('developersBack');
+      if(!back){ requestAnimationFrame(wait); return; }
+      back.onclick=()=>{ SFX.menuClick(); openMainMenu(); };
+    }; wait();
+  }
+
+
+  /* === Helpers === */
+  function rngCell(){
+    if (currentWallMode === MOD_WALLS.SOLID) {
+        const x = 1 + (Math.random() * (GRID_COLS - 2)) | 0;
+        const y = 1 + (Math.random() * (GRID_ROWS - 2)) | 0;
+        return {x, y};
+    }
+    return { x:(Math.random()*GRID_COLS)|0, y:(Math.random()*GRID_ROWS)|0 }
+  }
+  function handleBoundaries(c) {
+    let x=c.x, y=c.y;
+    if (currentWallMode === MOD_WALLS.SOLID) {
+        if (x < 0 || x >= GRID_COLS || y < 0 || y >= GRID_ROWS) {
+            return null; // Duvara çarptı
+        }
+    } else { // No walls
+        if(x<0)x=GRID_COLS-1; else if(x>=GRID_COLS)x=0;
+        if(y<0)y=GRID_ROWS-1; else if(y>=GRID_ROWS)y=0;
+    }
+    return {x,y};
+  }
+  let roundCount = 0;
+  async function countdown(n){
+    inCountdown=true;
+    roundCount++;
+    const numColor = (roundCount % 2 !== 0) ? playerColors.p1 : playerColors.p2;
+    const startColor = (roundCount % 2 !== 0) ? playerColors.p2 : playerColors.p1;
+
+    for(let i=n;i>0;i--){
+      showBanner(`<div class="countdown-text" style="color: ${numColor}; text-shadow: 0 0 2px #fff, 0 0 8px ${numColor};">${i}</div>`, false);
+      SFX.countdownTick();
+      await new Promise(r=>setTimeout(r,800));
+    }
+    showBanner(`<div class="countdown-text start" style="color: ${startColor}; text-shadow: 0 0 5px ${startColor}, 0 0 10px ${startColor};">${t('start')}</div>`, false); SFX.start();
+    if (gameMode === '2P') {
+        roundTimerEnd = performance.now() + ROUND_DURATION;
+        timerEnded = false;
+    }
+    inCountdown=false; intermission=false; // Kontrolü burada aç
+    await new Promise(r=>setTimeout(r,1000));
+    hideBanner();
+  }
+
+  function modLerp(prev, cur, cap, t){
+    if (currentWallMode === MOD_WALLS.SOLID) {
+        return prev + (cur - prev) * t;
+    }
+    let a=prev, b=cur;
+    let d=b-a;
+    if(d>cap/2) a+=cap; else if(d<-cap/2) a-=cap;
+    const v=a + (b-a)*t;
+    let out=v%cap; if(out<0) out+=cap;
+    return out;
+  }
+
+  function hexToRgba(hex, alpha=1.0){
+    if(!hex) return `rgba(255,255,255,${alpha})`;
+    let c = hex.replace('#','');
+    if(c.length === 3){ c = c[0]+c[0] + c[1]+c[1] + c[2]+c[2]; }
+    const bigint = parseInt(c, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const bcol = bigint & 255;
+    return `rgba(${r},${g},${bcol},${alpha})`;
+  }
+
+  function mixColors(a, b, t){
+    function parse(hex){ let c = hex.replace('#',''); if(c.length === 3){ c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2]; } const n=parseInt(c,16); return {r:(n>>16)&255,g:(n>>8)&255,b:n&255}; }
+    const ca=parse(a), cb=parse(b);
+    const r = Math.round(ca.r + (cb.r - ca.r) * t);
+    const g = Math.round(ca.g + (cb.g - ca.g) * t);
+    const bcol = Math.round(ca.b + (cb.b - ca.b) * t);
+    return `#${((1<<24)+(r<<16)+(g<<8)+bcol).toString(16).slice(1)}`;
+  }
+
+  let lastTimeLeft = 0;
+  function updateTimerUI(timeLeftMs){
+    if (gameMode !== '2P') return;
+    const label = document.getElementById('timeLabel');
+    const total = ROUND_DURATION;
+    let ms = Math.max(0, timeLeftMs);
+    const secs = Math.ceil(ms/1000);
+    if (secs <= 10 && secs > 0 && Math.ceil(lastTimeLeft/1000) > secs) {
+        SFX.countdownTick();
+    }
+    lastTimeLeft = ms;
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    label.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    label.style.color = 'var(--white)';
+  }
+
+  function endRoundByTime(){
+    if(!snakes || gameMode !== '2P') return;
+    const l1 = snakes.p1.segments.length;
+    const l2 = snakes.p2.segments.length;
+    if(l1 > l2){ endGame('p1'); }
+    else if(l2 > l1){ endGame('p2'); }
+    else { endGame('draw'); }
+  }
+
+  /* === Core === */
+  const dirMap={up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}};
+  function opposite(a,b){return a.x===-b.x&&a.y===-b.y;}
+  function createSnake(start,dir){ const seg=[ start,{x:start.x-dir.x,y:start.y-dir.y},{x:start.x-2*dir.x,y:start.y-2*dir.y} ]; return { segments:seg, prev:seg.map(s=>({...s})), dir:{...dir}, nextDir:{...dir}, grow:0, powerEnd:0, flashUntil:0, flashColor:null, shakeUntil: 0, digestAnims: [] }; }
+  function isPowered(s){ return s && performance.now()<s.powerEnd; }
+
+  let totalEaten = 0;
+  let bulkFoodEndTime = 0;
+  let pairIdCounter = 0;
+  let normalFoodsEaten = 0;
+  let diamondActive = false;
+  let redFoodPresent = false;
+  let redBulkEndTime = 0;
+  let doubleActive = false;
+  let beastOwner = null;
+
+  const ROUND_DURATION = 3 * 60 * 1000;
+  let roundTimerEnd = 0;
+  let timerEnded = false;
+
+  let snakes=null, stats={p1Food:0,p2Food:0};
+  let acc1=0, acc2=0;
+  function speedMult(s){ return isPowered(s) ? 1.45 : 1.00; }
+
+  function softReset(full=false, countdownNum = 3){
+    GRID_COLS=64; GRID_ROWS=36;
+    const mid={x:(GRID_COLS/2)|0, y:(GRID_ROWS/2)|0};
+    
+    if (gameMode === '1P') {
+        const startP1 = {x: mid.x, y: mid.y};
+        snakes = { p1: createSnake(startP1, dirMap.right), p2: null };
+    } else { // 2P
+        const startP1={x:mid.x-20, y:mid.y-6};
+        const startP2={x:mid.x+20, y:mid.y+6};
+        snakes={ p1:createSnake(startP1, dirMap.right), p2:createSnake(startP2, dirMap.left) };
+    }
+
+    foods.length=0;
+    acc1=0; acc2=0;
+    bulkFoodEndTime = 0;
+    totalEaten = 0;
+    pairIdCounter = 0;
+    normalFoodsEaten = 0;
+    diamondActive = false;
+    redFoodPresent = false;
+    redBulkEndTime = 0;
+    doubleActive = false;
+    beastOwner = null;
+    if(full){ games={p1:0,p2:0}; drawSeries(); roundCount = 0; }
+    stats.p1Food=0; stats.p2Food=0; updateFoodCounters();
+    spawnFood();
+    
+    if (gameMode === '2P') {
+        timerEnded = true; // Timer starts after countdown
+        updateTimerUI(ROUND_DURATION);
+    }
+    
+    countdown(countdownNum);
+  }
+
+  function awardGame(who){ if(who==='p1'){ games.p1++; } else if(who==='p2'){ games.p2++; } drawSeries(); }
+
+  function spawnFood(){
+    const now = performance.now();
+    if(redBulkEndTime && now < redBulkEndTime){ return; }
+    if(doubleActive || diamondActive){ return; }
+    const normalCount = foods.filter(f => f.type === 'normal' && !f.pairId).length;
+    if(normalCount < 1){ spawnNormal(); }
+  }
+  function spawnNormal(){
+    let tries=0; 
+    const occ = new Set();
+    if (snakes.p1) snakes.p1.segments.forEach(s => occ.add(s.x+','+s.y));
+    if (snakes.p2) snakes.p2.segments.forEach(s => occ.add(s.x+','+s.y));
+    foods.forEach(f => occ.add(f.x+','+f.y));
+
+    let f; do{ f=rngCell(); tries++; if(tries>800) return; }while(occ.has(f.x+','+f.y));
+    foods.push({x:f.x, y:f.y, type:'normal', spawnAt:performance.now()});
+  }
+  function spawnDiamondFood(){
+    diamondActive = true;
+    for(let i=foods.length-1; i>=0; i--){ const item = foods[i]; if(item.type === 'normal' && !item.pairId){ foods.splice(i,1); } }
+    let tries=0; 
+    const occ = new Set();
+    if (snakes.p1) snakes.p1.segments.forEach(s => occ.add(s.x+','+s.y));
+    if (snakes.p2) snakes.p2.segments.forEach(s => occ.add(s.x+','+s.y));
+    foods.forEach(f => occ.add(f.x+','+f.y));
+    
+    let f;
+    do{ f=rngCell(); tries++; if(tries>800) return; }while(occ.has(f.x+','+f.y));
+    foods.push({ x:f.x, y:f.y, type:'diamond', spawnAt:performance.now(), expiryTime:performance.now()+3000 });
+  }
+  function spawnRedFood(extra=false){
+    let tries=0; 
+    const occ = new Set();
+    if (snakes.p1) snakes.p1.segments.forEach(s => occ.add(s.x+','+s.y));
+    if (snakes.p2) snakes.p2.segments.forEach(s => occ.add(s.x+','+s.y));
+    foods.forEach(f => occ.add(f.x+','+f.y));
+    
+    let f;
+    do{ f=rngCell(); tries++; if(tries>800) return; }while(occ.has(f.x+','+f.y));
+    foods.push({ x:f.x, y:f.y, type:'heart', spawnAt:performance.now(), extra:extra });
+    redFoodPresent = true;
+  }
+  function spawnDoubleFood(){
+    doubleActive = true;
+    for(let i=foods.length-1;i>=0;i--){ const item = foods[i]; if(item.type==='normal' && !item.pairId){ foods.splice(i,1); } }
+    const pairId = ++pairIdCounter;
+    for(let j=0;j<2;j++){
+      let tries=0; 
+      const occ = new Set();
+      if (snakes.p1) snakes.p1.segments.forEach(s => occ.add(s.x+','+s.y));
+      if (snakes.p2) snakes.p2.segments.forEach(s => occ.add(s.x+','+s.y));
+      foods.forEach(f => occ.add(f.x+','+f.y));
+      
+      let f;
+      do{ f=rngCell(); tries++; if(tries>800) return; }while(occ.has(f.x+','+f.y));
+      foods.push({x:f.x, y:f.y, type:'normal', pairId:pairId, spawnAt:performance.now()});
+    }
+  }
+  function spawnBulkNormals(count){
+    for(let k=0;k<count;k++){
+      let tries=0; 
+      const occ = new Set();
+      if (snakes.p1) snakes.p1.segments.forEach(s => occ.add(s.x+','+s.y));
+      if (snakes.p2) snakes.p2.segments.forEach(s => occ.add(s.x+','+s.y));
+      foods.forEach(f => occ.add(f.x+','+f.y));
+      
+      let f;
+      do{ f=rngCell(); tries++; if(tries>800) break; }while(occ.has(f.x+','+f.y));
+      if(tries<=800){ foods.push({ x:f.x, y:f.y, type:'normal', spawnAt:performance.now() }); }
+    }
+  }
+  function updateFoodCounters(){ 
+      if (gameMode === '1P') {
+          document.getElementById('p1Food-1P').textContent = stats.p1Food; 
+          document.getElementById('p1Length').textContent = snakes.p1.segments.length;
+      } else {
+          document.getElementById('p1Food').textContent = stats.p1Food; 
+          document.getElementById('p2Food').textContent = stats.p2Food; 
+      }
+  }
+
+  function eatFoodIfAny(s, ownerKey){
+    for(let i=0;i<foods.length;i++){
+      const f=foods[i];
+      if(f.x===s.segments[0].x && f.y===s.segments[0].y){
+        const foodColor = f.type === 'normal' ? playerColors[ownerKey] : (f.type === 'diamond' ? '#ffd166' : '#ff1744');
+        s.digestAnims.push({ startTime: performance.now(), color: foodColor });
+
+        foods.splice(i,1);
+        if(f.pairId){ for(let j=foods.length-1;j>=0;j--){ if(foods[j].pairId && foods[j].pairId===f.pairId){ foods.splice(j,1); break; } } doubleActive = false; }
+        const now = performance.now();
+        if(f.type==='diamond'){
+          s.grow += 3;
+          if (gameMode === '2P') {
+              const otherKey = ownerKey === 'p1' ? 'p2' : 'p1';
+              const other = snakes[otherKey];
+              if(other.segments.length > 0){ other.segments.pop(); }
+              if(other.segments.length <= 0){ 
+                endGame(ownerKey); 
+                return; 
+              }
+          }
+          SFX.diamond();
+          s.flashUntil = now + 400;
+          s.flashColor = '#ffd166';
+          diamondActive = false;
+        } else if(f.type==='heart'){
+          s.grow += 1;
+          SFX.heart(); // Ses efekti buraya taşındı
+          if(f.extra){
+            if(beastOwner === ownerKey){
+              s.powerEnd += 5000;
+              redBulkEndTime += 5000;
+            } else {
+              if(beastOwner && snakes[beastOwner]){ snakes[beastOwner].powerEnd = 0; }
+              beastOwner = ownerKey;
+              s.powerEnd = now + 5000;
+              redBulkEndTime = now + 5000;
+            }
+            redFoodPresent = false;
+          } else {
+            s.powerEnd = now + 5000;
+            beastOwner = ownerKey;
+            redFoodPresent = false;
+            foods.length = 0;
+            diamondActive = false;
+            doubleActive = false;
+            redBulkEndTime = now + 5000;
+            spawnBulkNormals(10);
+            spawnRedFood(true);
+          }
+        } else {
+          s.grow += 1;
+          normalFoodsEaten++;
+          SFX.eat();
+        }
+        if(ownerKey==='p1'){ stats.p1Food++; } else { stats.p2Food++; }
+        updateFoodCounters();
+        if(f.type==='normal'){
+          if(normalFoodsEaten % 10 === 0){ if(!redFoodPresent && !(redBulkEndTime && now < redBulkEndTime)){ spawnRedFood(false); } }
+          else if(normalFoodsEaten % 5 === 0){ if(!diamondActive && !redFoodPresent && !(redBulkEndTime && now < redBulkEndTime)){ spawnDiamondFood(); } }
+          else if(normalFoodsEaten % 3 === 0){ if(!doubleActive && !diamondActive && !(redBulkEndTime && now < redBulkEndTime)){ spawnDoubleFood(); } }
+        }
+        spawnFood();
+        return;
+      }
+    }
+  }
+
+  function bodyAdvance(s, ownerKey){
+    const head=s.segments[0];
+    if(!opposite(s.nextDir,s.dir)) s.dir={...s.nextDir};
+    const nextPos = {x:head.x+s.dir.x, y:head.y+s.dir.y};
+    const nextHead = handleBoundaries(nextPos);
+
+    s.prev = s.segments.map(c=>({...c}));
+
+    if (!nextHead) { // Duvara çarptı
+        const winner = gameMode === '1P' ? null : (ownerKey === 'p1' ? 'p2' : 'p1');
+        startDeathAnim(ownerKey, winner);
+        return false; // İlerleme durdu
+    }
+
+    s.segments.unshift(nextHead);
+    if(s.grow>0) s.grow--; else s.segments.pop();
+    return true; // İlerleme başarılı
+  }
+
+  function collideCheckDetailed(){
+    if (gameMode === '1P') {
+        const s1 = snakes.p1;
+        const head1 = s1.segments[0];
+        const self1 = new Set(s1.segments.slice(1).map(c => c.x + ',' + c.y));
+        if (self1.has(head1.x + ',' + head1.y)) {
+            return { result: 'p1_self', eater: null }; // 1P'de kendine çarpma
+        }
+        return { result: null, eater: null };
+    }
+
+    // 2P Logic
+    const s1=snakes.p1, s2=snakes.p2;
+    const head1=s1.segments[0], head2=s2.segments[0];
+    const intangible1 = isPowered(s1);
+    const intangible2 = isPowered(s2);
+    if(head1.x===head2.x && head1.y===head2.y){
+      if(intangible1 && !intangible2){ return {result:'p1', eater:'p1'}; }
+      if(intangible2 && !intangible1){ return {result:'p2', eater:'p2'}; }
+      return {result:'draw', eater:null};
+    }
+    const self1=new Set(s1.segments.slice(1).map(c=>c.x+','+c.y));
+    const self2=new Set(s2.segments.slice(1).map(c=>c.x+','+c.y));
+    const k1=head1.x+','+head1.y;
+    const k2=head2.x+','+head2.y;
+    if(intangible1 && !intangible2){
+      const hit1Self = self1.has(k1);
+      if(hit1Self) return {result:'p2', eater:null};
+      const hitCross = self2.has(k1) || self1.has(k2) || self2.has(k2);
+      if(hitCross){ return {result:'p1', eater:'p1'}; }
+      return {result:null, eater:null};
+    }
+    if(intangible2 && !intangible1){
+      const hit2Self = self2.has(k2);
+      if(hit2Self) return {result:'p1', eater:null};
+      const hitCross = self1.has(k2) || self2.has(k1) || self1.has(k1);
+      if(hitCross){ return {result:'p2', eater:'p2'}; }
+      return {result:null, eater:null};
+    }
+    if(intangible1 && intangible2){
+      const hit1Self = self1.has(k1);
+      const hit2Self = self2.has(k2);
+      if(hit1Self && hit2Self) return {result:'draw', eater:null};
+      if(hit1Self) return {result:'p2', eater:null};
+      if(hit2Self) return {result:'p1', eater:null};
+      return {result:null, eater:null};
+    }
+    const hit1Self = self1.has(k1);
+    const hit2Self = self2.has(k2);
+    const hit1Opp  = self2.has(k1);
+    const hit2Opp  = self1.has(k2);
+    const hit1 = hit1Self || hit1Opp;
+    const hit2 = hit2Self || hit2Opp;
+    if(hit1 && hit2) return {result:'draw', eater:null};
+    if(hit1){ return {result:'p2', eater: hit1Opp ? 'p1' : null}; }
+    if(hit2){ return {result:'p1', eater: hit2Opp ? 'p2' : null}; }
+    return {result:null, eater:null};
+  }
+
+  /* === Animations & Rendering === */
+  let deathAnim = { active:false, loser:null, winner:null, nextAt:0, stepMs:0 };
+  function startDeathAnim(loser, winner){
+    const len = snakes && snakes[loser] ? snakes[loser].segments.length : 1;
+    const ms = len > 0 ? 500 / len : 40;
+    deathAnim = { active:true, loser, winner, nextAt:performance.now(), stepMs: ms };
+    intermission = true;
+    SFX.crash(); SFX.whoosh(); SFX.disappear();
+  }
+  let winAnim = { active:false, winner:null, start:0, duration:5000, blinkPeriod:350, final:false, color:'#fff' };
+  function startWinAnim(winner, final=false){
+    winAnim.active = true;
+    winAnim.winner = winner;
+    winAnim.start = performance.now();
+    winAnim.final = final;
+    if(final){ winAnim.duration = 5000; SFX.win(); }
+    else{ winAnim.duration = 2000; SFX.winRound(); } 
+    const col = playerColors[winner]; // Seçilen rengi al
+    winAnim.color = col || '#fff';
+    intermission = true;
+    foods.length = 0;
+    const winText = (winner === 'p1') ? t('winP1') : t('winP2');
+    showBanner(`<h1 style="color:${col}; text-shadow: 0 0 8px ${col};">${winText}</h1>`);
+    const patterns = {
+      'P': [ [0,1,2,3], [0,3], [0,3], [0,1,2], [0], [0], [0] ],
+      '1': [ [1,2], [0,1,2,3], [2], [2], [2], [2], [0,1,2,3] ],
+      '2': [ [0,1,2,3], [3], [2], [1], [0], [0], [0,1,2,3] ]
+    };
+    const charWidths = { 'P':4, '1':4, '2':4 };
+    const charHeight = 7;
+    const scale = 2;
+    function scaledChar(char){ const rows = patterns[char]; const positions=[]; for(let row=0; row<rows.length; row++){ for(const col of rows[row]){ for(let dy=0; dy<scale; dy++){ for(let dx=0; dx<scale; dx++){ positions.push({ x: col*scale + dx, y: row*scale + dy }); } } } } return { positions, width: charWidths[char] * scale, height: charHeight * scale }; }
+    const numChar = (winner === 'p1') ? '1' : '2';
+    const pData = scaledChar('P');
+    const nData = scaledChar(numChar);
+    const gap = scale;
+    const totalWidth = pData.width + gap + nData.width;
+    const totalHeight = Math.max(pData.height, nData.height);
+    const offsetX = Math.floor((GRID_COLS - totalWidth) / 2);
+    const offsetY = Math.floor((GRID_ROWS - totalHeight) / 2);
+    const pPositions = pData.positions.map(p => ({ x: p.x + offsetX, y: p.y + offsetY }));
+    const nPositions = nData.positions.map(p => ({ x: p.x + offsetX + pData.width + gap, y: p.y + offsetY }));
+    if(final){
+      if(winner === 'p1'){ snakes.p1.segments = [...pPositions, ...nPositions]; snakes.p2.segments = []; }
+      else{ snakes.p2.segments = [...pPositions, ...nPositions]; snakes.p1.segments = []; }
+    }else{
+      if(winner === 'p1'){ snakes.p1.segments = nPositions; snakes.p2.segments = pPositions; }
+      else{ snakes.p2.segments = nPositions; snakes.p1.segments = pPositions; }
+    }
+    for(const key of ['p1','p2']){
+      if (!snakes[key]) continue;
+      const s = snakes[key];
+      s.prev = s.segments.map(c => ({...c}));
+      s.dir = {x:0,y:0}; s.nextDir = {x:0,y:0}; s.grow = 0; s.powerEnd = 0;
+    }
+  }
+
+  function show1PGameOver() {
+    intermission = true;
+    const finalLength = snakes.p1.segments.length;
+    const finalFood = stats.p1Food;
+    const bannerHTML = `<h1>${t('gameOver')}</h1>
+        <div style="margin: 12px 0; font-size: 16px; text-transform: none;">
+            <p>${t('snakeLength')}: <span style="color: var(--p1); font-weight: bold;">${finalLength}</span></p>
+            <p>${t('foodEaten')}: <span style="color: var(--gold); font-weight: bold;">${finalFood}</span></p>
+        </div>
+        <button class="btn big" id="playAgainBtn">${t('playAgain')}</button>
+        <button class="btn" id="mainMenuBtn" style="margin-top: 8px;">${t('mainMenu')}</button>`;
+    showBanner(bannerHTML);
+
+    document.getElementById('playAgainBtn').onclick = () => {
+        SFX.menuClick();
+        softReset(true);
+    };
+    document.getElementById('mainMenuBtn').onclick = () => {
+        SFX.menuClick();
+        openMainMenu();
+    };
+  }
+
+  function endGame(result){
+    if (gameMode === '1P') {
+        if (result === 'p1_self') {
+            show1PGameOver();
+        }
+        return;
+    }
+
+    // 2P Logic
+    if(result==='p1' || result==='p2'){
+      awardGame(result);
+      hideBanner(); // Önceki banner'ı gizle
+      const isFinal = games[result] >= GAMES_TO_ROUND;
+      startWinAnim(result, isFinal);
+    } else { // Beraberlik
+      intermission = true;
+      showBanner(`<h1>${t('draw')}</h1>`);
+      SFX.drawCrash();
+      const now = performance.now();
+      snakes.p1.shakeUntil = now + 200;
+      snakes.p2.shakeUntil = now + 200;
+      canvasWrap.classList.add('shake');
+      setTimeout(()=>{ 
+        canvasWrap.classList.remove('shake');
+        hideBanner(); 
+        resetRound(3); 
+      }, 1300);
+    }
+  }
+  async function resetRound(count=3){
+    const mid={x:(GRID_COLS/2)|0, y:(GRID_ROWS/2)|0};
+    const startP1={x:mid.x-20, y:mid.y-6}; const startP2={x:mid.x+20, y:mid.y+6};
+    stats.p1Food=0; stats.p2Food=0; updateFoodCounters();
+    snakes={ p1:createSnake(startP1, dirMap.right), p2:createSnake(startP2, dirMap.left) };
+    foods.length=0; acc1=0; acc2=0; bulkFoodEndTime=0; totalEaten=0; pairIdCounter=0;
+    normalFoodsEaten=0;
+    diamondActive=false; redFoodPresent=false; redBulkEndTime=0; doubleActive=false; beastOwner=null;
+    deathAnim.active=false;
+    spawnFood();
+    timerEnded = true; // Timer starts after countdown
+    updateTimerUI(ROUND_DURATION);
+    await countdown(count);
+  }
+
+  function drawGrid(){
+    const w=canvas.clientWidth,h=canvas.clientHeight,cw=w/GRID_COLS,ch=h/GRID_ROWS;
+    ctx.save(); ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--grid') || '#1a2537'; ctx.globalAlpha=0.14;
+    ctx.beginPath();
+    for(let x=0;x<=GRID_COLS;x++){ const X=Math.round(x*cw)+.5; ctx.moveTo(X,0); ctx.lineTo(X,h); }
+    for(let y=0;y<=GRID_ROWS;y++){ const Y=Math.round(y*ch)+.5; ctx.moveTo(0,Y); ctx.lineTo(w,Y); }
+    ctx.stroke(); 
+    
+    if (currentWallMode === MOD_WALLS.SOLID) {
+        ctx.strokeStyle = '#e74c3c';
+        ctx.lineWidth = 6;
+        ctx.globalAlpha = 0.7;
+        ctx.shadowColor = '#e74c3c';
+        ctx.shadowBlur = 10;
+        ctx.strokeRect(2, 2, w - 4, h - 4);
+    }
+    ctx.restore();
+  }
+  function drawSnakeBlocks(s, ownerKey, alphaProgress){
+    if (!s) return;
+    const cw=canvas.clientWidth/GRID_COLS, ch=canvas.clientHeight/GRID_ROWS;
+    ctx.save();
+
+    const now = performance.now();
+    if (s.shakeUntil > now) {
+        const shakeAmount = 4;
+        const shakeX = (Math.random() - 0.5) * shakeAmount;
+        const shakeY = (Math.random() - 0.5) * shakeAmount;
+        ctx.translate(shakeX, shakeY);
+    }
+
+    const winning = winAnim.active;
+    for(let i=0;i<s.segments.length;i++){
+      const cur=s.segments[i], prev=s.prev[i]||cur;
+      const x=modLerp(prev.x, cur.x, GRID_COLS, alphaProgress); 
+      const y=modLerp(prev.y, cur.y, GRID_ROWS, alphaProgress); 
+      const cx=(x+.5)*cw, cy=(y+.5)*ch;
+      const size=Math.min(cw,ch)*0.80;
+      const half=size/2;
+      const left=cx-half, top=cy-half;
+      const beast = isPowered(s);
+      const flashing = s.flashUntil && performance.now() < s.flashUntil;
+      const flashPeriod = 120;
+      const flashVisible = ((performance.now()/flashPeriod)|0) % 2 === 0;
+      ctx.save();
+      ctx.globalCompositeOperation='screen';
+      const g=ctx.createRadialGradient(cx,cy,1,cx,cy,size*1.0);
+      if(winning){
+        const col = winAnim.color || '#ffffff';
+        g.addColorStop(0, hexToRgba(col,0.40));
+      } else if(beast){
+        g.addColorStop(0,'rgba(255,23,68,0.4)');
+      } else {
+        const baseAura = hexToRgba(playerColors[ownerKey], 0.25);
+        g.addColorStop(0, baseAura);
+      }
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle=g;
+      ctx.fillRect(left-size*0.3, top-size*0.3, size*1.6, size*1.6);
+      ctx.restore();
+      let bodyColor;
+      let digestGlowColor = null;
+      for(let anim of s.digestAnims){
+        const elapsed = now - anim.startTime;
+        const duration = 1000;
+        if(elapsed > duration){
+          s.digestAnims.shift();
+          continue;
+        }
+        const progress = elapsed / duration;
+        const idx = Math.floor(progress * s.segments.length);
+        if(idx === i){
+          digestGlowColor = anim.color;
+          break;
+        }
+      }
+      if(digestGlowColor){
+        bodyColor = digestGlowColor;
+      } else if(winning){
+        bodyColor = winAnim.color || '#ffffff';
+      } else if(flashing && flashVisible){
+        bodyColor = s.flashColor || '#ffd166';
+      } else if(beast){
+        bodyColor = '#ff1744';
+      } else {
+        bodyColor = playerColors[ownerKey];
+      }
+      ctx.fillStyle = bodyColor;
+      ctx.fillRect(left, top, size, size);
+      ctx.save();
+      ctx.globalCompositeOperation='lighter';
+      const ig=ctx.createRadialGradient(cx,cy,1,cx,cy,size*0.4);
+      ig.addColorStop(0,'rgba(255,255,255,0.40)');
+      ig.addColorStop(1,'rgba(255,255,255,0.04)');
+      ctx.fillStyle=ig; ctx.fillRect(left, top, size, size);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+  function drawFoods(){
+    const w=canvas.clientWidth,h=canvas.clientHeight,cw=w/GRID_COLS,ch=h/GRID_ROWS;
+    for(const f of foods){
+      const cx=(f.x+.5)*cw, cy=(f.y+.5)*ch;
+      const r=Math.min(cw,ch)*0.34;
+      ctx.save();
+      ctx.globalCompositeOperation='screen';
+      let haloRadius, base, innerColor;
+      const glowAnim = 0.5 + (Math.sin(performance.now() / 200) + 1) / 4; // 0.5 to 1.0
+
+      if(f.type === 'diamond'){
+        haloRadius = r * 4.5 * glowAnim; // Increased glow
+        base = `rgba(255,209,102,${0.7 * glowAnim})`; // Brighter base
+        innerColor = '#ffd166';
+      } else if(f.type === 'heart'){
+        haloRadius = r * 4.2 * glowAnim; // Increased glow
+        base = `rgba(255,23,68,${0.7 * glowAnim})`; // Brighter base
+        innerColor = '#ff1744';
+      } else { // normal food
+        const normalGlowAnim = 0.7 + (Math.sin(performance.now() / 300) + 1) / 6; // subtle glow
+        haloRadius = r * 2.8 * normalGlowAnim;
+        base = `rgba(158,208,255,${0.3 * normalGlowAnim})`;
+        innerColor = '#9ed0ff';
+      }
+      const halo=ctx.createRadialGradient(cx,cy,1,cx,cy,haloRadius);
+      halo.addColorStop(0, base);
+      halo.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle=halo; ctx.beginPath(); ctx.arc(cx,cy,haloRadius*0.75,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      ctx.beginPath();
+      ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.fillStyle = innerColor;
+      ctx.fill();
+      ctx.save();
+      ctx.globalCompositeOperation='lighter';
+      ctx.beginPath();
+      ctx.arc(cx,cy,r*0.75,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${0.55 * glowAnim})`;
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+  function render(alpha1, alpha2){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawGrid();
+    if(snakes){
+      drawFoods();
+      drawSnakeBlocks(snakes.p2, 'p2', alpha2);
+      drawSnakeBlocks(snakes.p1, 'p1', alpha1);
+    }
+  }
+  function renderWinAnim(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawGrid();
+    const elapsed = performance.now() - winAnim.start;
+    const period = winAnim.blinkPeriod;
+    const visible = Math.floor(elapsed / period) % 2 === 0;
+    if(visible){
+      if(snakes){
+        drawSnakeBlocks(snakes.p2, 'p2', 0);
+        drawSnakeBlocks(snakes.p1, 'p1', 0);
+      }
+    }
+  }
+
+  /* === Loop === */
+  let last=performance.now();
+  function step(){
+    const now=performance.now(), dt=now-last; last=now;
+    if(winAnim.active){
+      const elapsed = now - winAnim.start;
+      if(elapsed >= winAnim.duration){
+        winAnim.active = false; intermission = false; hideBanner(); // Animasyon bitince banner'ı gizle
+        if(winAnim.final){ 
+          openMainMenu();
+        }
+        else{ resetRound(3); }
+        requestAnimationFrame(step); return;
+      }
+      renderWinAnim();
+      requestAnimationFrame(step); return;
+    }
+    if(redBulkEndTime && now >= redBulkEndTime){
+      foods.length = 0;
+      redBulkEndTime = 0;
+      redFoodPresent = false;
+      beastOwner = null;
+      spawnFood();
+    }
+    const modeBoost = currentSpeedMode ? (MOD_SPEED[currentSpeedMode]||1.0) : 1.0;
+    const baseStepMs = 1000/(BASE_TPS*modeBoost);
+    for(let i=0; i<foods.length; i++){
+      const f=foods[i];
+      if(f.type==='diamond' && f.expiryTime && now >= f.expiryTime){
+        let tries=0;
+        const occ = new Set();
+        if (snakes.p1) snakes.p1.segments.forEach(s => occ.add(s.x+','+s.y));
+        if (snakes.p2) snakes.p2.segments.forEach(s => occ.add(s.x+','+s.y));
+        foods.forEach(food => occ.add(food.x+','+food.y));
+        occ.delete(f.x+','+f.y);
+        let newPos;
+        do{ newPos=rngCell(); tries++; if(tries>800) break; }while(occ.has(newPos.x+','+newPos.y));
+        if(tries<=800){ f.x=newPos.x; f.y=newPos.y; f.spawnAt=now; f.expiryTime=now+3000; }
+      }
+    }
+    if(deathAnim.active){
+      const loser = snakes[deathAnim.loser];
+      if(now>=deathAnim.nextAt){
+        loser.prev = loser.segments.map(c=>({...c}));
+        loser.segments.pop();
+        deathAnim.nextAt = now + deathAnim.stepMs;
+        if(loser.segments.length === 0){ 
+            deathAnim.active=false; 
+            if (gameMode === '1P') {
+                show1PGameOver();
+            } else {
+                endGame(deathAnim.winner); 
+            }
+        }
+      }
+      render(0,0);
+      requestAnimationFrame(step); return;
+    }
+    if(gameMode === '2P' && currentSpeedMode && !paused && !inCountdown && !intermission && !winAnim.active && !deathAnim.active){
+      const tLeft = roundTimerEnd - now;
+      if(!timerEnded && tLeft <= 0){ timerEnded = true; endRoundByTime(); requestAnimationFrame(step); return; }
+    }
+    if(snakes && !paused && !inCountdown && !intermission && currentSpeedMode){
+      acc1 += dt; 
+      if (gameMode === '2P') acc2 += dt;
+      let guard=0;
+      while(guard++<12){
+        const s1=snakes.p1, s2=snakes.p2;
+        const i1 = baseStepMs / speedMult(s1);
+        const r1 = acc1 >= i1;
+
+        if (gameMode === '2P') {
+            const i2 = baseStepMs / speedMult(s2);
+            const r2 = acc2 >= i2;
+            if(!r1 && !r2) break;
+            if(r1 && r2){
+              const moved1 = bodyAdvance(s1, 'p1');
+              const moved2 = bodyAdvance(s2, 'p2');
+              if (!moved1 || !moved2) break; // Biri duvara çarptı, döngüden çık
+              acc1 -= i1; acc2 -= i2;
+              eatFoodIfAny(s1,'p1'); eatFoodIfAny(s2,'p2');
+              const chk = collideCheckDetailed();
+              if(chk.result){ endGame(chk.result); break; }
+            } else if(r1){
+              const moved1 = bodyAdvance(s1, 'p1');
+              if (!moved1) break;
+              acc1 -= i1;
+              eatFoodIfAny(s1,'p1');
+              const chk = collideCheckDetailed();
+              if(chk.result){ endGame(chk.result); break; }
+            } else if(r2){
+              const moved2 = bodyAdvance(s2, 'p2');
+              if (!moved2) break;
+              acc2 -= i2;
+              eatFoodIfAny(s2,'p2');
+              const chk = collideCheckDetailed();
+              if(chk.result){ endGame(chk.result); break; }
+            }
+        } else { // 1P
+            if(!r1) break;
+            const moved1 = bodyAdvance(s1, 'p1');
+            if (!moved1) break;
+            acc1 -= i1;
+            eatFoodIfAny(s1, 'p1');
+            updateFoodCounters(); // 1P'de yılan uzunluğu her adımda güncellenmeli
+            const chk = collideCheckDetailed();
+            if (chk.result) { endGame(chk.result); break; }
+        }
+      }
+    }
+    const s1=snakes?.p1, s2=snakes?.p2;
+    let alpha1=0, alpha2=0;
+    if(s1 && currentSpeedMode){ const i1=(1000/(BASE_TPS*(MOD_SPEED[currentSpeedMode]||1.0)))/speedMult(s1); alpha1=Math.min(1,acc1/i1); }
+    if(s2 && currentSpeedMode){ const i2=(1000/(BASE_TPS*(MOD_SPEED[currentSpeedMode]||1.0)))/speedMult(s2); alpha2=Math.min(1,acc2/i2); }
+    if(currentSpeedMode){
+      if(paused && gameMode === '2P'){
+        roundTimerEnd += dt;
+      }
+      if (!timerEnded && gameMode === '2P') {
+        updateTimerUI(roundTimerEnd - now);
+      }
+    }
+    render(alpha1, alpha2);
+    requestAnimationFrame(step);
+  }
+
+  // Başlangıçta ana menüyü aç
+  openMainMenu();
+  applyLang();
+  requestAnimationFrame(step);
+})();
+</script>
+</body>
+</html>

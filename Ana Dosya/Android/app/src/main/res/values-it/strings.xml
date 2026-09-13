@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">Due giocatori. Un\'arena. Preparati…</string>
+    <string name="loading_subtitle">Regolazione dei controlli, del suono e delle prestazioni…</string>
+    <string name="shortcut_normal_1p">Normale: 1 Giocatore</string>
+    <string name="shortcut_fc_2p">Comp. Veloce: 2 G.</string>
+    <string name="shortcut_fc_1p_ai">Comp. Veloce: 1P vs. AI</string>
+</resources>
+

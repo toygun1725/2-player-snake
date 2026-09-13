@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">दो खिलाड़ी. एक अखाड़ा. तैयार हो जाएं…</string>
+    <string name="loading_subtitle">कंट्रोल, ध्वनि और प्रदर्शन सेट कर रहे हैं…</string>
+    <string name="shortcut_normal_1p">सामान्य: 1 खिलाड़ी</string>
+    <string name="shortcut_fc_2p">तेज़ प्रतिस्पर्धी: 2 खिलाड़ी</string>
+    <string name="shortcut_fc_1p_ai">तेज़ प्रतिस्पर्धी: 1P vs. AI</string>
+</resources>
+

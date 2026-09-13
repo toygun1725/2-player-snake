@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">Twee spelers. Eén arena. Maak je klaar…</string>
+    <string name="loading_subtitle">Besturing, geluid en prestaties afstemmen…</string>
+    <string name="shortcut_normal_1p">Normaal: 1 Speler</string>
+    <string name="shortcut_fc_2p">Snel: 2 Spelers</string>
+    <string name="shortcut_fc_1p_ai">Snel: 1P vs. AI</string>
+</resources>
+

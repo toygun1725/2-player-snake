@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Neo Snake Duel — Alpha v0.15</title>
+  <!-- Version: Alpha v0.15 -->
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --grid:#213044;
+      --p1:#ff4fbf;       /* Pembe (Player 1) */
+      --p1g:#ffc4e7;
+      --p2:#35e6e6;       /* Turkuvaz (Player 2) */
+      --p2g:#bff6f6;
+      --gold:#ffd166;     /* Elmas (sarı) */
+      --heart:#ff1744;    /* Yakut kırmızısı */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;background:var(--bg);color:#e7f1ff;
+      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      overflow:hidden
+    }
+    .wrap{height:100%;display:grid;grid-template-rows:1fr auto}
+    #stage{position:relative;height:calc(100vh - 132px)}
+    #canvasWrap{
+      position:relative;width:100%;height:100%;border-radius:22px;overflow:hidden;
+      box-shadow:0 44px 130px #000a,0 12px 44px #0009,inset 0 0 0 1px #1a2636;
+      background:#09101a
+    }
+    canvas{width:100%;height:100%;display:block;
+      background:radial-gradient(1200px 900px at 50% -30%, #122034 0%, #0b121c 40%, #081018 75%, #050a10 100%)
+    }
+    #canvasWrap::before{
+      content:"";position:absolute;inset:0;
+      background:linear-gradient(transparent,rgba(0,0,0,.35)),
+                 repeating-linear-gradient(180deg,#0000 0 2px,#0003 2px 3px);
+      mix-blend-mode:multiply;pointer-events:none
+    }
+
+    .hudTop{
+      position:absolute;inset:10px 12px auto 12px;
+      display:flex;gap:8px;justify-content:center;align-items:center;pointer-events:none;z-index:5
+    }
+    .title{
+      pointer-events:none;margin:0 12px;padding:8px 12px;font-weight:900;font-size:13px;letter-spacing:.6px;opacity:.95;
+      background:#0b1420cc;border:1px solid #1a2636;border-radius:10px;box-shadow:0 8px 24px #0007
+    }
+    .version{opacity:.8}
+
+    .overlay{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:6}
+    .banner{
+      pointer-events:auto;min-width:320px;max-width:92%;text-align:center;padding:18px 22px;border-radius:18px;
+      background:linear-gradient(180deg,#0d1624ee,#0a111de0);
+      border:1px solid #1b2a41;box-shadow:0 16px 50px #0009;
+      transform:translateY(10px) scale(.96);opacity:0;transition:all .45s cubic-bezier(.2,.8,.2,1)
+    }
+    .banner.show{transform:translateY(0) scale(1);opacity:1}
+    .banner h1{margin:0 0 6px;font-size:clamp(22px,4.2vw,44px);letter-spacing:1px}
+    .banner p{margin:0;opacity:.9;font-size:14px}
+    .banner .p1{color:var(--p1)} .banner .p2{color:var(--p2)} .banner .draw{color:#9ed0ff}
+
+    footer{
+      height:132px;display:grid;grid-template-columns: 1fr auto 1fr;align-items:center;gap:10px;
+      padding:12px 14px;background:linear-gradient(180deg,#0e1726cc,#0a111dcc);border-top:1px solid #1b2a41;
+      backdrop-filter:blur(6px)
+    }
+    .controls-left{justify-self:start;display:flex;gap:10px}
+    .controls-right{justify-self=end;display:flex;gap:10px}
+    .btn{padding:10px 14px;border-radius:12px;background:#0c141f;border:1px solid #1b2a41;color:#d9e6ff;cursor:pointer;font-weight:800;letter-spacing:.3px}
+    .btn:hover{filter:brightness(1.08)}
+
+    .series-wrap{justify-self:center;display:flex;gap:40px;align-items:center}
+    .series{display:flex;gap:14px;align-items:center}
+    .series .barLabel{
+      font-size:18px;font-weight:900;letter-spacing:.5px;opacity:.98;
+      padding:10px 14px;background:#0b1420cc;border:1px solid #1a2636;border-radius:12px
+    }
+    .barLabel.p1{color:var(--p1)} .barLabel.p2{color:var(--p2)}
+    .dot{
+      width:30px;height:30px;border-radius:50%;
+      background:#263449;box-shadow:inset 0 0 0 2px #162131
+    }
+    .dot.win-p1{
+      background:radial-gradient(circle at 30% 30%,#fff,var(--p1) 55%,#300b22 140%);
+      box-shadow:0 0 14px var(--p1), inset 0 0 3px #fff6
+    }
+    .dot.win-p2{
+      background:radial-gradient(circle at 30% 30%,#fff,var(--p2) 55%,#083033 140%);
+      box-shadow:0 0 14px var(--p2), inset 0 0 3px #fff6
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="stage">
+      <div id="canvasWrap">
+        <canvas id="game"></canvas>
+        <div class="hudTop">
+          <div class="title" id="modeTitle">MOD: Seçilmedi</div>
+          <div class="title version">Alpha v0.15</div>
+        </div>
+        <div class="overlay"><div class="banner" id="banner"></div></div>
+      </div>
+    </div>
+    <footer>
+      <div class="controls-left">
+        <button id="menuBtn" class="btn">Ana Menü</button>
+        <button id="pauseBtn" class="btn">Duraklat (Space)</button>
+      </div>
+      <div class="series-wrap">
+        <div class="series left" id="p1Series"><span class="barLabel p1">PLAYER 1</span></div>
+        <div class="series right" id="p2Series"><span class="barLabel p2">PLAYER 2</span></div>
+      </div>
+      <div class="controls-right">
+        <button id="resetBtn" class="btn">Maçı Sıfırla (R)</button>
+        <button id="muteBtn" class="btn">Ses: Açık (M)</button>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+  (()=>{
+    /* ===========================
+       Neo Snake Duel — Alpha v0.15
+       - Yılanlara hafif "glowy" görünüm (performans dostu; iç-parlak katman, seyrek aura).
+       - Gözler kaldırıldı.
+       - Altın & Kırmızı yem hücre içinde biraz daha büyük ve kuvvetli glow.
+       - Yem sonrası hücrede sönme yok; yutulan yemin baştan kuyruğa akan parlak bantı.
+       - Kalp hızlanması sadece yiyen yılanı etkiler (per-snake hız).
+       - Oyun bitişinde 5 sn 8-bit zafer müziği + sahnede “P1/P2” ışıklı yazı animasyonu.
+       =========================== */
+
+    const VERSION = 'Alpha v0.15';
+    const canvas=document.getElementById('game');
+    const ctx=canvas.getContext('2d');
+    let GRID_COLS=64, GRID_ROWS=36; const BASE_TPS=14.2; let tAccum=0;
+    let dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+    function resize(){
+      const st=document.getElementById('stage'); const r=st.getBoundingClientRect();
+      canvas.width=Math.floor(r.width*dpr); canvas.height=Math.floor(r.height*dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    addEventListener('resize',resize,{passive:true}); resize();
+
+    /* === Sesler === */
+    let audioCtx; let muted=localStorage.getItem('neoSnakeMuted')==='1'; const muteBtn=document.getElementById('muteBtn');
+    function ensureAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }
+    function tone(freq,dur,{type='square',gain=0.06,attack=0.004,release=0.06,sweep=0}={}){
+      if(muted) return; try{
+        ensureAudio(); const now=audioCtx.currentTime;
+        const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
+        o.type=type; o.frequency.value=freq;
+        if(sweep){ o.frequency.linearRampToValueAtTime(freq*(1+sweep), now+dur); }
+        g.gain.value=0; g.gain.linearRampToValueAtTime(gain, now+attack);
+        g.gain.linearRampToValueAtTime(0.0001, now+Math.max(dur-0.01,0)+release);
+        o.connect(g).connect(audioCtx.destination); o.start(now); o.stop(now+dur+release+0.03);
+      }catch(e){}
+    }
+    // 8-bit zafer müziği (yaklaşık 5 sn)
+    function victoryTheme(){
+      if(muted) return;
+      ensureAudio();
+      const seq = [
+        [660,0.18],[880,0.18],[990,0.18],[1320,0.22],
+        [880,0.14],[990,0.14],[660,0.20],
+        [740,0.16],[988,0.16],[1176,0.16],[1480,0.22],
+        [988,0.14],[1176,0.14],[740,0.20],
+        [660,0.22],[523,0.22],[587,0.22],[659,0.30]
+      ];
+      let t=0;
+      for(const [f,d] of seq){
+        setTimeout(()=>tone(f,d,{type:'square',gain:0.06}), t*1000);
+        t += d*1.05;
+      }
+      // pedal
+      for(let i=0;i<16;i++){
+        setTimeout(()=>tone(110,0.25,{type:'triangle',gain:0.03}), i*280);
+      }
+    }
+    const SFX={
+      eatNormal(){ tone(720,0.08,{type:'square',gain:0.05}); tone(560,0.07,{type:'sine',gain:0.03}); },
+      eatDiamond(){ tone(980,0.12,{type:'triangle',gain:0.06}); setTimeout(()=>tone(1400,0.12,{type:'triangle',gain:0.06}),60); },
+      eatHeart(){ tone(640,0.10,{type:'square',gain:0.06}); setTimeout(()=>tone(1240,0.12,{type:'sawtooth',gain:0.06}),90); },
+      crash(){ tone(180,0.20,{type:'sawtooth',gain:0.08,sweep:-0.35}); setTimeout(()=>tone(90,0.2,{type:'sine',gain:0.06}),40); },
+      roundWin(){ tone(660,0.10,{type:'triangle',gain:0.05}); setTimeout(()=>tone(880,0.12,{type:'triangle',gain:0.05}),110); setTimeout(()=>tone(1040,0.14,{type:'triangle',gain:0.05}),240); },
+      gameStart(){ tone(420,0.10,{type:'sine',gain:0.05}); setTimeout(()=>tone(640,0.12,{type:'sine',gain:0.05}),120); setTimeout(()=>tone(860,0.14,{type:'sine',gain:0.05}),260); },
+      pause(){ tone(360,0.06,{type:'square',gain:0.04}); },
+      pairSpawn(){ tone(720,0.08,{type:'square',gain:0.045}); },
+      pairVanish(){ tone(320,0.08,{type:'sine',gain:0.04}); },
+      diamondSpawn(){ tone(1200,0.1,{type:'triangle',gain:0.05}); },
+      victoryTheme: victoryTheme
+    };
+    function updateMuteUI(){ muteBtn.textContent=`Ses: ${muted?'Kapalı':'Açık'} (M)`; localStorage.setItem('neoSnakeMuted', muted?'1':'0'); } updateMuteUI();
+
+    /* === Skor / Seri === */
+    const GAMES_TO_ROUND=5;
+    let games={p1:0,p2:0}, roundsWon={p1:0,p2:0};
+    const p1Series=document.getElementById('p1Series'), p2Series=document.getElementById('p2Series');
+    function drawSeries(){
+      const render=(el,count,owner)=>{
+        const label=el.querySelector('.barLabel'); el.innerHTML=''; el.appendChild(label);
+        for(let i=0;i<GAMES_TO_ROUND;i++){ 
+          const dot=document.createElement('div'); 
+          dot.className='dot'+(i<count?(' win-'+owner):''); 
+          el.appendChild(dot); 
+        }
+      };
+      render(p1Series,games.p1,'p1'); 
+      render(p2Series,games.p2,'p2');
+    }
+
+    const banner=document.getElementById('banner'); function showBanner(html){ banner.innerHTML=html; banner.classList.add('show'); } function hideBanner(){ banner.classList.remove('show'); }
+
+    /* === Bitiş “P1/P2” yazı animasyonu === */
+    let finishAnim = { active:false, winner:null, until:0, glyph:[], pulse:0 };
+    const GLYPHS = { 'P':["11110","10001","10001","11110","10000","10000","10000"],
+                     '1':["00100","01100","00100","00100","00100","00100","01110"],
+                     '2':["01110","10001","00001","00010","00100","01000","11111"] };
+    function buildGlyph(chars){
+      const cellList=[]; const glyphW=5, glyphH=7, gap=2;
+      const totalW = chars.length*glyphW + (chars.length-1)*gap;
+      const startX = ((GRID_COLS - totalW) / 2)|0;
+      const startY = ((GRID_ROWS - glyphH) / 2)|0;
+      let ox=startX;
+      for(const ch of chars){
+        const g = GLYPHS[ch]; if(!g){ ox+=glyphW+gap; continue; }
+        for(let y=0;y<glyphH;y++) for(let x=0;x<glyphW;x++) if(g[y][x]==='1') cellList.push({x:ox+x,y:startY+y, ch});
+        ox += glyphW + gap;
+      }
+      return cellList;
+    }
+
+    /* === Per-yılan hız === */
+    let acc1=0, acc2=0;
+    function speedMult(s){ return performance.now() < s.powerEnd ? 1.5 : 1.0; }
+
+    /* === Mide içi parlak akış taşıyıcıları === */
+    function makeIngest(food, snakeLen){
+      let color = { base:'#ffffff', inner:'#ffffff' };
+      if(food.type==='diamond'){ color={ base:getComputedStyle(document.documentElement).getPropertyValue('--gold').trim()||'#ffd166', inner:'#fff8de' }; }
+      else if(food.type==='heart'){ color={ base:getComputedStyle(document.documentElement).getPropertyValue('--heart').trim()||'#ff1744', inner:'#ffd1da' }; }
+      else{ color={ base:'#bfe4ff', inner:'#ffffff' }; }
+      return { idx:0, life: Math.max(6, snakeLen+8), color, type:food.type, phase:0 };
+    }
+
+    const dirMap={up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}}; function opposite(a,b){return a.x===-b.x&&a.y===-b.y}
+    function createSnake(start,dir){
+      const seg=[ start,{x:start.x-dir.x,y:start.y-dir.y},{x:start.x-2*dir.x,y:start.y-2*dir.y} ];
+      return { segments:seg, prev:seg.map(s=>({...s})), dir:{...dir}, nextDir:{...dir}, grow:0, powerEnd:0, ingest:[], color:null };
+    }
+    function shrinkTail(s,n){ const cut=Math.min(n, s.segments.length); if(cut>0) s.segments.splice(s.segments.length-cut, cut); }
+
+    let snakes=null, foods=[], normalsSinceDiamond=0, nextIsDiamond=false, totalEaten=0, nextDouble=false, nextIsHeart=false;
+    let paused=false, inCountdown=false, intermission=false;
+
+    /* Kalp yendiğinde 10 yemlik BURST modu */
+    const BURST_COUNT = 10;
+    let burstState = { active:false, endAt:0 };
+    function spawnBurstFoods(targetAdd){
+      let added=0, tries=0;
+      const occ=new Set([ ...snakes.p1.segments, ...snakes.p2.segments, ...foods ].map(o=>o.x+","+o.y));
+      while(added<targetAdd && tries<3000){
+        const f={ x:(Math.random()*GRID_COLS)|0, y:(Math.random()*GRID_ROWS)|0, type:'normal', t:0, spawnAt:performance.now(), burst:true };
+        tries++;
+        const key=f.x+","+f.y;
+        if(!occ.has(key)){
+          foods.push(f); occ.add(key); added++;
+        }
+      }
+    }
+    function startBurst(){
+      const now=performance.now();
+      if(!burstState.active){
+        burstState.active=true; burstState.endAt=now+4000;
+        spawnBurstFoods(BURST_COUNT);
+      }else{
+        burstState.endAt=now+4000;
+        const currentBurst = foods.filter(f=>f.burst).length;
+        if(currentBurst < BURST_COUNT) spawnBurstFoods(BURST_COUNT - currentBurst);
+      }
+    }
+    function endBurst(){
+      foods = foods.filter(f=>!f.burst);
+      burstState.active=false; burstState.endAt=0;
+      normalsSinceDiamond=0; totalEaten=0; nextIsDiamond=false; nextIsHeart=false; nextDouble=false;
+      if(foods.length===0) spawnFood(true);
+    }
+
+    const MOD_SPEED = { NORMAL:1.00, FAST:1.35, EXTREME:1.80 }; let currentMode=null;
+    const modeTitle=document.getElementById('modeTitle');
+
+    function openMenu(){
+      paused=true;
+      showBanner(`<h1>Oyun Modu</h1><p>Birini seç:</p>
+        <div class="modeBtns" style="display:flex;gap:10px;justify-content:center;margin-top:10px">
+          <button class="btn" id="mNormal">NORMAL</button>
+          <button class="btn" id="mFast">FAST</button>
+          <button class="btn" id="mExtreme">EXTREME</button>
+        </div>`);
+      const wait=()=>{
+        const n=document.getElementById('mNormal'), f=document.getElementById('mFast'), e=document.getElementById('mExtreme');
+        if(!n||!f||!e){ requestAnimationFrame(wait); return; }
+        n.onclick=()=>selectMode('NORMAL'); f.onclick=()=>selectMode('FAST'); e.onclick=()=>selectMode('EXTREME');
+      }; wait();
+    }
+    function selectMode(mode){ currentMode=mode; modeTitle.textContent='MOD: '+mode+' — '+VERSION; hideBanner(); paused=false; softReset(true); }
+
+    /* Girişler */
+    addEventListener('keydown',e=>{
+      if([' ','r','R','m','M','w','a','s','d','W','A','S','D','ArrowUp','ArrowLeft','ArrowDown','ArrowRight'].includes(e.key)) e.preventDefault();
+      if(e.key===' '){ paused=!paused; document.getElementById('pauseBtn').textContent=paused?'Sürdür (Space)':'Duraklat (Space)'; }
+      if(e.key==='r'||e.key==='R'){ softReset(true); }
+      if(e.key==='m'||e.key==='M'){ muted=!muted; updateMuteUI(); }
+      if(!snakes || inCountdown || intermission || paused || !currentMode) return;
+      if(/^[wasd]$/i.test(e.key)){ const m={w:'up',a:'left',s:'down',d:'right'}; const d=dirMap[m[e.key.toLowerCase()]]; const s=snakes.p1; if(!opposite(d,s.dir)) s.nextDir=d; }
+      if(/^Arrow/.test(e.key)){ const m={ArrowUp:'up',ArrowLeft:'left',ArrowDown:'down',ArrowRight:'right'}; const d=dirMap[m[e.key]]; const s=snakes.p2; if(!opposite(d,s.dir)) s.nextDir=d; }
+    },{passive:false});
+    document.getElementById('pauseBtn').onclick=()=>{ paused=!paused; document.getElementById('pauseBtn').textContent=paused?'Sürdür (Space)':'Duraklat (Space)'; };
+    document.getElementById('resetBtn').onclick=()=>softReset(true);
+    muteBtn.onclick=()=>{ muted=!muted; updateMuteUI(); };
+    document.getElementById('menuBtn').onclick=()=>{ openMenu(); };
+
+    /* Ana döngü */
+    let last=performance.now();
+    function step(){
+      const now=performance.now(), dt=now-last; last=now;
+      if(!paused){ tAccum+=dt/1000; }
+
+      // Finish ekranı aktifken
+      if(finishAnim.active){
+        render(1, paused);
+        if(now > finishAnim.until){
+          finishAnim.active=false;
+          const ended = awardGame(finishAnim.winner);
+          hideBanner();
+          resetRound(ended?5:3);
+        }
+        requestAnimationFrame(step); return;
+      }
+
+      if(burstState.active && now>burstState.endAt){ endBurst(); }
+
+      if(snakes && !paused && !inCountdown && !intermission && currentMode){
+        const modeBoost = MOD_SPEED[currentMode] || 1.0;
+        const baseStepMs = 1000/(BASE_TPS*modeBoost);
+        // per-yılan akümülatörleri
+        acc1 += dt; acc2 += dt;
+        let guard=0;
+        while(guard++<12){
+          const s1=snakes.p1, s2=snakes.p2;
+          const i1 = baseStepMs / speedMult(s1);
+          const i2 = baseStepMs / speedMult(s2);
+          const r1 = acc1 >= i1, r2 = acc2 >= i2;
+          if(!r1 && !r2) break;
+          if(r1 && r2){
+            doSimulStep();
+            acc1 -= i1; acc2 -= i2;
+          }else if(r1){
+            doSingleStep(s1, s2);
+            acc1 -= i1;
+          }else if(r2){
+            doSingleStep(s2, s1);
+            acc2 -= i2;
+          }
+          if(intermission || finishAnim.active) break;
+        }
+      }
+      render(1, paused);
+      requestAnimationFrame(step);
+    }
+
+    function doSimulStep(){
+      const s1=snakes.p1, s2=snakes.p2;
+      s1.prev = s1.segments.map(s=>({...s})); s2.prev = s2.segments.map(s=>({...s}));
+      if(!opposite(s1.nextDir,s1.dir)) s1.dir={...s1.nextDir};
+      if(!opposite(s2.nextDir,s2.dir)) s2.dir={...s2.nextDir};
+
+      const b1=bodySetNext(s1), b2=bodySetNext(s2);
+      if(b1.nextHead.x===b2.nextHead.x && b1.nextHead.y===b2.nextHead.y){ endGame('draw'); return; }
+
+      let p1Dead=false, p2Dead=false;
+      const self1=new Set(s1.segments.slice(0, s1.segments.length-(s1.grow>0?0:1)).map(c=>c.x+','+c.y));
+      const self2=new Set(s2.segments.slice(0, s2.segments.length-(s2.grow>0?0:1)).map(c=>c.x+','+c.y));
+      if(self1.has(b1.nextHead.x+','+b1.nextHead.y)) p1Dead=true;
+      if(self2.has(b2.nextHead.x+','+b2.nextHead.y)) p2Dead=true;
+
+      const b1in2 = (new Set(b2.set)).has(b1.nextHead.x+','+b1.nextHead.y);
+      const b2in1 = (new Set(b1.set)).has(b2.nextHead.x+','+b2.nextHead.y);
+      if(b1in2) p1Dead=true;
+      if(b2in1) p2Dead=true;
+
+      if(p1Dead && p2Dead){ endGame('draw'); return; }
+      if(p1Dead || p2Dead){ SFX.crash(); endGame(p1Dead?'p2':'p1'); return; }
+
+      s1.segments.unshift(b1.nextHead); s2.segments.unshift(b2.nextHead);
+      eatCheckSimul(s1,s2,b1.nextHead,b2.nextHead);
+      if(s1.grow>0) s1.grow--; else s1.segments.pop();
+      if(s2.grow>0) s2.grow--; else s2.segments.pop();
+      advanceIngest(s1); advanceIngest(s2);
+    }
+
+    function doSingleStep(s, opp){
+      s.prev = s.segments.map(o=>({...o}));
+      if(!opposite(s.nextDir,s.dir)) s.dir={...s.nextDir};
+      const b=bodySetNext(s);
+      const self=new Set(s.segments.slice(0, s.segments.length-(s.grow>0?0:1)).map(c=>c.x+','+c.y));
+      if(self.has(b.nextHead.x+','+b.nextHead.y)){ SFX.crash(); endGame(s===snakes.p1?'p2':'p1'); return; }
+      const oppSet=new Set(opp.segments.map(c=>c.x+','+c.y));
+      if(oppSet.has(b.nextHead.x+','+b.nextHead.y)){ SFX.crash(); endGame(s===snakes.p1?'p2':'p1'); return; }
+
+      s.segments.unshift(b.nextHead);
+      let eatIndex=-1;
+      for(let i=0;i<foods.length;i++){ const f=foods[i]; if(f.x===b.nextHead.x && f.y===b.nextHead.y){ eatIndex=i; break; } }
+      if(eatIndex!==-1){
+        const res=applyEat(s,opp,foods[eatIndex]); if(res==='ended') return;
+        foods.splice(eatIndex,1);
+        if(!burstState.active && foods.length===0) spawnFood();
+      }
+      if(s.grow>0) s.grow--; else s.segments.pop();
+      advanceIngest(s);
+    }
+
+    function eatCheckSimul(s1,s2,next1,next2){
+      let eat1=-1, eat2=-1;
+      for(let i=0;i<foods.length;i++){ const f=foods[i]; if(f.x===next1.x && f.y===next1.y) eat1=i; if(f.x===next2.x && f.y===next2.y) eat2=i; }
+      const ate1=(eat1!==-1), ate2=(eat2!==-1 && eat2!==eat1);
+      if(ate1){
+        const res=applyEat(s1,s2,foods[eat1]); if(res==='ended') return;
+        if(foods.length===2 && !foods[0].burst && !foods[1].burst){ foods=[]; SFX.pairVanish(); } else { foods.splice(eat1,1); }
+      }
+      if(ate2){
+        const res=applyEat(s2,s1,foods[eat2]); if(res==='ended') return;
+        if(foods.length===2 && !foods[0].burst && !foods[1].burst){ foods=[]; SFX.pairVanish(); } else { foods.splice(eat2,1); }
+      }
+      if(!burstState.active && (ate1||ate2) && foods.length===0) spawnFood();
+    }
+
+    function advanceIngest(s){
+      for(let i=s.ingest.length-1;i>=0;i--){
+        const it=s.ingest[i];
+        it.idx++; it.life--; it.phase+=0.9;
+        if(it.idx>=s.segments.length+8 || it.life<=0){ s.ingest.splice(i,1); }
+      }
+    }
+
+    function applyEat(s, opp, food){
+      // yem hücresinde fade yok; sadece iç-akış bantı
+      s.ingest.push( makeIngest(food, s.segments.length) );
+      if(food.type==='diamond'){
+        s.grow+=2; SFX.eatDiamond();
+        shrinkTail(opp, 1);
+        if(opp.segments.length===0){ endGame(s===snakes.p1 ? 'p1':'p2'); return 'ended'; }
+      } else if(food.type==='heart'){
+        s.powerEnd = performance.now()+4000; SFX.eatHeart();
+        startBurst();
+      } else {
+        s.grow++; SFX.eatNormal();
+        if(!burstState.active){
+          normalsSinceDiamond++;
+          if(normalsSinceDiamond>=4){ nextIsDiamond=true; normalsSinceDiamond=0; }
+        }
+      }
+      totalEaten++;
+      if(!burstState.active){
+        if(totalEeten % 8 === 0){ nextIsHeart = true; }
+        if(totalEaten % 3 === 0){ nextDouble = true; }
+      }
+      return null;
+    }
+
+    function rngCell(){ return { x:(Math.random()*GRID_COLS)|0, y:(Math.random()*GRID_ROWS)|0 } }
+    function wrapCell(c){ let x=c.x,y=c.y; if(x<0)x=GRID_COLS-1; else if(x>=GRID_COLS)x=0; if(y<0)y=GRID_ROWS-1; else if(y>=GRID_ROWS)y=0; return {x,y}; }
+
+    function spawnTwo(){
+      foods=[];
+      let tries=0; const occ=new Set([ ...snakes.p1.segments, ...snakes.p2.segments ].map(o=>o.x+","+o.y));
+      while(foods.length<2 && tries<800){
+        const f=rngCell(); tries++; const key=f.x+","+f.y;
+        if(!occ.has(key) && !foods.some(o=>o.x===f.x&&o.y===f.y)){
+          foods.push({x:f.x,y:f.y,type:'normal',t:0,spawnAt:performance.now()});
+        }
+      }
+      SFX.pairSpawn();
+    }
+    function spawnOne(){
+      let tries=0; const occ=new Set([ ...snakes.p1.segments, ...snakes.p2.segments, ...foods ].map(o=>o.x+","+o.y));
+      let f; do{ f=rngCell(); tries++; if(tries>500) break; }while(occ.has(f.x+","+f.y));
+      let type='normal';
+      if(nextIsHeart){ type='heart'; nextIsHeart=false; }
+      else if(nextIsDiamond){ type='diamond'; nextIsDiamond=false; }
+      foods.push({x:f.x,y:f.y,type, t:0, spawnAt:performance.now()});
+      if(type==='diamond') SFX.diamondSpawn();
+    }
+    function spawnFood(force=false){
+      if(!force && (burstState.active || intermission || inCountdown)) return;
+      if(nextIsHeart){ spawnOne(); }
+      else if(nextDouble){ nextDouble=false; spawnTwo(); }
+      else { spawnOne(); }
+    }
+
+    function resetRound(preCountdown=3){
+      intermission=true;
+      const midY=(GRID_ROWS/2)|0;
+      snakes={ p1:createSnake({x:5,y:midY},{x:1,y:0}), p2:createSnake({x:GRID_COLS-6,y:midY},{x:-1,y:0}) };
+      acc1=0; acc2=0;
+      foods=[]; normalsSinceDiamond=0; nextIsDiamond=false; nextIsHeart=false; nextDouble=false;
+      burstState.active=false; burstState.endAt=0;
+      spawnFood(true);
+      countdown(preCountdown);
+    }
+
+    function softReset(full=false){
+      if(full){ games={p1:0,p2:0}; roundsWon={p1:0,p2:0}; drawSeries(); }
+      foods=[]; resetRound(3);
+    }
+
+    function awardGame(winner){
+      if(winner==='p1'){ games.p1++; }
+      else if(winner==='p2'){ games.p2++; }
+      drawSeries();
+      if(games.p1>=GAMES_TO_ROUND || games.p2>=GAMES_TO_ROUND){
+        const rWinner = games.p1>games.p2 ? 'p1' : (games.p2>games.p1 ? 'p2' : null);
+        if(rWinner){ roundsWon[rWinner]++; SFX.roundWin(); }
+        games={p1:0,p2:0}; drawSeries();
+        return true;
+      }
+      return false;
+    }
+
+    async function countdown(n){
+      inCountdown=true;
+      for(let i=n;i>0;i--){
+        showBanner(`<h1>${i}</h1><p>Hazır olun…</p>`);
+        await new Promise(r=>setTimeout(r,520));
+      }
+      showBanner(`<h1 style="color:#9ed0ff">BAŞLA!</h1>`); SFX.gameStart();
+      await new Promise(r=>setTimeout(r,360));
+      hideBanner(); inCountdown=false; intermission=false;
+    }
+
+    function endGame(result){
+      if(intermission) return;
+      intermission=true;
+      if(result==='draw'){
+        showBanner(`<h1 class="draw">BERABERE</h1><p>Yeni oyuna hazırlanıyor…</p>`);
+        setTimeout(()=>{ hideBanner(); resetRound(3); }, 1200);
+        return;
+      }
+      const chars = result==='p1' ? ['P','1'] : ['P','2'];
+      finishAnim = { active:true, winner:result, until:performance.now()+5000, glyph: buildGlyph(chars), pulse:0 };
+      showBanner(`<h1 class="${result}">${result.toUpperCase()} WON</h1><p>Zafer!</p>`);
+      SFX.victoryTheme();
+    }
+
+    function bodySetNext(s){
+      const newHead=wrapCell({x:s.segments[0].x+s.dir.x, y:s.segments[0].y+s.dir.y});
+      const copy=s.segments.map(o=>({...o}));
+      copy.unshift(newHead);
+      if(s.grow<=0) copy.pop();
+      const set=new Set(); copy.slice(1).forEach(c=> set.add(c.x+','+c.y));
+      return {set,nextBody:copy,nextHead:newHead};
+    }
+
+    /* === Çizim === */
+    function render(alpha, pausedNow){
+      ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.restore();
+      drawGrid(pausedNow);
+      if(!snakes){ return; }
+      if(foods.length) drawFoods();
+      if(!finishAnim.active){
+        drawSnake(snakes.p1, alpha, getComputedStyle(document.documentElement).getPropertyValue('--p1').trim()||'#ff4fbf',
+                               getComputedStyle(document.documentElement).getPropertyValue('--p1g').trim()||'#ffc4e7');
+        drawSnake(snakes.p2, alpha, getComputedStyle(document.documentElement).getPropertyValue('--p2').trim()||'#35e6e6',
+                               getComputedStyle(document.documentElement).getPropertyValue('--p2g').trim()||'#bff6f6');
+      }else{
+        drawFinish();
+      }
+    }
+
+    function drawGrid(pausedNow){
+      const w=canvas.clientWidth,h=canvas.clientHeight,cw=w/GRID_COLS,ch=h/GRID_ROWS;
+      ctx.save(); const pulse= pausedNow ? .12 : .10+.02*Math.sin(tAccum*1.6);
+      ctx.globalAlpha=pulse; ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--grid').trim()||'#213044'; ctx.lineWidth=1;
+      for(let x=0;x<=GRID_COLS;x++){ const X=Math.round(x*cw)+.5; ctx.beginPath(); ctx.moveTo(X,0); ctx.lineTo(X,h); ctx.stroke(); }
+      for(let y=0;y<=GRID_ROWS;y++){ const Y=Math.round(y*ch)+.5; ctx.beginPath(); ctx.moveTo(0,Y); ctx.lineTo(w,Y); ctx.stroke(); }
+      ctx.restore();
+    }
+
+    function drawFoods(){ for(const f of foods){ drawFood(f); } }
+    function drawFood(food){
+      const w=canvas.clientWidth,h=canvas.clientHeight,cw=w/GRID_COLS,ch=h/GRID_ROWS;
+      const x=(food.x+.5)*cw, y=(food.y+.5)*ch; ctx.save();
+      if(food.type==='diamond'){
+        const size=Math.min(cw,ch)*1.12*(1+0.05*Math.sin((food.t||0)*0.22));
+        ctx.globalCompositeOperation='lighter';
+        ctx.translate(x,y); ctx.rotate(((food.t||0)*0.08)%(Math.PI*2)); ctx.shadowColor= getComputedStyle(document.documentElement).getPropertyValue('--gold').trim()||'#ffd166'; ctx.shadowBlur=52;
+        const g=ctx.createLinearGradient(-size/2,-size/2,size/2,size/2);
+        g.addColorStop(0,'#fff'); g.addColorStop(.3,getComputedStyle(document.documentElement).getPropertyValue('--gold').trim()||'#ffd166'); g.addColorStop(1,'#8a5d00');
+        ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(0,-size/2); ctx.lineTo(size/2,0); ctx.lineTo(0,size/2); ctx.lineTo(-size/2,0); ctx.closePath(); ctx.fill();
+      } else if(food.type==='heart'){
+        const s=Math.min(cw,ch)*1.16*(1+0.06*Math.sin((food.t||0)*0.27));
+        const col=getComputedStyle(document.documentElement).getPropertyValue('--heart').trim()||'#ff1744';
+        ctx.globalCompositeOperation='lighter';
+        ctx.translate(x,y); ctx.shadowColor=col; ctx.shadowBlur=58;
+        const rubyGrad=ctx.createLinearGradient(-s/2,-s/2, s/2, s/2);
+        rubyGrad.addColorStop(0,'#ffffff');
+        rubyGrad.addColorStop(0.2, col);
+        rubyGrad.addColorStop(1,'#540014');
+        ctx.fillStyle=rubyGrad;
+        ctx.beginPath();
+        ctx.moveTo(0,-s*0.45); ctx.lineTo(s*0.38,-s*0.06); ctx.lineTo(0,s*0.46); ctx.lineTo(-s*0.38,-s*0.06); ctx.closePath(); ctx.fill();
+        ctx.globalAlpha=.9; ctx.fillStyle='rgba(255,255,255,0.65)';
+        ctx.beginPath(); ctx.moveTo(-s*0.15,-s*0.17); ctx.lineTo(0,-s*0.34); ctx.lineTo(s*0.15,-s*0.17); ctx.closePath(); ctx.fill();
+        ctx.globalAlpha=1;
+      } else {
+        const r=Math.min(cw,ch)*.52*(1+0.02*Math.sin((food.t||0)*0.2));
+        const grad=ctx.createRadialGradient(x,y,r*.18,x,y,r*1.6);
+        grad.addColorStop(0,'#fff'); grad.addColorStop(.25,'#9ed0ff'); grad.addColorStop(1,'#0c2542');
+        ctx.globalCompositeOperation='lighter';
+        ctx.fillStyle=grad; ctx.shadowColor='#a6d8ff'; ctx.shadowBlur=26; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawSnake(s, alpha, col, glowCol){
+      const w=canvas.clientWidth,h=canvas.clientHeight,cw=w/GRID_COLS,ch=h/GRID_ROWS;
+      ctx.save();
+      const amp=Math.min(cw,ch)*0.12;
+      const freq=0.54; const waveSpeed=2.6;
+
+      const bands = [];
+      for(const it of s.ingest){
+        bands.push({pos:it.idx, color:it.color, strong:true});
+        bands.push({pos:it.idx - it.phase, color:it.color, strong:false});
+        bands.push({pos:it.idx + it.phase, color:it.color, strong:false});
+      }
+
+      const auraStride = 3; // performans için her 3 segmentte aura
+      for(let i=0;i<s.segments.length;i++){
+        const curr=s.segments[i]; const prev=s.prev[i]||curr;
+        let dx=curr.x-prev.x; if(dx>GRID_COLS/2) dx-=GRID_COLS; if(dx<-GRID_COLS/2) dx+=GRID_COLS;
+        let dy=curr.y-prev.y; if(dy>GRID_ROWS/2) dy-=GRID_ROWS; if(dy<-GRID_ROWS/2) dy+=GRID_ROWS;
+        let ix=prev.x+dx*alpha, iy=prev.y+dy*alpha;
+        if(ix<0) ix+=GRID_COLS; if(ix>=GRID_COLS) ix-=GRID_COLS; if(iy<0) iy+=GRID_ROWS; if(iy>=GRID_ROWS) iy-=GRID_ROWS;
+        const mag=Math.hypot(dx,dy)||1; const tx=dx/mag, ty=dy/mag; const nx=-ty, ny=tx;
+        const phase=(i*freq) - tAccum*waveSpeed; const off=Math.sin(phase)*amp*(i===0? .10:.18);
+        const x=((ix+.5)*cw)+nx*off, y=((iy+.5)*ch)+ny*off;
+        const size=Math.min(cw,ch)*(i===0?.82:.74);
+
+        // temel gövde — düz parlak renk
+        ctx.globalAlpha=.78+.22*(1 - i/Math.max(1,s.segments.length-1));
+        ctx.fillStyle=col;
+        roundRectPath(x-size/2,y-size/2,size,size,Math.max(6,size*.24));
+        ctx.fill();
+
+        // iç parlak tabaka (hafif glow hissi)
+        if(i%auraStride===0 || i<2){
+          ctx.save();
+          ctx.globalCompositeOperation='screen';
+          const inner=size*0.60;
+          const g=ctx.createRadialGradient(x,y,1,x,y,inner);
+          g.addColorStop(0, 'rgba(255,255,255,0.28)');
+          g.addColorStop(1, glowCol || 'rgba(255,255,255,0.0)');
+          ctx.fillStyle=g;
+          roundRectPath(x-inner/2, y-inner/2, inner, inner, Math.max(4, inner*0.22));
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Meksika dalgası parlak bandı
+        let waveA=0, wColor={base:'#fff',inner:'#fff'};
+        for(const b of bands){
+          const d=Math.abs(i-b.pos);
+          const strength=Math.max(0,1-d/2.2);
+          if(strength>waveA){ waveA=strength*(b.strong?1.0:0.6); wColor=b.color; }
+        }
+        if(waveA>0){
+          ctx.save();
+          ctx.globalCompositeOperation='screen';
+          const inner=size*(0.24+0.22*waveA);
+          const g=ctx.createRadialGradient(x,y,1,x,y,inner);
+          g.addColorStop(0,wColor.inner);
+          g.addColorStop(1,wColor.base);
+          ctx.globalAlpha=0.8;
+          roundRectPath(x-inner/2,y-inner/2,inner,inner,Math.max(3,inner*0.22));
+          ctx.fillStyle=g;
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+      ctx.restore();
+    }
+
+    function roundRectPath(x,y,w,h,r){
+      ctx.beginPath(); ctx.moveTo(x+r,y);
+      ctx.arcTo(x+w,y,x+w,y+h,r);
+      ctx.arcTo(x+w,y+h,x,y+h,r);
+      ctx.arcTo(x,y+h,x,y,r);
+      ctx.arcTo(x,y,x+w,y,r);
+      ctx.closePath();
+    }
+
+    function drawFinish(){
+      const w=canvas.clientWidth,h=canvas.clientHeight,cw=w/GRID_COLS,ch=h/GRID_ROWS;
+      const winner = finishAnim.winner;
+      const colP = getComputedStyle(document.documentElement).getPropertyValue('--p1').trim()||'#ff4fbf';
+      const colQ = getComputedStyle(document.documentElement).getPropertyValue('--p2').trim()||'#35e6e6';
+      const glowP = getComputedStyle(document.documentElement).getPropertyValue('--p1g').trim()||'#ffc4e7';
+      const glowQ = getComputedStyle(document.documentElement).getPropertyValue('--p2g').trim()||'#bff6f6';
+      const puls = 0.5 + 0.5*Math.sin(tAccum*3.2);
+      ctx.save(); ctx.globalCompositeOperation='lighter';
+      for(const cell of finishAnim.glyph){
+        const x=cell.x*cw, y=cell.y*ch, ww=cw, hh=ch;
+        const isP = cell.ch==='P';
+        const base = isP ? (winner==='p1'?colP:colQ) : (winner==='p2'?colQ:colP);
+        const glow = isP ? (winner==='p1'?glowP:glowQ) : (winner==='p2'?glowQ:glowP);
+        const g=ctx.createLinearGradient(x,y,x+ww,y+hh);
+        g.addColorStop(0,'#fff'); g.addColorStop(.12,base); g.addColorStop(1,'#0a1522');
+        ctx.fillStyle=g;
+        ctx.globalAlpha=0.85;
+        roundRectPath(x+2,y+2,ww-4,hh-4,Math.min(10,Math.min(ww,hh)*0.28));
+        ctx.fill();
+        // aura
+        const rad = Math.min(cw,ch)*1.0;
+        const rg=ctx.createRadialGradient(x+ww/2,y+hh/2, rad*0.12, x+ww/2,y+hh/2, rad);
+        rg.addColorStop(0, glow);
+        rg.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.globalAlpha=0.35 + 0.45*puls;
+        ctx.fillStyle=rg; ctx.beginPath(); ctx.arc(x+ww/2,y+hh/2,rad,0,Math.PI*2); ctx.fill();
+        ctx.globalAlpha=1;
+      }
+      ctx.restore();
+    }
+
+    /* Başlat */
+    function openMenuInit(){ drawSeries(); openMenu(); requestAnimationFrame(step); }
+    openMenuInit();
+  })();
+  </script>
+</body>
+</html>

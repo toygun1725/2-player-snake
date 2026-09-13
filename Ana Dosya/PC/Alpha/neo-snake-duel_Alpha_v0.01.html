@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İki Kişilik Yılan Oyunu</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #2c3e50;
+        }
+
+        .game-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            font-size: 14px;
+            gap: 20px;
+        }
+
+        .control-section {
+            background: linear-gradient(145deg, #ffffff, #f0f4f8);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            flex: 1;
+        }
+
+        .control-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .scores {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            gap: 20px;
+        }
+
+        .score {
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            flex: 1;
+        }
+
+        #gameCanvas {
+            border: 3px solid #e2e8f0;
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border-radius: 15px;
+            box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .game-over {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 12px 25px;
+            font-size: 16px;
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🐍 İki Kişilik Yılan Oyunu 🐍</h1>
+        
+        <div class="controls">
+            <div class="control-section">
+                <h3>👩 Kadın (Pembe Yılan)</h3>
+                <p>W: Yukarı | S: Aşağı | A: Sol | D: Sağ</p>
+            </div>
+            <div class="control-section">
+                <h3>👨 Erkek (Mavi Yılan)</h3>
+                <p>U: Yukarı | J: Aşağı | H: Sol | K: Sağ</p>
+            </div>
+        </div>
+
+        <div class="scores">
+            <div class="score">
+                <span style="color: #ff69b4;">👩 Kadın</span><br>
+                <span>Round: <span id="womanRoundScore">0</span></span> |
+                <span>Yemek: <span id="womanScore">0</span></span>
+            </div>
+            <div class="score" style="background: linear-gradient(145deg, #667eea, #764ba2); color: white;">
+                <span style="font-size: 16px; font-weight: bold;">Round <span id="currentRound">1</span>/5</span>
+            </div>
+            <div class="score">
+                <span style="color: #4169e1;">👨 Erkek</span><br>
+                <span>Round: <span id="manRoundScore">0</span></span> |
+                <span>Yemek: <span id="manScore">0</span></span>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <div id="gameOverMsg" class="game-over" style="display: none;"></div>
+        <button id="restartBtn" onclick="restartGame()" style="display: none;">Yeniden Oyna</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Oyun boyutları
+        const gridSize = 20;
+        const tileCount = {
+            x: canvas.width / gridSize,
+            y: canvas.height / gridSize
+        };
+
+        // Ses efektleri (Web Audio API ile)
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playEatSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        function playCollisionSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.5);
+            
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        function playVictorySound() {
+            // Trompetli galibiyet fanfarı
+            const notes = [
+                { freq: 523, time: 0, duration: 0.2 },    // C5
+                { freq: 659, time: 0.2, duration: 0.2 },  // E5
+                { freq: 784, time: 0.4, duration: 0.2 },  // G5
+                { freq: 1047, time: 0.6, duration: 0.3 }, // C6
+                { freq: 784, time: 0.9, duration: 0.15 }, // G5
+                { freq: 1047, time: 1.05, duration: 0.4 } // C6
+            ];
+
+            notes.forEach(note => {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(note.freq, audioContext.currentTime);
+                    oscillator.type = 'sawtooth'; // Trompet benzeri ses
+                    
+                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + note.duration);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + note.duration);
+                }, note.time * 1000);
+            });
+        }
+
+        // Oyun durumu
+        let gameRunning = true;
+        let womanScore = 0;
+        let manScore = 0;
+        let gameOverAnimation = false;
+        let loserSnake = null;
+        let animationFrame = 0;
+        
+        // Turnuva durumu
+        let currentRound = 1;
+        let maxRounds = 5;
+        let womanRoundWins = 0;
+        let manRoundWins = 0;
+        let womanTotalFood = 0;
+        let manTotalFood = 0;
+
+        // Yılanlar
+        const womanSnake = {
+            x: 10,
+            y: 10,
+            dx: 0,
+            dy: 0,
+            cells: [],
+            maxCells: 4,
+            color: '#ff69b4'
+        };
+
+        const manSnake = {
+            x: 30,
+            y: 10,
+            dx: 0,
+            dy: 0,
+            cells: [],
+            maxCells: 4,
+            color: '#4169e1'
+        };
+
+        // Yiyecek
+        let food = {
+            x: 15,
+            y: 15
+        };
+
+        // Yiyecek pozisyonu oluştur
+        function generateFood() {
+            food.x = Math.floor(Math.random() * tileCount.x);
+            food.y = Math.floor(Math.random() * tileCount.y);
+            
+            // Yiyeceğin yılanların üzerine denk gelmemesini sağla
+            for (let cell of womanSnake.cells.concat(manSnake.cells)) {
+                if (cell.x === food.x && cell.y === food.y) {
+                    generateFood();
+                    return;
+                }
+            }
+        }
+
+        // Oyun döngüsü
+        function gameLoop() {
+            if (!gameRunning && !gameOverAnimation) return;
+
+            if (gameOverAnimation) {
+                animateGameOver();
+            } else {
+                update();
+            }
+            draw();
+        }
+
+        function update() {
+            // Sadece hareket eden yılanları güncelle
+            if (womanSnake.dx !== 0 || womanSnake.dy !== 0) {
+                womanSnake.x += womanSnake.dx;
+                womanSnake.y += womanSnake.dy;
+
+                // Duvar çarpışması kontrolü (geçiş)
+                if (womanSnake.x < 0) womanSnake.x = tileCount.x - 1;
+                else if (womanSnake.x >= tileCount.x) womanSnake.x = 0;
+                if (womanSnake.y < 0) womanSnake.y = tileCount.y - 1;
+                else if (womanSnake.y >= tileCount.y) womanSnake.y = 0;
+
+                // Yılan hücrelerini güncelle
+                womanSnake.cells.unshift({x: womanSnake.x, y: womanSnake.y});
+                if (womanSnake.cells.length > womanSnake.maxCells) {
+                    womanSnake.cells.pop();
+                }
+            }
+
+            if (manSnake.dx !== 0 || manSnake.dy !== 0) {
+                manSnake.x += manSnake.dx;
+                manSnake.y += manSnake.dy;
+
+                // Duvar çarpışması kontrolü (geçiş)
+                if (manSnake.x < 0) manSnake.x = tileCount.x - 1;
+                else if (manSnake.x >= tileCount.x) manSnake.x = 0;
+                if (manSnake.y < 0) manSnake.y = tileCount.y - 1;
+                else if (manSnake.y >= tileCount.y) manSnake.y = 0;
+
+                // Yılan hücrelerini güncelle
+                manSnake.cells.unshift({x: manSnake.x, y: manSnake.y});
+                if (manSnake.cells.length > manSnake.maxCells) {
+                    manSnake.cells.pop();
+                }
+            }
+
+            // Yiyecek yeme kontrolü
+            if (womanSnake.x === food.x && womanSnake.y === food.y) {
+                womanSnake.maxCells++;
+                womanScore++;
+                womanTotalFood++;
+                document.getElementById('womanScore').textContent = womanScore;
+                generateFood();
+                playEatSound();
+            }
+
+            if (manSnake.x === food.x && manSnake.y === food.y) {
+                manSnake.maxCells++;
+                manScore++;
+                manTotalFood++;
+                document.getElementById('manScore').textContent = manScore;
+                generateFood();
+                playEatSound();
+            }
+
+            // Çarpışma kontrolü - sadece hareket eden yılanlar için
+            if (womanSnake.cells.length > 0 && manSnake.cells.length > 0) {
+                // Yılan başları çarpıştı mı?
+                if (womanSnake.x === manSnake.x && womanSnake.y === manSnake.y) {
+                    playCollisionSound();
+                    startGameOverAnimation('Berabere');
+                    return;
+                }
+
+                // Kadın yılanı erkek yılanının vücuduna çarptı mı? (Kadın kaybeder)
+                for (let i = 0; i < manSnake.cells.length; i++) {
+                    if (womanSnake.x === manSnake.cells[i].x && womanSnake.y === manSnake.cells[i].y) {
+                        playCollisionSound();
+                        startGameOverAnimation('Erkek', womanSnake);
+                        return;
+                    }
+                }
+                
+                // Erkek yılanı kadın yılanının vücuduna çarptı mı? (Erkek kaybeder)
+                for (let i = 0; i < womanSnake.cells.length; i++) {
+                    if (manSnake.x === womanSnake.cells[i].x && manSnake.y === womanSnake.cells[i].y) {
+                        playCollisionSound();
+                        startGameOverAnimation('Kadın', manSnake);
+                        return;
+                    }
+                }
+
+                // Kendi kendine çarpma kontrolü
+                for (let i = 1; i < womanSnake.cells.length; i++) {
+                    if (womanSnake.x === womanSnake.cells[i].x && womanSnake.y === womanSnake.cells[i].y) {
+                        playCollisionSound();
+                        startGameOverAnimation('Erkek', womanSnake);
+                        return;
+                    }
+                }
+
+                for (let i = 1; i < manSnake.cells.length; i++) {
+                    if (manSnake.x === manSnake.cells[i].x && manSnake.y === manSnake.cells[i].y) {
+                        playCollisionSound();
+                        startGameOverAnimation('Kadın', manSnake);
+                        return;
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            // Ekranı temizle - modern beyaz tema
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Grid çiz (çok hafif gri)
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < tileCount.x; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * gridSize, 0);
+                ctx.lineTo(i * gridSize, canvas.height);
+                ctx.stroke();
+            }
+            for (let i = 0; i < tileCount.y; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * gridSize);
+                ctx.lineTo(canvas.width, i * gridSize);
+                ctx.stroke();
+            }
+
+            // Yiyecek çiz
+            ctx.fillStyle = '#ffd700';
+            ctx.shadowColor = '#ffd700';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(food.x * gridSize + gridSize/2, food.y * gridSize + gridSize/2, gridSize/2 - 2, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Kadın yılanını çiz
+            ctx.shadowColor = womanSnake.color;
+            ctx.shadowBlur = 3;
+            womanSnake.cells.forEach((cell, index) => {
+                const alpha = index === 0 ? 1 : Math.max(0.4, 0.9 - (index * 0.08));
+                ctx.fillStyle = womanSnake.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+                ctx.fillRect(cell.x * gridSize + 2, cell.y * gridSize + 2, gridSize - 4, gridSize - 4);
+            });
+
+            // Erkek yılanını çiz
+            ctx.shadowColor = manSnake.color;
+            ctx.shadowBlur = 3;
+            manSnake.cells.forEach((cell, index) => {
+                const alpha = index === 0 ? 1 : Math.max(0.4, 0.9 - (index * 0.08));
+                ctx.fillStyle = manSnake.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+                ctx.fillRect(cell.x * gridSize + 2, cell.y * gridSize + 2, gridSize - 4, gridSize - 4);
+            });
+            ctx.shadowBlur = 0;
+        }
+
+        function startGameOverAnimation(winner, losingSnake = null) {
+            gameRunning = false;
+            gameOverAnimation = true;
+            loserSnake = losingSnake;
+            animationFrame = 0;
+            
+            if (!losingSnake) {
+                // Berabere durumunda direkt oyun bitir
+                gameOver(winner);
+            }
+        }
+
+        function animateGameOver() {
+            if (!loserSnake) return;
+
+            animationFrame++;
+            
+            // Her 1-2 frame'de bir yılanın son hücresini sil (3 kat hızlı)
+            if (animationFrame % 2 === 0) {
+                if (loserSnake.cells.length > 0) {
+                    loserSnake.cells.pop();
+                } else {
+                    // Animasyon bitti
+                    gameOverAnimation = false;
+                    if (loserSnake === womanSnake) {
+                        gameOver('Erkek');
+                    } else {
+                        gameOver('Kadın');
+                    }
+                }
+            }
+        }
+
+        function gameOver(winner) {
+            const msg = document.getElementById('gameOverMsg');
+            const btn = document.getElementById('restartBtn');
+            
+            // Round kazananını güncelle
+            if (winner === 'Kadın') {
+                womanRoundWins++;
+            } else if (winner === 'Erkek') {
+                manRoundWins++;
+            }
+            
+            // 5. round bitti mi kontrol et
+            if (currentRound >= maxRounds) {
+                // Turnuva sonu
+                playVictorySound();
+                showTournamentResults();
+            } else {
+                // Galibiyet sesi çal (round galibiyeti için)
+                if (winner !== 'Berabere') {
+                    playVictorySound();
+                }
+                
+                if (winner === 'Kadın') {
+                    msg.innerHTML = `🎉 Round ${currentRound} Kazananı: Kadın! 🎉<br>3 saniye sonra yeni round başlıyor...`;
+                    msg.style.color = '#ff69b4';
+                } else if (winner === 'Erkek') {
+                    msg.innerHTML = `🎉 Round ${currentRound} Kazananı: Erkek! 🎉<br>3 saniye sonra yeni round başlıyor...`;
+                    msg.style.color = '#4169e1';
+                } else {
+                    msg.innerHTML = `💥 Round ${currentRound} Berabere! 💥<br>3 saniye sonra yeni round başlıyor...`;
+                    msg.style.color = '#ffa500';
+                }
+                
+                msg.style.display = 'block';
+                
+                // 3 saniye sonra otomatik olarak yeni round başlat
+                setTimeout(() => {
+                    currentRound++;
+                    startNewRound();
+                }, 3000);
+            }
+        }
+
+        function showTournamentResults() {
+            const msg = document.getElementById('gameOverMsg');
+            const btn = document.getElementById('restartBtn');
+            
+            let tournamentWinner = '';
+            let winnerColor = '#ffa500';
+            
+            if (womanRoundWins > manRoundWins) {
+                tournamentWinner = 'Kadın';
+                winnerColor = '#ff69b4';
+            } else if (manRoundWins > womanRoundWins) {
+                tournamentWinner = 'Erkek';
+                winnerColor = '#4169e1';
+            } else {
+                tournamentWinner = 'Berabere';
+            }
+            
+            msg.innerHTML = `
+                <div style="font-size: 28px; margin-bottom: 15px;">
+                    🏆 TURNUVA SONUCU 🏆
+                </div>
+                <div style="font-size: 24px; margin-bottom: 10px; color: ${winnerColor};">
+                    ${tournamentWinner === 'Berabere' ? '🤝 Berabere!' : '🎉 ' + tournamentWinner + ' Şampiyon! 🎉'}
+                </div>
+                <div style="font-size: 16px; line-height: 1.5;">
+                    <strong>👩 Kadın:</strong> ${womanRoundWins} round kazandı, ${womanTotalFood} yemek yedi<br>
+                    <strong>👨 Erkek:</strong> ${manRoundWins} round kazandı, ${manTotalFood} yemek yedi
+                </div>
+            `;
+            msg.style.color = winnerColor;
+            msg.style.display = 'block';
+            btn.style.display = 'inline-block';
+            btn.textContent = 'Yeni Turnuva';
+        }
+
+        function startNewRound() {
+            gameRunning = true;
+            gameOverAnimation = false;
+            loserSnake = null;
+            animationFrame = 0;
+            womanScore = 0;
+            manScore = 0;
+            
+            // UI'ı güncelle
+            document.getElementById('currentRound').textContent = currentRound;
+            document.getElementById('womanScore').textContent = womanScore;
+            document.getElementById('manScore').textContent = manScore;
+            document.getElementById('womanRoundScore').textContent = womanRoundWins;
+            document.getElementById('manRoundScore').textContent = manRoundWins;
+            document.getElementById('gameOverMsg').style.display = 'none';
+
+            // Yılanları sıfırla
+            womanSnake.x = 10;
+            womanSnake.y = 10;
+            womanSnake.dx = 0;
+            womanSnake.dy = 0;
+            womanSnake.cells = [];
+            womanSnake.maxCells = 4;
+
+            manSnake.x = 30;
+            manSnake.y = 10;
+            manSnake.dx = 0;
+            manSnake.dy = 0;
+            manSnake.cells = [];
+            manSnake.maxCells = 4;
+
+            // Başlangıç yılanlarını oluştur (4 piksel)
+            for (let i = 0; i < 4; i++) {
+                womanSnake.cells.push({x: womanSnake.x - i, y: womanSnake.y});
+                manSnake.cells.push({x: manSnake.x - i, y: manSnake.y});
+            }
+
+            generateFood();
+        }
+        function restartGame() {
+            // Yeni turnuva başlat
+            currentRound = 1;
+            womanRoundWins = 0;
+            manRoundWins = 0;
+            womanTotalFood = 0;
+            manTotalFood = 0;
+            
+            // UI'ı güncelle
+            document.getElementById('currentRound').textContent = currentRound;
+            document.getElementById('womanRoundScore').textContent = womanRoundWins;
+            document.getElementById('manRoundScore').textContent = manRoundWins;
+            document.getElementById('restartBtn').textContent = 'Yeniden Oyna';
+            
+            startNewRound();
+        }
+
+        // Klavye kontrolü
+        document.addEventListener('keydown', (e) => {
+            if (!gameRunning || gameOverAnimation) return;
+
+            const key = e.key.toLowerCase();
+            
+            // Kadın kontrolü (WASD) - Ters yön koruması ile
+            if (key === 'w' && womanSnake.dy !== 1) { // Yukarı (aşağıya giderken çalışmaz)
+                womanSnake.dx = 0;
+                womanSnake.dy = -1;
+            } else if (key === 's' && womanSnake.dy !== -1) { // Aşağı (yukarıya giderken çalışmaz)
+                womanSnake.dx = 0;
+                womanSnake.dy = 1;
+            } else if (key === 'a' && womanSnake.dx !== 1) { // Sol (sağa giderken çalışmaz)
+                womanSnake.dx = -1;
+                womanSnake.dy = 0;
+            } else if (key === 'd' && womanSnake.dx !== -1) { // Sağ (sola giderken çalışmaz)
+                womanSnake.dx = 1;
+                womanSnake.dy = 0;
+            }
+            
+            // Erkek kontrolü (UHJK) - Ters yön koruması ile
+            else if (key === 'u' && manSnake.dy !== 1) { // Yukarı (aşağıya giderken çalışmaz)
+                manSnake.dx = 0;
+                manSnake.dy = -1;
+            } else if (key === 'j' && manSnake.dy !== -1) { // Aşağı (yukarıya giderken çalışmaz)
+                manSnake.dx = 0;
+                manSnake.dy = 1;
+            } else if (key === 'h' && manSnake.dx !== 1) { // Sol (sağa giderken çalışmaz)
+                manSnake.dx = -1;
+                manSnake.dy = 0;
+            } else if (key === 'k' && manSnake.dx !== -1) { // Sağ (sola giderken çalışmaz)
+                manSnake.dx = 1;
+                manSnake.dy = 0;
+            }
+        });
+
+        // Oyunu başlat
+        generateFood();
+        
+        // UI'ı güncelle
+        document.getElementById('currentRound').textContent = currentRound;
+        document.getElementById('womanRoundScore').textContent = womanRoundWins;
+        document.getElementById('manRoundScore').textContent = manRoundWins;
+        
+        // Başlangıç yılanlarını oluştur (4 piksel)
+        for (let i = 0; i < 4; i++) {
+            womanSnake.cells.push({x: womanSnake.x - i, y: womanSnake.y});
+            manSnake.cells.push({x: manSnake.x - i, y: manSnake.y});
+        }
+        
+        setInterval(gameLoop, 75);
+    </script>
+</body>
+</html>

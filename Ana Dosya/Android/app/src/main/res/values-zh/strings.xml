@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">两名玩家。一个竞技场。准备好…</string>
+    <string name="loading_subtitle">正在调整控制、声音和性能…</string>
+    <string name="shortcut_normal_1p">普通: 1人</string>
+    <string name="shortcut_fc_2p">快速竞争: 2人</string>
+    <string name="shortcut_fc_1p_ai">快速竞争: 1P vs. AI</string>
+</resources>
+

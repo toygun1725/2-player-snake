@@ -1,0 +1,44 @@
+# Sensitive Keys & Credentials
+/App Store Key/
+/Play Store Key/
+*.p8
+*.p12
+*.keystore
+*.jks
+*.mobileprovision
+
+# Android & Gradle Caches / Builds
+**/.gradle/
+**/.gradle-home/
+**/build/
+**/local.properties
+**/.idea/
+**/*.iml
+**/*.aab
+**/*.apk
+*.zip
+
+# Large Video Files (>100MB GitHub Push Limit)
+*.mp4
+*.MP4
+*.mov
+*.MOV
+*.avi
+
+# iOS & Fastlane temporary files
+**/build/
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# macOS & Windows system files
+.DS_Store
+desktop.ini
+Thumbs.db
+
+# Node.js dependencies
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

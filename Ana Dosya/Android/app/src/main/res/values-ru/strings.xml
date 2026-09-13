@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">Два игрока. Одна арена. Готовьтесь…</string>
+    <string name="loading_subtitle">Настройка управления, звука и производительности…</string>
+    <string name="shortcut_normal_1p">Обычный: 1 Игрок</string>
+    <string name="shortcut_fc_2p">Быстрый: 2 Игрока</string>
+    <string name="shortcut_fc_1p_ai">Быстрый: 1P vs. AI</string>
+</resources>
+

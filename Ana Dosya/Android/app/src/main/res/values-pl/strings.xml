@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">Dwóch graczy. Jedna arena. Przygotuj się…</string>
+    <string name="loading_subtitle">Dostrajanie sterowania, dźwięku i wydajności…</string>
+    <string name="shortcut_normal_1p">Normalny: 1 Gracz</string>
+    <string name="shortcut_fc_2p">Szybki: 2 Graczy</string>
+    <string name="shortcut_fc_1p_ai">Szybki: 1P vs. AI</string>
+</resources>
+

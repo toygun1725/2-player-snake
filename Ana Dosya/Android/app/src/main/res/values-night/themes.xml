@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.TwoPlayerSnake" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/cyan_200</item>
+        <item name="colorSecondary">@color/pink_200</item>
+        <item name="android:windowBackground">@color/surface_dark</item>
+    </style>
+
+    <style name="Theme.TwoPlayerSnake.Launcher" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/surface_dark</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_minimal</item>
+        <item name="postSplashScreenTheme">@style/Theme.TwoPlayerSnake</item>
+    </style>
+
+    <style name="Theme.TwoPlayerSnake.Splash" parent="Theme.TwoPlayerSnake">
+        <item name="android:windowBackground">@drawable/splash_gradient</item>
+    </style>
+</resources>

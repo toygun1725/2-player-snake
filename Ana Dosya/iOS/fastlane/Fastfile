@@ -1,0 +1,107 @@
+# 2 Player Snake - iOS Fastlane Fastfile
+# macOS gerektirmeden GitHub Actions üzerinde iOS derleme ve TestFlight yükleme hattı
+
+default_platform(:ios)
+
+platform :ios do
+  desc "TestFlight'a yeni bir iOS sürümü derler ve otomatik yükler"
+  lane :beta do |options|
+    # 1. Gerekli Ortam Değişkenlerini Doğrula
+    UI.user_error!("APP_STORE_CONNECT_KEY_ID eksik!") unless ENV["APP_STORE_CONNECT_KEY_ID"]
+    UI.user_error!("APP_STORE_CONNECT_ISSUER_ID eksik!") unless ENV["APP_STORE_CONNECT_ISSUER_ID"]
+    UI.user_error!("APP_STORE_CONNECT_PRIVATE_KEY eksik!") unless ENV["APP_STORE_CONNECT_PRIVATE_KEY"]
+
+    # 2. App Store Connect API Anahtarı Tanımla
+    # Private Key metin formatında ya da base64 olarak secret'tan okunur
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_PRIVATE_KEY"],
+      is_key_content_base64: false,
+      in_house: false
+    )
+
+    # 3. CI Ortamı için Geçici Anahtarlık (Keychain) Hazırla
+    keychain_name = "github_actions_keychain"
+    keychain_password = ENV["CI_KEYCHAIN_PASSWORD"] || "SnakeCI_Temporary_Pass_2026!"
+
+    create_keychain(
+      name: keychain_name,
+      password: keychain_password,
+      default_keychain: true,
+      unlock: true,
+      timeout: 3600,
+      lock_when_sleeps: false
+    )
+
+    # 4. Apple Sertifikalarını ve Dağıtım Profilini Otomatik Çek / Senkronize Et
+    # App Store Connect API Key sayesinde Mac olmadan Apple hesabından direkt profil ve sertifika yönetilir
+    if ENV["MATCH_PASSWORD"]
+      # Opsiyon A: Fastlane match kullanılıyorsa
+      match(
+        type: "appstore",
+        api_key: api_key,
+        readonly: true,
+        keychain_name: keychain_name,
+        keychain_password: keychain_password
+      )
+    else
+      # Opsiyon B: API Key ile doğrudan App Store sertifikasını ve profilini indir/oluştur
+      get_certificates(
+        api_key: api_key,
+        type: "distribution",
+        keychain_name: keychain_name,
+        keychain_password: keychain_password
+      )
+      get_provisioning_profile(
+        api_key: api_key,
+        app_identifier: "com.twoplayersnake.app",
+        type: "app-store"
+      )
+    end
+
+    # 5. Build Numarasını Otomatik Artır
+    build_num = options[:build_number]
+    if build_num.nil? || build_num.empty?
+      build_num = ENV["GITHUB_RUN_NUMBER"] || "1"
+    end
+
+    if File.exist?("../TwoPlayerSnake.xcodeproj")
+      increment_build_number(
+        build_number: build_num,
+        xcodeproj: "../TwoPlayerSnake.xcodeproj"
+      )
+    else
+      UI.message("İpucu: TwoPlayerSnake.xcodeproj henüz eklenmedi. Proje eklendiğinde build numarası (#{build_num}) otomatik güncellenecektir.")
+    end
+
+    # 6. Uygulamayı Derle (.ipa Üretimi)
+    # Proje dosyası mevcutsa derler
+    if File.exist?("../TwoPlayerSnake.xcodeproj")
+      build_app(
+        scheme: "TwoPlayerSnake",
+        project: "../TwoPlayerSnake.xcodeproj",
+        output_directory: "./build",
+        output_name: "2PlayerSnake.ipa",
+        clean: true,
+        export_method: "app-store",
+        export_options: {
+          provisioningProfiles: {
+            "com.twoplayersnake.app" => ENV["sigh_com.twoplayersnake.app_app-store_profile-name"] || "2 Player Snake AppStore"
+          }
+        }
+      )
+
+      # 7. TestFlight'a Yükle
+      upload_to_testflight(
+        api_key: api_key,
+        ipa: "./build/2PlayerSnake.ipa",
+        skip_waiting_for_build_processing: true, # CI runner'ın boş yere beklemesini önler
+        changelog: "2 Player Snake iOS Beta Derlemesi (#{build_num})"
+      )
+      UI.success("2 Player Snake başarıyla TestFlight'a yüklendi!")
+    else
+      UI.important("TwoPlayerSnake.xcodeproj henüz mevcut değil. Fastlane ve API bağlantısı başarıyla doğrulandı.")
+    end
+  end
+end

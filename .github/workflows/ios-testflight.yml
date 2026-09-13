@@ -1,0 +1,54 @@
+name: iOS Build & TestFlight Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: 'Özel Build Numarası (Boş bırakılırsa GitHub Run numarası kullanılır)'
+        required: false
+        default: ''
+  push:
+    tags:
+      - 'ios-v*'
+
+jobs:
+  build-and-deploy:
+    name: 🍏 iOS Build & TestFlight Deploy
+    runs-on: macos-14
+    timeout-minutes: 60
+
+    steps:
+      - name: 📥 Depoyu Klonla (Checkout)
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Xcode Sürümünü Seç (Xcode 15.4 / 16)
+        run: |
+          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+          xcodebuild -version
+
+      - name: 💎 Ruby ve Fastlane Kurulumu
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: 'Ana Dosya/iOS'
+
+      - name: 🚀 Fastlane ile TestFlight'a Derle ve Dağıt
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          CI_KEYCHAIN_PASSWORD: ${{ secrets.CI_KEYCHAIN_PASSWORD || 'SnakeCI_Temp_Pass_2026' }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        run: |
+          cd "Ana Dosya/iOS"
+          bundle exec fastlane beta build_number:"${{ github.event.inputs.build_number }}"
+
+      - name: 📦 Üretilen IPA Dosyasını GitHub Artifact Olarak Kaydet
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: 2PlayerSnake-iOS-IPA
+          path: 'Ana Dosya/iOS/fastlane/build/*.ipa'
+          if-no-files-found: ignore

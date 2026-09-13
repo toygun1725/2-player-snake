@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">لاعبان. ساحة واحدة. استعد…</string>
+    <string name="loading_subtitle">ضبط عناصر التحكم والصوت والأداء…</string>
+    <string name="shortcut_normal_1p">عادي: لاعب 1</string>
+    <string name="shortcut_fc_2p">سريع: لاعبان</string>
+    <string name="shortcut_fc_1p_ai">سريع: 1P vs. AI</string>
+</resources>

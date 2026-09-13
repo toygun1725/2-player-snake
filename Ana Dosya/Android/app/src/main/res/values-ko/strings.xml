@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">두 명의 플레이어. 하나의 아레나. 준비하세요…</string>
+    <string name="loading_subtitle">컨트롤, 사운드, 성능 조정 중…</string>
+    <string name="shortcut_normal_1p">일반: 1인</string>
+    <string name="shortcut_fc_2p">빠른 경쟁: 2인</string>
+    <string name="shortcut_fc_1p_ai">빠른 경쟁: 1P vs. AI</string>
+</resources>
+

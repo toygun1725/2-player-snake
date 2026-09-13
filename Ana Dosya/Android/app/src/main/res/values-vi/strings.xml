@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">Hai người chơi. Một đấu trường. Chuẩn bị…</string>
+    <string name="loading_subtitle">Đang tinh chỉnh điều khiển, âm thanh và hiệu suất…</string>
+    <string name="shortcut_normal_1p">Bình thường: 1 Người</string>
+    <string name="shortcut_fc_2p">Nhanh: 2 Người</string>
+    <string name="shortcut_fc_1p_ai">Nhanh: 1P vs. AI</string>
+</resources>
+

@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">Dalawang manlalaro. Isang arena. Humanda na…</string>
+    <string name="loading_subtitle">Inaayos ang mga kontrol, tunog, at performance…</string>
+    <string name="shortcut_normal_1p">Normal: 1 Manlalaro</string>
+    <string name="shortcut_fc_2p">Mabilis: 2 Manlalaro</string>
+    <string name="shortcut_fc_1p_ai">Mabilis: 1P vs. AI</string>
+</resources>
+

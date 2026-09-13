@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="surface_dark">#081018</color>
+    <color name="text_primary">#E7F1FF</color>
+    <color name="text_secondary">#A6B8D1</color>
+    <color name="pink_200">#FF4FBF</color>
+    <color name="cyan_200">#35E6E6</color>
+    <color name="glass_button">#80111A27</color>
+    <color name="glass_stroke">#2EFFFFFF</color>
+    <color name="loading_scrim">#CC071018</color>
+    <color name="track_color">#2AFFFFFF</color>
+</resources>

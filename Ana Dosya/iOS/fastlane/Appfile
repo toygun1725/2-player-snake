@@ -1,0 +1,7 @@
+# 2 Player Snake - iOS Fastlane Appfile
+
+# Apple Developer Portal ve App Store Connect'teki Bundle Identifier
+app_identifier("com.twoplayersnake.app")
+
+# Apple Developer Team ID (Apple Developer Portal > Membership Details bölümünden bulunur)
+team_id(ENV["APPLE_TEAM_ID"] || "GUFQF359Q7")

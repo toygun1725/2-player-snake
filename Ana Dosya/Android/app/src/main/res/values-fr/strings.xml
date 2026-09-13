@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading_title">Deux joueurs. Une arène. Préparez-vous…</string>
+    <string name="loading_subtitle">Ajustement des contrôles, du son et des performances…</string>
+    <string name="shortcut_normal_1p">Normal: 1 Joueur</string>
+    <string name="shortcut_fc_2p">Comp. Rapide: 2 J.</string>
+    <string name="shortcut_fc_1p_ai">Comp. Rapide: 1P vs. AI</string>
+</resources>
+
