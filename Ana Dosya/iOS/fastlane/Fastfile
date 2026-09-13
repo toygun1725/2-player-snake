@@ -25,7 +25,7 @@ platform :ios do
     keychain_name = "github_actions_keychain"
     keychain_password = ENV["CI_KEYCHAIN_PASSWORD"] || "SnakeCI_Temporary_Pass_2026!"
 
-    create_keychain(
+    keychain_path = create_keychain(
       name: keychain_name,
       password: keychain_password,
       default_keychain: true,
@@ -33,6 +33,7 @@ platform :ios do
       timeout: 3600,
       lock_when_sleeps: false
     )
+    keychain_path = lane_context[SharedValues::KEYCHAIN_PATH] || keychain_path
 
     # 4. Apple Sertifikalarını ve Dağıtım Profilini Otomatik Çek / Senkronize Et
     # App Store Connect API Key sayesinde Mac olmadan Apple hesabından direkt profil ve sertifika yönetilir
@@ -49,7 +50,7 @@ platform :ios do
       # Opsiyon B: API Key ile doğrudan App Store sertifikasını ve profilini indir/oluştur
       get_certificates(
         api_key: api_key,
-        keychain_name: keychain_name,
+        keychain_path: keychain_path,
         keychain_password: keychain_password
       )
 
@@ -69,15 +70,33 @@ platform :ios do
     proj_path = File.exist?("../TwoPlayerSnake.xcodeproj") ? "../TwoPlayerSnake.xcodeproj" : "TwoPlayerSnake.xcodeproj"
 
     if File.exist?(proj_path)
-      increment_build_number(
-        build_number: build_num,
-        xcodeproj: proj_path
-      )
+      begin
+        increment_build_number(
+          build_number: build_num,
+          xcodeproj: proj_path
+        )
+      rescue => ex
+        UI.important("increment_build_number uyarısı (#{ex.message}), xcargs ile devam ediliyor.")
+      end
 
-      # 6. Uygulamayı Derle (.ipa Üretimi)
-      profile_name = ENV["sigh_com.twoplayersnake.app_app-store_profile-name"]
+      # 6. Kod İmzalama Ayarlarını Güncelle
+      profile_name = lane_context[SharedValues::SIGH_PROFILE_NAME] || ENV["sigh_com.twoplayersnake.app_app-store_profile-name"]
+
+      begin
+        update_code_signing_settings(
+          use_automatic_signing: false,
+          path: proj_path,
+          team_id: ENV["APPLE_TEAM_ID"] || "GUFQF359Q7",
+          bundle_identifier: "com.twoplayersnake.app",
+          code_sign_identity: "Apple Distribution",
+          profile_name: profile_name
+        )
+      rescue => ex
+        UI.important("update_code_signing_settings uyarısı (#{ex.message})")
+      end
+
       export_opts = {
-        export_method: "app-store"
+        method: "app-store"
       }
       if profile_name && !profile_name.empty?
         export_opts[:provisioningProfiles] = {
@@ -85,6 +104,7 @@ platform :ios do
         }
       end
 
+      # 7. Uygulamayı Derle (.ipa Üretimi)
       build_app(
         scheme: "TwoPlayerSnake",
         project: proj_path,
@@ -92,10 +112,12 @@ platform :ios do
         output_name: "2PlayerSnake.ipa",
         clean: true,
         export_method: "app-store",
-        export_options: export_opts
+        export_options: export_opts,
+        codesigning_identity: "Apple Distribution",
+        xcargs: "CURRENT_PROJECT_VERSION=#{build_num}"
       )
 
-      # 7. TestFlight'a Yükle
+      # 8. TestFlight'a Yükle
       upload_to_testflight(
         api_key: api_key,
         ipa: "./build/2PlayerSnake.ipa",
