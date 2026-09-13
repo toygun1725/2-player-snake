@@ -104,17 +104,19 @@ Projenize şu dosyalar eklenmiştir:
 * **Tetikleme:**
   * GitHub arayüzünden **Actions** sekmesinden "Run workflow" butonuyla manuel tetiklenebilir.
   * İstenirse `ios-v1.0.0` şeklinde bir git tag'i atıldığında otomatik çalışır.
-* **Ortam:** `macos-14` (Apple Silicon M1/M2) üzerinde en güncel Xcode sürümü ile çalışır.
+* **Ortam:** `macos-latest` (macOS 26 Tahoe + Xcode 26.6 + iOS 26 SDK) üzerinde çalışır (Apple'ın 2026 yılı iOS 26 SDK zorunluluğunu karşılar).
+* **Önbellek (Cache):** `actions/cache@v4` ile üretilen dağıtım sertifikasını (`certs/dist_certificate.p12`) saklar; böylece Apple'ın 2 sertifika kotası tükenmez.
 
 ### 2. `Ana Dosya/iOS/fastlane/Fastfile`
 * **İşlevi:** Dağıtım adımlarını yöneten Fastlane yapılandırmasıdır.
 * **Yaptığı İşlemler:**
   1. App Store Connect API anahtarını tanımlar.
-  2. İzole ve geçici bir macOS Keychain oluşturur.
-  3. Apple Developer hesabınızdan gerekli dağıtım sertifikasını ve provisioning profilini otomatik temin eder.
-  4. Build numarasını otomatik günceller.
-  5. `build_app` (Gym) ile projeyi arşivleyip `.ipa` paketi üretir.
-  6. `upload_to_testflight` (Pilot) ile `.ipa` dosyasını doğrudan TestFlight'a yükler.
+  2. İzole ve geçici bir macOS Keychain oluşturur (`-db` uzantı uyumu ile).
+  3. Kendi kendini onaran sertifika yöneticisi: Eğer Apple Developer hesabında 2 sertifika limiti dolmuşsa ve yerel anahtar yoksa, eski yetim sertifikaları silip yenisini üretir.
+  4. Apple Developer hesabınızdan gerekli dağıtım sertifikasını ve provisioning profilini otomatik temin eder.
+  5. Build numarasını otomatik günceller.
+  6. `build_app` (Gym) ile projeyi arşivleyip `.ipa` paketi üretir.
+  7. `upload_to_testflight` (Pilot) ile `.ipa` dosyasını doğrudan TestFlight'a yükler.
 
 ### 3. `Ana Dosya/iOS/fastlane/Appfile`
 * Bundle ID (`com.twoplayersnake.app`) ve Team ID tanımlarını içerir.
@@ -124,28 +126,25 @@ Projenize şu dosyalar eklenmiştir:
 
 ---
 
-## 5. TestFlight Dağıtımı Nasıl Başlatılır?
+## 5. TestFlight Dağıtımı ve Test Kullanıcılarına Açma
 
-GitHub Secrets tanımlamalarınızı yaptıktan sonra dağıtımı başlatmak için:
-
-1. GitHub reponuza gidin.
-2. Üst menüden **Actions** sekmesine tıklayın.
-3. Sol menüden **iOS Build & TestFlight Deployment** iş akışını seçin.
-4. Sağ taraftaki **Run workflow** açılır menüsüne tıklayın:
-   * *(İsteğe bağlı)* `build_number` alanına özel bir numara yazabilir ya da boş bırakabilirsiniz (boş bırakırsanız GitHub çalışma numarası otomatik verilir).
-5. Yeşil **Run workflow** butonuna basın.
-
-İş akışı tamamlandığında (ortalama 5-10 dakika):
-* Apple App Store Connect TestFlight sekmesinde yeni derlemeniz görünecektir.
-* Apple'ın otomatik güvenlik taramasından (processing) sonra TestFlight tester'larınıza bildirim ulaşır.
+1. GitHub Actions üzerinden iş akışı tetiklenir (**Run workflow**).
+2. Ortalama 4-5 dakikada `.ipa` derlenir, imzalanır ve App Store Connect'e yüklenir.
+3. Apple sunucuları yapıyı otomatik işler (**Status: Complete / Ready to Submit**).
+4. **TestFlight Grubu Ataması (İlk Kurulum):**
+   * App Store Connect > TestFlight > **Internal Testing (İç Test)** sekmesinden bir grup oluşturulur.
+   * Geliştirici e-postası testçi olarak eklenir.
+   * **Builds** sekmesinden derleme (`1.0.0 (14)`) seçilerek gruba dahil edilir.
+5. Kullanıcının iPhone'undaki **TestFlight** uygulamasına davet/güncelleme bildirimi düşer.
+6. TestFlight uygulamasından **"Yükle" (Install)** butonuna basılarak oyun fiziksel iPhone'a yüklenir.
 
 ---
 
-## 6. iOS Native Proje Yapısı (2. Aşama Tamamlandı)
+## 6. iOS Native Proje Yapısı (2. Aşama Tamamlandı & Doğrulandı)
 
-iOS native kabuk projesi Android ve Web yapısıyla birebir uyumlu olarak [`Ana Dosya/iOS/TwoPlayerSnake/`](file:///d:/#3%20Vibecoding/AI%20Games/2%20Player%20Snake/Ana%20Dosya/iOS/TwoPlayerSnake) altında oluşturulmuştur:
+iOS native kabuk projesi Android ve Web yapısıyla birebir uyumlu olarak [`Ana Dosya/iOS/TwoPlayerSnake/`](file:///d:/#3%20Vibecoding/AI%20Games/2%20Player%20Snake/Ana%20Dosya/iOS/TwoPlayerSnake) altında oluşturulmuştur ve **fiziksel iPhone üzerinde başarıyla açılıp doğrulanmıştır**:
 
-* **`TwoPlayerSnake.xcodeproj`:** Xcode 15/16 ve iOS 15.0+ uyumlu, GitHub Actions üzerinde otomatik derlenen proje ve paylaşılan şema (`xcshareddata/xcschemes/TwoPlayerSnake.xcscheme`).
+* **`TwoPlayerSnake.xcodeproj`:** Xcode 26 ve iOS 15.0+ uyumlu, GitHub Actions üzerinde otomatik derlenen proje ve paylaşılan şema (`xcshareddata/xcschemes/TwoPlayerSnake.xcscheme`).
 * **`ViewController.swift`:** WKWebView motoru, tam ekran portrait kilit, Dynamic Island ve alt çubuk için Safe-Area CSS değişken enjeksiyonu (`--safe-area-top`), native splash/loading overlay ve internet kopmasında otomatik devreye giren native retry ekranı.
 * **`HapticManager.swift`:** Apple Taptic Engine entegrasyonu (`UIImpactFeedbackGenerator`). Yem yeme (light), özel yem (medium), çarpışma (heavy) ve oyun sonu (error) bildirim titreşimleri.
 * **`GameScriptMessageHandler.swift`:** Web oyunundan gelen köprü çağrılarını dinler ve native sistem işlevleriyle (titreşim, reklam, puan kaydı, mağaza oylaması) buluşturur.
@@ -154,3 +153,12 @@ iOS native kabuk projesi Android ve Web yapısıyla birebir uyumlu olarak [`Ana 
 * **`AdManager.swift`:** Google AdMob ve Apple ATT (App Tracking Transparency) izin ve reklam altyapısı.
 * **`Assets.xcassets`:** 1024x1024 piksel App Store uygulama ikonu (`appstore-1024.png`) ve renk paleti.
 * **`LaunchScreen.storyboard`:** Siyah zemin üzerine yeşil neon "2 PLAYER SNAKE" açılış ekranı.
+
+---
+
+## 7. Çözülen Kritik Sorunlar ve Çözümleri
+
+1. **Fastlane Keychain Bulunamadı Hatası:** macOS Sonoma/Tahoe üzerinde `create_keychain`, sonuna `-db` ekler (`github_actions_keychain-db`). Fastlane'in `get_certificates` eylemine fiziksel dosya yolu `-db` ile birlikte verilerek çözüldü.
+2. **Apple Dağıtım Sertifikası Kotası (2 Certs Limit):** GitHub sanal makineleri geçici olduğu için üretilen özel anahtar makine kapanınca yok oluyordu. Fastlane'e Spaceship API ile eski kullanılmayan sertifikaları temizleyen "Self-Healing" mekanizması ve GitHub Actions `actions/cache@v4` entegre edildi.
+3. **Apple SDK 2026 Kuralı (iOS 26 SDK Zorunluluğu):** Apple'ın `All iOS apps must be built with the iOS 26 SDK or later, included in Xcode 26` hatası, GitHub runner `macos-latest` (macOS 26 + Xcode 26.6) sürümüne yükseltilerek çözüldü.
+4. **TestFlight Yapı Görünmeme Durumu:** Yapı "Complete" olduktan sonra TestFlight grubuna build atanarak kullanıcıya anında davet bildirimi gönderilmesi sağlandı.

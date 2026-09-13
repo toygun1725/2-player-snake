@@ -1,3 +1,31 @@
+# 2 Player Snake - Sürüm Notları (Release Notes)
+
+## iOS TestFlight Release Notes
+
+> Durum (2026-09-13): iOS Native Swift kabuğu `v1.0.0` / Build **14** olarak derlendi, Apple App Store profili ile imzalandı ve TestFlight üzerinden fiziksel iPhone cihazında başarıyla test edildi.
+
+### TestFlight Initial Beta (v1.0.0 / Build 14)
+
+<en-US>
+What's New in iOS v1.0.0 (Build 14):
+• Initial iOS Native release on TestFlight!
+• Smooth WKWebView integration with high-performance 60+ FPS rendering.
+• Hardware Taptic Engine haptic feedback for food collection, power-ups, and collisions.
+• Edge-to-edge support with Dynamic Island and notch-aware safe-area layout.
+• Built and signed headlessly via GitHub Actions CI/CD with Xcode 26 & iOS 26 SDK.
+</en-US>
+
+<tr-TR>
+iOS v1.0.0 (Build 14) Yenilikleri:
+• TestFlight üzerinde ilk iOS Native beta sürümü!
+• Yüksek performanslı 60+ FPS çizim ile akıcı WKWebView entegrasyonu.
+• Yem toplama, güçlendiriciler ve çarpmalar için Apple Taptic Engine donanımsal titreşim desteği.
+• Dynamic Island ve çentik uyumlu tam ekran güvenli alan (safe-area) yerleşimi.
+• Xcode 26 & iOS 26 SDK ile GitHub Actions CI/CD üzerinden otomatik bulut derlemesi ve imzalaması.
+</tr-TR>
+
+---
+
 ## Play Store Release Notes
 
 > Durum (2026-09-04): Güncel mobil ve PC web kaynak referansı `v3.3.5`. Android shell'in son AAB'si `v3.3.5` / versionCode **69** olarak derlendi, R8 bellek ve kalite optimizasyonları ile imzalandı (`2PlayerSnake-v3.3.5-release.aab`).
