@@ -33,13 +33,15 @@ jobs:
           working-directory: 'Ana Dosya/iOS'
 
       - name: 🔑 Sabit Dağıtım Sertifikasını Yükle (GitHub Secret'tan)
-        env:
-          DIST_CERT_SECRET: ${{ secrets.DISTRIBUTION_CERTIFICATE || secrets.APPLE_CERT_P12_BASE64 }}
-        if: env.DIST_CERT_SECRET != ''
         run: |
-          mkdir -p "Ana Dosya/iOS/certs"
-          echo "$DIST_CERT_SECRET" | base64 --decode > "Ana Dosya/iOS/certs/dist_certificate.p12"
-          echo "Sabit dağıtım sertifikası GitHub Secrets üzerinden başarıyla yüklendi."
+          CERT_DATA="${{ secrets.DISTRIBUTION_CERTIFICATE || secrets.APPLE_CERT_P12_BASE64 }}"
+          if [ -n "$CERT_DATA" ]; then
+            mkdir -p "Ana Dosya/iOS/certs"
+            echo "$CERT_DATA" | base64 --decode > "Ana Dosya/iOS/certs/dist_certificate.p12"
+            echo "Sabit dağıtım sertifikası GitHub Secrets üzerinden başarıyla yüklendi."
+          else
+            echo "Sabit sertifika secret'ı tanımlanmamış, standart akış devam ediyor."
+          fi
 
       - name: 🔑 Sertifika Önbelleği (Certificate Cache)
         uses: actions/cache@v4
