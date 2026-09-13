@@ -143,12 +143,49 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
     }
 
     private func handleBuyRemoveAds() {
+        guard let vc = viewController else { return }
         print("Bridge: buyRemoveAds çağrıldı")
-        // Satın alma akışı hazır kancası
+        IAPManager.shared.buyRemoveAds(from: vc) { [weak self] success, errorMessage in
+            guard let self = self, let vc = self.viewController else { return }
+            if success {
+                vc.publishSettingsToGame()
+                vc.showAlert(
+                    title: "👑 Reklamlar Kaldırıldı!",
+                    message: "Teşekkürler! Artık reklamsız bir deneyimin tadını çıkarabilirsin.",
+                    buttonTitle: "Harika!"
+                )
+            } else if let error = errorMessage, !error.isEmpty {
+                vc.showAlert(
+                    title: "Hata",
+                    message: "Satın alma başarısız: \(error)",
+                    buttonTitle: "Tamam"
+                )
+            }
+        }
     }
 
     private func handleRestorePurchases() {
+        guard let vc = viewController else { return }
         print("Bridge: restorePurchases çağrıldı")
-        // Satın alma geri yükleme kancası
+        IAPManager.shared.restorePurchases { [weak self] isPremium, errorMessage in
+            guard let self = self, let vc = self.viewController else { return }
+            if let error = errorMessage, !error.isEmpty {
+                vc.showAlert(
+                    title: "Hata",
+                    message: "Satın alımlar geri yüklenemedi: \(error)",
+                    buttonTitle: "Tamam"
+                )
+            } else {
+                vc.publishSettingsToGame()
+                let msg = isPremium
+                    ? "👑 Reklamsız satın alımın başarıyla geri yüklendi!"
+                    : "Bu Apple hesabında daha önce reklam kaldırma satın alımı bulunamadı."
+                vc.showAlert(
+                    title: "Satın Alımları Geri Yükle",
+                    message: msg,
+                    buttonTitle: "Tamam"
+                )
+            }
+        }
     }
 }

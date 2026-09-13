@@ -10,6 +10,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     ) -> Bool {
         // Audio Session: Oyun seslerinin diğer arka plan sesleriyle (müzik vb.) uyumlu çalışması
         configureAudioSession()
+
+        // RevenueCat / IAP: Uygulama içi satın alma altyapısını başlat
+        IAPManager.shared.configure()
+
         return true
     }
 

@@ -78,9 +78,9 @@ Ana Dosya/iOS/
 | **Aşama 2** | iOS Native Swift Kabuğu & JS Köprü Mimarisi | ✅ **Tamamlandı** |
 | **Aşama 3** | TestFlight İlk Dağıtım & Cihaza İndirme | ✅ **Tamamlandı & Doğrulandı** |
 | **Aşama 4** | Fiziksel iPhone Üzerinde Oynanış & UX Testleri | ✅ **Tamamlandı (Build 27)** |
-| **Aşama 5** | **Canlı AdMob iOS Birimleri & ATT İzin Akışı** | 🔄 **ŞU ANKİ AŞAMA (Tamamlandı - Build 28)** |
-| **Aşama 6** | RevenueCat iOS IAP (Reklamsız Sürüm Satın Alma) | ⏳ *Sıradaki* |
-| **Aşama 7** | App Store Mağaza Yayını & İnceleme Gönderimi | ⏳ *Kalan* |
+| **Aşama 5** | Canlı AdMob iOS Birimleri & ATT İzin Akışı | ✅ **Tamamlandı (Build 28)** |
+| **Aşama 6** | **RevenueCat iOS IAP (Reklamsız Sürüm Satın Alma)** | ✅ **Tamamlandı (Build 29)** |
+| **Aşama 7** | App Store Mağaza Yayını & İnceleme Gönderimi | 🔄 **SIRADAKİ AŞAMA** |
 
 ---
 
@@ -90,16 +90,16 @@ flowchart TD
     B -->|TAMAMLANDI| C[Aşama 3: TestFlight İlk Dağıtım & Cihazda Açılış]
     C -->|TAMAMLANDI| D[Aşama 4: Fiziksel Cihaz Oyun & UX Testleri - Build 27]
     D -->|TAMAMLANDI| E[Aşama 5: Canlı AdMob iOS Birimleri & ATT İzinleri - Build 28]
-    E -->|SIRADAKİ| F[Aşama 6: RevenueCat iOS IAP / Reklamsız Sürüm]
-    F -->|KALAN| G[Aşama 7: App Store Mağaza Yayını & İnceleme]
+    E -->|TAMAMLANDI| F[Aşama 6: RevenueCat iOS IAP / Reklamsız Sürüm - Build 29]
+    F -->|SIRADAKİ| G[Aşama 7: App Store Mağaza Yayını & İnceleme]
 
     style A fill:#4CAF50,stroke:#388E3C,color:#fff
     style B fill:#4CAF50,stroke:#388E3C,color:#fff
     style C fill:#4CAF50,stroke:#388E3C,color:#fff
     style D fill:#4CAF50,stroke:#388E3C,color:#fff
     style E fill:#4CAF50,stroke:#388E3C,color:#fff
-    style F fill:#FF9800,stroke:#F57C00,color:#fff
-    style G fill:#E91E63,stroke:#C2185B,color:#fff
+    style F fill:#4CAF50,stroke:#388E3C,color:#fff
+    style G fill:#FF9800,stroke:#F57C00,color:#fff
 ```
 
 ---

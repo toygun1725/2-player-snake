@@ -12,12 +12,15 @@ Premium özelliklerin yönetimi ve Google Play faturalandırma (Google Play Bill
 
 | Parametre | Değer / Yol | Açıklama |
 |---|---|---|
-| **RevenueCat API Key** | `goog_RTZchIHQaIxXoqgGcwvriNeVOGE` | Android uygulaması için RevenueCat API anahtarı |
-| **Google Play Credentials JSON** | `C:\Users\Toygun\Desktop\AI Games\2 Player Snake\Play Store Key\two-player-snake-1773578271956-30a5906c0f3c.json` | Google Play Developer Console ile RevenueCat entegrasyonu için kullanılan servis hesabı kimlik dosyası |
-| **Google Play Product ID** | `remove_ads_premium` | Google Play Console üzerinde tanımlı tek seferlik satın alım (In-App Product) ID'si. Fiyatı: Tüm ülkelerde $1.00 USD karşılığı yerel para birimi. |
-| **RevenueCat Entitlement ID** | `remove_ads` | Reklamsız sürüm özelliğini kontrol eden yetki (Entitlement) kimliği |
-| **RevenueCat Offering ID** | `current` | Aktif sunulan paket grubu (Offering) |
-| **RevenueCat Package ID** | `lifetime` | Süresiz satın alım paketi. `remove_ads_premium` Google Play ürününe bağlıdır. |
+| **RevenueCat Android API Key** | `goog_RTZchIHQaIxXoqgGcwvriNeVOGE` | Android uygulaması için RevenueCat API anahtarı |
+| **RevenueCat iOS API Key** | `appl_BioGpdwieqcynDcpKXsuKlEeQUQ` | iOS uygulaması için RevenueCat Apple Public API anahtarı |
+| **App Store IAP Key ID** | `B6RCC9JZKL` | App Store Connect In-App Purchase Key kimliği (`SubscriptionKey_B6RCC9JZKL.p8`) |
+| **App Store Issuer ID** | `087e9e31-e20e-47b1-ac63-5e6384254d8a` | Apple geliştirici hesabı Issuer ID kimliği |
+| **Google Play Credentials JSON** | `two-player-snake-1773578271956-30a5906c0f3c.json` | Google Play Developer Console servis hesabı kimlik dosyası |
+| **Product ID (Ortak)** | `remove_ads_premium` | Google Play Console ve App Store Connect üzerinde tanımlı tek seferlik Non-Consumable IAP ürün ID'si ($0.99 / Tier 1). |
+| **RevenueCat Entitlement ID** | `remove_ads` | Reklamsız sürüm özelliğini kontrol eden yetki (Entitlement) kimliği (Android & iOS ortak). |
+| **RevenueCat Offering ID** | `current` / `default` | Aktif sunulan paket grubu (Offering). |
+| **RevenueCat Package ID** | `lifetime` / `$rc_lifetime` | Süresiz satın alım paketi. Hem Google Play hem de App Store `remove_ads_premium` ürününe bağlıdır. |
 
 ---
 

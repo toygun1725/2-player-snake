@@ -119,6 +119,12 @@ final class AdManager: NSObject {
     }
 
     func showInterstitial(from viewController: UIViewController, callbackId: String?, onComplete: @escaping (Bool) -> Void) {
+        if IAPManager.shared.isAdsRemoved {
+            print("AdManager: Reklamlar kaldırılmış (Premium), interstitial atlanıyor.")
+            onComplete(true)
+            return
+        }
+
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
 
@@ -172,6 +178,12 @@ final class AdManager: NSObject {
     }
 
     func showRewarded(from viewController: UIViewController, callbackId: String?, onComplete: @escaping (Bool) -> Void) {
+        if IAPManager.shared.isAdsRemoved {
+            print("AdManager: Reklamlar kaldırılmış (Premium), ödüllü reklam atlanıyor ve ödül veriliyor.")
+            onComplete(true)
+            return
+        }
+
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
 

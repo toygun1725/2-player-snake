@@ -57,6 +57,13 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         setupNetworkMonitoring()
         setupKeyboardHandling()
 
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handlePremiumStatusChanged),
+            name: IAPManager.premiumStatusDidChangeNotification,
+            object: nil
+        )
+
         loadGame()
     }
 
@@ -545,20 +552,39 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         webView.evaluateJavaScript(script, completionHandler: completionHandler)
     }
 
-    private func publishSettingsToGame() {
+    @objc private func handlePremiumStatusChanged() {
+        DispatchQueue.main.async { [weak self] in
+            self?.publishSettingsToGame()
+        }
+    }
+
+    func publishSettingsToGame() {
+        let isPremium = IAPManager.shared.isAdsRemoved
         let js = """
         (function() {
             var settings = {
                 vibrationEnabled: \(HapticManager.shared.isHapticsEnabled),
                 soundEnabled: true,
-                adsRemoved: false
+                adsRemoved: \(isPremium)
             };
             if (typeof window.dispatchNativeSettings === "function") {
                 window.dispatchNativeSettings(settings);
             }
+            if (typeof window.onAndroidSettings === "function") {
+                try { window.onAndroidSettings(settings); } catch(e) {}
+            }
         })();
         """
         evaluateJavaScript(js)
+    }
+
+    func showAlert(title: String, message: String, buttonTitle: String = "Tamam") {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: buttonTitle, style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+        }
     }
 }
 

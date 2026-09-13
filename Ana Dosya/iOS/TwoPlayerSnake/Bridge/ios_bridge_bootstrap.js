@@ -129,6 +129,9 @@
   // Native ayarlar senkronizasyonu
   window.dispatchNativeSettings = function (settings) {
     window.TwoPlayerSnakeAppSettings = settings || {};
+    if (settings && typeof settings.adsRemoved !== "undefined") {
+      window.adsRemoved = settings.adsRemoved === true || settings.adsRemoved === "true";
+    }
     var event = new CustomEvent("two-player-snake:native-settings", {
       detail: window.TwoPlayerSnakeAppSettings
     });
