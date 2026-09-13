@@ -78,12 +78,15 @@ platform :ios do
         # 1. Eski yetim sertifikaları (private key'i olmayan) temizle
         begin
           require "spaceship"
-          Spaceship::ConnectAPI.token = api_key
-          existing_certs = Spaceship::ConnectAPI::Certificate.all(filter: { certificateType: "DISTRIBUTION,IOS_DISTRIBUTION" })
-          UI.message("Apple Developer hesabında #{existing_certs.count} adet dağıtım sertifikası bulundu.")
+          if Spaceship::ConnectAPI.token.nil? && api_key.is_a?(Hash)
+            Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(**api_key)
+          end
+          all_certs = Spaceship::ConnectAPI::Certificate.all
+          dist_certs = all_certs.select { |c| c.certificate_type.to_s.upcase.include?("DISTRIBUTION") }
+          UI.message("Apple Developer hesabında #{dist_certs.count} adet dağıtım sertifikası bulundu.")
 
-          if existing_certs.count >= 2
-            existing_certs.each do |c|
+          if dist_certs.count >= 2
+            dist_certs.each do |c|
               UI.important("Eski yetim sertifika siliniyor: #{c.id} (#{c.name})")
               begin
                 c.delete!
