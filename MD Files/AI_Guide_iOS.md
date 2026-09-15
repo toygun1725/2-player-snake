@@ -175,9 +175,9 @@ Tüm aşamalar (Aşama 1'den Aşama 7'ye kadar) başarıyla tamamlanmıştır. U
 Gelecekte bu projeyi devralacak veya yeni bir güncelleme / build çıkaracak herhangi bir AI Agent (veya geliştirici) için adım adım uygulanabilir kılavuz:
 
 ### 1. Mevcut Sürüm ve Numaralandırma Durumu
-* **Canlı / İncelemedeki Sürüm:** `3.3.5`
-* **Son Kullanılan Build Numarası:** `29`
-* **Bir Sonraki Build Numarası:** `30` (Build numarası Apple kuralları gereği her zaman monotonik olarak artmalıdır: 30, 31, 32...).
+* **Canlı / App Store İncelemesindeki Sürüm:** `3.3.5 (Build 29)`
+* **Son TestFlight Derlemesi:** `3.3.5 (Build 30)` (`ios-v3.3.5-b30` - Başarıyla yüklendi)
+* **Bir Sonraki Build Numarası:** `31` (Build numarası Apple kuralları gereği her zaman monotonik olarak artmalıdır: 31, 32, 33...).
 
 ---
 

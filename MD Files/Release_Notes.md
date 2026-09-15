@@ -2,14 +2,14 @@
 
 ## iOS App Store & TestFlight Release Notes
 
-### Hazırlanan Sonraki Paket: Build 30 (Yüklenmedi)
+### TestFlight Release (v3.3.5 / Build 30)
+> Durum (2026-09-15): GitHub Actions Run #31 üzerinden macOS bulutunda derlendi ve TestFlight'a yüklendi (`ios-v3.3.5-b30`). App Store incelemesindeki Build 29 bağımsız olarak beklemektedir.
 
-> Bu bölüm kaynakta hazırlanan değişiklikleri kaydeder. Build 30 henüz derlenmedi, TestFlight'a yüklenmedi ve App Store incelemesindeki Build 29'un durumunu değiştirmez.
-
-- iOS'ta Oyna akışını kilitleyebilen `start` reklam çağrısı native AdMob bridge'ine eklendi.
-- Pause > Ana Menü yolundaki çifte dokunma/race koşulu kaldırıldı.
-- Sürekli çalışan iOS haptic polling döngüsü kaldırılarak menüdeki gereksiz ana iş parçacığı yükü azaltıldı; banner ve blur görsel tasarımı korunuyor.
-- Android eşdeğeri yerel offline oyun ve logo iOS pakete eklendi. İnternetsiz ilk açılışta ya da ilk web yükleme hatasında yerel iki kişilik oyun açılır.
+- **iOS Reklam Köprüsü (`start` türü):** Oyna ve Ana Menü dönüşlerindeki `start` reklam çağrısı native AdMob bridge'ine bağlandı; `AdManager.adInProgress` kilitlenmesi önlendi.
+- **Pause ➔ Ana Menü Yarış Koşulu Giderildi:** Bridge içindeki mükerrer dinleyiciler kaldırılarak menüye tek dokunuşla akıcı dönüş sağlandı.
+- **Menü & CPU Performansı:** Ana menüdeki gereksiz haptic polling (rAF) döngüsü temizlendi; WebKit gereksiz yükten kurtarıldı.
+- **Gerçek Çevrimdışı (Offline) Desteği:** Android eşdeğeri yerel iki kişilik offline oyun (`mobile_offline_fallback.html`), logo ve Orbitron fontu iOS uygulama paketine dahil edildi. İnternetsiz açılışta veya ağ hatasında yerel oyun otomatik açılır; ağ geri geldiğinde güvenli geçiş uyarısı sunulur.
+- **Platform Ayrımı:** iOS kabuğuna özel `data-ios-app`, `data-native-platform="ios"` nitelikleri tanımlandı.
 
 > Durum (2026-09-14): iOS Native Swift kabuğu `v3.3.5` / Build **29** (`ios-v3.3.5-b29`) olarak derlendi ve **Apple App Store İncelemesine Gönderildi** (`Waiting for Review`). Aşama 6 (RevenueCat IAP - Remove Ads Lifetime) ve Aşama 7 (App Store Mağaza Yayını & İnceleme Gönderimi) tamamlandı.
 
