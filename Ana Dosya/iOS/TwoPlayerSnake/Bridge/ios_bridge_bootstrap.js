@@ -12,6 +12,16 @@
   window.__twoPlayerSnakePlatform = "ios";
   window.__nativeAdCallbacks = window.__nativeAdCallbacks || {};
 
+  // Disable background 700KB HTML version check polling & GC stutter on native iOS
+  window.checkForFreshVersion = function () { return Promise.resolve(); };
+  window.scheduleVersionCheck = function () {};
+
+  // Stub Google AdSense arrays & callbacks to prevent delayed background network loops
+  window.adsbygoogle = window.adsbygoogle || [];
+  window.adsbygoogle.push = function () {};
+  window.__h5GamesAdsReady = false;
+  window.adBreak = window.adConfig = function () {};
+
 
   function safeSerialize(payload) {
     try {
@@ -310,7 +320,12 @@
       var style = document.createElement("style");
       style.id = styleId;
       style.textContent = `
+        @font-face {
+          font-display: optional !important;
+        }
+
         html, body {
+          font-display: optional !important;
           height: 100% !important;
           min-height: 100% !important;
           height: 100dvh !important;

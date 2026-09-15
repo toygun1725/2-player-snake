@@ -394,7 +394,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             URLQueryItem(name: "app", value: "android"),
             URLQueryItem(name: "app_platform", value: "ios"),
             URLQueryItem(name: "app_ver", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.3.5"),
-            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "34"),
+            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "35"),
             URLQueryItem(name: "app_device", value: "mobile"),
             URLQueryItem(name: "__ts", value: String(Int(Date().timeIntervalSince1970 * 1000)))
         ]
@@ -402,7 +402,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         components.queryItems = queryItems
 
         if let finalUrl = components.url {
-            let request = URLRequest(url: finalUrl, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 15)
+            let request = URLRequest(url: finalUrl, cachePolicy: .returnCacheDataElseLoad, timeoutInterval: 15)
             webView.load(request)
 
             // Soğuk açılış emniyet zamanlayıcısı (Cold-Start Watchdog - 2.5s):

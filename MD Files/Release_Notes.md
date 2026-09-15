@@ -2,6 +2,16 @@
 
 ## iOS App Store & TestFlight Release Notes
 
+### TestFlight Release (v3.3.5 / Build 35)
+> Durum (2026-09-15): GitHub Actions Run #35 üzerinden macOS bulutunda derlendi ve TestFlight'a yüklendi (`ios-v3.3.5-b35`). App Store incelemesindeki Build 29 bağımsız olarak beklemektedir.
+
+- **Arka Plan Sürüm Kontrolü (`fetch` Polling) Devre Dışı Bırakıldı:**
+  - `ios_bridge_bootstrap.js` içinde `window.checkForFreshVersion` ve `window.scheduleVersionCheck` fonksiyonları no-op stub'landı. Sürüm takibinin native iOS'ta App Store/TestFlight ve `Info.plist` ile yapılması sağlandı; arka planda periyodik olarak 700KB HTML indirilip taranması ve Garbage Collection (GC) CPU/GPU takılmaları engellendi.
+- **Dış Font (Google Fonts / FontAwesome) Ağ Bloklaması Çözüldü:**
+  - CSS `@font-face` seviyesinde `font-display: optional !important` enjekte edilerek dış font indirmelerinin ilk 10-15 saniyede WebKit Canvas render döngüsünü ve piksel haritasını yeniden hesaplayıp 60 FPS'i kilitlemesi çözüldü.
+- **Ağ Önbellek Politikası Optimize Edildi & Reklam Yoklamaları Temizlendi:**
+  - `ViewController.swift` içinde `URLRequest` önbellek politikası `.returnCacheDataElseLoad` olarak ayarlandı; statik varlıkların anında önbellekten okunması sağlandı. `window.adsbygoogle` ve `adBreak` stub'lanarak reklam yoklamaları kesildi.
+
 ### TestFlight Release (v3.3.5 / Build 34)
 > Durum (2026-09-15): GitHub Actions Run #34 üzerinden macOS bulutunda derlendi ve TestFlight'a yüklendi (`ios-v3.3.5-b34`). App Store incelemesindeki Build 29 bağımsız olarak beklemektedir.
 

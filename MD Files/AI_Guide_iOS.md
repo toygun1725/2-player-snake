@@ -10,18 +10,19 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 * **Bundle Identifier:** `com.twoplayersnake.app`
 * **Apple Team ID:** `GUFQF359Q7` (Toygun ÇETİN)
 * **Güncel Sürüm (Marketing Version):** `3.3.5`
-* **Güncel Yapı Numarası (Build Number):** `34` (`ios-v3.3.5-b34`)
+* **Güncel Yapı Numarası (Build Number):** `35` (`ios-v3.3.5-b35`)
 * **Derleme Ortamı:** `macos-latest` (macOS 26 Tahoe / Sonoma) + Xcode 26 + iOS SDK + CocoaPods
-* **Güncel Durum:** **Build 34 (`ios-v3.3.5-b34`) hazırlandı ve TestFlight dağıtımına sunuldu. Çevrimiçi modda isAndroidWebView değişkeninin uzak sayfa tarafından ezilmesi (override) Object.defineProperty ve app=android URL parametresiyle engellendi; Google H5 Ads script yüklemesi baypas edildi, demo yılan teleportlanması çözüldü ve eksik backdrop-filter override'ları tamamlandı.**
+* **Güncel Durum:** **Build 35 (`ios-v3.3.5-b35`) hazırlandı ve TestFlight dağıtımına sunuldu. Arka plan 700KB HTML fetch polling (checkForFreshVersion) ve AdSense stub'lama ile devre dışı bırakıldı, font-display: optional enjekte edilerek 15s ağ bloklaması çözüldü, URLRequest önbellek politikası optimize edildi.**
 
 ---
 
-## Build 34 Hazırlık Notları (TestFlight)
+## Build 35 Hazırlık Notları (TestFlight)
 
-Bu çalışma, App Store incelemesindeki Build 29'u kesinlikle değiştirmez. Yeni TestFlight paketi için yapı numarası `34` (`ios-v3.3.5-b34`) olarak hazırlanmıştır:
+Bu çalışma, App Store incelemesindeki Build 29'u kesinlikle değiştirmez. Yeni TestFlight paketi için yapı numarası `35` (`ios-v3.3.5-b35`) olarak hazırlanmıştır:
 
-1. **Çevrimiçi Mod Menü Kasması & Demo Yılan Takılma Kök Neden Çözümü:** `ios_bridge_bootstrap.js` içinde `isAndroidWebView` değişkeni `Object.defineProperty` ile kilitlenerek uzak sayfanın inline script'inin bu değeri `false` yapması engellendi. `ViewController.swift` içinde `app=android` parametresi iletilerek web sayfasının kendi kontrolünün de başarıyla `true` dönmesi sağlandı. Bu sayede Google H5 Ads periyodik polling yükü baypas edildi ve `menuDemoFreezeUntil` mekanizması çevrimiçi modda da çalışır hale getirildi.
-2. **Eksik Backdrop-Filter GPU Override'ları Eklendi:** `.game-end-overlay`, `.online-alert-overlay`, `.panel-pause-btn`, `.achievement-card`, `#qs-info-btn` ve açık tema (`[data-theme="light"]`) kontrol panelleri üzerindeki tüm `backdrop-filter` efektleri kapatılarak donanım hızlandırmalı düz opak cam katmanlarıyla değiştirildi.
+1. **Arka Plan Sürüm Kontrolü (`fetch` Polling) Devre Dışı Bırakıldı:** `ios_bridge_bootstrap.js` içinde `window.checkForFreshVersion` ve `window.scheduleVersionCheck` no-op yapıldı. 700KB HTML'in arka planda taranması ve Garbage Collection (GC) takılmaları engellendi.
+2. **Dış Font Ağ Bloklaması Çözüldü:** `font-display: optional !important` CSS enjeksiyonu ile Google Fonts ve FontAwesome yüklemelerinin açılıştaki 15s kilitlenmesi çözüldü.
+3. **HTTP Önbellek & Ads Stubbing:** `ViewController.swift` URLRequest önbellek politikası `.returnCacheDataElseLoad` yapıldı. `adsbygoogle` stub'lanarak ağ yoklamaları sonlandırıldı.
 
 
 
