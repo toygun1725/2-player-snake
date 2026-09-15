@@ -1,7 +1,10 @@
 (function () {
   if (window.__twoPlayerSnakeIosBridgeInstalled) return;
   window.__twoPlayerSnakeIosBridgeInstalled = true;
+  window.isAndroidWebView = true;
+  window.__twoPlayerSnakePlatform = "ios";
   window.__nativeAdCallbacks = window.__nativeAdCallbacks || {};
+
 
   function safeSerialize(payload) {
     try {
@@ -292,156 +295,211 @@
     }
   };
 
-  // iOS Fullscreen, Safe Area, Symmetrical 2P & Edge-to-Edge Fix
-  (function () {
-    var styleId = "ios-fullscreen-and-safe-area-fix";
-    if (document.getElementById(styleId)) return;
-    var style = document.createElement("style");
-    style.id = styleId;
-    style.textContent = `
-      html, body {
-        height: 100% !important;
-        min-height: 100% !important;
-        height: 100dvh !important;
-        max-height: 100dvh !important;
-        background-color: var(--bg, #0b0f14) !important;
-        overflow: hidden !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-      
-      /* Bottom gap elimination: buttons touch the bottom glass edge */
-      #p1-controls {
-        padding-bottom: 0 !important;
-        padding-top: 0 !important;
-      }
-      #p1-controls .turn-btn,
-      #p2-controls .turn-btn {
-        height: 100% !important;
-      }
-      #p1-controls .turn-btn.left {
-        border-bottom-left-radius: 0 !important;
-      }
-      #p1-controls .turn-btn.right {
-        border-bottom-right-radius: 0 !important;
-      }
-      #p2-controls .turn-btn.left {
-        border-top-left-radius: 0 !important;
-      }
-      #p2-controls .turn-btn.right {
-        border-top-right-radius: 0 !important;
-      }
+  // iOS Fullscreen, Safe Area, Symmetrical 2P, Edge-to-Edge & Retina GPU Zero Lag Fix
+  function injectIosPerformanceStyles() {
+    try {
+      var styleId = "ios-fullscreen-and-safe-area-fix";
+      if (document.getElementById(styleId)) return;
+      var style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = `
+        html, body {
+          height: 100% !important;
+          min-height: 100% !important;
+          height: 100dvh !important;
+          max-height: 100dvh !important;
+          background-color: var(--bg, #0b0f14) !important;
+          overflow: hidden !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+        
+        /* Bottom gap elimination: buttons touch the bottom glass edge */
+        #p1-controls {
+          padding-bottom: 0 !important;
+          padding-top: 0 !important;
+        }
+        #p1-controls .turn-btn,
+        #p2-controls .turn-btn {
+          height: 100% !important;
+        }
+        #p1-controls .turn-btn.left {
+          border-bottom-left-radius: 0 !important;
+        }
+        #p1-controls .turn-btn.right {
+          border-bottom-right-radius: 0 !important;
+        }
+        #p2-controls .turn-btn.left {
+          border-top-left-radius: 0 !important;
+        }
+        #p2-controls .turn-btn.right {
+          border-top-right-radius: 0 !important;
+        }
 
-      /* 2-Player: P2 (üst panel) → Dynamic Island için top inset */
-      #p2-controls:not(.hud-hidden) {
-        height: calc(var(--control-bar-base-height) + env(safe-area-inset-top, 0px)) !important;
-        max-height: 220px !important;
-        min-height: calc(105px + env(safe-area-inset-top, 0px)) !important;
-      }
+        /* 2-Player: P2 (üst panel) → Dynamic Island için top inset */
+        #p2-controls:not(.hud-hidden) {
+          height: calc(var(--control-bar-base-height) + env(safe-area-inset-top, 0px)) !important;
+          max-height: 220px !important;
+          min-height: calc(105px + env(safe-area-inset-top, 0px)) !important;
+        }
 
-      /* 2-Player: P1 (alt panel) → Home Indicator için bottom inset */
-      #p1-controls:not(.hud-hidden):not(.dual-ai) {
-        height: calc(var(--control-bar-base-height) + env(safe-area-inset-bottom, 0px)) !important;
-        max-height: 220px !important;
-        min-height: calc(105px + env(safe-area-inset-bottom, 0px)) !important;
-      }
+        /* 2-Player: P1 (alt panel) → Home Indicator için bottom inset */
+        #p1-controls:not(.hud-hidden):not(.dual-ai) {
+          height: calc(var(--control-bar-base-height) + env(safe-area-inset-bottom, 0px)) !important;
+          max-height: 220px !important;
+          min-height: calc(105px + env(safe-area-inset-bottom, 0px)) !important;
+        }
 
-      /* Top player: insets from Dynamic Island */
-      #p2-controls {
-        padding-top: 0 !important;
-      }
-      #p2-controls .p2-panel {
-        padding-top: calc(4px + env(safe-area-inset-top, 0px)) !important;
-      }
-      #p2-controls .turn-btn > svg {
-        transform: translateY(calc(0.35 * env(safe-area-inset-top, 0px)));
-      }
+        /* Top player: insets from Dynamic Island */
+        #p2-controls {
+          padding-top: 0 !important;
+        }
+        #p2-controls .p2-panel {
+          padding-top: calc(4px + env(safe-area-inset-top, 0px)) !important;
+        }
+        #p2-controls .turn-btn > svg {
+          transform: translateY(calc(0.35 * env(safe-area-inset-top, 0px)));
+        }
 
-      /* Bottom player: insets above Home Indicator */
-      #p1-controls:not(.dual-ai) #p1StatPanel {
-        padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
-      }
-      #p1-controls:not(.dual-ai) .turn-btn > svg {
-        transform: translateY(calc(-0.35 * env(safe-area-inset-bottom, 0px)));
-      }
+        /* Bottom player: insets above Home Indicator */
+        #p1-controls:not(.dual-ai) #p1StatPanel {
+          padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+        }
+        #p1-controls:not(.dual-ai) .turn-btn > svg {
+          transform: translateY(calc(-0.35 * env(safe-area-inset-bottom, 0px)));
+        }
 
-      /* 1P vs AI / Solo Mode */
-      #p1-controls.dual-ai {
-        height: calc(var(--control-bar-base-height) + env(safe-area-inset-bottom, 0px)) !important;
-        padding-bottom: 0 !important;
-      }
-      #p1-controls.dual-ai .turn-btn > svg {
-        transform: translateY(calc(-0.35 * env(safe-area-inset-bottom, 0px)));
-      }
-      #p1-controls.dual-ai .panel-with-btns {
-        padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
-      }
+        /* 1P vs AI / Solo Mode */
+        #p1-controls.dual-ai {
+          height: calc(var(--control-bar-base-height) + env(safe-area-inset-bottom, 0px)) !important;
+          padding-bottom: 0 !important;
+        }
+        #p1-controls.dual-ai .turn-btn > svg {
+          transform: translateY(calc(-0.35 * env(safe-area-inset-bottom, 0px)));
+        }
+        #p1-controls.dual-ai .panel-with-btns {
+          padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+        }
 
-      /* Canvas: flex alanı tam doldursun, gap bırakmasın */
-      #canvasWrap {
-        flex: 1 1 auto !important;
-        overflow: hidden !important;
-        min-height: 0 !important;
-      }
+        /* Canvas: flex alanı tam doldursun, gap bırakmasın */
+        #canvasWrap {
+          flex: 1 1 auto !important;
+          overflow: hidden !important;
+          min-height: 0 !important;
+        }
 
-      /* P1 panelinin arka planını ekranın dibine uzat (::after trick) */
-      #p1-controls {
-        position: relative !important;
-      }
-      #p1-controls::after {
-        content: '' !important;
-        display: block !important;
-        position: absolute !important;
-        bottom: -80px !important;
-        left: 0 !important;
-        right: 0 !important;
-        height: 80px !important;
-        background: inherit !important;
-        pointer-events: none !important;
-        z-index: 0 !important;
-      }
+        /* P1 panelinin arka planını ekranın dibine uzat (::after trick) */
+        #p1-controls {
+          position: relative !important;
+        }
+        #p1-controls::after {
+          content: '' !important;
+          display: block !important;
+          position: absolute !important;
+          bottom: -80px !important;
+          left: 0 !important;
+          right: 0 !important;
+          height: 80px !important;
+          background: inherit !important;
+          pointer-events: none !important;
+          z-index: 0 !important;
+        }
 
-      /* ── iOS Retina GPU Performans & Sıfır Gecikme (Zero Input Lag) Optimizasyonları ── */
-      /* 3x Retina ekranda 60 FPS canvas üzerinde ağır Gaussian blur compositing kilitlenmesini engelle */
-      .banner.padded {
-        background: linear-gradient(180deg, rgba(13, 22, 36, 0.90), rgba(10, 17, 29, 0.92)) !important;
-        -webkit-backdrop-filter: blur(4px) !important;
-        backdrop-filter: blur(4px) !important;
-        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45), 0 0 10px rgba(255, 79, 191, 0.25) !important;
-        animation: none !important;
-        transform: translateZ(0) !important;
-        will-change: opacity, transform !important;
-      }
+        /* ── iOS Retina GPU & Sıfır Gecikme (Zero Input Lag) Optimizasyonları ── */
+        /* 1. Ana Menü Aksiyon Kutusu: Canlı blur'u kaldır, donanım hızlandırmalı zengin opak cam kullan */
+        .main-menu-actions {
+          background: rgba(8, 14, 24, 0.95) !important;
+          -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+          border: 2px solid #ff4fbf !important;
+          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55), 0 0 10px rgba(255, 79, 191, 0.3) !important;
+          animation: none !important;
+          transform: translateZ(0) !important;
+          will-change: transform !important;
+        }
 
-      .banner.winner-glass-banner.padded {
-        background: linear-gradient(160deg, rgba(10, 16, 28, 0.92), rgba(18, 28, 46, 0.88)) !important;
-        -webkit-backdrop-filter: blur(4px) !important;
-        backdrop-filter: blur(4px) !important;
-        animation: none !important;
-        transform: translateZ(0) !important;
-      }
+        /* Ana Menü Logo ve Glow hafifletme */
+        .main-menu-glow {
+          filter: blur(8px) !important;
+          opacity: 0.6 !important;
+        }
+        .main-menu-logo {
+          filter: drop-shadow(0 0 10px rgba(53, 230, 230, 0.3)) !important;
+        }
 
-      .player-stat-panel::before {
-        -webkit-backdrop-filter: blur(4px) !important;
-        backdrop-filter: blur(4px) !important;
-      }
+        /* 2. Alt Pencereler ve Banner Kutuları */
+        .banner.padded {
+          background: linear-gradient(180deg, rgba(13, 22, 36, 0.95), rgba(10, 17, 29, 0.95)) !important;
+          -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+          border: 2px solid #ff4fbf !important;
+          box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 79, 191, 0.3) !important;
+          animation: none !important;
+          transform: translateZ(0) !important;
+          will-change: opacity, transform !important;
+        }
 
-      /* iOS WebKit sentetik 300ms tıklama gecikmesini sıfırla (0ms anlık tepki) */
-      button, .btn, .turn-btn, .panel-pause-btn, .nav-btn, .option-btn, .tab-btn {
-        touch-action: manipulation !important;
-        -webkit-tap-highlight-color: transparent !important;
-      }
-    `;
-    document.head.appendChild(style);
-  })();
+        /* 3. Kazanan ve İstatistik Pencereleri */
+        .banner.winner-glass-banner.padded,
+        .game-end-card,
+        .online-alert-card {
+          background: rgba(10, 16, 28, 0.95) !important;
+          -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+          animation: none !important;
+          transform: translateZ(0) !important;
+        }
 
-  // Android shell ile eşlik: WebKit dahili demo dondurmasını devreye al, harici H5 reklamlarını baypas et
-  window.isAndroidWebView = true;
-  document.documentElement.classList.add("android-webview");
-  document.documentElement.setAttribute("data-ios-app", "true");
-  document.documentElement.setAttribute("data-ios-shell", "true");
-  document.documentElement.setAttribute("data-native-platform", "ios");
-  window.__twoPlayerSnakePlatform = "ios";
+        .player-stat-panel::before {
+          -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+        }
+
+        /* Menü geçiş hayaleti (ghost element) */
+        .android-menu-transition-ghost,
+        .android-menu-transition-ghost.banner.padded,
+        .android-menu-transition-ghost .main-menu-actions {
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+          animation: none !important;
+        }
+
+        /* 4. Tıklama gecikmesini sıfırla (0ms anlık dokunma) */
+        button, .btn, .turn-btn, .panel-pause-btn, .nav-btn, .option-btn, .tab-btn {
+          touch-action: manipulation !important;
+          -webkit-tap-highlight-color: transparent !important;
+        }
+      `;
+
+      var target = document.head || document.documentElement;
+      if (target) {
+        target.appendChild(style);
+      }
+    } catch (e) {
+      console.warn("iOS Bridge style injection failed:", e);
+    }
+  }
+
+  injectIosPerformanceStyles();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", injectIosPerformanceStyles);
+  }
+
+  function setIosAttributes() {
+    try {
+      if (document.documentElement) {
+        document.documentElement.classList.add("android-webview");
+        document.documentElement.setAttribute("data-ios-app", "true");
+        document.documentElement.setAttribute("data-ios-shell", "true");
+        document.documentElement.setAttribute("data-native-platform", "ios");
+      }
+    } catch (e) {}
+  }
+  setIosAttributes();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setIosAttributes);
+  }
+
 
 
   // ── Klavye Kapanınca Scroll Sıfırlama (Focusout) ──────────────────────────

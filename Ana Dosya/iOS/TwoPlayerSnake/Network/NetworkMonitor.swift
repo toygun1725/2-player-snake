@@ -7,16 +7,17 @@ final class NetworkMonitor {
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "com.twoplayersnake.networkmonitor")
 
-    private(set) var isConnected: Bool = false
+    private(set) var isConnected: Bool = true
     var onStatusChange: ((Bool) -> Void)?
 
     private init() {
-        // Başlangıç durumunu anlık kontrol et; ağ hazır olmadan 'online' varsayma
-        self.isConnected = (monitor.currentPath.status == .satisfied)
+        // İyimser başlangıç (true): İlk 50ms'de ağ tespiti bitmeden sahte çevrimdışı moduna girmeyi önler.
+        // NWPathMonitor ilk değerlendirmesini tamamlayınca gerçek durumu günceller.
+        self.isConnected = true
 
         monitor.pathUpdateHandler = { [weak self] path in
             guard let self = self else { return }
-            let connected = path.status == .satisfied
+            let connected = (path.status == .satisfied)
             let changed = self.isConnected != connected
             self.isConnected = connected
 
@@ -30,7 +31,8 @@ final class NetworkMonitor {
     }
 
     func isOnline() -> Bool {
-        return isConnected && (monitor.currentPath.status == .satisfied)
+        return isConnected
     }
+
 }
 

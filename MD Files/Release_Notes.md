@@ -2,6 +2,13 @@
 
 ## iOS App Store & TestFlight Release Notes
 
+### TestFlight Release (v3.3.5 / Build 33)
+> Durum (2026-09-15): GitHub Actions Run #33 üzerinden macOS bulutunda derlendi ve TestFlight'a yüklendi (`ios-v3.3.5-b33`). App Store incelemesindeki Build 29 bağımsız olarak beklemektedir.
+
+- **Yerel Dosya Erişimi & Documents Uygulaması Yönlendirme Düzeltmesi:** `ViewController.swift` içinde `decidePolicyFor` metoduna yerel `url.isFileURL` kontrolü eklendi; yerel paket dosyalarının harici dosya yöneticilerine (Documents by Readdle) gönderilmesi engellendi ve WebView içinde doğrudan açılması garanti altına alındı.
+- **Sahte "Bağlantı Geri Geldi" Uyarısı Engellendi:** `NetworkMonitor` başlatma durumundaki gereksiz çevrimdışı gecikmesi giderildi; `offerOnlineGameReload` uyarısı yalnızca kullanıcı gerçekten çevrimdışı maça girip oynadıktan sonra çalışacak şekilde sınırlandırıldı.
+- **Ana Menü & Retina GPU Tam Performans Çözümü:** `ios_bridge_bootstrap.js` içinde `atDocumentStart` anında `document.head` `null` kontrolü eksikliğinden kaynaklanan kritik JS çökmesi giderildi (`target = document.head || document.documentElement`). `window.isAndroidWebView = true` dosyanın 1. satırına taşınarak Google H5 reklamlarının ve demo freeze kilitlenmesinin önüne geçildi. Asıl ana menü kutusu olan `.main-menu-actions`, `.main-menu-glow`, `.main-menu-logo` ve alt pencerelerdeki tüm ağır `backdrop-filter` ve animasyonlu `box-shadow` GPU döngüleri kapatılarak donanım hızlandırmalı zengin opak cyberpunk tasarımı uygulandı; dokunma gecikmesi 0ms'ye indirildi.
+
 ### TestFlight Release (v3.3.5 / Build 32)
 > Durum (2026-09-15): GitHub Actions Run #32 üzerinden macOS bulutunda derlendi ve TestFlight'a yüklendi (`ios-v3.3.5-b32`). App Store incelemesindeki Build 29 bağımsız olarak beklemektedir.
 

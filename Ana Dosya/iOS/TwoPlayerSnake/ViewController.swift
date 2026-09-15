@@ -393,7 +393,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         let queryItems = [
             URLQueryItem(name: "app", value: "ios"),
             URLQueryItem(name: "app_ver", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.3.5"),
-            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "32"),
+            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "33"),
             URLQueryItem(name: "app_device", value: "mobile"),
             URLQueryItem(name: "__ts", value: String(Int(Date().timeIntervalSince1970 * 1000)))
         ]
@@ -432,8 +432,10 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
 
     private func offerOnlineGameReload() {
-        guard isShowingOfflineGame, !hasOfferedOnlineReload else { return }
+        // Yalnızca kullanıcı gerçekten çevrimdışı oyuna girip oynamışsa göster; açılışta veya teaser'da asla gösterme
+        guard isShowingOfflineGame, isGameLoaded, isTeaserDismissed, !hasOfferedOnlineReload else { return }
         hasOfferedOnlineReload = true
+
 
         let alert = UIAlertController(
             title: "Bağlantı Geri Geldi",
@@ -571,10 +573,13 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             return
         }
 
-        // Güvenli alan: 2playersnake.com rotaları WebView içinde açılır
-        if isTrustedGameUrl(url) {
+        // Güvenli alan: Yerel paket (file://) dosyaları veya 2playersnake.com rotaları WebView içinde açılır
+        if url.isFileURL || isTrustedGameUrl(url) {
             decisionHandler(.allow)
-        } else if navigationAction.targetFrame == nil || !navigationAction.targetFrame!.isMainFrame {
+            return
+        }
+
+        if navigationAction.targetFrame == nil || !navigationAction.targetFrame!.isMainFrame {
             // İframe veya alt kaynak isteklerine izin ver
             decisionHandler(.allow)
         } else {
@@ -582,6 +587,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             UIApplication.shared.open(url, options: [:], completionHandler: nil)
             decisionHandler(.cancel)
         }
+
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
