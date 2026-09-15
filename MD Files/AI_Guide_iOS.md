@@ -16,6 +16,32 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 
 ---
 
+## Build 30 Hazırlık Notu (TestFlight'a Henüz Yüklenmedi)
+
+Bu çalışma, App Store incelemesindeki Build 29'u değiştirmez. Bir sonraki paket için kaynak yapı numarası `30` olarak hazırlanmıştır.
+
+- Web reklam köprüsü, oyunun `start` reklam çağrısını artık native AdMob akışına iletir; bu çağrının tamamlanamayıp Oyna düğmesini kilitlemesi engellenir.
+- Pause > Ana Menü yolundaki iOS'a özgü ikinci dokunma dinleyicisi kaldırılmıştır. Menüye dönüş artık web oyununun tek akışından ilerler.
+- iOS bridge'deki sürekli `requestAnimationFrame` haptic taraması kaldırıldı; durum izleme yalnızca DOM değişim gözlemcisiyle yapılır. Banner/blur görsel tasarımı sadeleştirilmemiştir.
+- Android'deki yerel fallback sayfası ve yerel logo, iOS uygulama paketine `Resources/Offline/` altında eklenmiştir. Uygulama internetsiz açıldığında veya ilk web yüklemesi başarısız olduğunda bu sayfa açılır. Yerel iki kişilik oyun kullanılabilir; online PvP, reklamlar ve uzak sosyal bağlantılar internet gerektirir.
+
+Bağlantı geri döndüğünde kullanıcıya online sürümü yenileme seçeneği sunulur; devam eden yerel maç istemsizce kesilmez.
+
+---
+
+## Build 30 Hazırlık Notu (TestFlight'a Henüz Yüklenmedi)
+
+Bu çalışma, App Store incelemesindeki Build 29'u değiştirmez. Bir sonraki paket için kaynak yapı numarası `30` olarak hazırlanmıştır.
+
+- Web reklam köprüsü, oyunun `start` reklam çağrısını artık native AdMob akışına iletir; bu çağrının tamamlanamayıp Oyna düğmesini kilitlemesi engellenir.
+- Pause > Ana Menü yolundaki iOS'a özgü ikinci dokunma dinleyicisi kaldırılmıştır. Menüye dönüş artık web oyununun tek akışından ilerler.
+- iOS bridge'deki sürekli `requestAnimationFrame` haptic taraması kaldırıldı; durum izleme yalnızca DOM değişim gözlemcisiyle yapılır. Banner/blur görsel tasarımı sadeleştirilmemiştir.
+- Android'deki yerel fallback sayfası ve yerel logo, iOS uygulama paketine `Resources/Offline/` altında eklenmiştir. Uygulama internetsiz açıldığında veya ilk web yüklemesi başarısız olduğunda bu sayfa açılır. Yerel iki kişilik oyun kullanılabilir; online PvP, reklamlar ve uzak sosyal bağlantılar internet gerektirir.
+
+Bağlantı geri döndüğünde kullanıcıya online sürümü yenileme seçeneği sunulur; devam eden yerel maç istemsizce kesilmez.
+
+---
+
 ## 2. Mimari ve Bileşenler
 
 iOS projesi, web oyun koduna (`Ana Dosya/Mobile/index.html`) dokunmadan çalışan ve Android kabuğundaki (`Ana Dosya/Android/`) tüm yetenekleri iOS donanımıyla birebir eşleyen bir Swift 5 mimarisine sahiptir:
@@ -128,42 +154,75 @@ flowchart TD
 
 ---
 
-### 🔄 ŞU ANKİ AŞAMA (Tamamlanan / Dağıtılan):
-#### Aşama 5: Canlı AdMob iOS Birimleri & ATT İzin Akışı (Build 28)
-* **Canlı AdMob Kimlikleri Bağlandı:**
-  * **App ID:** `ca-app-pub-4114535776207741~3769407896`
-  * **Geçiş (Interstitial) ID:** `ca-app-pub-4114535776207741/6012427858`
-  * **Ödüllü (Rewarded) ID:** `ca-app-pub-4114535776207741/7193260548`
-* **Apple ATT İzin Diyaloğu:** Ana menüye inildiği an `ATTrackingManager.requestTrackingAuthorization` tetiklenerek kullanıcı onayı alındıktan sonra kişiselleştirilmiş reklam isteği atılması sağlandı.
-* **CocoaPods & Workspace:** `Google-Mobile-Ads-SDK` iOS projesine eklendi, `Fastfile` ve GitHub Actions CI hattı workspace derlemesine uyarlandı.
-* **Çift Katmanlı Watchdog (Kilitlenme Koruması):** Swift tarafında 9.0s, JS tarafında 8.5s zaman aşımı sübapları eklenerek reklam gecikmesi veya internet kopmalarında maçın asla takılmaması garanti altına alındı.
+### 🔄 ŞU ANKİ AŞAMA:
+#### Aşama 7: App Store Mağaza Yayını & İnceleme Gönderimi (İNCELEMEYE GÖNDERİLDİ - Sürüm 3.3.5 / Build 29)
+* **Aşama 5 (Canlı AdMob & ATT İzin Akışı):** TAMAMLANDI (Build 28 & 29).
+* **Aşama 6 (RevenueCat IAP - Remove Ads Lifetime):** TAMAMLANDI. Non-consumable IAP oluşturuldu, RevenueCat bağlandı ve mağaza paketine dahil edildi.
+* **Aşama 7 (App Store Connect Yayını):**
+  * iPhone 6.5" ve iPad 13" ekran görüntüleri (1284x2778 ve 2048x2732, RGB) yüklendi.
+  * Meta veriler (Açıklama, Anahtar Kelimeler, Destek & Pazarlama URL'leri, Yaş Sınırı 4+, Gizlilik Beyanı) eksiksiz tamamlandı.
+  * Uygulama (Build 29) ve In-App Purchase (`remove_ads_premium`) birlikte "Submit for Review" ile Apple inceleme kuyruğuna iletildi.
 
 ---
 
-### ⏳ KALAN AŞAMALAR VE YAPILACAKLAR:
+### 🏆 PROJE DURUMU:
+Tüm aşamalar (Aşama 1'den Aşama 7'ye kadar) başarıyla tamamlanmıştır. Uygulama Apple App Store inceleme sürecindedir (v3.3.5 / Build 29).
 
-#### 1. Aşama 5: Canlı AdMob iOS Birimleri & ATT İzin Akışı (SIRADAKİ)
-* **Amaç:** Google AdMob'un iOS tarafında aktif hale getirilmesi ve Apple'ın zorunlu kıldığı ATT (App Tracking Transparency) izin akışının sunulması.
-* **Yapılacak Adımlar:**
-  1. Google AdMob panelinde **"iOS - 2 Player Snake"** uygulaması tanımlanacak.
-  2. iOS için geçerli Banner, Interstitial (Geçiş) ve Rewarded (Ödüllü) reklam birim kimlikleri (Ad Unit IDs) oluşturulacak.
-  3. `AdManager.swift` ve `Info.plist` dosyalarındaki test birim kimlikleri, canlı AdMob kimlikleriyle değiştirilecek.
-  4. iOS 14.5+ ATT (*App Tracking Transparency*) izin diyaloğu (`requestTrackingAuthorization`) test edilecek ve kullanıcı onayına göre kişiselleştirilmiş / kişiselleştirilmemiş reklam gösterimi doğrulanacak.
-  5. `ios_bridge_bootstrap.js` içerisindeki geçici ad shim devre dışı bırakılarak gerçek native AdMob köprüsüne bağlanacak.
+---
 
-#### 2. Aşama 6: RevenueCat iOS IAP (Reklamsız Sürüm Satın Alma) (KALAN)
-* **Amaç:** Apple In-App Purchase (IAP - Uygulama İçi Satın Alma) ile oyuncuların reklamları kaldırmasını sağlamak.
-* **Yapılacak Adımlar:**
-  1. App Store Connect üzerinde **"Remove Ads" (Reklamsız Sürüm)** adında Non-Consumable (tüketilemeyen) bir In-App Purchase öğesi tanımlanacak (örnek ürün kodu: `com.twoplayersnake.app.removeads`).
-  2. RevenueCat dashboard'una Apple App Store Paylaşılan Gizli Anahtarı (StoreKit Shared Secret) / In-App Purchase API Key girilecek.
-  3. Swift tarafında StoreKit / RevenueCat SDK entegrasyonu tamamlanarak köprü (`window.Android.buyRemoveAds()` & `restorePurchases()`) StoreKit ile eşleştirilecek.
-  4. Apple'ın zorunlu tuttuğu "Satın Alımları Geri Yükle" (Restore Purchases) butonu ve işlevi test edilecek.
+## 🤖 AI AGENT STANDART OPERASYON PROSEDÜRÜ (SOP): YENİ BUILD VE TESTFLIGHT DAĞITIMI
 
-#### 3. Aşama 7: App Store Mağaza Yayını & İnceleme Gönderimi (KALAN)
-* **Amaç:** Uygulamanın tüm dünyaya açılmak üzere Apple App Store onayına gönderilmesi.
-* **Yapılacak Adımlar:**
-  1. **Ekran Görüntüleri (Screenshots):** 6.7 inç (iPhone 15/16 Pro Max vb.) ve isteğe bağlı 12.9 inç (iPad) cihazlar için yüksek çözünürlüklü mockup görseller hazırlanacak.
-  2. **Mağaza Meta Verileri:** `MD Files/Store_Listing.md` referans alınarak uygulama açıklaması, anahtar kelimeler (keywords), destek URL'si ve gizlilik politikası (Privacy Policy) URL'si girilecek.
-  3. **Telif & Geliştirici Bilgileri:** Geliştirici/Organizasyon bilgileri ve Copyright metni (örn. *© 2026 RomiToy Games*) yapılandırılacak.
-  4. **App Review İnceleme Notları:** Apple test uzmanları için demo giriş bilgileri ve açıklama notları girilecek.
-  5. **Yayına Gönderim (Submit for Review):** Yapı seçilerek Apple inceleme kuyruğuna iletilecek.
+Gelecekte bu projeyi devralacak veya yeni bir güncelleme / build çıkaracak herhangi bir AI Agent (veya geliştirici) için adım adım uygulanabilir kılavuz:
+
+### 1. Mevcut Sürüm ve Numaralandırma Durumu
+* **Canlı / İncelemedeki Sürüm:** `3.3.5`
+* **Son Kullanılan Build Numarası:** `29`
+* **Bir Sonraki Build Numarası:** `30` (Build numarası Apple kuralları gereği her zaman monotonik olarak artmalıdır: 30, 31, 32...).
+
+---
+
+### 2. Yeni Bir Build Oluşturma ve Dağıtma Adımları
+
+#### Adım 1: Kod veya Ayar Değişiklikleri (Gerekiyorsa)
+* Native iOS kodları: [`Ana Dosya/iOS/TwoPlayerSnake/`](file:///d:/%233%20Vibecoding/AI%20Games/2%20Player%20Snake/Ana%20Dosya/iOS/TwoPlayerSnake)
+* JS Köprüsü: `Ana Dosya/iOS/TwoPlayerSnake/Resources/ios_bridge_bootstrap.js`
+* *Kural:* Android (`Ana Dosya/Android`) veya PC/Web ana kodlarına dokunulmaz; platform izolasyonu korunur.
+
+#### Adım 2: Xcode Projesinde Sürüm / Build Numarasını Güncelleme
+[`Ana Dosya/iOS/TwoPlayerSnake.xcodeproj/project.pbxproj`](file:///d:/%233%20Vibecoding/AI%20Games/2%20Player%20Snake/Ana%20Dosya/iOS/TwoPlayerSnake.xcodeproj/project.pbxproj) dosyasında:
+> ⛔ **KESİN VE DEĞİŞMEZ KURAL:** Kullanıcı bizzat ve açıkça *"v3.3.6 yap"* veya *"yeni mağaza versiyonuna geç"* demediği sürece `MARKETING_VERSION` ASLA değiştirilmez (`3.3.5` olarak sabit tutulur). Hiçbir AI agent veya geliştirici bu numarayı kendi inisiyatifiyle artıramaz.
+* `CURRENT_PROJECT_VERSION`: Yalnızca build numarası bir artırılır (Örn: `29` -> `30`).
+* `MARKETING_VERSION`: Sabit olarak `3.3.5` kalır.
+
+#### Adım 3: GitHub'a Push ve Otomatik Bulut Derlemesini Tetikleme
+Projede Mac bilgisayara gerek kalmadan derleme yapan GitHub Actions CI/CD hattı hazırdır. Aşağıdaki yöntemlerden **biri** uygulanır:
+
+* **Seçenek A — Git Tag ile Otomatik Tetikleme (Önerilen):**
+  ```bash
+  git add .
+  git commit -m "feat(ios): v3.3.5 build 30 release"
+  git push origin main
+  git tag ios-v3.3.5-b30
+  git push origin ios-v3.3.5-b30
+  ```
+  *(Etiket `ios-v*` formatında push edildiği an GitHub Actions otomatik olarak `macos-latest` üzerinde Xcode derlemesini başlatır, dağıtım sertifikasını çözer ve üretilen `.ipa` paketini doğrudan TestFlight / App Store Connect'e yükler).*
+
+* **Seçenek B — GitHub CLI (`gh`) ile Tetikleme:**
+  ```bash
+  gh workflow run ios-testflight.yml -f build_number=30 -f version_number=3.3.5
+  ```
+
+* **Seçenek C — GitHub Web Arayüzünden:**
+  GitHub Reposu > **Actions** > **iOS Build & TestFlight Deployment** > **Run workflow** > `build_number: 30` yazıp butona tıklanır.
+
+---
+
+### 3. Otomasyon Arkasındaki Hazır Altyapı Bileşenleri
+* **GitHub Actions Workflow:** [`.github/workflows/ios-testflight.yml`](file:///d:/%233%20Vibecoding/AI%20Games/2%20Player%20Snake/.github/workflows/ios-testflight.yml)
+* **Fastlane Lane (`beta`):** [`Ana Dosya/iOS/fastlane/Fastfile`](file:///d:/%233%20Vibecoding/AI%20Games/2%20Player%20Snake/Ana%20Dosya/iOS/fastlane/Fastfile)
+* **GitHub Repository Secrets (Önceden Tanımlı):**
+  * `APP_STORE_CONNECT_KEY_ID`: `JA97H3PRT7`
+  * `APP_STORE_CONNECT_ISSUER_ID`: `087e9e31-e20e-47b1-ac63-5e6384254d8a`
+  * `APP_STORE_CONNECT_PRIVATE_KEY`: App Store Connect API .p8 anahtarı.
+  * `APPLE_TEAM_ID`: `GUFQF359Q7`
+* **Sertifika Kendi Kendini Onarma (Self-Healing):** Fastlane, geçici GitHub runner üzerinde Apple Developer sertifika kotasını Spaceship API ile yönetir ve gerekirse önbellekten (`actions/cache@v4`) geri yükler.

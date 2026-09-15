@@ -4,6 +4,20 @@ Bu belge, **fiziksel bir Mac bilgisayara ihtiyaç duymadan**, Windows bilgisayar
 
 ---
 
+## Build 30 Yayın Öncesi Kontrolü
+
+Build 30 kaynakta hazırlanmıştır, ancak bu belge güncellendiği anda TestFlight'a yüklenmemiştir. Yükleme öncesinde gerçek iPhone üzerinde şu senaryoları doğrulayın:
+
+1. Oyna düğmesi: reklam gösterildiğinde ve gösterilemediğinde oyun ekranı açılmalı.
+2. Duraklat > Ana Menü: tek dokunuşta menüye dönmeli; ikinci dokunuş veya bekleyen reklam kilidi olmamalı.
+3. Uçak modu ile soğuk açılış: paket içindeki fallback oyun ve logo görünmeli; yerel maç başlamalı.
+4. Fallback ekranındayken ağ geri geldiğinde, online sürümü yenileme uyarısı çalışmalı; "Offline Devam Et" seçeneği yerel maçı korumalı.
+
+Başarılı doğrulamadan sonra CI iş akışını **Build 30** ile manuel çalıştırın. App Store Connect'e daha önce gönderilmiş Build 29'u değiştirmez; yeni paket ayrı bir TestFlight derlemesi olarak işlenir.
+
+
+---
+
 ## 1. Sistemin Çalışma Mantığı ve Mimarisi
 
 Apple ekosisteminde bir iOS uygulamasının derlenmesi (`.ipa` üretimi) macOS işletim sistemi ve Xcode gerektirir. Masanızda bir Mac olmasa bile, **GitHub Actions** bünyesinde sağlanan bulut macOS sunucuları (`macos-14` / Apple Silicon) bu görevi üstlenir.

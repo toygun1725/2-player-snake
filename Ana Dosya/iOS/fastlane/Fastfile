@@ -125,11 +125,17 @@ platform :ios do
       )
     end
 
-    # 5. Build Numarasını Otomatik Artır
+    # 5. Build ve Versiyon Numarasını Ayarla
     build_num = options[:build_number]
     if build_num.nil? || build_num.empty?
-      build_num = ENV["GITHUB_RUN_NUMBER"] || "1"
+      if ENV["GITHUB_REF_NAME"] && ENV["GITHUB_REF_NAME"] =~ /-b(\d+)$/
+        build_num = $1
+      else
+        build_num = ENV["GITHUB_RUN_NUMBER"] || "30"
+      end
     end
+
+    version_num = options[:version] || ENV["MARKETING_VERSION"] || "3.3.5"
 
     proj_path = File.expand_path("../TwoPlayerSnake.xcodeproj", __dir__)
     UI.message("Xcode Proje Yolu: #{proj_path}")
@@ -137,7 +143,7 @@ platform :ios do
     if File.exist?(proj_path)
       begin
         increment_version_number(
-          version_number: "3.3.5",
+          version_number: version_num,
           xcodeproj: proj_path
         )
       rescue => ex

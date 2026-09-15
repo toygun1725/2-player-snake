@@ -7,6 +7,10 @@ on:
         description: 'Özel Build Numarası (Boş bırakılırsa GitHub Run numarası kullanılır)'
         required: false
         default: ''
+      version_number:
+        description: 'Pazarlama Sürüm Numarası (Örn: 3.3.5 veya 3.3.6)'
+        required: false
+        default: '3.3.5'
   push:
     tags:
       - 'ios-v*'
@@ -66,9 +70,10 @@ jobs:
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           CI_KEYCHAIN_PASSWORD: ${{ secrets.CI_KEYCHAIN_PASSWORD || 'SnakeCI_Temp_Pass_2026' }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |
           cd "Ana Dosya/iOS"
-          bundle exec fastlane beta build_number:"${{ github.event.inputs.build_number }}"
+          bundle exec fastlane beta build_number:"${{ github.event.inputs.build_number }}" version:"${{ github.event.inputs.version_number || '3.3.5' }}"
 
       - name: 📦 Üretilen IPA Dosyasını GitHub Artifact Olarak Kaydet
         uses: actions/upload-artifact@v4

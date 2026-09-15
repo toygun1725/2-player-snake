@@ -360,10 +360,11 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         UIView.animate(withDuration: 0.35, delay: 0.05, options: .curveEaseOut, animations: {
             self.teaserContainer.alpha = 0.0
         }) { [weak self] _ in
-            self?.player?.pause()
-            self?.player = nil
-            self?.playerLayer?.removeFromSuperlayer()
-            self?.teaserContainer.removeFromSuperview()
+            guard let self = self else { return }
+            self.player?.pause()
+            self.player = nil
+            self.playerLayer?.removeFromSuperlayer()
+            self.teaserContainer.removeFromSuperview()
 
             // Offline fallback oyununda reklam isteği veya ATT akışı başlatılmaz.
             if !self.isShowingOfflineGame {

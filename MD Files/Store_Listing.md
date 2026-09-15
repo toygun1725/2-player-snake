@@ -1,6 +1,12 @@
 <en-US>
 Short Description (max 80 characters)
-2 player snake game: local & online multiplayer. Same screen or real-time!
+2 Player Snake game: local & online multiplayer. Same screen or real-time!
+
+App Store Subtitle (max 30 characters)
+Classic 2 Player Snake Battle
+
+App Store Keywords (max 100 characters)
+snake,2 player,multiplayer,offline,party,arcade,retro,pvp,two player,duo,worm,classic,battle
 
 Full Description
 2 Players. One screen. Ultimate Snake battle. 🐍
@@ -9,9 +15,13 @@ Play the classic Snake like never before — challenge your friend locally on th
 2 Player Snake is a fast-paced competitive arcade game designed for instant fun, local and online multiplayer, and endless replayability. One of the best 2 player games you can play on a single device or against players worldwide — perfect for party games, quick matches, and real-time online duels anytime, anywhere.
 
 🎮 Features
-✅ Local & Online PvP — Play on one screen or challenge players worldwide
-✅ 4 Game Modes — Experience Normal, Fast, Adventure & Area 51 modes
-✅ Smooth & Offline — Responsive controls with full offline & online support
+✅ Real-time online multiplayer — play with anyone, anywhere
+✅ Local multiplayer — 2 players on the same screen, no internet needed
+✅ Smooth, responsive controls for precise movement
+✅ Full-screen immersive gameplay
+✅ Fast & competitive matches with real-time action
+✅ Offline & online — play with or without Wi-Fi
+✅ Multiple game modes for every play style
 
 🎯 Game Modes
 🔴 Normal – The classic snake game you know and love
@@ -533,7 +543,13 @@ Descarrega agora e torna-te o campeão definitivo da Cobra. 🐍👑
 
 <tr-TR>
 Kısa Açıklama (max 80 karakter)
-2 kişilik yılan oyunu: lokal & online PvP. Aynı ekran veya gerçek zamanlı!
+2 Kişilik Yılan oyunu: lokal & online PvP. Aynı ekran veya gerçek zamanlı!
+
+App Store Alt Başlık (max 30 karakter)
+2 Kişilik Klasik Yılan Oyunu
+
+App Store Anahtar Kelimeler (max 100 karakter)
+yılan,2 kişilik,yılan oyunu,iki kişilik,arcade,klasik,çevrimdışı,pvp,arkadaş,retro,düello,snake
 
 Uzun Açıklama
 2 Oyuncu. Tek ekran. Efsane Yılan kapışması. 🐍

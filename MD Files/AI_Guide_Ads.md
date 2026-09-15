@@ -27,6 +27,12 @@ AdMob eslestirme notu (iOS shell - v3.3.5):
 - Rewarded ID: `ca-app-pub-4114535776207741/7193260548`
 - ATT İzin Metni: `Bu izin, oyun deneyiminizi geliştirmek ve size uygun kişiselleştirilmiş reklamlar sunmak için kullanılır.`
 
+Build 30 iOS köprü notu (TestFlight'a henüz yüklenmedi):
+- Web sayfası `adBreak` fonksiyonunu sonradan değiştirse dahi `start`, `next`, `reward` ve `browse` türleri native köprüden geçirilir.
+- `start` türü, Oyna ve Ana Menü dönüşlerindeki reklam akışında kullanılır. iOS köprüsünün bu türü yok sayması `AdManager.adInProgress` durumunu açık bırakıp oyunun başlamamasına neden olabiliyordu; eşleme düzeltilmiştir.
+- İnternetsiz yerel fallback sayfasında native reklam çağrısı gösterilmez; callback'ler güvenli biçimde tamamlanır ve oyun kilitlenmez.
+
+
 ---
 
 ## Platform Mimarisi

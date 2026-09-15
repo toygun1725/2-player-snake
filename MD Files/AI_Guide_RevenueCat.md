@@ -99,6 +99,28 @@ Uygulama açıldığında veya satın alım yapıldığında `MainActivity` üze
 
 ---
 
+### B. Swift / iOS Native Katmanı
+
+#### 1. Pod Bağımlılığı (`Podfile`)
+```ruby
+pod 'RevenueCat', '~> 5.0'
+```
+
+#### 2. Native IAP Yöneticisi (`IAPManager.swift`)
+iOS tarafında RevenueCat başlatma, satın alma, geri yükleme ve durum önbellekleme `IAPManager.shared` tekil nesnesi üzerinden yürütülür:
+- **API Başlatma:** `Purchases.configure(withAPIKey: "appl_BioGpdwieqcynDcpKXsuKlEeQUQ")`
+- **Önbellek & Çevrimdışı:** `UserDefaults.standard.bool(forKey: "ads_removed_premium")`
+- **Satın Alma (`buyRemoveAds`):** RevenueCat `offerings.current?.lifetime` paketi veya `Purchases.shared.purchase(package:)` çağrısıyla StoreKit penceresi açılır.
+- **Geri Yükleme (`restorePurchases`):** `Purchases.shared.restorePurchases` çağrısıyla eski Apple ID makbuzları taranarak aktif `remove_ads` entitlement'ı yenilenir.
+- **JS Köprüsü Senkronizasyonu:** Durum değişiminde `dispatchNativeSettingsToWeb(adsRemoved: true)` fonksiyonu ile WKWebView JavaScript motoruna `window.TwoPlayerSnakeAppSettings.adsRemoved = true` enjekte edilir.
+
+#### 3. App Store Connect & RevenueCat Dashboard Eşleştirmesi
+- **App Store IAP Öğesi:** `remove_ads_premium` (Non-Consumable, $0.99 / Tier 1, Türkçe: "Ömür Boyu Reklamsız Sürüm", İngilizce: "Remove Ads Lifetime").
+- **Apple IAP Key:** `SubscriptionKey_B6RCC9JZKL.p8` (Key ID: `B6RCC9JZKL`, Issuer: `087e9e31-e20e-47b1-ac63-5e6384254d8a`) RevenueCat Apple App Store ayarlarında doğrulandı.
+- **StoreKit 2 Desteği:** RevenueCat v5 StoreKit 2 native makbuz doğrulama mekanizmasını kullanır.
+
+---
+
 ## 4. Web / HTML5 Oyun Katmanı
 
 ### A. Javascript Ayar Dinleyicisi

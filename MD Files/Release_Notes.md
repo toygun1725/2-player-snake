@@ -1,8 +1,39 @@
 # 2 Player Snake - Sürüm Notları (Release Notes)
 
-## iOS TestFlight Release Notes
+## iOS App Store & TestFlight Release Notes
 
-> Durum (2026-09-13): iOS Native Swift kabuğu `v3.3.5` / Build **28** (`ios-v3.3.5-b28`) olarak derlendi. Aşama 5 (Canlı AdMob iOS Birimleri & ATT İzin Akışı) tamamlandı, Apple ATT izin diyaloğu, Google Mobile Ads SDK, canlı Geçiş/Ödüllü reklam birimleri ve CocoaPods entegre edildi.
+### Hazırlanan Sonraki Paket: Build 30 (Yüklenmedi)
+
+> Bu bölüm kaynakta hazırlanan değişiklikleri kaydeder. Build 30 henüz derlenmedi, TestFlight'a yüklenmedi ve App Store incelemesindeki Build 29'un durumunu değiştirmez.
+
+- iOS'ta Oyna akışını kilitleyebilen `start` reklam çağrısı native AdMob bridge'ine eklendi.
+- Pause > Ana Menü yolundaki çifte dokunma/race koşulu kaldırıldı.
+- Sürekli çalışan iOS haptic polling döngüsü kaldırılarak menüdeki gereksiz ana iş parçacığı yükü azaltıldı; banner ve blur görsel tasarımı korunuyor.
+- Android eşdeğeri yerel offline oyun ve logo iOS pakete eklendi. İnternetsiz ilk açılışta ya da ilk web yükleme hatasında yerel iki kişilik oyun açılır.
+
+> Durum (2026-09-14): iOS Native Swift kabuğu `v3.3.5` / Build **29** (`ios-v3.3.5-b29`) olarak derlendi ve **Apple App Store İncelemesine Gönderildi** (`Waiting for Review`). Aşama 6 (RevenueCat IAP - Remove Ads Lifetime) ve Aşama 7 (App Store Mağaza Yayını & İnceleme Gönderimi) tamamlandı.
+
+### App Store Canlı Yayına Gönderim (v3.3.5 / Build 29)
+
+<en-US>
+What's New in iOS v3.3.5 (Build 29):
+• Official App Store Launch Release: Initial public submission for iPhone and iPad devices worldwide.
+• In-App Purchases (IAP): Integrated RevenueCat & StoreKit for "Remove Ads Lifetime" non-consumable purchase with one-tap restore.
+• Live AdMob & ATT: Google Mobile Ads SDK with App Tracking Transparency permission compliance.
+• iPhone & iPad Support: Optimized edge-to-edge cyberpunk graphics for 6.5"/6.7" iPhone and 13" iPad Pro displays.
+• Offline & Online Play: Full 2-player local battle on one screen, plus real-time online PvP.
+</en-US>
+
+<tr-TR>
+iOS v3.3.5 (Build 29) Yenilikleri:
+• Resmi App Store Yayını: iPhone ve iPad cihazlar için dünya genelinde ilk genel mağaza sürümü.
+• Uygulama İçi Satın Alma (IAP): RevenueCat ve StoreKit ile tek seferlik "Ömür Boyu Reklamsız Sürüm" satın alma ve geri yükleme entegrasyonu.
+• Canlı AdMob & ATT: Apple App Tracking Transparency (ATT) gizlilik standardıyla uyumlu Google Mobile Ads entegrasyonu.
+• iPhone ve iPad Desteği: 6.5"/6.7" iPhone ve 13" iPad Pro ekranları için optimize edilmiş kenardan kenara cyberpunk arayüz.
+• Çevrimdışı ve Çevrimiçi Oynanış: Tek ekranda internet gerektirmeyen 2 kişilik kapışma ve gerçek zamanlı online PvP.
+</tr-TR>
+
+---
 
 ### TestFlight Release (v3.3.5 / Build 28)
 
