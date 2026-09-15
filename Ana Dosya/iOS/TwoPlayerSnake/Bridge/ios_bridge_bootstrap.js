@@ -149,6 +149,21 @@
     var req = (o && typeof o === "object") ? o : {};
     var adType = req.type || "next";
 
+    // The bundled offline game never requests a network ad. Interstitials are
+    // skipped and a rewarded request is treated as dismissed, so it cannot
+    // grant a reward without an actual ad impression.
+    if (window.__twoPlayerSnakeOfflineMode === true) {
+      try { if (typeof req.beforeAd === "function") req.beforeAd(); } catch (e) {}
+      if (adType === "reward") {
+        try { if (typeof req.beforeReward === "function") req.beforeReward(function () {}); } catch (e) {}
+        try { if (typeof req.adDismissed === "function") req.adDismissed(); } catch (e) {}
+      }
+      try { if (typeof req.afterAd === "function") req.afterAd(); } catch (e) {}
+      try { if (typeof req.adBreakDone === "function") req.adBreakDone(); } catch (e) {}
+      if (window.AdManager) { window.AdManager.adInProgress = false; }
+      return;
+    }
+
     // 1. Premium veya reklamsız sürüm kontrolü: Anında atla
     if (window.Android.isAdsRemoved() === "true") {
       console.log("iOS Bridge: Reklamlar kaldırılmış, anında atlanıyor:", adType);
@@ -215,7 +230,10 @@
 
   window.adsbygoogle.push = function (o) {
     if (o && typeof o === "object") {
-      if (o.type === "next" || o.type === "reward" || o.type === "browse") {
+      // The page assigns `adBreak` again during its own bootstrap. Those calls
+      // arrive here, so every game ad type (including match-start) must be
+      // forwarded to the native shim.
+      if (o.type === "start" || o.type === "next" || o.type === "reward" || o.type === "browse") {
         __nativeAdBreakShim(o);
         return;
       }
@@ -386,9 +404,10 @@
     document.head.appendChild(style);
   })();
 
-  document.documentElement.setAttribute("data-android-app", "true");
   document.documentElement.setAttribute("data-ios-app", "true");
   document.documentElement.setAttribute("data-ios-shell", "true");
+  document.documentElement.setAttribute("data-native-platform", "ios");
+  window.__twoPlayerSnakePlatform = "ios";
 
   // ── Klavye Kapanınca Scroll Sıfırlama (Focusout) ──────────────────────────
   window.addEventListener("focusout", function (e) {
@@ -403,29 +422,6 @@
       }, 120);
     }
   }, true);
-
-  // ── Pause "Home" Butonu Güvenli Geçiş Koruması ────────────────────────────
-  // Pause menüsündeki ev butonuna tıklandığında olası reklam/balon takılmalarını baypas eder
-  function handlePauseHomeSafely(e) {
-    var homeBtn = e.target && e.target.closest ? e.target.closest('[data-action="home"]') : null;
-    if (!homeBtn) return;
-    
-    var cw = document.getElementById("canvasWrap");
-    if (cw) cw.classList.remove("paused-blur");
-    document.querySelectorAll(".pause-bubbles").forEach(function (el) { el.remove(); });
-    
-    if (window.AdManager) {
-      window.AdManager.adInProgress = false;
-    }
-    
-    setTimeout(function() {
-      if (typeof window.openMainMenu === "function") {
-        window.openMainMenu();
-      }
-    }, 30);
-  }
-  document.addEventListener("click", handlePauseHomeSafely, true);
-  document.addEventListener("touchend", handlePauseHomeSafely, true);
 
   // ── Haptic: Kesin ve Güvenli Yem Yeme Tespiti ──────────────────────────────
   // DOM Panel Score Watcher (MutationObserver + rAF fallback)
@@ -501,12 +497,8 @@
       setupObserver();
     }
 
-    // Katman 2: requestAnimationFrame ile her kare kontrolü (güvenlik ağı)
-    function animCheck() {
-      checkPanelLengths();
-      requestAnimationFrame(animCheck);
-    }
-    requestAnimationFrame(animCheck);
+    // MutationObserver is sufficient here. A second requestAnimationFrame loop
+    // woke WebKit every frame even while the menu/demo was visible.
   })();
 
 })();

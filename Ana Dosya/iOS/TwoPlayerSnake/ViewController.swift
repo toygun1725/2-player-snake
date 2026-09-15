@@ -34,6 +34,9 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     private let baseGameUrl = "https://2playersnake.com/wp-content/uploads/game-mobile/index.html"
     private var progressObservation: NSKeyValueObservation?
     private var isGameLoaded = false
+    private var isShowingOfflineGame = false
+    private var hasOfferedOnlineReload = false
+    private var lastInjectedSafeAreaInsets: UIEdgeInsets?
 
     override var prefersStatusBarHidden: Bool {
         return true
@@ -127,9 +130,16 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     }
 
     // MARK: - Safe Area CSS Değişkenleri Enjeksiyonu
-    private func injectSafeAreaVariables() {
+    private func injectSafeAreaVariables(force: Bool = false) {
         let topInset = view.safeAreaInsets.top
         let bottomInset = view.safeAreaInsets.bottom
+        let currentInsets = UIEdgeInsets(top: topInset, left: 0, bottom: bottomInset, right: 0)
+
+        // viewDidLayoutSubviews can be called repeatedly during WebKit menu
+        // animations. Avoid evaluating JavaScript unless the native safe area
+        // has actually changed.
+        guard force || lastInjectedSafeAreaInsets != currentInsets else { return }
+        lastInjectedSafeAreaInsets = currentInsets
 
         let css = """
         (function() {
@@ -355,18 +365,22 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             self?.playerLayer?.removeFromSuperlayer()
             self?.teaserContainer.removeFromSuperview()
 
-            // Aşama 5: Ana menüye inildiğinde Apple ATT izin penceresi ve AdMob başlatılır
-            AdManager.shared.requestTrackingAuthorization()
+            // Offline fallback oyununda reklam isteği veya ATT akışı başlatılmaz.
+            if !self.isShowingOfflineGame {
+                AdManager.shared.requestTrackingAuthorization()
+            }
         }
     }
 
     // MARK: - Oyun URL'i Oluşturma & Yükleme
     private func loadGame() {
         guard NetworkMonitor.shared.isOnline() else {
-            showOfflineOverlay()
+            loadOfflineFallbackGame()
             return
         }
 
+        isShowingOfflineGame = false
+        hasOfferedOnlineReload = false
         hideOfflineOverlay()
 
         guard var components = URLComponents(string: baseGameUrl) else { return }
@@ -385,6 +399,36 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             let request = URLRequest(url: finalUrl, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30)
             webView.load(request)
         }
+    }
+
+    private func loadOfflineFallbackGame() {
+        guard let fallbackUrl = Bundle.main.url(forResource: "mobile_offline_fallback", withExtension: "html", subdirectory: "Offline")
+                ?? Bundle.main.url(forResource: "mobile_offline_fallback", withExtension: "html") else {
+            showOfflineOverlay()
+            return
+        }
+
+        isShowingOfflineGame = true
+        hideOfflineOverlay()
+        webView.loadFileURL(fallbackUrl, allowingReadAccessTo: fallbackUrl.deletingLastPathComponent())
+    }
+
+    private func offerOnlineGameReload() {
+        guard isShowingOfflineGame, !hasOfferedOnlineReload else { return }
+        hasOfferedOnlineReload = true
+
+        let alert = UIAlertController(
+            title: "Bağlantı Geri Geldi",
+            message: "Çevrimiçi mod, reklamlar ve en güncel oyun sürümü için oyun yeniden yüklenecek. Mevcut yerel maçın kaybolur.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Şimdi Yükle", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            self.isGameLoaded = false
+            self.loadGame()
+        })
+        alert.addAction(UIAlertAction(title: "Offline Devam Et", style: .cancel))
+        present(alert, animated: true)
     }
 
     // MARK: - Native Çevrimdışı (Offline) Arayüzü
@@ -481,8 +525,14 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     private func setupNetworkMonitoring() {
         NetworkMonitor.shared.onStatusChange = { [weak self] isConnected in
             guard let self = self else { return }
-            if isConnected && !self.isGameLoaded {
-                self.loadGame()
+            if isConnected {
+                if self.isShowingOfflineGame {
+                    self.offerOnlineGameReload()
+                } else if !self.isGameLoaded {
+                    self.loadGame()
+                }
+            } else if !self.isGameLoaded {
+                self.loadOfflineFallbackGame()
             }
         }
     }
@@ -517,7 +567,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        injectSafeAreaVariables()
+        injectSafeAreaVariables(force: true)
         publishSettingsToGame()
         // Sayfa yüklendiğinde START butonunu göster (videoyu kullanıcı START'a basana kadar döngüde tut)
         showStartButton()
@@ -525,15 +575,15 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         let nsError = error as NSError
-        if nsError.code != NSURLErrorCancelled {
-            showOfflineOverlay()
+        if nsError.code != NSURLErrorCancelled && !isShowingOfflineGame {
+            loadOfflineFallbackGame()
         }
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         let nsError = error as NSError
-        if nsError.code != NSURLErrorCancelled {
-            showOfflineOverlay()
+        if nsError.code != NSURLErrorCancelled && !isShowingOfflineGame {
+            loadOfflineFallbackGame()
         }
     }
 
