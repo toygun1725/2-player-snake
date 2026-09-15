@@ -2,6 +2,16 @@
 
 ## iOS App Store & TestFlight Release Notes
 
+### TestFlight Release (v3.3.5 / Build 34)
+> Durum (2026-09-15): GitHub Actions Run #34 üzerinden macOS bulutunda derlendi ve TestFlight'a yüklendi (`ios-v3.3.5-b34`). App Store incelemesindeki Build 29 bağımsız olarak beklemektedir.
+
+- **Çevrimiçi Mod Menü Kasması & Demo Yılan Takılma Kök Neden Çözümü:**
+  - `ios_bridge_bootstrap.js` içinde `isAndroidWebView` değişkeni `Object.defineProperty` kullanılarak `writable: false, configurable: false` şeklinde kilitlendi. Uzak web sayfasının inline `<script>` bloğunun bu değeri ezmesi (override) ve `false` yapması kesin olarak engellendi.
+  - `ViewController.swift` içinde uzak sayfa URL parametresi `app=android` olarak ayarlandı (ve platform takibi için `app_platform=ios` eklendi). Böylece uzak web sayfasının kendi senkron kontrolü de başarıyla `true` döner ve Google H5 Ads script yüklemesini baypas eder.
+  - Ağır Google H5 Ads script'inin periyodik ağ yoklaması ve arka plan CPU/GPU yükü tamamen ortadan kaldırıldı; demo yılanların menü geçişlerinde donarak teleportlanmayı önleyen `menuDemoFreezeUntil` mekanizması çevrimiçi modda da aktif hale getirildi.
+- **Eksik Backdrop-Filter GPU Override'ları Eklendi:**
+  - `.game-end-overlay`, `.online-alert-overlay`, `.panel-pause-btn`, `.achievement-card`, `#qs-info-btn` ve açık tema (`[data-theme="light"]`) kontrol panelleri üzerindeki tüm `backdrop-filter` efektleri donanım hızlandırmalı düz opak cam katmanlarıyla değiştirildi.
+
 ### TestFlight Release (v3.3.5 / Build 33)
 > Durum (2026-09-15): GitHub Actions Run #33 üzerinden macOS bulutunda derlendi ve TestFlight'a yüklendi (`ios-v3.3.5-b33`). App Store incelemesindeki Build 29 bağımsız olarak beklemektedir.
 

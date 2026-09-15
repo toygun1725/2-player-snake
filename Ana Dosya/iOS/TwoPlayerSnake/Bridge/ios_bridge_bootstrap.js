@@ -1,7 +1,14 @@
 (function () {
   if (window.__twoPlayerSnakeIosBridgeInstalled) return;
-  window.__twoPlayerSnakeIosBridgeInstalled = true;
-  window.isAndroidWebView = true;
+  try {
+    Object.defineProperty(window, 'isAndroidWebView', {
+      value: true,
+      writable: false,
+      configurable: false
+    });
+  } catch (e) {
+    window.isAndroidWebView = true;
+  }
   window.__twoPlayerSnakePlatform = "ios";
   window.__nativeAdCallbacks = window.__nativeAdCallbacks || {};
 
@@ -462,6 +469,30 @@
           backdrop-filter: none !important;
           -webkit-backdrop-filter: none !important;
           animation: none !important;
+        }
+
+        /* Oyun Sonu & Çevrimiçi Uyarı Overlay'leri */
+        .game-end-overlay,
+        .online-alert-overlay {
+          -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+        }
+
+        /* Pause butonu, Başarı Kartları & Info butonu */
+        .panel-pause-btn,
+        .achievement-card,
+        #qs-info-btn {
+          -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+        }
+
+        /* Açık Tema (Light Mode) Kontrol Panelleri */
+        [data-theme="light"] #p2-controls,
+        [data-theme="light"] #p1-controls,
+        [data-theme="light"] .game-end-overlay,
+        [data-theme="light"] .game-end-card {
+          -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
         }
 
         /* 4. Tıklama gecikmesini sıfırla (0ms anlık dokunma) */

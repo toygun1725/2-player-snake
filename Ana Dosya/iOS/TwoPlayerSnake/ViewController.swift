@@ -391,9 +391,10 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         guard var components = URLComponents(string: baseGameUrl) else { return }
 
         let queryItems = [
-            URLQueryItem(name: "app", value: "ios"),
+            URLQueryItem(name: "app", value: "android"),
+            URLQueryItem(name: "app_platform", value: "ios"),
             URLQueryItem(name: "app_ver", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.3.5"),
-            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "33"),
+            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "34"),
             URLQueryItem(name: "app_device", value: "mobile"),
             URLQueryItem(name: "__ts", value: String(Int(Date().timeIntervalSince1970 * 1000)))
         ]

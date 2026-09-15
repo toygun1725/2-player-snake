@@ -10,19 +10,18 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 * **Bundle Identifier:** `com.twoplayersnake.app`
 * **Apple Team ID:** `GUFQF359Q7` (Toygun ÇETİN)
 * **Güncel Sürüm (Marketing Version):** `3.3.5`
-* **Güncel Yapı Numarası (Build Number):** `33` (`ios-v3.3.5-b33`)
+* **Güncel Yapı Numarası (Build Number):** `34` (`ios-v3.3.5-b34`)
 * **Derleme Ortamı:** `macos-latest` (macOS 26 Tahoe / Sonoma) + Xcode 26 + iOS SDK + CocoaPods
-* **Güncel Durum:** **Build 33 (`ios-v3.3.5-b33`) hazırlandı ve TestFlight dağıtımına sunuldu. Documents uygulamasına atma hatası giderildi, sahte bağlantı geri geldi popup'ı kaldırıldı ve ana menü (.main-menu-actions) GPU blur darboğazı donanım hızlandırmalı opak cam stiliyle çözülerek dokunma gecikmesi 0ms'ye indirildi.**
+* **Güncel Durum:** **Build 34 (`ios-v3.3.5-b34`) hazırlandı ve TestFlight dağıtımına sunuldu. Çevrimiçi modda isAndroidWebView değişkeninin uzak sayfa tarafından ezilmesi (override) Object.defineProperty ve app=android URL parametresiyle engellendi; Google H5 Ads script yüklemesi baypas edildi, demo yılan teleportlanması çözüldü ve eksik backdrop-filter override'ları tamamlandı.**
 
 ---
 
-## Build 33 Hazırlık Notları (TestFlight)
+## Build 34 Hazırlık Notları (TestFlight)
 
-Bu çalışma, App Store incelemesindeki Build 29'u kesinlikle değiştirmez. Yeni TestFlight paketi için yapı numarası `33` (`ios-v3.3.5-b33`) olarak hazırlanmıştır:
+Bu çalışma, App Store incelemesindeki Build 29'u kesinlikle değiştirmez. Yeni TestFlight paketi için yapı numarası `34` (`ios-v3.3.5-b34`) olarak hazırlanmıştır:
 
-1. **Yerel Dosya ve Documents Uygulaması Yönlendirme Düzeltmesi:** `ViewController.swift` içerisindeki `decidePolicyFor navigationAction` metoduna `url.isFileURL` kontrolü eklendi. Yerel paket dosyalarının kullanıcının cihazındaki "Documents by Readdle" gibi harici dosya yöneticilerine yönlendirilmesi engellendi ve doğrudan WebView içinde açılması sağlandı.
-2. **Sahte "Bağlantı Geri Geldi" Uyarısı Engellendi:** `NetworkMonitor` başlangıç yarış durumu giderildi; `offerOnlineGameReload` metodu yalnızca kullanıcı gerçekten çevrimdışı maça girip oynadıktan sonra (`isShowingOfflineGame && isGameLoaded && isTeaserDismissed`) çalışacak şekilde sınırlandırıldı.
-3. **Ana Menü & Retina GPU Tam Akıcılık Çözümü:** `ios_bridge_bootstrap.js` içindeki `document.head` `null` JS çökmesi giderildi (`target = document.head || document.documentElement`). `window.isAndroidWebView = true` dosyanın 1. satırına taşındı. Asıl menü kutusu olan `.main-menu-actions`, `.main-menu-glow`, `.main-menu-logo`, `.banner.padded` ve tüm alt pencerelerdeki ağır `backdrop-filter` ve `box-shadow` animasyonları kapatılarak donanım hızlandırmalı zengin opak cyberpunk tasarımı uygulandı; dokunma gecikmesi 0ms'ye indirildi.
+1. **Çevrimiçi Mod Menü Kasması & Demo Yılan Takılma Kök Neden Çözümü:** `ios_bridge_bootstrap.js` içinde `isAndroidWebView` değişkeni `Object.defineProperty` ile kilitlenerek uzak sayfanın inline script'inin bu değeri `false` yapması engellendi. `ViewController.swift` içinde `app=android` parametresi iletilerek web sayfasının kendi kontrolünün de başarıyla `true` dönmesi sağlandı. Bu sayede Google H5 Ads periyodik polling yükü baypas edildi ve `menuDemoFreezeUntil` mekanizması çevrimiçi modda da çalışır hale getirildi.
+2. **Eksik Backdrop-Filter GPU Override'ları Eklendi:** `.game-end-overlay`, `.online-alert-overlay`, `.panel-pause-btn`, `.achievement-card`, `#qs-info-btn` ve açık tema (`[data-theme="light"]`) kontrol panelleri üzerindeki tüm `backdrop-filter` efektleri kapatılarak donanım hızlandırmalı düz opak cam katmanlarıyla değiştirildi.
 
 
 
