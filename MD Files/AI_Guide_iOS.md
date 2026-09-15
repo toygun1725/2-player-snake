@@ -37,6 +37,67 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 
 ---
 
+## 3. GitHub Push, Tag ve TestFlight CI/CD Dağıtım Prosedürü (Codex / AI Kılavuzu)
+
+Fiziksel Mac olmadan Windows ortamından TestFlight'a yeni build göndermek için izlenen standart prosedür aşağıdadır:
+
+### Adım 1: Sürüm Numaralarını Eşzamanlı Yükseltme (Build Number)
+Yeni bir build çıkarken (örneğin Build 36 için) şu 4 dosyada yapı numarası mutlaka birlikte güncellenmelidir:
+1. **`Ana Dosya/iOS/TwoPlayerSnake/Info.plist`**:
+   * `<key>CFBundleVersion</key>` altındaki değer: `35` ➔ `36`
+2. **`Ana Dosya/iOS/TwoPlayerSnake.xcodeproj/project.pbxproj`**:
+   * Dosya içinde tam **4 adet** `CURRENT_PROJECT_VERSION` bulunur (Debug ve Release şemaları, satır ~337, ~394, ~405, ~429).
+   * **Dördü birden** `35` ➔ `36` olarak değiştirilmelidir!
+3. **`Ana Dosya/iOS/TwoPlayerSnake/ViewController.swift`**:
+   * `queryItems` içindeki `app_code` fallback değeri (satır ~397): `"35"` ➔ `"36"`
+4. **Dokümantasyon:**
+   * `MD Files/Release_Notes.md` en üstüne yeni build başlığı ve notları eklenir.
+   * `MD Files/AI_Guide_iOS.md` güncel durum güncellenir.
+
+### Adım 2: Git Commit, Tag ve Push Kuralları (PowerShell Uyarısı!)
+* **ÖNEMLİ KURAL (PowerShell):** Windows PowerShell ortamında komutları zincirlemek için `&&` **KULLANILMAZ**, yerine `;` kullanılır.
+* **Tag Formatı:** GitHub Actions workflow'u yalnızca `ios-v3.3.5-b*` etiketlerini dinler!
+```powershell
+# 1. Değişiklikleri stage et
+git add "Ana Dosya/iOS/TwoPlayerSnake.xcodeproj/project.pbxproj" "Ana Dosya/iOS/TwoPlayerSnake/Info.plist" "Ana Dosya/iOS/TwoPlayerSnake/ViewController.swift" "Ana Dosya/iOS/TwoPlayerSnake/Bridge/ios_bridge_bootstrap.js" "MD Files/AI_Guide_iOS.md" "MD Files/Release_Notes.md"
+
+# 2. Commit at
+git commit -m "feat(ios): Build 36 - <açıklama> (ios-v3.3.5-b36)"
+
+# 3. Tag oluştur (workflow'u tetikleyen asıl tetikleyicidir)
+git tag -a ios-v3.3.5-b36 -m "TestFlight Release v3.3.5 Build 36"
+
+# 4. Hem main branch'i hem tag'i push et
+git push origin main ; git push origin ios-v3.3.5-b36
+```
+
+### Adım 3: GitHub Actions Bulut Derlemesi & TestFlight Dağıtımı
+Tag push edildiğinde `.github/workflows/ios-testflight.yml` otomatik olarak çalışmaya başlar:
+* **Ortam:** `macos-latest` (macOS 26 Sonoma / Xcode 26+)
+* **İşlemler:** CocoaPods bağımlılıklarını kurar, GitHub Secret'taki App Store Distribution sertifikasını keychain'e ekler, Xcode ile `.ipa` arşivler ve Fastlane ile doğrudan Apple TestFlight API'ye yükler.
+* **Süre:** Ortalama 4-5 dakika sürer.
+
+### Adım 4: Build Durumunu Windows'tan İzleme (Token & Python)
+* Sistemde `gh` (GitHub CLI) **yüklü değildir**.
+* CI/CD adımlarını izlemek için sistemdeki Git kimlik yöneticisinden token çekip GitHub REST API'yi sorgulayan Python kullanılır:
+```python
+import subprocess, urllib.request, json
+
+# Git token'ı otomatik al
+proc = subprocess.run(['git', 'credential', 'fill'], input='protocol=https\nhost=github.com\n', text=True, capture_output=True)
+token = [line.split('=', 1)[1] for line in proc.stdout.splitlines() if line.startswith('password=')][0]
+headers = {'Authorization': f'Bearer {token}', 'Accept': 'application/vnd.github+json', 'User-Agent': 'Python'}
+
+# En son workflow run'larını listele
+req = urllib.request.Request('https://api.github.com/repos/toygun1725/2-player-snake/actions/runs?per_page=3', headers=headers)
+with urllib.request.urlopen(req) as resp:
+    runs = json.loads(resp.read().decode('utf-8'))['workflow_runs']
+    for r in runs:
+        print(f"Run #{r['run_number']}: ID={r['id']}, Status={r['status']}, Conclusion={r['conclusion']}")
+```
+
+---
+
 ## 3. Build 35 Hazırlık Notları (TestFlight)
 
 Bu çalışma, App Store incelemesindeki Build 29'u kesinlikle değiştirmez. Yeni TestFlight paketi için yapı numarası `35` (`ios-v3.3.5-b35`) olarak hazırlanmıştır:
