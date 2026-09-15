@@ -400,14 +400,49 @@
         pointer-events: none !important;
         z-index: 0 !important;
       }
+
+      /* ── iOS Retina GPU Performans & Sıfır Gecikme (Zero Input Lag) Optimizasyonları ── */
+      /* 3x Retina ekranda 60 FPS canvas üzerinde ağır Gaussian blur compositing kilitlenmesini engelle */
+      .banner.padded {
+        background: linear-gradient(180deg, rgba(13, 22, 36, 0.90), rgba(10, 17, 29, 0.92)) !important;
+        -webkit-backdrop-filter: blur(4px) !important;
+        backdrop-filter: blur(4px) !important;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45), 0 0 10px rgba(255, 79, 191, 0.25) !important;
+        animation: none !important;
+        transform: translateZ(0) !important;
+        will-change: opacity, transform !important;
+      }
+
+      .banner.winner-glass-banner.padded {
+        background: linear-gradient(160deg, rgba(10, 16, 28, 0.92), rgba(18, 28, 46, 0.88)) !important;
+        -webkit-backdrop-filter: blur(4px) !important;
+        backdrop-filter: blur(4px) !important;
+        animation: none !important;
+        transform: translateZ(0) !important;
+      }
+
+      .player-stat-panel::before {
+        -webkit-backdrop-filter: blur(4px) !important;
+        backdrop-filter: blur(4px) !important;
+      }
+
+      /* iOS WebKit sentetik 300ms tıklama gecikmesini sıfırla (0ms anlık tepki) */
+      button, .btn, .turn-btn, .panel-pause-btn, .nav-btn, .option-btn, .tab-btn {
+        touch-action: manipulation !important;
+        -webkit-tap-highlight-color: transparent !important;
+      }
     `;
     document.head.appendChild(style);
   })();
 
+  // Android shell ile eşlik: WebKit dahili demo dondurmasını devreye al, harici H5 reklamlarını baypas et
+  window.isAndroidWebView = true;
+  document.documentElement.classList.add("android-webview");
   document.documentElement.setAttribute("data-ios-app", "true");
   document.documentElement.setAttribute("data-ios-shell", "true");
   document.documentElement.setAttribute("data-native-platform", "ios");
   window.__twoPlayerSnakePlatform = "ios";
+
 
   // ── Klavye Kapanınca Scroll Sıfırlama (Focusout) ──────────────────────────
   window.addEventListener("focusout", function (e) {

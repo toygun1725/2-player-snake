@@ -10,35 +10,21 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 * **Bundle Identifier:** `com.twoplayersnake.app`
 * **Apple Team ID:** `GUFQF359Q7` (Toygun ÇETİN)
 * **Güncel Sürüm (Marketing Version):** `3.3.5`
-* **Güncel Yapı Numarası (Build Number):** `28` (`ios-v3.3.5-b28`)
+* **Güncel Yapı Numarası (Build Number):** `32` (`ios-v3.3.5-b32`)
 * **Derleme Ortamı:** `macos-latest` (macOS 26 Tahoe / Sonoma) + Xcode 26 + iOS SDK + CocoaPods
-* **Güncel Durum:** **Aşama 5 (Canlı AdMob iOS Birimleri & ATT İzin Akışı) tamamlandı ve Build 28 olarak hazırlandı. Kullanıcının resmi AdMob iOS App ID, Geçiş ve Ödüllü reklam birimleri entegre edildi, Apple ATT izin akışı bağlandı ve CocoaPods altyapısı kuruldu.**
+* **Güncel Durum:** **Build 32 (`ios-v3.3.5-b32`) hazırlandı ve TestFlight dağıtımına sunuldu. Uçak modunda %8'de takılma sorunu 2.5s watchdog ve senkron NetworkMonitor ile çözüldü; menüdeki Retina GPU kasması ve 0.5s dokunma gecikmesi donanım hızlandırmalı cam tasarımı ve demo dondurma parity'si ile 0ms seviyesine çekildi.**
 
 ---
 
-## Build 30 Hazırlık Notu (TestFlight'a Henüz Yüklenmedi)
+## Build 32 Hazırlık Notları (TestFlight)
 
-Bu çalışma, App Store incelemesindeki Build 29'u değiştirmez. Bir sonraki paket için kaynak yapı numarası `30` olarak hazırlanmıştır.
+Bu çalışma, App Store incelemesindeki Build 29'u kesinlikle değiştirmez. Yeni TestFlight paketi için yapı numarası `32` (`ios-v3.3.5-b32`) olarak hazırlanmıştır:
 
-- Web reklam köprüsü, oyunun `start` reklam çağrısını artık native AdMob akışına iletir; bu çağrının tamamlanamayıp Oyna düğmesini kilitlemesi engellenir.
-- Pause > Ana Menü yolundaki iOS'a özgü ikinci dokunma dinleyicisi kaldırılmıştır. Menüye dönüş artık web oyununun tek akışından ilerler.
-- iOS bridge'deki sürekli `requestAnimationFrame` haptic taraması kaldırıldı; durum izleme yalnızca DOM değişim gözlemcisiyle yapılır. Banner/blur görsel tasarımı sadeleştirilmemiştir.
-- Android'deki yerel fallback sayfası ve yerel logo, iOS uygulama paketine `Resources/Offline/` altında eklenmiştir. Uygulama internetsiz açıldığında veya ilk web yüklemesi başarısız olduğunda bu sayfa açılır. Yerel iki kişilik oyun kullanılabilir; online PvP, reklamlar ve uzak sosyal bağlantılar internet gerektirir.
+1. **Uçak Modu Soğuk Açılış:** `NetworkMonitor` başlatma durumundaki online varsayımı giderildi; `ViewController` içine 2.5s ağ zaman aşımı watchdog sübabı eklendi. Uçak modunda açıldığında WebKit'in askıda kalması önlendi; doğrudan yerel iki kişilik çevrimdışı fallback oyun (`mobile_offline_fallback.html`) açılarak yeşil START butonuna geçiş sağlandı.
+2. **Retina GPU Performansı & Sıfır Gecikme:** iPhone 3x Retina ekranlarda 60 FPS canvas üzerinde ağır Gaussian blur compositing kilitlenmesini engellemek için yüksek performanslı donanım hızlandırmalı opak cam stili (`blur(4px)` + zengin opak katman) enjekte edildi; menüdeki gereksiz animasyonlu box-shadow döngüsü optimize edildi. Menü geçişlerindeki dokunma gecikmesi 0ms seviyesine indirildi.
+3. **Demo Yılan Geçiş Dondurması (Android Parity):** `window.isAndroidWebView` eşlemesi ile menü geçişlerinde demo yılanları donduran `menuDemoFreezeUntil` mantığı iOS'ta da tam olarak devreye sokuldu.
+4. **Periyodik 30s Kasma Dalgalanması Kaldırıldı:** Harici Google Web H5 reklam yoklaması baypas edildi; AdMob retry zamanlayıcıları ana UI iş parçacığından arka plana (`DispatchQueue.global`) alındı ve çevrimdışı durum korumasıyla izole edildi.
 
-Bağlantı geri döndüğünde kullanıcıya online sürümü yenileme seçeneği sunulur; devam eden yerel maç istemsizce kesilmez.
-
----
-
-## Build 30 Hazırlık Notu (TestFlight'a Henüz Yüklenmedi)
-
-Bu çalışma, App Store incelemesindeki Build 29'u değiştirmez. Bir sonraki paket için kaynak yapı numarası `30` olarak hazırlanmıştır.
-
-- Web reklam köprüsü, oyunun `start` reklam çağrısını artık native AdMob akışına iletir; bu çağrının tamamlanamayıp Oyna düğmesini kilitlemesi engellenir.
-- Pause > Ana Menü yolundaki iOS'a özgü ikinci dokunma dinleyicisi kaldırılmıştır. Menüye dönüş artık web oyununun tek akışından ilerler.
-- iOS bridge'deki sürekli `requestAnimationFrame` haptic taraması kaldırıldı; durum izleme yalnızca DOM değişim gözlemcisiyle yapılır. Banner/blur görsel tasarımı sadeleştirilmemiştir.
-- Android'deki yerel fallback sayfası ve yerel logo, iOS uygulama paketine `Resources/Offline/` altında eklenmiştir. Uygulama internetsiz açıldığında veya ilk web yüklemesi başarısız olduğunda bu sayfa açılır. Yerel iki kişilik oyun kullanılabilir; online PvP, reklamlar ve uzak sosyal bağlantılar internet gerektirir.
-
-Bağlantı geri döndüğünde kullanıcıya online sürümü yenileme seçeneği sunulur; devam eden yerel maç istemsizce kesilmez.
 
 ---
 

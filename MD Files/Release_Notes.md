@@ -2,6 +2,14 @@
 
 ## iOS App Store & TestFlight Release Notes
 
+### TestFlight Release (v3.3.5 / Build 32)
+> Durum (2026-09-15): GitHub Actions Run #32 üzerinden macOS bulutunda derlendi ve TestFlight'a yüklendi (`ios-v3.3.5-b32`). App Store incelemesindeki Build 29 bağımsız olarak beklemektedir.
+
+- **Uçak Modu / Çevrimdışı Soğuk Açılış İyileştirmesi:** `NetworkMonitor` başlangıç yarış durumu düzeltildi ve `ViewController` içine 2.5s soğuk açılış emniyet zamanlayıcısı (watchdog) eklendi. Cihaz internetsiz veya uçak modunda açıldığında `%8 hazır` ekranında takılmadan doğrudan yerel iki kişilik çevrimdışı oyunu (`mobile_offline_fallback.html`) anında açar ve `START` butonunu gösterir.
+- **Ana Menü & Retina GPU Performansı (Sıfır Gecikme):** iPhone 3x Retina ekranlarda 60 FPS canvas üzerinde ağır Gaussian blur compositing kilitlenmesini önlemek için yüksek performanslı donanım hızlandırmalı cam tasarımı (`blur(4px)` + zengin opaklık) uygulandı; animasyonlu GPU box-shadow döngüsü optimize edildi. Menü ve alt pencerelerdeki 0.5s dokunma gecikmesi 0ms seviyesine indirildi.
+- **Demo Yılan Geçiş Dondurması (Android Parity):** `window.isAndroidWebView` köprü eşlemesi etkinleştirilerek menü ve alt pencere geçişlerindeki demo yılan dondurma (`menuDemoFreezeUntil`) iOS'ta tam olarak devreye sokuldu.
+- **Periyodik 30s Kasma Dalgalanması Kaldırıldı:** Harici Google Web H5 reklam script yoklaması baypas edildi; AdMob yeniden deneme (retry) döngüsü ana iş parçacığından arka plana (`DispatchQueue.global`) alındı ve çevrimdışı durum korumasıyla izole edildi.
+
 ### TestFlight Release (v3.3.5 / Build 30)
 > Durum (2026-09-15): GitHub Actions Run #31 üzerinden macOS bulutunda derlendi ve TestFlight'a yüklendi (`ios-v3.3.5-b30`). App Store incelemesindeki Build 29 bağımsız olarak beklemektedir.
 

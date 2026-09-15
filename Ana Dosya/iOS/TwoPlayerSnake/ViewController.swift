@@ -37,6 +37,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     private var isShowingOfflineGame = false
     private var hasOfferedOnlineReload = false
     private var lastInjectedSafeAreaInsets: UIEdgeInsets?
+    private var coldStartWatchdogTimer: Timer?
 
     override var prefersStatusBarHidden: Bool {
         return true
@@ -375,6 +376,9 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
     // MARK: - Oyun URL'i Oluşturma & Yükleme
     private func loadGame() {
+        coldStartWatchdogTimer?.invalidate()
+        coldStartWatchdogTimer = nil
+
         guard NetworkMonitor.shared.isOnline() else {
             loadOfflineFallbackGame()
             return
@@ -388,8 +392,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
         let queryItems = [
             URLQueryItem(name: "app", value: "ios"),
-            URLQueryItem(name: "app_ver", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"),
-            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"),
+            URLQueryItem(name: "app_ver", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.3.5"),
+            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "32"),
             URLQueryItem(name: "app_device", value: "mobile"),
             URLQueryItem(name: "__ts", value: String(Int(Date().timeIntervalSince1970 * 1000)))
         ]
@@ -397,12 +401,23 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         components.queryItems = queryItems
 
         if let finalUrl = components.url {
-            let request = URLRequest(url: finalUrl, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30)
+            let request = URLRequest(url: finalUrl, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 15)
             webView.load(request)
+
+            // Soğuk açılış emniyet zamanlayıcısı (Cold-Start Watchdog - 2.5s):
+            // Uçak modu veya zayıf ağda WebKit'in askıda kalıp %8'de kilitlenmesini engelle
+            coldStartWatchdogTimer = Timer.scheduledTimer(withTimeInterval: 2.5, repeats: false) { [weak self] _ in
+                guard let self = self, !self.isGameLoaded, !self.isShowingOfflineGame else { return }
+                print("[ViewController] Soğuk açılış zaman aşımı (2.5s). Yerel çevrimdışı fallback'e geçiliyor.")
+                self.loadOfflineFallbackGame()
+            }
         }
     }
 
     private func loadOfflineFallbackGame() {
+        coldStartWatchdogTimer?.invalidate()
+        coldStartWatchdogTimer = nil
+
         guard let fallbackUrl = Bundle.main.url(forResource: "mobile_offline_fallback", withExtension: "html", subdirectory: "Offline")
                 ?? Bundle.main.url(forResource: "mobile_offline_fallback", withExtension: "html") else {
             showOfflineOverlay()
@@ -411,8 +426,10 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
         isShowingOfflineGame = true
         hideOfflineOverlay()
-        webView.loadFileURL(fallbackUrl, allowingReadAccessTo: fallbackUrl.deletingLastPathComponent())
+        webView.stopLoading()
+        webView.loadFileURL(fallbackUrl, allowingReadAccessTo: Bundle.main.bundleURL)
     }
+
 
     private func offerOnlineGameReload() {
         guard isShowingOfflineGame, !hasOfferedOnlineReload else { return }
@@ -532,7 +549,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
                 } else if !self.isGameLoaded {
                     self.loadGame()
                 }
-            } else if !self.isGameLoaded {
+            } else if !self.isGameLoaded && !self.isShowingOfflineGame {
                 self.loadOfflineFallbackGame()
             }
         }
@@ -568,6 +585,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        coldStartWatchdogTimer?.invalidate()
+        coldStartWatchdogTimer = nil
         injectSafeAreaVariables(force: true)
         publishSettingsToGame()
         // Sayfa yüklendiğinde START butonunu göster (videoyu kullanıcı START'a basana kadar döngüde tut)
@@ -575,6 +594,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        coldStartWatchdogTimer?.invalidate()
+        coldStartWatchdogTimer = nil
         let nsError = error as NSError
         if nsError.code != NSURLErrorCancelled && !isShowingOfflineGame {
             loadOfflineFallbackGame()
@@ -582,11 +603,14 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        coldStartWatchdogTimer?.invalidate()
+        coldStartWatchdogTimer = nil
         let nsError = error as NSError
         if nsError.code != NSURLErrorCancelled && !isShowingOfflineGame {
             loadOfflineFallbackGame()
         }
     }
+
 
     private func isTrustedGameUrl(_ url: URL) -> Bool {
         guard let host = url.host?.lowercased() else { return false }

@@ -110,10 +110,14 @@ final class AdManager: NSObject {
     }
 
     private func scheduleInterstitialRetry() {
+        guard NetworkMonitor.shared.isOnline() else {
+            print("AdManager: Cihaz çevrimdışı, interstitial yeniden denemesi ertelendi.")
+            return
+        }
         let delay = retryDelays[min(interstitialRetryAttempt, retryDelays.count - 1)]
         interstitialRetryAttempt += 1
         print("AdManager: Interstitial \(delay) saniye sonra tekrar denenecek (Deneme #\(interstitialRetryAttempt))")
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + delay) { [weak self] in
             self?.loadInterstitial()
         }
     }
@@ -169,13 +173,18 @@ final class AdManager: NSObject {
     }
 
     private func scheduleRewardedRetry() {
+        guard NetworkMonitor.shared.isOnline() else {
+            print("AdManager: Cihaz çevrimdışı, rewarded yeniden denemesi ertelendi.")
+            return
+        }
         let delay = retryDelays[min(rewardedRetryAttempt, retryDelays.count - 1)]
         rewardedRetryAttempt += 1
         print("AdManager: Rewarded \(delay) saniye sonra tekrar denenecek (Deneme #\(rewardedRetryAttempt))")
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + delay) { [weak self] in
             self?.loadRewarded()
         }
     }
+
 
     func showRewarded(from viewController: UIViewController, callbackId: String?, onComplete: @escaping (Bool) -> Void) {
         if IAPManager.shared.isAdsRemoved {
