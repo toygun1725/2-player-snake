@@ -12,11 +12,32 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 * **Güncel Sürüm (Marketing Version):** `3.3.5`
 * **Güncel Yapı Numarası (Build Number):** `35` (`ios-v3.3.5-b35`)
 * **Derleme Ortamı:** `macos-latest` (macOS 26 Tahoe / Sonoma) + Xcode 26 + iOS SDK + CocoaPods
-* **Güncel Durum:** **Build 35 (`ios-v3.3.5-b35`) hazırlandı ve TestFlight dağıtımına sunuldu. Arka plan 700KB HTML fetch polling (checkForFreshVersion) ve AdSense stub'lama ile devre dışı bırakıldı, font-display: optional enjekte edilerek 15s ağ bloklaması çözüldü, URLRequest önbellek politikası optimize edildi.**
+* **Güncel Durum:** **Build 35 (`ios-v3.3.5-b35`) TestFlight'a yüklendi. Kullanıcı testleri devam ediyor. Sıradaki hedef: Kullanıcı talebi doğrultusunda orijinal cyberpunk blur/glass efektlerinin geri getirilmesi ve demo yılanların FPS/takılma sorununun çözülmesi.**
 
 ---
 
-## Build 35 Hazırlık Notları (TestFlight)
+## 2. Son Durum ve Sıradaki Görev (Build 36 Yol Haritası)
+
+### Kullanıcının Son Gözlemleri & Talebi:
+1. **Blur Efektinin Geri Getirilmesi:** Çevrimdışı (offline fallback) modda tüm orijinal `backdrop-filter: blur(...)` efektleri açık olduğu halde oyun 60 FPS sıfır takılma ile akıcı çalışmaktadır. Dolayısıyla kasmanın sebebi blur değildir. Kullanıcı `ios_bridge_bootstrap.js` ile kaldırılan orijinal cam/blur efektlerinin (`backdrop-filter`) geri yüklenmesini istemektedir.
+2. **Kalan Sorun (Çevrimiçi Mod Dalgalanması & Demo Yılanlar):**
+   * Oyun açıldıktan sonra bir süre kasıyor, ardından 60 FPS'e çıkıyor, sonra tekrar takılmaya başlıyor.
+   * Demo yılanların FPS'i düşük/takılarak hareket ediyor gibi görünüyor.
+   * Her açılışta farklı davranabiliyor (bazen doğrudan 60 FPS akıcı, bazen kasarak).
+
+### Yapılan Teknik Analiz Bulguları:
+1. **Demo Yılanlar Mantığı (`calculateAIMove` & `_aiCache`):**
+   * HTML içinde `_aiCache` nesnesi tek bir global nesnedir (`const _aiCache = { foodX: -1, foodY: -1, path: [], idx: 0 };`).
+   * Demo modunda hem P1 hem P2 AI tarafından yönetilir. Her iki yılan da aynı hedefe (yeme) doğru yol hesaplarken tek bir `_aiCache`'i paylaşır. P1 yolu hesaplayıp cache'e yazar, hemen ardından P2 kendi pozisyonundan o yolu kontrol eder; blokaj gördüğü için cache'i patlatıp 600 düğümlük BFS algoritmasını baştan çalıştırır. Bu durum her tick'te tekrarlanarak ana iş parçacığında gereksiz hesaplama ve nesne üretimine yol açar.
+   * Demo yılan hızı `BASE_TPS * 0.6 = ~8.5 tick/s` seviyesindedir. Interpolasyon (`drawSnakeBlocks` içindeki `modLerp` ve `alphaProgress`) tick zamanlamaları veya delta gecikmeleriyle uyuşmadığında yılanlar düşük FPS gibi görünür.
+2. **Çevrimiçi vs Çevrimdışı HTML Farkı:**
+   * `Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.5.html` ile `mobile_offline_fallback.html` karşılaştırıldığında:
+     - Çevrimdışında fontlar (Google Fonts Orbitron/VT323) ve FontAwesome CDN linkleri yoktur.
+     - Çevrimdışında logo yerel `offline_logo.png`'dir; çevrimiçinde `https://2playersnake.com/.../logo.webp` ve başarısızlık durumunda `onerror="this.onerror=null;this.src='../../../../Görsel/...';"` göreli yolu denenir.
+
+---
+
+## 3. Build 35 Hazırlık Notları (TestFlight)
 
 Bu çalışma, App Store incelemesindeki Build 29'u kesinlikle değiştirmez. Yeni TestFlight paketi için yapı numarası `35` (`ios-v3.3.5-b35`) olarak hazırlanmıştır:
 
