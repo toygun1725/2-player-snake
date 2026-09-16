@@ -25,12 +25,23 @@ const server = http.createServer((req, res) => {
   let html = fs.readFileSync(file, 'utf8');
   if (url.searchParams.get('platform') !== 'web') {
     let bridge = fs.readFileSync(path.join(nativeRoot, 'Bridge/ios_bridge_bootstrap.js'), 'utf8');
-    bridge = bridge.replace('snake-asset://bundle/', `http://127.0.0.1:${port}/assets/`);
+    const assetDir = path.join(nativeRoot, 'Resources/WebAssets');
+    let css = fs.readFileSync(path.join(assetDir, 'fonts.css'), 'utf8');
+    for (const name of ['orbitron.ttf', 'vt323.ttf']) {
+      css = css.replaceAll(name, 'data:font/ttf;base64,' + fs.readFileSync(path.join(assetDir, name)).toString('base64'));
+    }
+    let icons = fs.readFileSync(path.join(assetDir, 'fontawesome.css'), 'utf8');
+    for (const name of ['fa-solid-900.woff2', 'fa-regular-400.woff2', 'fa-brands-400.woff2']) {
+      icons = icons.replaceAll('../webfonts/' + name, 'data:font/woff2;base64,' + fs.readFileSync(path.join(assetDir, name)).toString('base64'));
+    }
+    const assets = fs.readFileSync(path.join(assetDir, 'socket.io.min.js'), 'utf8') + '\n;' +
+      'window.__twoPlayerSnakeNativeAssetCss = ' + JSON.stringify(css + '\n' + icons) + ';' +
+      `window.__twoPlayerSnakeAssetBaseUrl = 'http://127.0.0.1:${port}/assets/';`;
     const mock = `window.__nativeMessages = []; window.webkit = { messageHandlers: { iOS: { postMessage: function(m) {
       window.__nativeMessages.push(m);
       if (m.action === 'adBreak') { var p = JSON.parse(m.payload); setTimeout(function() { window.__onNativeAdDone(p.callbackId, false); }, 0); }
     } } } };`;
-    html = html.replace('<head>', '<head><script>' + mock + bridge + '</script>');
+    html = html.replace('<head>', () => '<head><script>' + mock + assets + bridge + '</script>');
   }
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
   res.end(html);

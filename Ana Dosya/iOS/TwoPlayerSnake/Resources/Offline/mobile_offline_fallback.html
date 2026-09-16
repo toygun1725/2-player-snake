@@ -82,8 +82,7 @@
     <!-- Build 36: bundled font/icon resources in native iOS; web/Android retain their URLs. -->
     <script>
         if (window.__twoPlayerSnakeUseNativeAssets) {
-            document.write('<link rel="stylesheet" href="' + window.__twoPlayerSnakeAssetBaseUrl + 'fonts.css">');
-            document.write('<link rel="stylesheet" href="' + window.__twoPlayerSnakeAssetBaseUrl + 'fontawesome.css">');
+            document.write('<style id="ios-bundled-fonts">' + window.__twoPlayerSnakeNativeAssetCss + '</style>');
         }
     </script>
 

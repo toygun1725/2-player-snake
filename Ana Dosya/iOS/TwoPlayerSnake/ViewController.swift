@@ -92,6 +92,13 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         messageHandler = GameScriptMessageHandler(viewController: self)
         config.userContentController.add(messageHandler, name: "iOS")
 
+        do {
+            let assets = try BundleAssetHandler.bootstrapScript()
+            config.userContentController.addUserScript(WKUserScript(source: assets, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        } catch {
+            print("[BundledAssets] Could not prepare bundled resources: \(error.localizedDescription)")
+        }
+
         // Bootstrap JS köprüsü enjeksiyonu
         if let bootstrapPath = Bundle.main.path(forResource: "ios_bridge_bootstrap", ofType: "js", inDirectory: "Bridge"),
            let bootstrapCode = try? String(contentsOfFile: bootstrapPath, encoding: .utf8) {

@@ -16,8 +16,9 @@ Güncelleme: 2026-09-16. Marketing version `3.3.5`, build `36`, HTML runtime rev
    340 ms demo dondurması ve outgoing-card efekt kapatma kuralı ayrıldı.
 2. Asıl closure içindeki `checkForFreshVersion` / `scheduleVersionCheck` iOS'ta erken döner.
    Önceki Build 35 `window.*` stub'ları closure-local fonksiyonlara etki etmiyordu.
-3. Fontlar, Font Awesome ikonları, logo ve Socket.IO 4.7.5 istemcisi paket içinden
-   whitelist'li `WKURLSchemeHandler` ile yüklenir. Offline Socket.IO stub'ı korunur.
+3. Fontlar, Font Awesome ikonları, logo ve Socket.IO 4.7.5 istemcisi paket içindedir.
+   `bootstrapScript()` fontları data-URL CSS, Socket.IO'yu WKUserScript olarak aktarır;
+   logo whitelist'li `WKURLSchemeHandler` ile yüklenir. Offline Socket.IO stub'ı korunur.
    Font yükleme bekleyişinin üst sınırı 2 saniyedir; sonsuz açılış bekleyişi yaratmaz.
 4. Demo/AI yol önbelleği iOS'ta yılan nesnesi başına `WeakMap` ile ayrıldı.
    Grid, oyun modu, duvar, beklenen baş konumu ve sıradaki engel kontrol edilir.
@@ -61,6 +62,14 @@ Güncelleme: 2026-09-16. Marketing version `3.3.5`, build `36`, HTML runtime rev
 - Uçak modunda logo/font/ikon; offline→online uyarısında iki seçeneğin çalışması;
   arka plana alma/geri dönme; 1P/2P, Normal/Macera/Self Area 51.
 - Orijinal cam görünümü korunmalı. Kullanıcı cihaz testi olmadan “60 FPS çözüldü” denmez.
+
+### CI sırasında yakalanan ve düzeltilen uyumsuzluk
+
+İlk iki macOS WebKit denemesinde HTTPS kökenli sayfa, custom-scheme logo yüklemesine
+izin verdi fakat aktif script/CSS kaynaklarını yüklemedi (16 JS testi yine geçti).
+Bu nedenle fontlar data-URL CSS'e, Socket.IO native WKUserScript'e alındı. ATS/CORS
+güvenliği gevşetilmedi ve sayfanın HTTPS origin/localStorage alanı değiştirilmedi.
+Teknik bağlam: [WebKit mixed-content kaydı](https://bugs.webkit.org/show_bug.cgi?id=154916).
 
 ## Web yayını ve rollback
 

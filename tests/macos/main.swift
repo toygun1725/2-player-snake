@@ -37,6 +37,8 @@ final class SmokeTest: NSObject, WKScriptMessageHandler {
         config.websiteDataStore = .nonPersistent()
         config.setURLSchemeHandler(BundleAssetHandler(resourceDirectory: resources), forURLScheme: "snake-asset")
         config.userContentController.add(self, name: "iOS")
+        let assets = try BundleAssetHandler.bootstrapScript(resourceDirectory: resources)
+        config.userContentController.addUserScript(WKUserScript(source: assets, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         let errors = """
         window.addEventListener('error', e => window.webkit.messageHandlers.iOS.postMessage({ action: 'smokeError', payload: { message: e.message || 'resource error', url: e.target && (e.target.src || e.target.href) } }), true);
         """
@@ -57,7 +59,12 @@ final class SmokeTest: NSObject, WKScriptMessageHandler {
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let body = message.body as? [String: Any] else { return }
-        if body["action"] as? String == "smokeError" { print("WEBKIT resource error: \(body)"); return }
+        if body["action"] as? String == "smokeError" {
+            if let data = try? JSONSerialization.data(withJSONObject: body), let json = String(data: data, encoding: .utf8) {
+                print("WEBKIT resource error: \(json)")
+            }
+            return
+        }
         guard body["action"] as? String == "gameReady", !checking else { return }
         checking = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [self] in

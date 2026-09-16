@@ -1,7 +1,9 @@
 # Bundled web resources (iOS Build 36)
 
-Used by both the HTTPS game and the offline fallback via `snake-asset://bundle/`.
-Only the fixed whitelist in `BundleAssetHandler.swift` is exposed. The logo remains
+Used by both the HTTPS game and the offline fallback. `bootstrapScript()` supplies
+Socket.IO through WKUserScript and font CSS with data-URL fonts, because HTTPS pages
+block active custom-scheme resources as mixed content. The `snake-asset://bundle/`
+handler serves the logo from a fixed whitelist. The logo remains
 the existing `Resources/Offline/offline_logo.png`; it is not duplicated here.
 
 Sources retrieved 2026-09-15:

@@ -14,7 +14,7 @@
   window.__nativeAdCallbacks = window.__nativeAdCallbacks || {};
 
   // Build 36's HTML checks this capability before loading bundled assets.
-  window.__twoPlayerSnakeAssetBaseUrl = "snake-asset://bundle/";
+  // Asset URLs/CSS and Socket.IO are supplied by the earlier native asset user script.
   // Native readiness is based on the game's init signal, not WebKit's network progress.
   window.__twoPlayerSnakeGameReady = function () {
     postToNative("gameReady", {
