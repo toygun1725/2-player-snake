@@ -2,6 +2,21 @@
 
 ## iOS App Store & TestFlight Release Notes
 
+### Build 36 hazırlığı (v3.3.5, 2026-09-16)
+
+Durum: Kod hazır; 16/16 yerel otomatik test geçti. TestFlight yüklemesi ve canlı mobil HTML yayını henüz doğrulanmadı.
+
+- Orijinal blur/glass, glow ve animasyonlar geri getirildi; safe-area korunur.
+- iOS için gerçek closure-local version polling koruması, paket içi font/logo/ikon/Socket.IO kaynakları.
+- Yılan başına AI cache'i, iOS demo freeze kaldırılması ve sınırlı interpolasyon.
+- Native oyun-hazır sinyali, kontrollü offline fallback ve gecikmiş navigasyon yanıtı koruması.
+- Reklamda timeout/geç/tekrarlı yanıt koruması; gerçek ödüllü reklam bitmeden oyuna dönülmez.
+- Kontrol kaydı ve cihaz test listesi: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
+
+> Aşağıdaki Build 32–35 kayıtları tarihsel notlardır. “60 FPS/kasma kesin çözüldü”
+> ifadeleri son kullanıcı testleriyle doğrulanmadı. Build 35'in window-level version-check
+> stub'ı closure-local fonksiyonları durdurmuyordu; bu Build 36'da asıl HTML'de düzeltildi.
+
 ### TestFlight Release (v3.3.5 / Build 35)
 > Durum (2026-09-15): GitHub Actions Run #35 üzerinden macOS bulutunda derlendi ve TestFlight'a yüklendi (`ios-v3.3.5-b35`). App Store incelemesindeki Build 29 bağımsız olarak beklemektedir.
 

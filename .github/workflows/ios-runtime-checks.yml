@@ -1,0 +1,23 @@
+name: iOS Runtime Checks
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    branches: [main]
+    paths:
+      - 'Ana Dosya/iOS/**'
+      - 'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.5.html'
+      - 'tests/**'
+      - 'tools/test-ios-runtime.sh'
+      - '.github/workflows/ios-runtime-checks.yml'
+jobs:
+  runtime:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript regression and native WebKit resource checks
+        run: bash tools/test-ios-runtime.sh

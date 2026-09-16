@@ -22,6 +22,8 @@ final class AdManager: NSObject {
     private var rewardedCompletion: ((Bool) -> Void)?
     private var userEarnedReward = false
     private var watchdogTimer: Timer?
+    private var presentedCallback: (() -> Void)?
+    private var activeAd: AnyObject?
 
     // Yeniden Deneme (Retry) Stratejisi
     private var interstitialRetryAttempt = 0
@@ -60,6 +62,10 @@ final class AdManager: NSObject {
 
     /// Google Mobile Ads SDK'yı başlatır ve ilk reklamları önceden yükler (Preload)
     func startMobileAdsSDK(completion: (() -> Void)? = nil) {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in self?.startMobileAdsSDK(completion: completion) }
+            return
+        }
         guard !isSdkInitialized else {
             completion?()
             return
@@ -86,6 +92,11 @@ final class AdManager: NSObject {
 
     // MARK: - 2. Geçiş (Interstitial) Reklamı Yönetimi
     func loadInterstitial() {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in self?.loadInterstitial() }
+            return
+        }
+        guard isSdkInitialized, NetworkMonitor.shared.isOnline(), !IAPManager.shared.isAdsRemoved else { return }
         guard interstitialAd == nil, !isInterstitialLoading else { return }
         isInterstitialLoading = true
 
@@ -117,12 +128,12 @@ final class AdManager: NSObject {
         let delay = retryDelays[min(interstitialRetryAttempt, retryDelays.count - 1)]
         interstitialRetryAttempt += 1
         print("AdManager: Interstitial \(delay) saniye sonra tekrar denenecek (Deneme #\(interstitialRetryAttempt))")
-        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + delay) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             self?.loadInterstitial()
         }
     }
 
-    func showInterstitial(from viewController: UIViewController, callbackId: String?, onComplete: @escaping (Bool) -> Void) {
+    func showInterstitial(from viewController: UIViewController, callbackId: String?, onPresented: @escaping () -> Void = {}, onComplete: @escaping (Bool) -> Void) {
         if IAPManager.shared.isAdsRemoved {
             print("AdManager: Reklamlar kaldırılmış (Premium), interstitial atlanıyor.")
             onComplete(true)
@@ -132,6 +143,7 @@ final class AdManager: NSObject {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
 
+            guard self.interstitialCompletion == nil, self.rewardedCompletion == nil else { onComplete(false); return }
             guard let ad = self.interstitialAd else {
                 print("AdManager: Interstitial henüz hazır değil. Oyun kilitlenmesin diye atlanıyor.")
                 self.loadInterstitial()
@@ -140,6 +152,8 @@ final class AdManager: NSObject {
             }
 
             self.interstitialCompletion = onComplete
+            self.activeAd = ad
+            self.presentedCallback = onPresented
             self.startWatchdogTimer(for: "interstitial")
 
             print("AdManager: Interstitial reklamı gösteriliyor...")
@@ -149,6 +163,11 @@ final class AdManager: NSObject {
 
     // MARK: - 3. Ödüllü (Rewarded) Reklam Yönetimi
     func loadRewarded() {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in self?.loadRewarded() }
+            return
+        }
+        guard isSdkInitialized, NetworkMonitor.shared.isOnline(), !IAPManager.shared.isAdsRemoved else { return }
         guard rewardedAd == nil, !isRewardedLoading else { return }
         isRewardedLoading = true
 
@@ -180,13 +199,13 @@ final class AdManager: NSObject {
         let delay = retryDelays[min(rewardedRetryAttempt, retryDelays.count - 1)]
         rewardedRetryAttempt += 1
         print("AdManager: Rewarded \(delay) saniye sonra tekrar denenecek (Deneme #\(rewardedRetryAttempt))")
-        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + delay) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             self?.loadRewarded()
         }
     }
 
 
-    func showRewarded(from viewController: UIViewController, callbackId: String?, onComplete: @escaping (Bool) -> Void) {
+    func showRewarded(from viewController: UIViewController, callbackId: String?, onPresented: @escaping () -> Void = {}, onComplete: @escaping (Bool) -> Void) {
         if IAPManager.shared.isAdsRemoved {
             print("AdManager: Reklamlar kaldırılmış (Premium), ödüllü reklam atlanıyor ve ödül veriliyor.")
             onComplete(true)
@@ -196,6 +215,7 @@ final class AdManager: NSObject {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
 
+            guard self.interstitialCompletion == nil, self.rewardedCompletion == nil else { onComplete(false); return }
             guard let ad = self.rewardedAd else {
                 print("AdManager: Rewarded henüz hazır değil. Oyun kilitlenmesin diye atlanıyor.")
                 self.loadRewarded()
@@ -204,24 +224,29 @@ final class AdManager: NSObject {
             }
 
             self.rewardedCompletion = onComplete
+            self.activeAd = ad
+            self.presentedCallback = onPresented
             self.userEarnedReward = false
             self.startWatchdogTimer(for: "rewarded")
 
             print("AdManager: Rewarded reklamı gösteriliyor...")
-            ad.present(fromRootViewController: viewController) { [weak self] in
+            ad.present(fromRootViewController: viewController) { [weak self, weak ad] in
+                guard let self = self, let ad = ad, self.activeAd === ad else { return }
                 print("AdManager: Oyuncu ödüllü reklamı tamamlayarak ödülü kazandı! 🌟")
-                self?.userEarnedReward = true
+                self.userEarnedReward = true
             }
         }
     }
 
     // MARK: - 4. Güvenlik Zamanlayıcısı (Watchdog Timer)
-    /// Reklam gösterilirken uygulamanın veya web motorunun kilitlenmesini kesin olarak engelleyen emniyet sübabı.
+    /// Bounds presentation startup only; cancelled when a real ad begins presenting.
     private func startWatchdogTimer(for type: String) {
         cancelWatchdogTimer()
-        watchdogTimer = Timer.scheduledTimer(withTimeInterval: 9.0, repeats: false) { [weak self] _ in
+        watchdogTimer = Timer.scheduledTimer(withTimeInterval: 7.5, repeats: false) { [weak self] _ in
             guard let self = self else { return }
-            print("AdManager: ⚠️ Reklam zaman aşımı (Watchdog 9s) tetiklendi (\(type)). Oyun kurtarılıyor...")
+            self.activeAd = nil
+            self.presentedCallback = nil
+            print("AdManager: Reklam sunumu zaman aşımı (7.5s): \(type)")
             if type == "interstitial" {
                 let comp = self.interstitialCompletion
                 self.interstitialCompletion = nil
@@ -246,6 +271,14 @@ final class AdManager: NSObject {
 
 // MARK: - 5. GADFullScreenContentDelegate
 extension AdManager: GADFullScreenContentDelegate {
+    func adWillPresentFullScreenContent(_ ad: GADFullScreenPresentingAd) {
+        guard activeAd === (ad as AnyObject) else { return }
+        // The watchdog covers failed presentation, not time spent watching a real ad.
+        cancelWatchdogTimer()
+        presentedCallback?()
+        presentedCallback = nil
+    }
+
     func adDidRecordImpression(_ ad: GADFullScreenPresentingAd) {
         print("AdManager: Reklam gösterimi başarıyla kaydedildi")
     }
@@ -255,6 +288,9 @@ extension AdManager: GADFullScreenContentDelegate {
     }
 
     func adDidDismissFullScreenContent(_ ad: GADFullScreenPresentingAd) {
+        guard activeAd === (ad as AnyObject) else { return }
+        activeAd = nil
+        presentedCallback = nil
         print("AdManager: Reklam kapatıldı, oyun akışı devam ettiriliyor.")
         cancelWatchdogTimer()
 
@@ -275,6 +311,9 @@ extension AdManager: GADFullScreenContentDelegate {
     }
 
     func ad(_ ad: GADFullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
+        guard activeAd === (ad as AnyObject) else { return }
+        activeAd = nil
+        presentedCallback = nil
         print("AdManager: Reklam tam ekran gösterilirken hata oluştu: \(error.localizedDescription)")
         cancelWatchdogTimer()
 
@@ -293,4 +332,3 @@ extension AdManager: GADFullScreenContentDelegate {
         }
     }
 }
-

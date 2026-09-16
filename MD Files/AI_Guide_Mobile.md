@@ -3,6 +3,14 @@
 Bu belge, mobil surum uzerinde calisacak yapay zekalar icin guncel teknik referanstir. Mobil oyun tek HTML dosyasi icinde yasamaya devam eder; CSS, JS, i18n metinleri, canvas cizimi, reklam mantigi ve sentetik ses efektleri ayni dosyada tutulur.
 
 ## Referans Surum
+
+> 2026-09-16 / iOS Build 36 eki: Aynı v3.3.5 HTML'de iOS'a koşullu değişiklikler
+> yapıldı (runtime revision 36). Paket kaynakları, gerçek version-check koruması,
+> yılan başına AI cache'i ve menü akıcılığı düzeltmeleri eklendi. Android/PC binary,
+> sunucu ve AdMob kimlikleri değişmedi. iOS offline dosyasıyla mantık eşitlendi.
+> Web yayını henüz yapılmadı; Git push siteyi güncellemez.
+> Ayrıntılar: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
+
 - Aktif referans surum: `v3.3.5`
 - Temel referans dosya: `2 Player Snake Mobile v3.3.5.html`
 - Kaynak/yayin durumu: v3.3.5 mobil ve PC kaynak dosyalari olusturuldu. Bu surumdeki fonksiyonel duzeltme Android WebView'a ozeldir.

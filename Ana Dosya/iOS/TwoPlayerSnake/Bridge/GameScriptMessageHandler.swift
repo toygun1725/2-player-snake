@@ -23,6 +23,14 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
         let payload = body["payload"]
 
         switch action {
+        case "gameReady":
+            guard message.frameInfo.isMainFrame else { return }
+            viewController?.gameDidBecomeReady()
+
+        case "performanceReport":
+            // Aggregate timings only: no names, scores, identifiers or network addresses.
+            if let report = payload as? String { print("[GamePerformance] \(report)") }
+
         case "onEatFood":
             // SFX patch'ten gelen type bilgisine göre haptic şiddeti ayarla
             var foodType = "normal"
@@ -105,14 +113,25 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
         }
 
         if adType == "reward" {
-            AdManager.shared.showRewarded(from: vc, callbackId: callbackId) { [weak self] success in
+            AdManager.shared.showRewarded(from: vc, callbackId: callbackId, onPresented: { [weak self] in
+                self?.adDidBegin(callbackId: callbackId)
+            }) { [weak self] success in
                 self?.finishAd(callbackId: callbackId, success: success)
             }
         } else {
-            AdManager.shared.showInterstitial(from: vc, callbackId: callbackId) { [weak self] success in
+            AdManager.shared.showInterstitial(from: vc, callbackId: callbackId, onPresented: { [weak self] in
+                self?.adDidBegin(callbackId: callbackId)
+            }) { [weak self] success in
                 self?.finishAd(callbackId: callbackId, success: success)
             }
         }
+    }
+
+    private func adDidBegin(callbackId: String?) {
+        guard let cid = callbackId,
+              let data = try? JSONSerialization.data(withJSONObject: [cid]),
+              let json = String(data: data, encoding: .utf8) else { return }
+        viewController?.evaluateJavaScript("if(window.__onNativeAdPresented) window.__onNativeAdPresented(\(json)[0]);")
     }
 
     private func finishAd(callbackId: String?, success: Bool) {

@@ -4,6 +4,20 @@ Bu belge, oyundaki reklam akisinin guncel davranisini ozetler. Web tarafinda rek
 
 Referans surum: `v3.3.2`
 
+## Güncel iOS eki — Build 36 (2026-09-16)
+
+Native iOS AdMob App ID/interstitial/rewarded kimlikleri aşağıdakiyle aynıdır; değiştirilmedi.
+Web AdSense ve Android reklam birimleri de değişmedi. iOS'ta web H5 SDK yüklemesi
+baypas edilip çağrılar native AdMob'a iletilmeye devam eder; reklamlar kapatılmadı.
+
+- Native sunum başlangıç sınırı 7.5 s, JS fallback 8.5 s; gerçek sunum başlayınca
+  başlangıç zamanlayıcıları iptal edilir. Uzun ödüllü videonun ortasında maç başlatılmaz.
+- Timeout/no-fill ödül kazandırmaz; premium'un mevcut ödül ayrıcalığı korunur.
+- Her callback bir kez tüketilir; eski/geç yanıt yeni reklamı bitiremez.
+- SDK/retry işlemleri main queue'da asenkron yürür. Offline fallback ağ reklamı istemez.
+- Mock reklam testleri geçti; gerçek iPhone AdMob/ATT testi henüz yapılmadı.
+- Ayrıntılı durum: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
+
 Son online akis notu (v3.0.08):
 - Mobil sürümdeki tüm çevrimiçi oyun akışı i18n sistemine geçirilmiş, dil seçimi desteği eklenmiş ve tarayıcı confirm() kutusu yerine oyun içi özel glassmorphism diyalog sistemi getirilmiştir. Reklamların tetiklenme noktaları, AdSense / AdMob akışları ve cooldown süreleri aynı şekilde korunmaktadır. Sürüm v3.0.08'e yükseltilerek istemciler güncellenmiştir.
 

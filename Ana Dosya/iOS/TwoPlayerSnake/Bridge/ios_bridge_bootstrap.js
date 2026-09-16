@@ -1,5 +1,6 @@
 (function () {
   if (window.__twoPlayerSnakeIosBridgeInstalled) return;
+  window.__twoPlayerSnakeIosBridgeInstalled = true;
   try {
     Object.defineProperty(window, 'isAndroidWebView', {
       value: true,
@@ -12,16 +13,15 @@
   window.__twoPlayerSnakePlatform = "ios";
   window.__nativeAdCallbacks = window.__nativeAdCallbacks || {};
 
-  // Disable background 700KB HTML version check polling & GC stutter on native iOS
-  window.checkForFreshVersion = function () { return Promise.resolve(); };
-  window.scheduleVersionCheck = function () {};
-
-  // Stub Google AdSense arrays & callbacks to prevent delayed background network loops
-  window.adsbygoogle = window.adsbygoogle || [];
-  window.adsbygoogle.push = function () {};
-  window.__h5GamesAdsReady = false;
-  window.adBreak = window.adConfig = function () {};
-
+  // Build 36's HTML checks this capability before loading bundled assets.
+  window.__twoPlayerSnakeAssetBaseUrl = "snake-asset://bundle/";
+  // Native readiness is based on the game's init signal, not WebKit's network progress.
+  window.__twoPlayerSnakeGameReady = function () {
+    postToNative("gameReady", {
+      source: window.__twoPlayerSnakeOfflineMode === true ? "offline" : "remote",
+      revision: window.__twoPlayerSnakeRuntimeRevision || 0
+    });
+  };
 
   function safeSerialize(payload) {
     try {
@@ -172,7 +172,7 @@
     // The bundled offline game never requests a network ad. Interstitials are
     // skipped and a rewarded request is treated as dismissed, so it cannot
     // grant a reward without an actual ad impression.
-    if (window.__twoPlayerSnakeOfflineMode === true) {
+    if (window.__twoPlayerSnakeOfflineMode === true && window.Android.isAdsRemoved() !== "true") {
       try { if (typeof req.beforeAd === "function") req.beforeAd(); } catch (e) {}
       if (adType === "reward") {
         try { if (typeof req.beforeReward === "function") req.beforeReward(function () {}); } catch (e) {}
@@ -207,7 +207,8 @@
       adBreakDone: (typeof req.adBreakDone === "function") ? req.adBreakDone : null,
       adViewed: (typeof req.adViewed === "function") ? req.adViewed : null,
       adDismissed: (typeof req.adDismissed === "function") ? req.adDismissed : null,
-      beforeReward: (typeof req.beforeReward === "function") ? req.beforeReward : null
+      beforeReward: (typeof req.beforeReward === "function") ? req.beforeReward : null,
+      presented: false
     };
 
     try {
@@ -232,7 +233,7 @@
     var safetyTimer = setTimeout(function () {
       if (window.__nativeAdCallbacks[callbackId]) {
         console.warn("iOS Bridge: ⚠️ AdBreak JS zaman aşımı (8.5s), oyun kilitlenmesin diye devam ettiriliyor.");
-        window.__onNativeAdDone(callbackId, true);
+        window.__onNativeAdDone(callbackId, false);
       }
     }, 8500);
     window.__nativeAdCallbacks[callbackId].safetyTimer = safetyTimer;
@@ -260,14 +261,20 @@
     }
   };
 
+  window.__onNativeAdPresented = function (callbackId) {
+    var callbacks = window.__nativeAdCallbacks[callbackId];
+    if (!callbacks) return;
+    callbacks.presented = true;
+    clearTimeout(callbacks.safetyTimer);
+  };
+
   window.__onNativeAdDone = function (adBreakDoneCallbackName, success) {
     console.log("iOS Bridge: Native reklam tamamlandı callback:", adBreakDoneCallbackName, "success:", success);
-    if (window.AdManager) {
-      window.AdManager.adInProgress = false;
-    }
-
     var callbacks = adBreakDoneCallbackName ? window.__nativeAdCallbacks[adBreakDoneCallbackName] : null;
     if (callbacks) {
+      // Consume before calling game code: callbacks may re-enter or start another ad.
+      delete window.__nativeAdCallbacks[adBreakDoneCallbackName];
+      if (window.AdManager) window.AdManager.adInProgress = false;
       if (callbacks.safetyTimer) {
         clearTimeout(callbacks.safetyTimer);
       }
@@ -300,11 +307,14 @@
         console.warn("iOS Bridge: adBreakDone callback error:", e);
       }
 
-      delete window.__nativeAdCallbacks[adBreakDoneCallbackName];
       return;
     }
 
+    // Late native replies after the watchdog must not finish a newer request.
+    if (adBreakDoneCallbackName && adBreakDoneCallbackName.indexOf("adb_ios_") === 0) return;
+
     // Legacy fallback
+    if (window.AdManager) window.AdManager.adInProgress = false;
     if (adBreakDoneCallbackName && typeof window[adBreakDoneCallbackName] === "function") {
       window[adBreakDoneCallbackName]();
     } else if (typeof window.adBreakDone === "function") {
@@ -312,7 +322,7 @@
     }
   };
 
-  // iOS Fullscreen, Safe Area, Symmetrical 2P, Edge-to-Edge & Retina GPU Zero Lag Fix
+  // iOS layout and safe-area adjustments; original glass/blur effects are retained.
   function injectIosPerformanceStyles() {
     try {
       var styleId = "ios-fullscreen-and-safe-area-fix";
@@ -320,12 +330,7 @@
       var style = document.createElement("style");
       style.id = styleId;
       style.textContent = `
-        @font-face {
-          font-display: optional !important;
-        }
-
         html, body {
-          font-display: optional !important;
           height: 100% !important;
           min-height: 100% !important;
           height: 100dvh !important;
@@ -427,89 +432,6 @@
           z-index: 0 !important;
         }
 
-        /* ── iOS Retina GPU & Sıfır Gecikme (Zero Input Lag) Optimizasyonları ── */
-        /* 1. Ana Menü Aksiyon Kutusu: Canlı blur'u kaldır, donanım hızlandırmalı zengin opak cam kullan */
-        .main-menu-actions {
-          background: rgba(8, 14, 24, 0.95) !important;
-          -webkit-backdrop-filter: none !important;
-          backdrop-filter: none !important;
-          border: 2px solid #ff4fbf !important;
-          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55), 0 0 10px rgba(255, 79, 191, 0.3) !important;
-          animation: none !important;
-          transform: translateZ(0) !important;
-          will-change: transform !important;
-        }
-
-        /* Ana Menü Logo ve Glow hafifletme */
-        .main-menu-glow {
-          filter: blur(8px) !important;
-          opacity: 0.6 !important;
-        }
-        .main-menu-logo {
-          filter: drop-shadow(0 0 10px rgba(53, 230, 230, 0.3)) !important;
-        }
-
-        /* 2. Alt Pencereler ve Banner Kutuları */
-        .banner.padded {
-          background: linear-gradient(180deg, rgba(13, 22, 36, 0.95), rgba(10, 17, 29, 0.95)) !important;
-          -webkit-backdrop-filter: none !important;
-          backdrop-filter: none !important;
-          border: 2px solid #ff4fbf !important;
-          box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 79, 191, 0.3) !important;
-          animation: none !important;
-          transform: translateZ(0) !important;
-          will-change: opacity, transform !important;
-        }
-
-        /* 3. Kazanan ve İstatistik Pencereleri */
-        .banner.winner-glass-banner.padded,
-        .game-end-card,
-        .online-alert-card {
-          background: rgba(10, 16, 28, 0.95) !important;
-          -webkit-backdrop-filter: none !important;
-          backdrop-filter: none !important;
-          animation: none !important;
-          transform: translateZ(0) !important;
-        }
-
-        .player-stat-panel::before {
-          -webkit-backdrop-filter: none !important;
-          backdrop-filter: none !important;
-        }
-
-        /* Menü geçiş hayaleti (ghost element) */
-        .android-menu-transition-ghost,
-        .android-menu-transition-ghost.banner.padded,
-        .android-menu-transition-ghost .main-menu-actions {
-          backdrop-filter: none !important;
-          -webkit-backdrop-filter: none !important;
-          animation: none !important;
-        }
-
-        /* Oyun Sonu & Çevrimiçi Uyarı Overlay'leri */
-        .game-end-overlay,
-        .online-alert-overlay {
-          -webkit-backdrop-filter: none !important;
-          backdrop-filter: none !important;
-        }
-
-        /* Pause butonu, Başarı Kartları & Info butonu */
-        .panel-pause-btn,
-        .achievement-card,
-        #qs-info-btn {
-          -webkit-backdrop-filter: none !important;
-          backdrop-filter: none !important;
-        }
-
-        /* Açık Tema (Light Mode) Kontrol Panelleri */
-        [data-theme="light"] #p2-controls,
-        [data-theme="light"] #p1-controls,
-        [data-theme="light"] .game-end-overlay,
-        [data-theme="light"] .game-end-card {
-          -webkit-backdrop-filter: none !important;
-          backdrop-filter: none !important;
-        }
-
         /* 4. Tıklama gecikmesini sıfırla (0ms anlık dokunma) */
         button, .btn, .turn-btn, .panel-pause-btn, .nav-btn, .option-btn, .tab-btn {
           touch-action: manipulation !important;
@@ -563,7 +485,7 @@
   }, true);
 
   // ── Haptic: Kesin ve Güvenli Yem Yeme Tespiti ──────────────────────────────
-  // DOM Panel Score Watcher (MutationObserver + rAF fallback)
+  // DOM Panel Score Watcher (MutationObserver only)
   // WebKit Audio veya Array prototype'larına ASLA dokunmaz.
   // Ses kapalı olsa dahi her yem yenildiğinde (1P, 2P, AI, Solo) anında haptic tetikler.
   (function installRobustFoodHaptics() {

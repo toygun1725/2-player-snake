@@ -38,6 +38,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     private var hasOfferedOnlineReload = false
     private var lastInjectedSafeAreaInsets: UIEdgeInsets?
     private var coldStartWatchdogTimer: Timer?
+    private var activeNavigation: WKNavigation?
+    private var loadStartedAt = Date()
 
     override var prefersStatusBarHidden: Bool {
         return true
@@ -82,6 +84,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     // MARK: - WebView Kurulumu
     private func setupWebView() {
         let config = WKWebViewConfiguration()
+        config.setURLSchemeHandler(BundleAssetHandler(), forURLScheme: "snake-asset")
         config.allowsInlineMediaPlayback = true
         config.mediaTypesRequiringUserActionForPlayback = []
 
@@ -124,9 +127,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             let clamped = max(0.08, min(1.0, Float(progress)))
             self.teaserProgressBar.setProgress(clamped, animated: true)
             self.teaserPercentLabel.text = "%\(Int(clamped * 100)) hazır"
-            if progress >= 1.0 {
-                self.showStartButton()
-            }
+            // Network progress reaching 100% does not mean initGame has completed.
         }
     }
 
@@ -339,7 +340,6 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     private func dismissTeaserVideo() {
         guard !isTeaserDismissed else { return }
         isTeaserDismissed = true
-        isGameLoaded = true
 
         if let observer = playerLoopObserver {
             NotificationCenter.default.removeObserver(observer)
@@ -378,6 +378,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     private func loadGame() {
         coldStartWatchdogTimer?.invalidate()
         coldStartWatchdogTimer = nil
+        isGameLoaded = false
+        loadStartedAt = Date()
 
         guard NetworkMonitor.shared.isOnline() else {
             loadOfflineFallbackGame()
@@ -394,22 +396,22 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             URLQueryItem(name: "app", value: "android"),
             URLQueryItem(name: "app_platform", value: "ios"),
             URLQueryItem(name: "app_ver", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.3.5"),
-            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "35"),
-            URLQueryItem(name: "app_device", value: "mobile"),
-            URLQueryItem(name: "__ts", value: String(Int(Date().timeIntervalSince1970 * 1000)))
+            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "36"),
+            URLQueryItem(name: "app_device", value: "mobile")
         ]
 
         components.queryItems = queryItems
 
         if let finalUrl = components.url {
-            let request = URLRequest(url: finalUrl, cachePolicy: .returnCacheDataElseLoad, timeoutInterval: 15)
-            webView.load(request)
+            // Stable per-build URL. Honor HTTP revalidation so a website update is not cached forever.
+            let request = URLRequest(url: finalUrl, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 15)
+            activeNavigation = webView.load(request)
 
-            // Soğuk açılış emniyet zamanlayıcısı (Cold-Start Watchdog - 2.5s):
-            // Uçak modu veya zayıf ağda WebKit'in askıda kalıp %8'de kilitlenmesini engelle
-            coldStartWatchdogTimer = Timer.scheduledTimer(withTimeInterval: 2.5, repeats: false) { [weak self] _ in
+            // A slow but connected page must not randomly become an offline session after 2.5 s.
+            // Confirmed loss of connectivity still switches immediately in NetworkMonitor.
+            coldStartWatchdogTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: false) { [weak self] _ in
                 guard let self = self, !self.isGameLoaded, !self.isShowingOfflineGame else { return }
-                print("[ViewController] Soğuk açılış zaman aşımı (2.5s). Yerel çevrimdışı fallback'e geçiliyor.")
+                print("[ViewController] Remote game readiness timed out (15s); loading offline game.")
                 self.loadOfflineFallbackGame()
             }
         }
@@ -426,9 +428,15 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         }
 
         isShowingOfflineGame = true
+        isGameLoaded = false
+        loadStartedAt = Date()
         hideOfflineOverlay()
         webView.stopLoading()
-        webView.loadFileURL(fallbackUrl, allowingReadAccessTo: Bundle.main.bundleURL)
+        activeNavigation = webView.loadFileURL(fallbackUrl, allowingReadAccessTo: Bundle.main.bundleURL)
+        coldStartWatchdogTimer = Timer.scheduledTimer(withTimeInterval: 10, repeats: false) { [weak self] _ in
+            guard let self = self, !self.isGameLoaded, self.isShowingOfflineGame else { return }
+            self.showOfflineOverlay()
+        }
     }
 
 
@@ -467,7 +475,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         offlineContainer.addSubview(offlineTitleLabel)
 
         offlineSubtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        offlineSubtitleLabel.text = "2 Player Snake oynamak için internet bağlantısı gereklidir."
+        offlineSubtitleLabel.text = "Oyun yüklenemedi. Lütfen tekrar dene."
         offlineSubtitleLabel.font = .systemFont(ofSize: 15, weight: .regular)
         offlineSubtitleLabel.textColor = .lightGray
         offlineSubtitleLabel.textAlignment = .center
@@ -510,6 +518,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
     private func hideOfflineOverlay() {
         offlineContainer.isHidden = true
+        if !isTeaserDismissed { teaserContainer.isHidden = false }
     }
 
     @objc private func retryButtonTapped() {
@@ -592,29 +601,50 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        coldStartWatchdogTimer?.invalidate()
-        coldStartWatchdogTimer = nil
+        guard navigation === activeNavigation else { return }
         injectSafeAreaVariables(force: true)
         publishSettingsToGame()
-        // Sayfa yüklendiğinde START butonunu göster (videoyu kullanıcı START'a basana kadar döngüde tut)
+        // Older hosted HTML does not send gameReady; retain its existing finish behavior.
+        webView.evaluateJavaScript("window.__twoPlayerSnakeRuntimeRevision || 0") { [weak self] result, _ in
+            guard let self = self, navigation === self.activeNavigation else { return }
+            if (result as? Int ?? 0) < 36 { self.gameDidBecomeReady() }
+        }
+    }
+
+    func gameDidBecomeReady() {
+        guard !isGameLoaded else { return }
+        isGameLoaded = true
+        coldStartWatchdogTimer?.invalidate()
+        coldStartWatchdogTimer = nil
+        publishSettingsToGame()
         showStartButton()
+        print("[GameReady] source=\(isShowingOfflineGame ? "offline" : "remote") seconds=\(Date().timeIntervalSince(loadStartedAt))")
+        if isTeaserDismissed && !isShowingOfflineGame {
+            AdManager.shared.requestTrackingAuthorization()
+        }
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        guard navigation === activeNavigation, (error as NSError).code != NSURLErrorCancelled else { return }
         coldStartWatchdogTimer?.invalidate()
         coldStartWatchdogTimer = nil
         let nsError = error as NSError
         if nsError.code != NSURLErrorCancelled && !isShowingOfflineGame {
             loadOfflineFallbackGame()
+        } else if isShowingOfflineGame {
+            showOfflineOverlay()
         }
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        guard navigation === activeNavigation, (error as NSError).code != NSURLErrorCancelled else { return }
         coldStartWatchdogTimer?.invalidate()
         coldStartWatchdogTimer = nil
         let nsError = error as NSError
         if nsError.code != NSURLErrorCancelled && !isShowingOfflineGame {
             loadOfflineFallbackGame()
+        } else if isShowingOfflineGame {
+            showOfflineOverlay()
         }
     }
 

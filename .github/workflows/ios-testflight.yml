@@ -16,7 +16,10 @@ on:
       - 'ios-v*'
 
 jobs:
+  runtime-checks:
+    uses: ./.github/workflows/ios-runtime-checks.yml
   build-and-deploy:
+    needs: runtime-checks
     name: 🍏 iOS Build & TestFlight Deploy
     runs-on: macos-latest
     timeout-minutes: 60

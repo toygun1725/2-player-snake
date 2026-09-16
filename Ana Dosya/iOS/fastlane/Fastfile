@@ -75,30 +75,9 @@ platform :ios do
       else
         UI.important("Önbellekte sertifika bulunamadı. Apple API üzerinden sertifika yönetimi başlatılıyor...")
 
-        # 1. Eski yetim sertifikaları (private key'i olmayan) temizle
-        begin
-          require "spaceship"
-          if Spaceship::ConnectAPI.token.nil? && api_key.is_a?(Hash)
-            Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(**api_key)
-          end
-          all_certs = Spaceship::ConnectAPI::Certificate.all
-          dist_certs = all_certs.select { |c| c.certificate_type.to_s.upcase.include?("DISTRIBUTION") }
-          UI.message("Apple Developer hesabında #{dist_certs.count} adet dağıtım sertifikası bulundu.")
-
-          if dist_certs.count >= 2
-            oldest_cert = dist_certs.first
-            cert_name = (oldest_cert.respond_to?(:name) ? oldest_cert.name : oldest_cert.id) rescue oldest_cert.id
-            UI.important("Kotayı rahatlatmak için eski yetim sertifika temizleniyor: #{oldest_cert.id} (#{cert_name})")
-            begin
-              oldest_cert.delete!
-            rescue => del_err
-              Spaceship::ConnectAPI.delete_certificate(certificate_id: oldest_cert.id) rescue nil
-            end
-          end
-        rescue => ex
-          UI.important("Sertifika temizleme kontrolü uyarısı: #{ex.message}")
-        end
-
+        # Never revoke an existing Apple certificate automatically. Other builds/apps
+        # may rely on it. If no cached private key exists and the quota is full,
+        # get_certificates must fail so the owner can supply the correct P12.
         # 2. Yeni sertifikayı üret ve indir
         get_certificates(
           api_key: api_key,

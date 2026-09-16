@@ -4,36 +4,35 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 
 ---
 
-## 1. Referans Durum
+## 1. Güncel devir notu — Build 36 (2026-09-16)
 
-* **iOS Shell Kaynağı:** `d:\#3 Vibecoding\AI Games\2 Player Snake\Ana Dosya\iOS`
-* **Bundle Identifier:** `com.twoplayersnake.app`
-* **Apple Team ID:** `GUFQF359Q7` (Toygun ÇETİN)
-* **Güncel Sürüm (Marketing Version):** `3.3.5`
-* **Güncel Yapı Numarası (Build Number):** `35` (`ios-v3.3.5-b35`)
-* **Derleme Ortamı:** `macos-latest` (macOS 26 Tahoe / Sonoma) + Xcode 26 + iOS SDK + CocoaPods
-* **Güncel Durum:** **Build 35 (`ios-v3.3.5-b35`) TestFlight'a yüklendi. Kullanıcı testleri devam ediyor. Sıradaki hedef: Kullanıcı talebi doğrultusunda orijinal cyberpunk blur/glass efektlerinin geri getirilmesi ve demo yılanların FPS/takılma sorununun çözülmesi.**
+- Marketing version: `3.3.5`; hazırlanan native build / HTML runtime revision: `36`.
+- **Durum:** Kod ve 16 yerel regresyon testi hazır. TestFlight yüklemesi henüz doğrulanmadı.
+- Son önceki paket: Build 35 (`ios-v3.3.5-b35`), kaynak baseline `6115a50`.
+- Ayrıntılı uygulama, test, yayın ve rollback kaydı: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
+- Kullanıcı isteği: orijinal blur/glass tasarımı korunacak; “efekt kapatarak performans” yaklaşımı uygulanmayacak.
+- Canlı mobil HTML ayrıca web sitesine yüklenmelidir. GitHub push / native paket bunu tek başına yapmaz.
+- iPhone üzerinde akıcılık doğrulanmadı; eski “kesin 60 FPS çözüldü” notları güncel kabul sonucu değildir.
 
----
+## 2. Build 36 teknik değişiklikleri
 
-## 2. Son Durum ve Sıradaki Görev (Build 36 Yol Haritası)
+- Bridge'in blur/gölge/animasyon kapatan override'ları kaldırıldı; safe-area/touch düzenleri kaldı.
+- iOS'ta closure-local sürüm kontrolü gerçekten durduruldu. Build 35'in `window.*` stub'ları bunu yapmıyordu.
+- HTTPS oyun ve offline fallback font/logo/ikonları native paket kaynaklarından alır; Socket.IO istemcisi de paketlendi, offline bağlantı stub'ı korunur.
+- iOS AI cache'i yılan başına ayrıldı; engel, grid, mod ve beklenen baş konumuyla doğrulanır. Android cache davranışı değişmedi.
+- iOS menü demo freeze'i kaldırıldı; interpolasyon sınırlandı. Kontrollü testte 8 yerine 2 BFS çağrısı ölçüldü; cihaz FPS sonucu değildir.
+- `gameReady` ile START; 15 s remote-ready timeout ve 10 s local-ready hata koruması; stable per-build URL ve normal HTTP revalidation.
+- Reklam başlangıç watchdog'ları native 7.5 s / JS 8.5 s; gerçek sunum başlayınca iptal. Gecikmiş/tekrarlanan yanıt koruması ve ödülsüz timeout.
+- `[GameReady]` / `[GamePerformance]` özet logları; ayrıca rAF/polling yok, dışarı telemetri yok.
+- Test komutları: Windows `node --test tests/ios-runtime.test.cjs`; macOS `bash tools/test-ios-runtime.sh`.
+- CI Apple sertifikasını otomatik iptal etmez. Cache/P12 yok ve kota doluysa kullanıcıdan doğru sertifika gerekir.
 
-### Kullanıcının Son Gözlemleri & Talebi:
-1. **Blur Efektinin Geri Getirilmesi:** Çevrimdışı (offline fallback) modda tüm orijinal `backdrop-filter: blur(...)` efektleri açık olduğu halde oyun 60 FPS sıfır takılma ile akıcı çalışmaktadır. Dolayısıyla kasmanın sebebi blur değildir. Kullanıcı `ios_bridge_bootstrap.js` ile kaldırılan orijinal cam/blur efektlerinin (`backdrop-filter`) geri yüklenmesini istemektedir.
-2. **Kalan Sorun (Çevrimiçi Mod Dalgalanması & Demo Yılanlar):**
-   * Oyun açıldıktan sonra bir süre kasıyor, ardından 60 FPS'e çıkıyor, sonra tekrar takılmaya başlıyor.
-   * Demo yılanların FPS'i düşük/takılarak hareket ediyor gibi görünüyor.
-   * Her açılışta farklı davranabiliyor (bazen doğrudan 60 FPS akıcı, bazen kasarak).
+### Kanıtların ayrımı
 
-### Yapılan Teknik Analiz Bulguları:
-1. **Demo Yılanlar Mantığı (`calculateAIMove` & `_aiCache`):**
-   * HTML içinde `_aiCache` nesnesi tek bir global nesnedir (`const _aiCache = { foodX: -1, foodY: -1, path: [], idx: 0 };`).
-   * Demo modunda hem P1 hem P2 AI tarafından yönetilir. Her iki yılan da aynı hedefe (yeme) doğru yol hesaplarken tek bir `_aiCache`'i paylaşır. P1 yolu hesaplayıp cache'e yazar, hemen ardından P2 kendi pozisyonundan o yolu kontrol eder; blokaj gördüğü için cache'i patlatıp 600 düğümlük BFS algoritmasını baştan çalıştırır. Bu durum her tick'te tekrarlanarak ana iş parçacığında gereksiz hesaplama ve nesne üretimine yol açar.
-   * Demo yılan hızı `BASE_TPS * 0.6 = ~8.5 tick/s` seviyesindedir. Interpolasyon (`drawSnakeBlocks` içindeki `modLerp` ve `alphaProgress`) tick zamanlamaları veya delta gecikmeleriyle uyuşmadığında yılanlar düşük FPS gibi görünür.
-2. **Çevrimiçi vs Çevrimdışı HTML Farkı:**
-   * `Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.5.html` ile `mobile_offline_fallback.html` karşılaştırıldığında:
-     - Çevrimdışında fontlar (Google Fonts Orbitron/VT323) ve FontAwesome CDN linkleri yoktur.
-     - Çevrimdışında logo yerel `offline_logo.png`'dir; çevrimiçinde `https://2playersnake.com/.../logo.webp` ve başarısızlık durumunda `onerror="this.onerror=null;this.src='../../../../Görsel/...';"` göreli yolu denenir.
+Offline'ın akıcı olduğu kullanıcı gözlemidir. Eski bridge CSS'i iki kaynakta da çalıştığından
+“offline kesin orijinal blur kullanıyordu” varsayımı kodla doğrulanmış değildi.
+Ortak AI cache'i hatalı paylaşım içeriyordu, ancak iki HTML'de de bulunduğundan tek başına
+online/offline farkının ölçülmüş kök nedeni sayılamaz. Build 36 cihaz testi bekleniyor.
 
 ---
 

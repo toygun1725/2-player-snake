@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2P0000000000000000000098 /* BundleAssetHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000099 /* BundleAssetHandler.swift */; };
+		2P0000000000000000000100 /* WebAssets in Resources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000101 /* WebAssets */; };
 		2P0000000000000000000011 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000010 /* AppDelegate.swift */; };
 		2P0000000000000000000013 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000012 /* SceneDelegate.swift */; };
 		2P0000000000000000000015 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000014 /* ViewController.swift */; };
@@ -31,6 +33,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2P0000000000000000000099 /* BundleAssetHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundleAssetHandler.swift; sourceTree = "<group>"; };
+		2P0000000000000000000101 /* WebAssets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WebAssets; sourceTree = "<group>"; };
 		2P0000000000000000000009 /* TwoPlayerSnake.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TwoPlayerSnake.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2P0000000000000000000010 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2P0000000000000000000012 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -88,6 +92,7 @@
 				2P0000000000000000000010 /* AppDelegate.swift */,
 				2P0000000000000000000012 /* SceneDelegate.swift */,
 				2P0000000000000000000014 /* ViewController.swift */,
+				2P0000000000000000000099 /* BundleAssetHandler.swift */,
 				2P0000000000000000000080 /* Haptics */,
 				2P0000000000000000000081 /* Network */,
 				2P0000000000000000000082 /* Ads */,
@@ -108,6 +113,7 @@
 				2P0000000000000000000093 /* Orbitron-Bold.ttf */,
 				2P0000000000000000000095 /* mobile_offline_fallback.html */,
 				2P0000000000000000000097 /* offline_logo.png */,
+				2P0000000000000000000101 /* WebAssets */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -241,6 +247,7 @@
 				2P0000000000000000000092 /* Orbitron-Bold.ttf in Resources */,
 				2P0000000000000000000094 /* mobile_offline_fallback.html in Resources */,
 				2P0000000000000000000096 /* offline_logo.png in Resources */,
+				2P0000000000000000000100 /* WebAssets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -254,6 +261,7 @@
 				2P0000000000000000000011 /* AppDelegate.swift in Sources */,
 				2P0000000000000000000013 /* SceneDelegate.swift in Sources */,
 				2P0000000000000000000015 /* ViewController.swift in Sources */,
+				2P0000000000000000000098 /* BundleAssetHandler.swift in Sources */,
 				2P0000000000000000000017 /* HapticManager.swift in Sources */,
 				2P0000000000000000000019 /* NetworkMonitor.swift in Sources */,
 				2P0000000000000000000021 /* AdManager.swift in Sources */,
@@ -334,7 +342,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				CURRENT_PROJECT_VERSION = 35;
+				CURRENT_PROJECT_VERSION = 36;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -391,7 +399,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
-				CURRENT_PROJECT_VERSION = 35;
+				CURRENT_PROJECT_VERSION = 36;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
@@ -402,7 +410,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 35;
+				CURRENT_PROJECT_VERSION = 36;
 				DEVELOPMENT_TEAM = GUFQF359Q7;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TwoPlayerSnake/Info.plist;
@@ -426,7 +434,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 35;
+				CURRENT_PROJECT_VERSION = 36;
 				DEVELOPMENT_TEAM = GUFQF359Q7;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TwoPlayerSnake/Info.plist;

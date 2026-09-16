@@ -4,6 +4,20 @@ Bu belge, **fiziksel bir Mac bilgisayara ihtiyaç duymadan**, Windows bilgisayar
 
 ---
 
+## Güncel CI eki — Build 36 (2026-09-16)
+
+- `ios-runtime-checks.yml`, main'deki ilgili değişikliklerde ve manuel çalıştırmada
+  16 JS regresyon testini ve macOS WKWebView HTTPS-origin/offline kaynak smoke testini çalıştırır.
+- TestFlight workflow'u da aynı kontrolü zorunlu önkoşul olarak çağırır.
+- Tag `ios-v3.3.5-b36` native build 36'yı seçer; main push tek başına TestFlight yüklemez.
+- Fastlane artık başka uygulamaları etkileyebilecek eski Apple sertifikasını otomatik
+  silmez. Cache/private key yoksa ve kota doluysa doğru P12 kullanıcı tarafından sağlanmalıdır.
+- `node tools/github-ios-status.cjs runs` / `jobs RUN_ID` / `log JOB_ID` mevcut Git
+  kimlik yöneticisiyle salt-okunur durum sorgular; token çıktıya yazılmaz.
+- Sonuç ve web yayını bağımlılığı: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
+- Aşağıdaki Build 30 doğrulaması ve otomatik sertifika temizleme anlatımları tarihsel
+  kurulum bilgisidir; güncel kaynak ve bu ek önceliklidir.
+
 ## Build 30 TestFlight Doğrulama Kontrolü
 
 Build 30 başarıyla derlenmiş ve TestFlight'a yüklenmiştir (`ios-v3.3.5-b30` / Run #31). App Store Connect'te incelemedeki Build 29'u etkilemez. Gerçek iPhone üzerinde TestFlight üzerinden şu senaryoları doğrulayabilirsiniz:
