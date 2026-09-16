@@ -4,14 +4,25 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 
 ---
 
-## 1. Güncel devir notu — Build 36 (2026-09-16)
+## 1. Güncel devir notu — Build 37 (2026-09-16)
 
-- Marketing version: `3.3.5`; hazırlanan native build / HTML runtime revision: `36`.
-- **Durum:** Kod ve 16 yerel regresyon testi hazır. TestFlight yüklemesi henüz doğrulanmadı.
+- Marketing version: `3.3.5`; son native build `37`, HTML runtime revision `36`.
+- **Durum:** **Build 37 TestFlight'a yüklendi.** `ios-v3.3.5-b37`, kaynak `fcf0dbd`,
+  [GitHub Actions Run #38](https://github.com/toygun1725/2-player-snake/actions/runs/35062652055) SUCCESS.
+  16 JS testi, macOS WebKit boş belge/HTTPS/offline kontrolleri, native archive ve
+  App Store Connect yüklemesi geçti. Kullanıcının iPhone test ayrıntıları bekleniyor.
 - Son önceki paket: Build 35 (`ios-v3.3.5-b35`), kaynak baseline `6115a50`.
 - Ayrıntılı uygulama, test, yayın ve rollback kaydı: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
 - Kullanıcı isteği: orijinal blur/glass tasarımı korunacak; “efekt kapatarak performans” yaklaşımı uygulanmayacak.
 - Canlı mobil HTML ayrıca web sitesine yüklenmelidir. GitHub push / native paket bunu tek başına yapmaz.
+- Canlı `game-mobile/index.html` kontrol sırasında HTTP 200 / boş içerik döndürdü;
+  tarayıcıda da boştu. Build 37 bu sayfayı hazır saymayıp offline'a geçer. Site yayını/erişimi ayrıca düzeltilmeli.
+- **Yeni öncelik:** Kullanıcı WordPress File Manager'a `index` yüklediğinde yenileme
+  sonrası dosyanın 0 KB göründüğünü bildirdi. Yükleme/kayıt sorununun nedeni henüz
+  bilinmiyor; kullanılan araç/hosting ayrıntıları alınmalı. iOS bulguları ayrı ele alınacak.
+- Build 36 ilk denemesi signing kotasına takıldı; Build 35 artifact'inden mevcut identity
+  yeniden kullanılarak imzalı IPA üretildi. Hiçbir sertifika silinmedi. İkinci deneme,
+  boş sayfa korumasını eklemek için upload sırasında durduruldu; nihai aday Build 37.
 - iPhone üzerinde akıcılık doğrulanmadı; eski “kesin 60 FPS çözüldü” notları güncel kabul sonucu değildir.
 
 ## 2. Build 36 teknik değişiklikleri
@@ -21,7 +32,7 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 - HTTPS oyun ve offline fallback font/logo/ikonları native paket kaynaklarından alır; Socket.IO istemcisi de paketlendi, offline bağlantı stub'ı korunur.
 - iOS AI cache'i yılan başına ayrıldı; engel, grid, mod ve beklenen baş konumuyla doğrulanır. Android cache davranışı değişmedi.
 - iOS menü demo freeze'i kaldırıldı; interpolasyon sınırlandı. Kontrollü testte 8 yerine 2 BFS çağrısı ölçüldü; cihaz FPS sonucu değildir.
-- `gameReady` ile START; 15 s remote-ready timeout ve 10 s local-ready hata koruması; stable per-build URL ve normal HTTP revalidation.
+- `gameReady` ile START; 15 s remote-ready timeout ve 10 s local-ready hata koruması; stable per-build URL ve zorunlu HTTP revalidation. Build 37 ayrıca boş/geçersiz HTML'i reddeder.
 - Reklam başlangıç watchdog'ları native 7.5 s / JS 8.5 s; gerçek sunum başlayınca iptal. Gecikmiş/tekrarlanan yanıt koruması ve ödülsüz timeout.
 - `[GameReady]` / `[GamePerformance]` özet logları; ayrıca rAF/polling yok, dışarı telemetri yok.
 - Test komutları: Windows `node --test tests/ios-runtime.test.cjs`; macOS `bash tools/test-ios-runtime.sh`.

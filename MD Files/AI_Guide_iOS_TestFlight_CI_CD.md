@@ -6,6 +6,14 @@ Bu belge, **fiziksel bir Mac bilgisayara ihtiyaç duymadan**, Windows bilgisayar
 
 ## Güncel CI eki — Build 36 (2026-09-16)
 
+Son paket **Build 37, TestFlight'a yüklendi**:
+[Run #38](https://github.com/toygun1725/2-player-snake/actions/runs/35062652055),
+`ios-v3.3.5-b37` / `fcf0dbd`, bütün aşamalar SUCCESS.
+Build 36'nın ilk run'ı signing kotasında durdu;
+ikinci run imzalı IPA üretti fakat boş uzak sayfa korumasını eklemek için upload
+sırasında iptal edildi. Build 36'nın Apple kabul durumu doğrulanmadığından numara
+tekrar kullanılmadı. Son durum için devir kaydına bakın.
+
 - `ios-runtime-checks.yml`, main'deki ilgili değişikliklerde ve manuel çalıştırmada
   16 JS regresyon testini ve macOS WKWebView HTTPS-origin/offline kaynak smoke testini çalıştırır.
 - TestFlight workflow'u da aynı kontrolü zorunlu önkoşul olarak çağırır.

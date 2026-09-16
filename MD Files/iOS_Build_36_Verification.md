@@ -1,4 +1,4 @@
-# iOS Build 36 çalışması / Build 37 son aday — uygulama ve doğrulama kaydı
+# iOS Build 36 çalışması / Build 37 TestFlight — uygulama ve doğrulama kaydı
 
 Güncelleme: 2026-09-16. Marketing version `3.3.5`, son native build `37`, HTML runtime revision `36` (aynı web protokolü).
 
@@ -10,8 +10,14 @@ Güncelleme: 2026-09-16. Marketing version `3.3.5`, son native build `37`, HTML 
   [Run #37](https://github.com/toygun1725/2-player-snake/actions/runs/35061880146)
   üzerinden başarıyla archive/imzalı IPA üretti, ancak canlı boş sayfa kontrolünü eklemek
   için yükleme sırasında durduruldu. Apple'a kabul durumu bu aday için doğrulanmadı;
-  aynı numarayla tekrar yüklemek yerine son aday **Build 37** olarak hazırlanıyor.
-  Önceki tag'ler taşınmadı. **Son adayın TestFlight yüklemesi henüz doğrulanmadı.**
+  aynı numarayla tekrar yüklemek yerine son aday **Build 37** (`ios-v3.3.5-b37`,
+  kaynak `fcf0dbd`) olarak gönderildi. Önceki tag'ler taşınmadı.
+  **Build 37 TestFlight yüklemesi doğrulandı:**
+  [Run #38](https://github.com/toygun1725/2-player-snake/actions/runs/35062652055) SUCCESS.
+  `CURRENT_PROJECT_VERSION=37` ile IPA archive/imzalama tamamlandı; 2026-09-16
+  06:16 UTC'de App Store Connect package upload başarı logu, 06:18 UTC'de Fastlane
+  başarı sonucu alındı. IPA artifact ID `10433311812`. App Store incelemesindeki
+  sürümü değiştirme/gönderme işlemi yapılmadı.
 - Canlı mobil HTML'in web sitesine yüklenmesi henüz yapılmadı. Git push bu yayını yapmaz.
 - App Store incelemesindeki paketi seçme/değiştirme veya incelemeyi iptal etme işlemi yapılmadı.
 - `scratch/` önceki kullanıcı dosyasıdır; bu çalışmanın commit'ine alınmaz.
@@ -69,10 +75,13 @@ Güncelleme: 2026-09-16. Marketing version `3.3.5`, son native build `37`, HTML 
   Bu test iPhone/GPU testi değil, gerçek WebKit kaynak/başlangıç doğrulamasıdır.
 - Son kaynak `e1eb876` için [Runtime Checks #4](https://github.com/toygun1725/2-player-snake/actions/runs/35061828462)
   ve TestFlight hattının zorunlu runtime aşaması da PASS.
+- Son Build 37 kaynağı `fcf0dbd` için [Runtime Checks #5](https://github.com/toygun1725/2-player-snake/actions/runs/35062495353)
+  PASS: üretimde kullanılan readiness probe boş HTTP-200 belgeyi reddediyor;
+  ardından HTTPS-origin ve offline kaynak/başlangıç testleri de geçiyor.
 
 ## Henüz doğrulanmayanlar / kabul testi
 
-- Xcode archive/TestFlight yükleme sonucu aşağıda güncellenecek.
+- Xcode archive ve TestFlight yüklemesi PASS (yukarıdaki Run #38).
 - Fiziksel iPhone üzerinde FPS/uzun kareler, ATT izinli/reddedilmiş oturum,
   gerçek AdMob sunum/kapatma, satın alma geri yükleme ve iki cihaz online maç.
 - Wi-Fi, hücresel, uçak modu ve yavaş ağda 3'er soğuk açılış; 2 dakika menü demosu;
@@ -80,6 +89,8 @@ Güncelleme: 2026-09-16. Marketing version `3.3.5`, son native build `37`, HTML 
 - Uçak modunda logo/font/ikon; offline→online uyarısında iki seçeneğin çalışması;
   arka plana alma/geri dönme; 1P/2P, Normal/Macera/Self Area 51.
 - Orijinal cam görünümü korunmalı. Kullanıcı cihaz testi olmadan “60 FPS çözüldü” denmez.
+- Kullanıcı TestFlight'ta test yaptığını bildirdi; test ettiği build numarası ve
+  iOS bulgularının ayrıntıları henüz aktarılmadı. Cihaz performansı kabulü açık kalır.
 
 ### CI sırasında yakalanan ve düzeltilen uyumsuzluk
 
@@ -114,6 +125,12 @@ kök nedeni olduğunu kanıtlamaz. Dosya/origin/CDN erişimi olmadan hangi katma
 boş yanıt ürettiği belirlenemez. Siteye bu çalışmada hiçbir yazma/purge işlemi yapılmadı.
 Güncel HTML doğru konuma yüklenmeli ve gerekiyorsa ilgili CDN kaydı temizlenmeli;
 ardından HTTP gövdesi, runtime revision ve cihaz açılışı yeniden doğrulanmalı.
+
+Kullanıcının sonraki bildirimi: mobil HTML'i WordPress File Manager'a `index`
+adıyla yükledikten sonra sayfa yenilenince dosya **0 KB** görünüyor; telefon Chrome'da
+oyuna erişilemedi. Hangi File Manager/hosting aracı olduğu ve sıfırlamanın nedeni
+henüz belirlenmedi. Bu, iOS cihaz bulgularından ayrı yükleme/kayıt sorunu olarak
+incelenecek; WordPress, hosting ve CDN ayarlarında bu çalışma tarafından değişiklik yapılmadı.
 
 Kaynak: `Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.5.html`.
 Hedef: `https://2playersnake.com/wp-content/uploads/game-mobile/index.html`.

@@ -2,6 +2,22 @@
 
 ## iOS App Store & TestFlight Release Notes
 
+### TestFlight Release — Build 37 (v3.3.5, 2026-09-16)
+
+**Yükleme doğrulandı:** [Run #38](https://github.com/toygun1725/2-player-snake/actions/runs/35062652055)
+SUCCESS; kaynak `fcf0dbd`, tag `ios-v3.3.5-b37`. 16 JS testi, macOS WebKit
+kontrolleri, native archive/imzalama ve App Store Connect yüklemesi geçti.
+
+Build 36 çalışmasının tamamını içerir; ek olarak HTTP 200 dönse bile boş/geçersiz
+uzak HTML oyun-hazır sayılmaz ve offline dosyaya geçilir. Canlı site bu kontrolde
+boş HTML döndürdüğü için bu koruma eklendi. HTML runtime revision aynı `36` kalır.
+
+İlk Build 36 signing hatası mevcut Build 35 P12 artifact'i yeniden kullanılarak çözüldü;
+Apple sertifikası iptal edilmedi. Sonraki Build 36 denemesi imzalı IPA üretti fakat
+boş sayfa korumasını eklemek için upload sırasında durduruldu. Build 37 başarıyla
+yüklendi; iPhone performans kabulü ve WordPress'teki 0 KB dosya sorunu açık kalır.
+Ayrıntılar ve run bağlantıları devir kaydındadır.
+
 ### Build 36 hazırlığı (v3.3.5, 2026-09-16)
 
 Durum: Kod hazır; 16/16 yerel otomatik test geçti. TestFlight yüklemesi ve canlı mobil HTML yayını henüz doğrulanmadı.
