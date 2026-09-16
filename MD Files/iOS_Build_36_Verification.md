@@ -1,11 +1,17 @@
-# iOS Build 36 — uygulama ve doğrulama kaydı
+# iOS Build 36 çalışması / Build 37 son aday — uygulama ve doğrulama kaydı
 
-Güncelleme: 2026-09-16. Marketing version `3.3.5`, build `36`, HTML runtime revision `36`.
+Güncelleme: 2026-09-16. Marketing version `3.3.5`, son native build `37`, HTML runtime revision `36` (aynı web protokolü).
 
 ## Dağıtım durumu
 
 - Kod ve yerel otomatik testler hazır. macOS WebKit kontrolü geçti.
-  `ios-v3.3.5-b36` etiketi `a701279` commit'inden gönderildi; **TestFlight yüklemesi henüz doğrulanmadı**.
+  İlk aday `ios-v3.3.5-b36` (`a701279`) imzalama aşamasında durdu.
+  İkinci aday `ios-v3.3.5-signingfix-b36` (`e1eb876`),
+  [Run #37](https://github.com/toygun1725/2-player-snake/actions/runs/35061880146)
+  üzerinden başarıyla archive/imzalı IPA üretti, ancak canlı boş sayfa kontrolünü eklemek
+  için yükleme sırasında durduruldu. Apple'a kabul durumu bu aday için doğrulanmadı;
+  aynı numarayla tekrar yüklemek yerine son aday **Build 37** olarak hazırlanıyor.
+  Önceki tag'ler taşınmadı. **Son adayın TestFlight yüklemesi henüz doğrulanmadı.**
 - Canlı mobil HTML'in web sitesine yüklenmesi henüz yapılmadı. Git push bu yayını yapmaz.
 - App Store incelemesindeki paketi seçme/değiştirme veya incelemeyi iptal etme işlemi yapılmadı.
 - `scratch/` önceki kullanıcı dosyasıdır; bu çalışmanın commit'ine alınmaz.
@@ -31,6 +37,8 @@ Güncelleme: 2026-09-16. Marketing version `3.3.5`, build `36`, HTML runtime rev
    tekrar-dene ekranı vardır. Navigasyon kimliği eski iptal yanıtlarını ayırır.
    Sunucu `max-age=2678400` (31 gün) döndürdüğünden HTML isteği
    `.reloadRevalidatingCacheData` ile her açılışta sunucuda yeniden doğrulanır.
+   Build 37 ek koruması: HTTP 200 olsa bile `canvas#game` ve `#banner` yoksa sayfa
+   hazır sayılmaz; yerel offline dosya açılır. Bu probe boş belgeyle WebKit testine eklendi.
 6. Reklam SDK çağrıları ve retry'ları main queue'da, gecikmeli/asenkron yürür.
    Native sunum bekleyişi 7.5 s, JS emniyeti 8.5 s; gerçek reklam açılınca her iki
    başlangıç zamanlayıcısı iptal olur. Ödül yalnızca kazanım callback'iyle verilir
@@ -59,6 +67,8 @@ Güncelleme: 2026-09-16. Marketing version `3.3.5`, build `36`, HTML runtime rev
   PASS (`a701279`). HTTPS-origin ve file-offline senaryolarının ikisinde de
   `revision=36`, `logo=true`, `fonts=true`, `socket=true`, `menu=true`, `blurRetained=true`.
   Bu test iPhone/GPU testi değil, gerçek WebKit kaynak/başlangıç doğrulamasıdır.
+- Son kaynak `e1eb876` için [Runtime Checks #4](https://github.com/toygun1725/2-player-snake/actions/runs/35061828462)
+  ve TestFlight hattının zorunlu runtime aşaması da PASS.
 
 ## Henüz doğrulanmayanlar / kabul testi
 
@@ -92,6 +102,18 @@ biçimde kaydedilmesi önerilir; artifact saklama süresi dolabilir. Private key
 repo veya sohbet içine yazılmamalıdır.
 
 ## Web yayını ve rollback
+
+### Canlı site gözlemi (2026-09-16)
+
+Hedef mobil `index.html`, PowerShell ve Node HTTP istemcilerinde, normal URL,
+tam iOS query'si ve benzersiz cache query'siyle HTTP 200 / **0 karakter gövde** döndü.
+iPhone User-Agent + `Cache-Control: no-cache` ile de aynı sonuç alındı; in-app
+tarayıcı DOM'u da boştu. Yanıt Cloudflare üzerinden `max-age=2678400` içeriyordu.
+Bu, o anda gözlenen servis sorunudur; kullanıcının tüm geçmiş takılmalarının tek
+kök nedeni olduğunu kanıtlamaz. Dosya/origin/CDN erişimi olmadan hangi katmanın
+boş yanıt ürettiği belirlenemez. Siteye bu çalışmada hiçbir yazma/purge işlemi yapılmadı.
+Güncel HTML doğru konuma yüklenmeli ve gerekiyorsa ilgili CDN kaydı temizlenmeli;
+ardından HTTP gövdesi, runtime revision ve cihaz açılışı yeniden doğrulanmalı.
 
 Kaynak: `Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.5.html`.
 Hedef: `https://2playersnake.com/wp-content/uploads/game-mobile/index.html`.

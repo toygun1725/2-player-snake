@@ -1,6 +1,14 @@
 import Foundation
 import WebKit
 
+enum GameWebRuntime {
+    // A successful HTTP navigation can still contain a blank/error page.
+    static let readinessProbe = """
+    (() => ({ revision: Number(window.__twoPlayerSnakeRuntimeRevision || 0),
+      hasGameDOM: !!document.querySelector('canvas#game') && !!document.getElementById('banner') }))()
+    """
+}
+
 /// Serves only the game's packaged, immutable resources to the HTTPS game page.
 /// No filesystem path supplied by JavaScript is opened directly.
 final class BundleAssetHandler: NSObject, WKURLSchemeHandler {

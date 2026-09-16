@@ -403,7 +403,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             URLQueryItem(name: "app", value: "android"),
             URLQueryItem(name: "app_platform", value: "ios"),
             URLQueryItem(name: "app_ver", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.3.5"),
-            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "36"),
+            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "37"),
             URLQueryItem(name: "app_device", value: "mobile")
         ]
 
@@ -612,9 +612,15 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         injectSafeAreaVariables(force: true)
         publishSettingsToGame()
         // Older hosted HTML does not send gameReady; retain its existing finish behavior.
-        webView.evaluateJavaScript("window.__twoPlayerSnakeRuntimeRevision || 0") { [weak self] result, _ in
+        webView.evaluateJavaScript(GameWebRuntime.readinessProbe) { [weak self] result, _ in
             guard let self = self, navigation === self.activeNavigation else { return }
-            if (result as? Int ?? 0) < 36 { self.gameDidBecomeReady() }
+            guard let state = result as? [String: Any], state["hasGameDOM"] as? Bool == true else {
+                print("[GameReady] Invalid or empty game document; using offline recovery.")
+                if self.isShowingOfflineGame { self.showOfflineOverlay() }
+                else { self.loadOfflineFallbackGame() }
+                return
+            }
+            if (state["revision"] as? Int ?? 0) < 36 { self.gameDidBecomeReady() }
         }
     }
 

@@ -8,12 +8,12 @@ func fail(_ message: String) -> Never {
     exit(1)
 }
 
-final class SmokeTest: NSObject, WKScriptMessageHandler {
+final class SmokeTest: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
     let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
     let resources: URL
     var webView: WKWebView!
     var window: NSWindow!
-    var stage = 0
+    var stage = -1
     var checking = false
 
     override init() {
@@ -46,14 +46,30 @@ final class SmokeTest: NSObject, WKScriptMessageHandler {
         let bridge = try String(contentsOf: root.appendingPathComponent("Ana Dosya/iOS/TwoPlayerSnake/Bridge/ios_bridge_bootstrap.js"), encoding: .utf8)
         config.userContentController.addUserScript(WKUserScript(source: bridge, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         webView = WKWebView(frame: NSRect(x: 0, y: 0, width: 390, height: 844), configuration: config)
+        webView.navigationDelegate = self
         window.contentView = webView
         window.makeKeyAndOrderFront(nil)
-        if stage == 0 {
+        if stage == -1 {
+            webView.loadHTMLString("<!doctype html><html><body></body></html>", baseURL: URL(string: "https://2playersnake.com/"))
+        } else if stage == 0 {
             let html = try String(contentsOf: root.appendingPathComponent("Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.5.html"), encoding: .utf8)
             // HTTPS origin is intentional: fonts must also work across the custom-scheme boundary.
             webView.loadHTMLString(html, baseURL: URL(string: "https://2playersnake.com/wp-content/uploads/game-mobile/index.html"))
         } else {
             webView.loadFileURL(root.appendingPathComponent("Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html"), allowingReadAccessTo: root)
+        }
+    }
+
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        guard stage == -1 else { return }
+        webView.evaluateJavaScript(GameWebRuntime.readinessProbe) { [self] value, error in
+            guard error == nil, let state = value as? [String: Any], state["hasGameDOM"] as? Bool == false else {
+                fail("blank page was accepted as a game")
+            }
+            print("WEBKIT PASS: blank HTTP-200 document rejected by production readiness probe")
+            webView.configuration.userContentController.removeScriptMessageHandler(forName: "iOS")
+            stage = 0
+            do { try loadStage() } catch { fail(error.localizedDescription) }
         }
     }
 
