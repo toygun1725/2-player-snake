@@ -24,6 +24,9 @@ final class BundleAssetHandler: NSObject, WKURLSchemeHandler {
     ]
 
     func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
+        #if DEBUG
+        print("WEBKIT bundle request: \(urlSchemeTask.request.url?.absoluteString ?? "nil")")
+        #endif
         guard let url = urlSchemeTask.request.url,
               url.host == "bundle",
               let (path, mimeType) = resources[url.path],
@@ -31,6 +34,9 @@ final class BundleAssetHandler: NSObject, WKURLSchemeHandler {
                 ?? Bundle.main.url(forResource: path, withExtension: nil),
               let data = try? Data(contentsOf: fileURL) else {
             urlSchemeTask.didFailWithError(URLError(.fileDoesNotExist))
+            #if DEBUG
+            print("WEBKIT bundle missing: \(urlSchemeTask.request.url?.absoluteString ?? "nil")")
+            #endif
             return
         }
         guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: [

@@ -37,6 +37,10 @@ final class SmokeTest: NSObject, WKScriptMessageHandler {
         config.websiteDataStore = .nonPersistent()
         config.setURLSchemeHandler(BundleAssetHandler(resourceDirectory: resources), forURLScheme: "snake-asset")
         config.userContentController.add(self, name: "iOS")
+        let errors = """
+        window.addEventListener('error', e => window.webkit.messageHandlers.iOS.postMessage({ action: 'smokeError', payload: { message: e.message || 'resource error', url: e.target && (e.target.src || e.target.href) } }), true);
+        """
+        config.userContentController.addUserScript(WKUserScript(source: errors, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         let bridge = try String(contentsOf: root.appendingPathComponent("Ana Dosya/iOS/TwoPlayerSnake/Bridge/ios_bridge_bootstrap.js"), encoding: .utf8)
         config.userContentController.addUserScript(WKUserScript(source: bridge, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         webView = WKWebView(frame: NSRect(x: 0, y: 0, width: 390, height: 844), configuration: config)
@@ -52,7 +56,9 @@ final class SmokeTest: NSObject, WKScriptMessageHandler {
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard let body = message.body as? [String: Any], body["action"] as? String == "gameReady", !checking else { return }
+        guard let body = message.body as? [String: Any] else { return }
+        if body["action"] as? String == "smokeError" { print("WEBKIT resource error: \(body)"); return }
+        guard body["action"] as? String == "gameReady", !checking else { return }
         checking = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [self] in
             let script = """
