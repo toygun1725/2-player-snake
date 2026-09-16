@@ -4,7 +4,8 @@ Güncelleme: 2026-09-16. Marketing version `3.3.5`, build `36`, HTML runtime rev
 
 ## Dağıtım durumu
 
-- Kod ve yerel otomatik testler hazır; **TestFlight yüklemesi henüz doğrulanmadı**.
+- Kod ve yerel otomatik testler hazır. macOS WebKit kontrolü geçti.
+  `ios-v3.3.5-b36` etiketi `a701279` commit'inden gönderildi; **TestFlight yüklemesi henüz doğrulanmadı**.
 - Canlı mobil HTML'in web sitesine yüklenmesi henüz yapılmadı. Git push bu yayını yapmaz.
 - App Store incelemesindeki paketi seçme/değiştirme veya incelemeyi iptal etme işlemi yapılmadı.
 - `scratch/` önceki kullanıcı dosyasıdır; bu çalışmanın commit'ine alınmaz.
@@ -26,8 +27,10 @@ Güncelleme: 2026-09-16. Marketing version `3.3.5`, build `36`, HTML runtime rev
 5. Native START, ağ ilerlemesi %100 olunca değil `initGame` sonundaki `gameReady`
    mesajıyla açılır. Eski uzak HTML için `didFinish` uyumluluğu korunur.
    Rastgele 2.5 s offline geçişi yerine 15 s remote-ready sınırı kullanılır.
-   Kesin bağlantı kaybında offline'a doğrudan geçilir; yerel açılış hatasında 10 s sonra
+  Kesin bağlantı kaybında offline'a doğrudan geçilir; yerel açılış hatasında 10 s sonra
    tekrar-dene ekranı vardır. Navigasyon kimliği eski iptal yanıtlarını ayırır.
+   Sunucu `max-age=2678400` (31 gün) döndürdüğünden HTML isteği
+   `.reloadRevalidatingCacheData` ile her açılışta sunucuda yeniden doğrulanır.
 6. Reklam SDK çağrıları ve retry'ları main queue'da, gecikmeli/asenkron yürür.
    Native sunum bekleyişi 7.5 s, JS emniyeti 8.5 s; gerçek reklam açılınca her iki
    başlangıç zamanlayıcısı iptal olur. Ödül yalnızca kazanım callback'iyle verilir
@@ -51,10 +54,15 @@ Güncelleme: 2026-09-16. Marketing version `3.3.5`, build `36`, HTML runtime rev
   offline/premium davranışı ve cache engel/konum/mod geçersizleştirme testleri geçti.
 - Yerel Chromium önizlemesi (native reklam yanıtı mock): 1P ve 2P başlatma,
   pause → ana menü dönüşü çalıştı. Font/logo görünümü kontrol edildi.
+- Offline fixture'da da yerel maç açılışı ve pause → ana menü dönüşü doğrulandı.
+- macOS WebKit: [Runtime Checks #3](https://github.com/toygun1725/2-player-snake/actions/runs/35061279989)
+  PASS (`a701279`). HTTPS-origin ve file-offline senaryolarının ikisinde de
+  `revision=36`, `logo=true`, `fonts=true`, `socket=true`, `menu=true`, `blurRetained=true`.
+  Bu test iPhone/GPU testi değil, gerçek WebKit kaynak/başlangıç doğrulamasıdır.
 
 ## Henüz doğrulanmayanlar / kabul testi
 
-- Gerçek macOS WebKit CI ve Xcode archive/yükleme sonucu aşağıda güncellenecek.
+- Xcode archive/TestFlight yükleme sonucu aşağıda güncellenecek.
 - Fiziksel iPhone üzerinde FPS/uzun kareler, ATT izinli/reddedilmiş oturum,
   gerçek AdMob sunum/kapatma, satın alma geri yükleme ve iki cihaz online maç.
 - Wi-Fi, hücresel, uçak modu ve yavaş ağda 3'er soğuk açılış; 2 dakika menü demosu;
@@ -70,6 +78,18 @@ izin verdi fakat aktif script/CSS kaynaklarını yüklemedi (16 JS testi yine ge
 Bu nedenle fontlar data-URL CSS'e, Socket.IO native WKUserScript'e alındı. ATS/CORS
 güvenliği gevşetilmedi ve sayfanın HTTPS origin/localStorage alanı değiştirilmedi.
 Teknik bağlam: [WebKit mixed-content kaydı](https://bugs.webkit.org/show_bug.cgi?id=154916).
+
+### İlk TestFlight denemesinde imzalama engeli
+
+[Run #36](https://github.com/toygun1725/2-player-snake/actions/runs/35061421678)
+runtime kontrollerini geçti, fakat imzalama anahtarı cache'te yok ve Apple dağıtım
+sertifika kotası dolu olduğu için archive/yükleme başlamadan durdu. IPA üretilmedi.
+Hiçbir Apple sertifikası iptal edilmedi. Build 35'in başarılı run'ında mevcut
+`iOS-Distribution-Certificate-p12` artifact'i (run `35006468857`, artifact `10412062574`)
+bulundu. CI yalnızca P12 yoksa bu mevcut identity'yi indirir; cache anahtarı v2'ye alındı.
+Kalıcı kullanım için aynı P12'nin GitHub `DISTRIBUTION_CERTIFICATE` secret'ına güvenli
+biçimde kaydedilmesi önerilir; artifact saklama süresi dolabilir. Private key/parola
+repo veya sohbet içine yazılmamalıdır.
 
 ## Web yayını ve rollback
 

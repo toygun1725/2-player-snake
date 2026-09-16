@@ -12,6 +12,10 @@ Bu belge, **fiziksel bir Mac bilgisayara ihtiyaç duymadan**, Windows bilgisayar
 - Tag `ios-v3.3.5-b36` native build 36'yı seçer; main push tek başına TestFlight yüklemez.
 - Fastlane artık başka uygulamaları etkileyebilecek eski Apple sertifikasını otomatik
   silmez. Cache/private key yoksa ve kota doluysa doğru P12 kullanıcı tarafından sağlanmalıdır.
+- Build 36'nın ilk denemesinde cache boş/sertifika kotası dolu çıktı. Mevcut Build 35
+  signing artifact'i bulundu; P12 yoksa CI bu başarılı run'dan (`35006468857`) indirir.
+  Cache v2'ye alındı. Kalıcı çözüm için `DISTRIBUTION_CERTIFICATE` secret'ı kullanılmalı;
+  artifact saklama süresine uzun vadede güvenilmemelidir.
 - `node tools/github-ios-status.cjs runs` / `jobs RUN_ID` / `log JOB_ID` mevcut Git
   kimlik yöneticisiyle salt-okunur durum sorgular; token çıktıya yazılmaz.
 - Sonuç ve web yayını bağımlılığı: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).

@@ -1,5 +1,9 @@
 name: iOS Build & TestFlight Deployment
 
+permissions:
+  contents: read
+  actions: read
+
 on:
   workflow_dispatch:
     inputs:
@@ -57,9 +61,27 @@ jobs:
         uses: actions/cache@v4
         with:
           path: Ana Dosya/iOS/certs
-          key: ios-certs-${{ secrets.APPLE_TEAM_ID }}-${{ hashFiles('Ana Dosya/iOS/certs/dist_certificate.p12') }}
+          key: ios-certs-v2-${{ secrets.APPLE_TEAM_ID }}-${{ hashFiles('Ana Dosya/iOS/certs/dist_certificate.p12') }}
           restore-keys: |
-            ios-certs-${{ secrets.APPLE_TEAM_ID }}-
+            ios-certs-v2-${{ secrets.APPLE_TEAM_ID }}-
+
+      - name: Check cached signing identity
+        id: signing-material
+        run: |
+          if [ -s "Ana Dosya/iOS/certs/dist_certificate.p12" ]; then
+            echo "missing=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "missing=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Recover existing identity from successful Build 35
+        if: steps.signing-material.outputs.missing == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: iOS-Distribution-Certificate-p12
+          path: Ana Dosya/iOS/certs
+          github-token: ${{ github.token }}
+          run-id: 35006468857
 
       - name: 📦 CocoaPods Kurulumu (Google Mobile Ads SDK)
         run: |

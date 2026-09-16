@@ -411,7 +411,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
         if let finalUrl = components.url {
             // Stable per-build URL. Honor HTTP revalidation so a website update is not cached forever.
-            let request = URLRequest(url: finalUrl, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 15)
+            let request = URLRequest(url: finalUrl, cachePolicy: .reloadRevalidatingCacheData, timeoutInterval: 15)
             activeNavigation = webView.load(request)
 
             // A slow but connected page must not randomly become an offline session after 2.5 s.
