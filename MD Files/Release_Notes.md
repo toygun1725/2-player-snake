@@ -77,9 +77,9 @@ Durum: Kod hazır; 16/16 yerel otomatik test geçti. TestFlight yüklemesi ve ca
 - **Gerçek Çevrimdışı (Offline) Desteği:** Android eşdeğeri yerel iki kişilik offline oyun (`mobile_offline_fallback.html`), logo ve Orbitron fontu iOS uygulama paketine dahil edildi. İnternetsiz açılışta veya ağ hatasında yerel oyun otomatik açılır; ağ geri geldiğinde güvenli geçiş uyarısı sunulur.
 - **Platform Ayrımı:** iOS kabuğuna özel `data-ios-app`, `data-native-platform="ios"` nitelikleri tanımlandı.
 
-> Durum (2026-09-14): iOS Native Swift kabuğu `v3.3.5` / Build **29** (`ios-v3.3.5-b29`) olarak derlendi ve **Apple App Store İncelemesine Gönderildi** (`Waiting for Review`). Aşama 6 (RevenueCat IAP - Remove Ads Lifetime) ve Aşama 7 (App Store Mağaza Yayını & İnceleme Gönderimi) tamamlandı.
+> Durum (2026-09-17): 🎉 **iOS Native Swift kabuğu `v3.3.5` / Build 29 (`ios-v3.3.5-b29`) Apple App Store incelemesini başarıyla geçti ve dünya genelinde App Store'da CANLI YAYINDA (Ready for Sale)!** Aşama 6 (RevenueCat IAP - Remove Ads Lifetime) ve Aşama 7 (App Store Mağaza Yayını & İnceleme) başarıyla tamamlandı.
 
-### App Store Canlı Yayına Gönderim (v3.3.5 / Build 29)
+### App Store Resmi Canlı Yayını — v3.3.5 (Build 29, 2026-09-17 Yayında)
 
 <en-US>
 What's New in iOS v3.3.5 (Build 29):

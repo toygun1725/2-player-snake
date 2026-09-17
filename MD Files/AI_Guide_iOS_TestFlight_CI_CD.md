@@ -32,7 +32,7 @@ tekrar kullanılmadı. Son durum için devir kaydına bakın.
 
 ## Build 30 TestFlight Doğrulama Kontrolü
 
-Build 30 başarıyla derlenmiş ve TestFlight'a yüklenmiştir (`ios-v3.3.5-b30` / Run #31). App Store Connect'te incelemedeki Build 29'u etkilemez. Gerçek iPhone üzerinde TestFlight üzerinden şu senaryoları doğrulayabilirsiniz:
+Build 30 başarıyla derlenmiş ve TestFlight'a yüklenmiştir (`ios-v3.3.5-b30` / Run #31). App Store'da yayındaki canlı Build 29'u etkilemez. Gerçek iPhone üzerinde TestFlight üzerinden şu senaryoları doğrulayabilirsiniz:
 
 1. **Oyna düğmesi:** Reklam gösterildiğinde ve gösterilemediğinde oyun ekranı akıcı açılmalı.
 2. **Duraklat > Ana Menü:** Tek dokunuşta menüye dönmeli; ikinci dokunuş veya bekleyen reklam kilidi olmamalı.

@@ -184,7 +184,7 @@ Ana Dosya/iOS/
 | **Aşama 4** | Fiziksel iPhone Üzerinde Oynanış & UX Testleri | ✅ **Tamamlandı (Build 27)** |
 | **Aşama 5** | Canlı AdMob iOS Birimleri & ATT İzin Akışı | ✅ **Tamamlandı (Build 28)** |
 | **Aşama 6** | **RevenueCat iOS IAP (Reklamsız Sürüm Satın Alma)** | ✅ **Tamamlandı (Build 29)** |
-| **Aşama 7** | App Store Mağaza Yayını & İnceleme Gönderimi | 🔄 **SIRADAKİ AŞAMA** |
+| **Aşama 7** | App Store Mağaza Yayını & İnceleme Gönderimi | ✅ **Tamamlandı & CANLI YAYINDA (Build 29)** |
 
 ---
 
@@ -192,10 +192,10 @@ Ana Dosya/iOS/
 flowchart TD
     A[Aşama 1: CI/CD & Apple Altyapısı] -->|TAMAMLANDI| B[Aşama 2: iOS Native Swift Kabuğu]
     B -->|TAMAMLANDI| C[Aşama 3: TestFlight İlk Dağıtım & Cihazda Açılış]
-    C -->|TAMAMLANDI| D[Aşama 4: Fiziksel Cihaz Oyun & UX Testleri - Build 27]
     D -->|TAMAMLANDI| E[Aşama 5: Canlı AdMob iOS Birimleri & ATT İzinleri - Build 28]
+    C -->|TAMAMLANDI| D[Aşama 4: Fiziksel Cihaz Oyun & UX Testleri - Build 27]
     E -->|TAMAMLANDI| F[Aşama 6: RevenueCat iOS IAP / Reklamsız Sürüm - Build 29]
-    F -->|SIRADAKİ| G[Aşama 7: App Store Mağaza Yayını & İnceleme]
+    F -->|TAMAMLANDI| G[Aşama 7: App Store Mağaza Yayını - Build 29 CANLI]
 
     style A fill:#4CAF50,stroke:#388E3C,color:#fff
     style B fill:#4CAF50,stroke:#388E3C,color:#fff
@@ -203,7 +203,7 @@ flowchart TD
     style D fill:#4CAF50,stroke:#388E3C,color:#fff
     style E fill:#4CAF50,stroke:#388E3C,color:#fff
     style F fill:#4CAF50,stroke:#388E3C,color:#fff
-    style G fill:#FF9800,stroke:#F57C00,color:#fff
+    style G fill:#4CAF50,stroke:#388E3C,color:#fff
 ```
 
 ---
@@ -232,19 +232,18 @@ flowchart TD
 
 ---
 
-### 🔄 ŞU ANKİ AŞAMA:
-#### Aşama 7: App Store Mağaza Yayını & İnceleme Gönderimi (İNCELEMEYE GÖNDERİLDİ - Sürüm 3.3.5 / Build 29)
+### ✅ Aşama 7: App Store Mağaza Yayını & İnceleme (BAŞARIYLA TAMAMLANDI - CANLI YAYINDA - v3.3.5 / Build 29)
 * **Aşama 5 (Canlı AdMob & ATT İzin Akışı):** TAMAMLANDI (Build 28 & 29).
 * **Aşama 6 (RevenueCat IAP - Remove Ads Lifetime):** TAMAMLANDI. Non-consumable IAP oluşturuldu, RevenueCat bağlandı ve mağaza paketine dahil edildi.
 * **Aşama 7 (App Store Connect Yayını):**
   * iPhone 6.5" ve iPad 13" ekran görüntüleri (1284x2778 ve 2048x2732, RGB) yüklendi.
   * Meta veriler (Açıklama, Anahtar Kelimeler, Destek & Pazarlama URL'leri, Yaş Sınırı 4+, Gizlilik Beyanı) eksiksiz tamamlandı.
-  * Uygulama (Build 29) ve In-App Purchase (`remove_ads_premium`) birlikte "Submit for Review" ile Apple inceleme kuyruğuna iletildi.
+  * Uygulama (Build 29) ve In-App Purchase (`remove_ads_premium`) başarıyla onaylandı ve **2026-09-17 itibarıyla Apple App Store'da dünya genelinde CANLI YAYINA (Ready for Sale)** girdi!
 
 ---
 
 ### 🏆 PROJE DURUMU:
-Tüm aşamalar (Aşama 1'den Aşama 7'ye kadar) başarıyla tamamlanmıştır. Uygulama Apple App Store inceleme sürecindedir (v3.3.5 / Build 29).
+Tüm aşamalar (Aşama 1'den Aşama 7'ye kadar) %100 başarıyla tamamlanmıştır. Uygulama Apple App Store'da resmi olarak yayındadır (v3.3.5 / Build 29). Sonraki güncellemeler ve iyileştirmeler TestFlight hattı (Build 30–37+) üzerinden yürütülmektedir.
 
 ---
 
@@ -253,9 +252,9 @@ Tüm aşamalar (Aşama 1'den Aşama 7'ye kadar) başarıyla tamamlanmıştır. U
 Gelecekte bu projeyi devralacak veya yeni bir güncelleme / build çıkaracak herhangi bir AI Agent (veya geliştirici) için adım adım uygulanabilir kılavuz:
 
 ### 1. Mevcut Sürüm ve Numaralandırma Durumu
-* **Canlı / App Store İncelemesindeki Sürüm:** `3.3.5 (Build 29)`
-* **Son TestFlight Derlemesi:** `3.3.5 (Build 30)` (`ios-v3.3.5-b30` - Başarıyla yüklendi)
-* **Bir Sonraki Build Numarası:** `31` (Build numarası Apple kuralları gereği her zaman monotonik olarak artmalıdır: 31, 32, 33...).
+* **App Store Canlıdaki Sürüm:** `3.3.5 (Build 29)` — Dünya genelinde yayında.
+* **Son TestFlight Derlemesi:** `3.3.5 (Build 37)` (`ios-v3.3.5-b37` - Başarıyla yüklendi)
+* **Bir Sonraki Build Numarası:** `38` (Build numarası Apple kuralları gereği her zaman monotonik olarak artmalıdır: 38, 39, 40...).
 
 ---
 
