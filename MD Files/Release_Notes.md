@@ -80,6 +80,8 @@ Durum: Kod hazır; 16/16 yerel otomatik test geçti. TestFlight yüklemesi ve ca
 > Durum (2026-09-17): 🎉 **iOS Native Swift kabuğu `v3.3.5` / Build 29 (`ios-v3.3.5-b29`) Apple App Store incelemesini başarıyla geçti ve dünya genelinde App Store'da CANLI YAYINDA (Ready for Sale)!** Aşama 6 (RevenueCat IAP - Remove Ads Lifetime) ve Aşama 7 (App Store Mağaza Yayını & İnceleme) başarıyla tamamlandı.
 
 ### App Store Resmi Canlı Yayını — v3.3.5 (Build 29, 2026-09-17 Yayında)
+* **App Store Bağlantısı:** [2 Player Snake - App Store](https://apps.apple.com/app/id6811546748) (Apple ID: `6811546748`)
+* **AdMob & Ads Durumu:** AdMob App Store bağlantısı tamamlandı. `ads.txt` ve `app-ads.txt` dosyaları yayında (`https://2playersnake.com/ads.txt`, AdSense tarafından onaylandı).
 
 <en-US>
 What's New in iOS v3.3.5 (Build 29):

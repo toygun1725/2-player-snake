@@ -7,7 +7,11 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 ## 1. Güncel devir notu — Build 37 (2026-09-16)
 
 - Marketing version: `3.3.5`; son native build `37`, HTML runtime revision `36`.
-- **Durum:** **Build 37 TestFlight'a yüklendi.** `ios-v3.3.5-b37`, kaynak `fcf0dbd`,
+- **🎉 App Store Canlı Yayını (2026-09-17):** Uygulama `v3.3.5 (Build 29)` Apple tarafından onaylandı ve dünya genelinde **App Store'da CANLI YAYINA (Ready for Sale)** girdi!
+  * **Resmi App Store URL:** `https://apps.apple.com/app/id6811546748` (Apple ID: `6811546748`, Paket: `com.twoplayersnake.app`)
+  * **AdMob Mağaza Eşleştirmesi:** AdMob paneline `6811546748` Apple ID ile bağlandı.
+  * **ads.txt & app-ads.txt:** `https://2playersnake.com/ads.txt` ve `/app-ads.txt` kök dizine yüklendi. AdSense tarafından `Hazır` olarak anında algılandı; AdMob app-ads.txt taraması bekleniyor.
+- **TestFlight Durumu:** **Build 37 TestFlight'a yüklendi.** `ios-v3.3.5-b37`, kaynak `fcf0dbd`,
   [GitHub Actions Run #38](https://github.com/toygun1725/2-player-snake/actions/runs/35062652055) SUCCESS.
   16 JS testi, macOS WebKit boş belge/HTTPS/offline kontrolleri, native archive ve
   App Store Connect yüklemesi geçti. Kullanıcının iPhone test ayrıntıları bekleniyor.

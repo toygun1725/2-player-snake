@@ -39,6 +39,11 @@ AdMob eslestirme notu (iOS shell - v3.3.5):
 - App ID: `ca-app-pub-4114535776207741~3769407896`
 - Interstitial ID: `ca-app-pub-4114535776207741/6012427858`
 - Rewarded ID: `ca-app-pub-4114535776207741/7193260548`
+- Apple ID: `6811546748`
+- Canlı App Store URL: `https://apps.apple.com/app/id6811546748`
+- AdMob Mağaza Eşleştirmesi: ✅ Tamamlandı (AdMob > Uygulama Ayarları > App Store `6811546748` başarıyla bağlandı)
+- app-ads.txt: `https://2playersnake.com/app-ads.txt` kök dizine yüklendi (`google.com, pub-4114535776207741, DIRECT, f08c47fec0942fa0`), AdMob taraması bekleniyor.
+- ads.txt (Web): `https://2playersnake.com/ads.txt` kök dizine yüklendi ve Google AdSense tarafından ONAYLANDI (Hazır, 2026-09-17).
 - ATT İzin Metni: `Bu izin, oyun deneyiminizi geliştirmek ve size uygun kişiselleştirilmiş reklamlar sunmak için kullanılır.`
 
 Build 30 iOS köprü notu (TestFlight'a henüz yüklenmedi):
