@@ -4,16 +4,18 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 
 ---
 
-## 1. Güncel devir notu — Build 40 (v3.3.6, 2026-09-18)
+## 1. Güncel devir notu — Build 42 (v3.3.6, 2026-09-18)
 
-- Marketing version: `3.3.6`; son native build `40`, HTML runtime revision `36`.
-- **🎉 App Store Canlı Yayını (2026-09-17):** Uygulama `v3.3.5 (Build 29)` Apple tarafından onaylandı ve dünya genelinde **App Store'da CANLI YAYINA (Ready for Sale)** girdi!
+- Marketing version: `3.3.6`; son native build `42`, HTML runtime revision `36`.
+- **⏳ App Store Sürüm Gönderimi (Waiting for Review):**
+  * Uygulama **v3.3.6 (Build 42)** 18 Eylül 2026 saat 18:32'de resmi olarak Apple App Store incelemesine sunuldu (Submission ID: `6fab8c78-d9b9-493e-a651-db3ccf0338ad`).
+  * **26 Dilde Eksiksiz Yerelleştirme:** App Store Connect mağaza listelemesi 26 dilde (Türkçe, İspanyolca, Almanca, Fransızca, İtalyanca, Portekizce, Rusça, Felemenkçe, Lehçe, Arapça, Çince, Japonca, Korece, Hintçe, Endonezce, Tayca, Vietnamca, İbranice, İngilizce UK, Çekçe, Danca, Fince, Yunanca, Macarca, İsveççe, İngilizce US) Apple standartlarına uygun emojilerden arındırılmış temiz kurşun işaretli (`•`) şablonla girildi.
   * **Resmi App Store URL:** `https://apps.apple.com/app/id6811546748` (Apple ID: `6811546748`, Paket: `com.twoplayersnake.app`)
   * **AdMob Mağaza Eşleştirmesi:** AdMob paneline `6811546748` Apple ID ile bağlandı.
   * **ads.txt & app-ads.txt:** `https://2playersnake.com/ads.txt` ve `/app-ads.txt` kök dizine yüklendi. AdSense tarafından `Hazır` olarak anında algılandı; AdMob app-ads.txt taraması bekleniyor.
 - **Apple Game Center Yetki Dosyası (`TwoPlayerSnake.entitlements`):**
-  * App Store Connect'teki `To enable Game Center for your app, you must add the com.apple.developer.game-center entitlement in Xcode` sarı uyarısını gidermek ve yetkiyi tam tanımlamak amacıyla `TwoPlayerSnake.entitlements` (`com.apple.developer.game-center = true`) oluşturuldu ve Xcode projesine `CODE_SIGN_ENTITLEMENTS` ile bağlandı.
-- **Apple Game Center (15 Başarım) & Doğrudan App Store İnceleme:** Build 40 ile `GameCenterManager.swift` üzerinden tam entegre edildi.
+  * App Store Connect'teki sarı yetki uyarısı `com.apple.developer.game-center = true` entitlements dosyasının Xcode projesine eklenmesiyle tamamen çözüldü ve onaylandı.
+- **Apple Game Center (15 Başarım) & Doğrudan App Store İnceleme:** Build 42 ile `GameCenterManager.swift` üzerinden tam entegre edildi.
 - **iPhone (iOS App & Safari) Menü ve Demo Yılan Performans Çözümü:**
   * 3x Retina ekranda iç içe çalışan gereksiz 2. katman blur (`.main-menu-actions`) kaldırılarak GPU yükü %75 azaltıldı.
   * `borderGlow` sürekli box-shadow repainting animasyonu yerine donanım hızlandırmalı sabit neon pembe aura uygulandı.

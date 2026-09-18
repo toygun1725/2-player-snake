@@ -11,16 +11,16 @@ Bu belge, mobil surum uzerinde calisacak yapay zekalar icin guncel teknik refera
 > Web yayını henüz yapılmadı; Git push siteyi güncellemez.
 > Ayrıntılar: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
 
-- Aktif referans surum: `v3.3.6` (iOS: Build 40)
+- Aktif referans surum: `v3.3.6` (iOS: Build 42 - App Store'da İncelemede / Waiting for Review)
 - Temel referans dosya: `2 Player Snake Mobile v3.3.6.html`
 - Kaynak/yayin durumu: v3.3.6 mobil ve PC kaynak dosyalari olusturuldu. Patreon destek sistemi oyun kodlarindan tamamen cikarildi.
 - Android durumu: Android cevrimdisi fallback `mobile_offline_fallback.html` v3.3.6 ile esitlendi.
-- iOS durumu: iOS Build 40 hazirlandi; Game Center yetki dosyasi (`TwoPlayerSnake.entitlements`), Game Center (15 basarim), App Store doğrudan puanlama modal baglantisi, iPhone menü ve demo yılan donanım hızlandırma optimizasyonu, v3.3.6 cevrimdisi fallback ve Xcode pbxproj guncellendi.
+- iOS durumu: iOS Build 42 hazirlandi ve App Store Connect uzerinden resmi incelemeye sunuldu (Submission ID: `6fab8c78-d9b9-493e-a651-db3ccf0338ad`); 26 dilde yerellestirme tamamlandi; Game Center yetki dosyasi (`TwoPlayerSnake.entitlements`), Game Center (15 basarim), App Store doğrudan puanlama modal baglantisi, iPhone menü ve demo yılan donanım hızlandırma optimizasyonu, v3.3.6 cevrimdisi fallback ve Xcode pbxproj guncellendi.
 - Dosya yapisi: her sey tek HTML dosyasindadir; CSS veya JS ayirma yapilmaz.
 - Tasarim dili: koyu cyberpunk zemin, neon pembe ve turkuaz glow, camimsi panel dili, mobil odakli dar yerlesim.
 - Ana menu logosu web uzerindeki guncel logo kaynagini kullanir; gerekirse yerel fallback ile calisir.
 
-## Son Guncelleme (v3.3.6 - iOS Build 40)
+## Son Guncelleme (v3.3.6 - iOS Build 42 - App Store Submission)
 - **v3.3.6**: Patreon Destek Sisteminin Kaldirilmasi, Apple Game Center ve App Store Puanlama Entegrasyonu, Game Center Yetki Dosyasi (`TwoPlayerSnake.entitlements`), iPhone Menü & Demo Yılan Performans Devrimi.
   - **Patreon Kaldirildi:** Ayarlar > Gelistiriciler (Developers) modalinda yer alan Patreon bagis ve destek bolumu 21 dilde tamamen temizlendi.
   - **CSS Temizligi:** `.btn-patreon`, `.btn-patreon i`, `.btn-patreon:active` stilleri ve ilgili buton secicileri kaldirildi.

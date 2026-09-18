@@ -2,7 +2,51 @@
 
 ## iOS App Store & TestFlight Release Notes
 
-### TestFlight & App Store Release — Build 40 (v3.3.6, 2026-09-18)
+### App Store Submission — Build 42 (v3.3.6, 2026-09-18)
+
+- **Durum:** **İnceleme Bekliyor (Waiting for Review)** ⏳
+- **Gönderim Tarihi:** 18 Eylül 2026, 18:32 (TSI)
+- **Submission ID:** `6fab8c78-d9b9-493e-a651-db3ccf0338ad`
+- **Uygulama Sürümü:** `3.3.6 (42)` (`CFBundleShortVersionString = 3.3.6`, `CFBundleVersion = 42`)
+- **App Store Küresel Yerelleştirme (26+ Dil):**
+  - App Store Connect mağaza listelemesi 26 dilde eksiksiz yerelleştirildi:
+    1. Türkçe (Turkish)
+    2. İspanyolca (Spanish - Spain)
+    3. Almanca (German)
+    4. Fransızca (French)
+    5. İtalyanca (Italian)
+    6. Portekizce (Portuguese - Portugal)
+    7. Rusça (Russian)
+    8. Felemenkçe (Dutch)
+    9. Lehçe (Polish)
+    10. Arapça (Arabic)
+    11. Çince (Chinese - Simplified)
+    12. Japonca (Japanese)
+    13. Korece (Korean)
+    14. Hintçe (Hindi)
+    15. Endonezce (Indonesian)
+    16. Tayca (Thai)
+    17. Vietnamca (Vietnamese)
+    18. İbranice (Hebrew)
+    19. İngilizce UK (English - U.K.)
+    20. Çekçe (Czech)
+    21. Danca (Danish)
+    22. Fince (Finnish)
+    23. Yunanca (Greek)
+    24. Macarca (Hungarian)
+    25. İsveççe (Swedish)
+    26. İngilizce US (English - U.S. / Primary)
+  - Tüm dillerde Apple standartlarına uygun, emojilerden arındırılmış, kurşun işaretli (`•`) profesyonel standart şablon uygulandı.
+- **Sürüm Yenilikleri (Release Notes):**
+  - 15 yeni başarım ile Apple Game Center entegrasyonu.
+  - Doğrudan App Store değerlendirme ve puanlama kısayolu.
+  - Genel hata düzeltmeleri, görsel iyileştirmeler ve kararlılık artışı.
+- **Apple Game Center Yetkisi (`TwoPlayerSnake.entitlements`):**
+  - İkili dosyaya `com.apple.developer.game-center: true` yetkisi başarıyla gömüldü; sarı uyarı tamamen kalktı.
+- **iPhone (iOS App & Mobile Safari) 60 FPS Performans Optimizasyonları:**
+  - İç içe blur yükü kaldırıldı, donanım hızlandırmalı sabit neon aura uygulandı, menü geçişlerindeki ghost blur darboğazı çözüldü, yılan başına izole AI BFS önbelleği ve demo polling koruması devrede.
+
+### TestFlight & App Store Release — Build 40 & 41 (v3.3.6, 2026-09-18)
 
 - **Apple Game Center Yetki Dosyası (`TwoPlayerSnake.entitlements`):**
   - App Store Connect uyarısını ve Game Center kimlik doğrulama engelini çözmek için `com.apple.developer.game-center: true` yetkisi içeren `TwoPlayerSnake.entitlements` dosyası projeye eklendi ve `CODE_SIGN_ENTITLEMENTS` tanımlandı.
