@@ -42,6 +42,8 @@ AdMob eslestirme notu (iOS shell - v3.3.5):
 - Apple ID: `6811546748`
 - Canlı App Store URL: `https://apps.apple.com/app/id6811546748`
 - AdMob Mağaza Eşleştirmesi: ✅ Tamamlandı (AdMob > Uygulama Ayarları > App Store `6811546748` başarıyla bağlandı)
+- AdMob Mağaza Doğrulama Durumu: ⏳ **Hazırlanıyor / İnceleme sürüyor** (18 Eylül 2026'da doğrulama gönderildi; 2-3 gün sürecek Google incelemesi bekleniyor).
+- Reklam Birimleri: 2 adet birim (Geçiş ve Ödüllü) etkin olarak tanımlı.
 - app-ads.txt: `https://2playersnake.com/app-ads.txt` kök dizine yüklendi (`google.com, pub-4114535776207741, DIRECT, f08c47fec0942fa0`), AdMob taraması bekleniyor.
 - ads.txt (Web): `https://2playersnake.com/ads.txt` kök dizine yüklendi ve Google AdSense tarafından ONAYLANDI (Hazır, 2026-09-17).
 - ATT İzin Metni: `Bu izin, oyun deneyiminizi geliştirmek ve size uygun kişiselleştirilmiş reklamlar sunmak için kullanılır.`
