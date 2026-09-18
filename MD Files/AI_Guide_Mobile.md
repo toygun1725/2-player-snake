@@ -34,15 +34,13 @@ Bu belge, mobil surum uzerinde calisacak yapay zekalar icin guncel teknik refera
   - **App Store "Bize Puan Verin" Duzeltmesi:**
     - `SKStoreReviewController.requestReview`'un TestFlight'ta tamamen engellenmesi ve yillik 3 gosterim kotasina takilmasi nedeniyle calismayan puanlama butonu duzeltildi.
     - Butona basildiginda dogrudan App Store 5 yildiz ve yorum yazma ekranini acan `itms-apps://itunes.apple.com/app/id6811546748?action=write-review` baglantisi calistirilir.
-  - **iPhone (iOS App & Mobile Safari) Menü ve Demo Yılan Performans Optimizasyonu:**
-    - **İç İçe Blur Yükünün Kaldırılması:** 3x Retina ekranda 60 FPS canvas üzerinde çalışan `.main-menu-actions` üzerindeki gereksiz ikinci `backdrop-filter` kaldırıldı (`backdrop-filter: none`). Butonlar arkadaki kartın cam efekti üzerinde estetiğini %100 korurken GPU bellek okuma/yazma döngüsü %75 azaltıldı.
-    - **Donanım Hızlandırmalı Neon Aura:** Menü kartındaki `animation: borderGlow` sürekli `box-shadow` yeniden boyaması yerine donanım hızlandırmalı sabit neon pembe/turkuaz aura yerleştirildi. Katman geçersiz kılma döngüsü yok edildi.
-    - **Menü Geçişleri Ghost Kartı Optimizasyonu:** Menü geçişlerinde 200 ms içinde silinen hayalet kart (`ghost`) için blur ve animasyon iOS'ta da kapatılarak geçiş sırasındaki 4 katmanlı anlık blur darboğazı ve takılma çözüldü.
-    - **Yılan Başına İzole AI Önbelleği (Safari & App):** `IS_APPLE_DEVICE` (tüm iOS cihazlar) yılan başına bağımsız önbelleğe (`getIosAiCache`) bağlandı. Demo modunda P1 ve P2 birbirinin BFS rotasını ezmez, BFS çalıştırma sıklığı %75 azalır.
-    - **Safari Demo Polling Koruması:** Demo modunda/menüde periyodik 700KB versiyon çekme döngüsü iOS cihazlar için engellenerek Garbage Collection (GC) takılmaları önlendi.
-    - **Android ve PC Güvencesi:** Tüm CSS iyileştirmeleri `@supports (-webkit-touch-callout: none)` ve `html[data-ios-device="true"]` ile izole edildi; Android ve PC masaüstü tarayıcıları kesinlikle etkilenmedi.
+  - **iPhone (iOS App, Mobile Safari & Chrome) Menü ve Demo Yılan 60 FPS Kesin Çözümü:**
+    - **DPR 1.35 Sınırı (Android Eşitliği):** iOS mobil cihazları için de Android WebView ile aynı `dpr = 1.35` sınırı getirildi. Piksel yükü %54 azaltılarak WebKit Metal GPU kompozitör darboğazı çözüldü.
+    - **Orijinal Cyberpunk Blur (6px) Korundu:** `#canvasWrap.paused-blur > canvas` üzerinde `filter: blur(6px)` korundu, ancak `transform: translateZ(0); will-change: filter, transform;` eklenerek Metal üzerinde izole donanım katmanına bağlandı. Arka plan karartması orijinal `rgba(8, 12, 18, 0.20)` değerine çekildi.
+    - **Çifte Blur Engellendi:** Alt menülerdeki (`.banner.padded`) `backdrop-filter` kaldırılarak GPU'nun bulanık canvas'ı tekrar bulanıklaştırması önlendi.
+    - **Menü Geçiş Dondurması:** `menuDemoFreezeUntil` iOS cihazları için de aktif edilerek menü butonlarına tıklandığında geçiş animasyonlarının takılmadan 60 FPS akması sağlandı.
+    - **Kullanıcı Onayı:** Kullanıcı tarafından fiziksel iPhone üzerinde hem web hem canlı App Store uygulaması (Build 42) ile test edildi: *"Kasma geçti süper, tam istediğim gibi oldu."*
   - **Cevrimdisi Senkron:** iOS ve Android `mobile_offline_fallback.html` dosyalari v3.3.6 ile senkronize edildi.
-  - **iOS Build 40:** `Info.plist` ve `project.pbxproj` icinde `MARKETING_VERSION = 3.3.6` ve `CURRENT_PROJECT_VERSION = 40` tanimlandi; Game Center entitlement eklendi.
   - **Dogrulama:** `node --test tests/ios-runtime.test.cjs` 21/21 test ile %100 basarili gecti.
 
 ## Onceki Guncelleme (v3.3.5)

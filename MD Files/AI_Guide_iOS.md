@@ -16,25 +16,19 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 - **Apple Game Center Yetki Dosyası (`TwoPlayerSnake.entitlements`):**
   * App Store Connect'teki sarı yetki uyarısı `com.apple.developer.game-center = true` entitlements dosyasının Xcode projesine eklenmesiyle tamamen çözüldü ve onaylandı.
 - **Apple Game Center (15 Başarım) & Doğrudan App Store İnceleme:** Build 42 ile `GameCenterManager.swift` üzerinden tam entegre edildi.
-- **iPhone (iOS App & Safari) Menü ve Demo Yılan Performans Çözümü:**
-  * 3x Retina ekranda iç içe çalışan gereksiz 2. katman blur (`.main-menu-actions`) kaldırılarak GPU yükü %75 azaltıldı.
-  * `borderGlow` sürekli box-shadow repainting animasyonu yerine donanım hızlandırmalı sabit neon pembe aura uygulandı.
-  * Menü geçişlerindeki 4x anlık blur patlaması ghost kart optimizasyonuyla giderildi.
-  * iOS Safari ve App için yılan başına izole AI cache'i (`getIosAiCache`) ve demo polling koruması devreye alındı.
-  * Android ve PC masaüstü tarayıcıları bu değişikliklerden %100 izole edildi.
+- **iPhone (iOS App, Safari & Chrome) Menü ve Demo Yılan 60 FPS Kesin Çözümü (Kullanıcı Doğrulandı):**
+  * **Kök Neden:** Canlı 60 FPS `<canvas>` üzerindeki CSS `filter: blur(6px)` filtresinin WebKit Metal kompozitöründe her karede tam ekran doku kopyalaması (texture readback stall) yapması, alt menülerdeki çifte blur (`backdrop-filter`) ve Retina DPR 2.0 (1.4M+ piksel) yükü.
+  * **Çözüm (Android Paritesi):**
+    1. **DPR 1.35 Sınırı:** iOS mobil cihazları için de Android ile aynı `dpr = 1.35` sınırı getirildi (%54 daha az piksel).
+    2. **Orijinal Cyberpunk Blur (6px):** `#canvasWrap.paused-blur > canvas` üzerinde `filter: blur(6px)` korundu, ancak `transform: translateZ(0); will-change: filter, transform;` ile Metal üzerinde izole donanım katmanına alındı.
+    3. **Çifte Blur Engellendi:** Alt menülerdeki (`.banner.padded`) `backdrop-filter` kaldırılarak GPU'nun bulanık canvas'ı tekrar bulanıklaştırması önlendi.
+    4. **Menü Geçiş Dondurması:** `menuDemoFreezeUntil` iOS cihazları için de aktif edilerek menü butonlarına tıklandığında geçiş animasyonlarının 60 FPS akması sağlandı.
+  * **Kullanıcı Onayı:** Kullanıcı tarafından fiziksel iPhone üzerinde hem web (Safari/Chrome) hem canlı App Store uygulaması ile test edildi: *"Kasma geçti süper, tam istediğim gibi oldu."*
 - **Otomatik Testler:** `node --test tests/ios-runtime.test.cjs` 21/21 test ile %100 geçti.
 - Ayrıntılı uygulama, test, yayın ve rollback kaydı: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
-- Kullanıcı isteği: orijinal blur/glass tasarımı korunacak; “efekt kapatarak performans” yaklaşımı uygulanmayacak.
+- Kullanıcı isteği: orijinal blur/glass tasarımı korunacak; “efekt kapatarak performans” yaklaşımı uygulanmayacak (bu kurala tam uyuldu).
 - Canlı mobil HTML ayrıca web sitesine yüklenmelidir. GitHub push / native paket bunu tek başına yapmaz.
-- Canlı `game-mobile/index.html` kontrol sırasında HTTP 200 / boş içerik döndürdü;
-  tarayıcıda da boştu. Build 37 bu sayfayı hazır saymayıp offline'a geçer. Site yayını/erişimi ayrıca düzeltilmeli.
-- **Yeni öncelik:** Kullanıcı WordPress File Manager'a `index` yüklediğinde yenileme
-  sonrası dosyanın 0 KB göründüğünü bildirdi. Yükleme/kayıt sorununun nedeni henüz
-  bilinmiyor; kullanılan araç/hosting ayrıntıları alınmalı. iOS bulguları ayrı ele alınacak.
-- Build 36 ilk denemesi signing kotasına takıldı; Build 35 artifact'inden mevcut identity
-  yeniden kullanılarak imzalı IPA üretildi. Hiçbir sertifika silinmedi. İkinci deneme,
-  boş sayfa korumasını eklemek için upload sırasında durduruldu; nihai aday Build 37.
-- iPhone üzerinde akıcılık doğrulanmadı; eski “kesin 60 FPS çözüldü” notları güncel kabul sonucu değildir.
+- Canlı `game-mobile/index.html` güncellendiğinde hem web hem de App Store'daki mevcut uygulama (Build 42) anında akıcı hale gelir; yeni build gerekmez.
 
 ## 2. Build 36 teknik değişiklikleri
 

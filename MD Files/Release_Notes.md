@@ -43,12 +43,12 @@
   - Genel hata düzeltmeleri, görsel iyileştirmeler ve kararlılık artışı.
 - **Apple Game Center Yetkisi (`TwoPlayerSnake.entitlements`):**
   - İkili dosyaya `com.apple.developer.game-center: true` yetkisi başarıyla gömüldü; sarı uyarı tamamen kalktı.
-- **iPhone (iOS App, Safari & Chrome) 60 FPS GPU Kompozitör Optimizasyonu:**
-  - Canlı 60 FPS `<canvas>` üzerindeki CSS `filter: blur(6px)` WebKit Metal texture readback darboğazı `filter: none !important` yapılarak tamamen kaldırıldı.
-  - Menü arkasındaki derinlik hissi OLED ekranlar için optimize edilmiş `rgba(8, 14, 24, 0.46)` karartma katmanıyla korundu.
-  - Alt menülerdeki çifte blur (`backdrop-filter`) kaldırılarak yüksek kontrastlı cyberpunk degrade cam paneller uygulandı.
-  - Logo arkasındaki `filter: blur(14px)` ve 3 katmanlı `drop-shadow` tekil optimize gölgeye çekildi.
-  - Menü geçişlerinde demo çizimini donduran `menuDemoFreezeUntil` mekanizması iOS cihazları için de devreye alındı. Bu sayede menü butonlarına basıldığında geçiş animasyonları takılmadan 60 FPS akar.
+- **iPhone (iOS App, Safari & Chrome) 60 FPS GPU Kompozitör & Blur Optimizasyonu:**
+  - **DPR 1.35 Sınırı:** iOS mobil cihazlar için Android WebView ile aynı `dpr = 1.35` sınırı uygulanarak piksel işleme yükü %54 azaltıldı.
+  - **Orijinal Cyberpunk Blur (6px) Korundu:** Arka plan demo canvas'ındaki `filter: blur(6px)` korundu; `transform: translateZ(0); will-change: filter, transform;` ile Metal üzerinde izole donanım katmanına bağlandı. Orijinal `rgba(8, 12, 18, 0.20)` atmosferik karartması geri getirildi.
+  - **Çifte Blur Engellendi:** Alt menülerdeki (`.banner.padded`) `backdrop-filter` kaldırılarak GPU'nun bulanık canvas'ı tekrar bulanıklaştırması önlendi.
+  - **Menü Geçiş Dondurması:** `menuDemoFreezeUntil` iOS cihazları için de devreye alındı; menü butonlarına basıldığında geçiş animasyonları 60 FPS akar.
+  - **Kullanıcı Onayı:** Kullanıcı tarafından fiziksel iPhone üzerinde test edildi ve tam akıcılıkla onaylandı.
 
 ### TestFlight & App Store Release — Build 40 & 41 (v3.3.6, 2026-09-18)
 
