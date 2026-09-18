@@ -7,9 +7,9 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 ## 1. Güncel devir notu — Build 42 (v3.3.6, 2026-09-18)
 
 - Marketing version: `3.3.6`; son native build `42`, HTML runtime revision `36`.
-- **⏳ App Store Sürüm Gönderimi (Waiting for Review):**
-  * Uygulama **v3.3.6 (Build 42)** 18 Eylül 2026 saat 18:32'de resmi olarak Apple App Store incelemesine sunuldu (Submission ID: `6fab8c78-d9b9-493e-a651-db3ccf0338ad`).
-  * **26 Dilde Eksiksiz Yerelleştirme:** App Store Connect mağaza listelemesi 26 dilde (Türkçe, İspanyolca, Almanca, Fransızca, İtalyanca, Portekizce, Rusça, Felemenkçe, Lehçe, Arapça, Çince, Japonca, Korece, Hintçe, Endonezce, Tayca, Vietnamca, İbranice, İngilizce UK, Çekçe, Danca, Fince, Yunanca, Macarca, İsveççe, İngilizce US) Apple standartlarına uygun emojilerden arındırılmış temiz kurşun işaretli (`•`) şablonla girildi.
+- **🎉 App Store Canlı Yayında (Ready for Distribution - 2026-09-18):**
+  * Uygulama **v3.3.6 (Build 42)** gönderildikten sadece 2.5 saat sonra Apple tarafından resmi olarak **ONAYLANDI ve DÜNYA GENELİNDE YAYINA GİRDİ (Ready for Distribution)**!
+  * **26 Dilde Eksiksiz Yerelleştirme:** App Store Connect mağaza listelemesi 26 dilde (Türkçe, İspanyolca, Almanca, Fransızca, İtalyanca, Portekizce, Rusça, Felemenkçe, Lehçe, Arapça, Çince, Japonca, Korece, Hintçe, Endonezce, Tayca, Vietnamca, İbranice, İngilizce UK, Çekçe, Danca, Fince, Yunanca, Macarca, İsveççe, İngilizce US) Apple standartlarına uygun emojilerden arındırılmış temiz kurşun işaretli (`•`) şablonla onaylandı.
   * **Resmi App Store URL:** `https://apps.apple.com/app/id6811546748` (Apple ID: `6811546748`, Paket: `com.twoplayersnake.app`)
   * **AdMob Mağaza Eşleştirmesi:** AdMob paneline `6811546748` Apple ID ile bağlandı.
   * **ads.txt & app-ads.txt:** `https://2playersnake.com/ads.txt` ve `/app-ads.txt` kök dizine yüklendi. AdSense tarafından `Hazır` olarak anında algılandı; AdMob app-ads.txt taraması bekleniyor.

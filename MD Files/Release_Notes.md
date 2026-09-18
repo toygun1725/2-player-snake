@@ -2,10 +2,10 @@
 
 ## iOS App Store & TestFlight Release Notes
 
-### App Store Submission — Build 42 (v3.3.6, 2026-09-18)
+### App Store Release — Build 42 (v3.3.6, 2026-09-18)
 
-- **Durum:** **İnceleme Bekliyor (Waiting for Review)** ⏳
-- **Gönderim Tarihi:** 18 Eylül 2026, 18:32 (TSI)
+- **Durum:** **🎉 APPLE TARAFINDAN ONAYLANDI & YAYINDA (Ready for Distribution)** 🟢
+- **Onay Tarihi:** 18 Eylül 2026, 21:28 (TSI) *(Gönderimden sadece 2.5 saat sonra rekor hızla onaylandı!)*
 - **Submission ID:** `6fab8c78-d9b9-493e-a651-db3ccf0338ad`
 - **Uygulama Sürümü:** `3.3.6 (42)` (`CFBundleShortVersionString = 3.3.6`, `CFBundleVersion = 42`)
 - **App Store Küresel Yerelleştirme (26+ Dil):**
