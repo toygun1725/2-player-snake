@@ -143,6 +143,13 @@ platform :ios do
         UI.important("increment_build_number uyarısı (#{ex.message}), xcargs ile devam ediliyor.")
       end
 
+      plist_path = File.expand_path("../TwoPlayerSnake/Info.plist", __dir__)
+      if File.exist?(plist_path)
+        set_info_plist_value(path: plist_path, key: "CFBundleShortVersionString", value: version_num) rescue nil
+        set_info_plist_value(path: plist_path, key: "CFBundleVersion", value: build_num) rescue nil
+        UI.success("Info.plist güncellendi: Version=#{version_num}, Build=#{build_num}")
+      end
+
       # 6. Kod İmzalama Ayarlarını Güncelle
       profile_name = lane_context[SharedValues::SIGH_NAME] || ENV["sigh_com.twoplayersnake.app_app-store_profile-name"] || "com.twoplayersnake.app AppStore"
       UI.message("Kullanılacak Dağıtım Profili: #{profile_name}")
@@ -196,7 +203,7 @@ platform :ios do
         export_method: "app-store",
         export_options: export_opts,
         codesigning_identity: "Apple Distribution",
-        xcargs: "CURRENT_PROJECT_VERSION=#{build_num}"
+        xcargs: "CURRENT_PROJECT_VERSION=#{build_num} MARKETING_VERSION=#{version_num}"
       }
 
       if File.exist?(workspace_path)
