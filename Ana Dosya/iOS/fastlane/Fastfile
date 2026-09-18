@@ -220,9 +220,14 @@ platform :ios do
       UI.success("2 Player Snake basariyla TestFlight'a yuklendi!")
 
       # 9. App Store Metadata + Ekran Goruntuleri Yukle (deliver)
-      fastlane_dir = File.expand_path("../..", __FILE__)
-      meta_path    = File.join(fastlane_dir, "fastlane", "metadata")
-      shots_path   = File.join(fastlane_dir, "fastlane", "screenshots")
+      # Dir.pwd = git checkout kozu (github actions workspace)
+      repo_root  = Dir.pwd
+      meta_path  = File.join(repo_root, "Ana Dosya", "iOS", "fastlane", "metadata")
+      shots_path = File.join(repo_root, "Ana Dosya", "iOS", "fastlane", "screenshots")
+      UI.message("Metadata path: #{meta_path}")
+      UI.message("Screenshots path: #{shots_path}")
+      UI.message("Metadata exists: #{Dir.exist?(meta_path)}")
+      UI.message("Screenshots exists: #{Dir.exist?(shots_path)}")
 
       if Dir.exist?(meta_path) || Dir.exist?(shots_path)
         UI.message("App Store metadata ve ekran goruntuleri yukleniyor...")
@@ -237,14 +242,16 @@ platform :ios do
             submit_for_review: false,
             screenshots_path: shots_path,
             metadata_path: meta_path,
-            languages: Dir.glob("#{meta_path}/*").select { |f| File.directory?(f) }.map { |f| File.basename(f) },
             force: true,
             precheck_include_in_app_purchases: false
           )
           UI.success("App Store metadata ve ekran goruntuleri yuklendi!")
         rescue => ex
-          UI.important("App Store metadata yukleme uyarisi (#{ex.message}) — devam ediliyor.")
+          UI.important("App Store metadata yukleme uyarisi: #{ex.message}")
+          UI.important(ex.backtrace.first(5).join("\n"))
         end
+      else
+        UI.important("Metadata/screenshots klasoru bulunamadi, deliver atlandi.")
       end
     else
       UI.user_error!("TwoPlayerSnake.xcodeproj bulunamadı! Lütfen proje yolunu kontrol edin: #{proj_path}")
