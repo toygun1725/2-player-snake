@@ -43,8 +43,12 @@
   - Genel hata düzeltmeleri, görsel iyileştirmeler ve kararlılık artışı.
 - **Apple Game Center Yetkisi (`TwoPlayerSnake.entitlements`):**
   - İkili dosyaya `com.apple.developer.game-center: true` yetkisi başarıyla gömüldü; sarı uyarı tamamen kalktı.
-- **iPhone (iOS App & Mobile Safari) 60 FPS Performans Optimizasyonları:**
-  - İç içe blur yükü kaldırıldı, donanım hızlandırmalı sabit neon aura uygulandı, menü geçişlerindeki ghost blur darboğazı çözüldü, yılan başına izole AI BFS önbelleği ve demo polling koruması devrede.
+- **iPhone (iOS App, Safari & Chrome) 60 FPS GPU Kompozitör Optimizasyonu:**
+  - Canlı 60 FPS `<canvas>` üzerindeki CSS `filter: blur(6px)` WebKit Metal texture readback darboğazı `filter: none !important` yapılarak tamamen kaldırıldı.
+  - Menü arkasındaki derinlik hissi OLED ekranlar için optimize edilmiş `rgba(8, 14, 24, 0.46)` karartma katmanıyla korundu.
+  - Alt menülerdeki çifte blur (`backdrop-filter`) kaldırılarak yüksek kontrastlı cyberpunk degrade cam paneller uygulandı.
+  - Logo arkasındaki `filter: blur(14px)` ve 3 katmanlı `drop-shadow` tekil optimize gölgeye çekildi.
+  - Menü geçişlerinde demo çizimini donduran `menuDemoFreezeUntil` mekanizması iOS cihazları için de devreye alındı. Bu sayede menü butonlarına basıldığında geçiş animasyonları takılmadan 60 FPS akar.
 
 ### TestFlight & App Store Release — Build 40 & 41 (v3.3.6, 2026-09-18)
 

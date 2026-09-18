@@ -677,15 +677,25 @@
             animation: none;
         }
 
-        /* iOS (WKWebView & Safari): Eliminate nested backdrop-filter over 60fps retina canvas
+        /* iOS (WKWebView & Safari): Eliminate live canvas blur and nested backdrop-filter over retina canvas,
            and disable continuous box-shadow repaint animation while preserving rich cyberpunk glass aesthetic. */
         @supports (-webkit-touch-callout: none) {
+            #canvasWrap.paused-blur > canvas {
+                filter: none !important;
+                -webkit-filter: none !important;
+            }
+            #canvasWrap.paused-blur::after {
+                background: rgba(8, 14, 24, 0.46) !important;
+            }
+            html[data-theme="light"] #canvasWrap.paused-blur::after {
+                background: rgba(255, 255, 255, 0.55) !important;
+            }
             .banner.padded {
-                background: linear-gradient(180deg, rgba(13, 22, 36, 0.78), rgba(10, 17, 29, 0.82)) !important;
-                backdrop-filter: blur(8px) !important;
-                -webkit-backdrop-filter: blur(8px) !important;
+                background: linear-gradient(180deg, rgba(13, 22, 36, 0.94), rgba(10, 17, 29, 0.96)) !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
                 animation: none !important;
-                box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), 0 0 12px rgba(255, 79, 191, 0.35) !important;
+                box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 12px rgba(255, 79, 191, 0.35) !important;
             }
             .main-menu-actions {
                 backdrop-filter: none !important;
@@ -694,6 +704,14 @@
                 border-color: #ff4fbf !important;
                 box-shadow: 0 14px 36px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 10px rgba(255, 79, 191, 0.32) !important;
             }
+            .main-menu-logo-wrap::before {
+                filter: none !important;
+                -webkit-filter: none !important;
+            }
+            .main-menu-logo {
+                filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.40)) !important;
+                -webkit-filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.40)) !important;
+            }
             .android-menu-transition-ghost.banner.padded,
             .android-menu-transition-ghost .main-menu-actions {
                 backdrop-filter: none !important;
@@ -701,20 +719,30 @@
                 animation: none !important;
             }
             html[data-theme="light"] .banner.padded {
-                background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(248, 250, 252, 0.85)) !important;
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95)) !important;
                 box-shadow: 0 14px 40px rgba(15, 23, 42, 0.12), 0 0 10px rgba(255, 79, 191, 0.2) !important;
             }
             html[data-theme="light"] .main-menu-actions {
-                background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(248, 250, 252, 0.82)) !important;
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.90)) !important;
                 box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 0 8px rgba(255, 79, 191, 0.2) !important;
             }
         }
+        html[data-ios-device="true"] #canvasWrap.paused-blur > canvas {
+            filter: none !important;
+            -webkit-filter: none !important;
+        }
+        html[data-ios-device="true"] #canvasWrap.paused-blur::after {
+            background: rgba(8, 14, 24, 0.46) !important;
+        }
+        html[data-ios-device="true"][data-theme="light"] #canvasWrap.paused-blur::after {
+            background: rgba(255, 255, 255, 0.55) !important;
+        }
         html[data-ios-device="true"] .banner.padded {
-            background: linear-gradient(180deg, rgba(13, 22, 36, 0.78), rgba(10, 17, 29, 0.82)) !important;
-            backdrop-filter: blur(8px) !important;
-            -webkit-backdrop-filter: blur(8px) !important;
+            background: linear-gradient(180deg, rgba(13, 22, 36, 0.94), rgba(10, 17, 29, 0.96)) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
             animation: none !important;
-            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), 0 0 12px rgba(255, 79, 191, 0.35) !important;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 12px rgba(255, 79, 191, 0.35) !important;
         }
         html[data-ios-device="true"] .main-menu-actions {
             backdrop-filter: none !important;
@@ -723,6 +751,14 @@
             border-color: #ff4fbf !important;
             box-shadow: 0 14px 36px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 10px rgba(255, 79, 191, 0.32) !important;
         }
+        html[data-ios-device="true"] .main-menu-logo-wrap::before {
+            filter: none !important;
+            -webkit-filter: none !important;
+        }
+        html[data-ios-device="true"] .main-menu-logo {
+            filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.40)) !important;
+            -webkit-filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.40)) !important;
+        }
         html[data-ios-device="true"] .android-menu-transition-ghost.banner.padded,
         html[data-ios-device="true"] .android-menu-transition-ghost .main-menu-actions {
             backdrop-filter: none !important;
@@ -730,11 +766,11 @@
             animation: none !important;
         }
         html[data-ios-device="true"][data-theme="light"] .banner.padded {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(248, 250, 252, 0.85)) !important;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95)) !important;
             box-shadow: 0 14px 40px rgba(15, 23, 42, 0.12), 0 0 10px rgba(255, 79, 191, 0.2) !important;
         }
         html[data-ios-device="true"][data-theme="light"] .main-menu-actions {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(248, 250, 252, 0.82)) !important;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.90)) !important;
             box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 0 8px rgba(255, 79, 191, 0.2) !important;
         }
 
@@ -6318,8 +6354,8 @@
 
             function transitionToMenu(openFn, direction = 'forward') {
                 // Keep the last rendered demo frame during the swap. Gameplay is never
-                // frozen: this only applies while the Android WebView is showing its menu demo.
-                if (window.isAndroidWebView && !IS_IOS_SHELL) {
+                // frozen: this only applies while the mobile menu is showing its demo background.
+                if (window.isAndroidWebView || IS_IOS_SHELL || (typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE)) {
                     menuDemoFreezeUntil = performance.now() + BANNER_SWAP_MS + 40;
                 }
                 pendingBannerTransition = direction;
@@ -11898,7 +11934,8 @@ function renderWinAnim() {
                 recordIosFrame(time, delta);
                 if (delta > 60) delta = 60; // Lag veya menü geçişlerinde yılanın ışınlanmasını (jump) önler
 
-                if (window.isAndroidWebView && !IS_IOS_SHELL && isDemoMode && time < menuDemoFreezeUntil) {
+                const isMenuDemoFreezeTarget = window.isAndroidWebView || IS_IOS_SHELL || (typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE);
+                if (isMenuDemoFreezeTarget && isDemoMode && time < menuDemoFreezeUntil) {
                     requestAnimationFrame(step);
                     return;
                 }

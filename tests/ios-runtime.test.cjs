@@ -122,7 +122,7 @@ for (const file of files) {
     const c = { IS_IOS_SHELL: true, window: {}, Date: { now() { throw Error('unexpected version check'); } } };
     vm.createContext(c); vm.runInContext(a + b, c);
     await c.checkForFreshVersion(true); c.scheduleVersionCheck(true);
-    assert.match(html, /window\.isAndroidWebView && !IS_IOS_SHELL && isDemoMode/);
+    assert.match(html, /isMenuDemoFreezeTarget\s*&&\s*isDemoMode/);
     assert.match(html, /iosAiCaches = new WeakMap\(\);\s*_aiCache.foodX/);
   });
   test(`${file}: alternating snakes retain independent cached paths`, () => {
@@ -151,6 +151,7 @@ for (const file of files) {
   });
   test(`${file}: iOS CSS rules contain hardware-accelerated scoped blur and shadow optimizations`, () => {
     assert.match(html, /@supports \(-webkit-touch-callout:\s*none\)/);
+    assert.match(html, /html\[data-ios-device="true"\]\s*#canvasWrap\.paused-blur > canvas/);
     assert.match(html, /html\[data-ios-device="true"\]\s*\.banner\.padded/);
     assert.match(html, /html\[data-ios-device="true"\]\s*\.main-menu-actions/);
     assert.match(html, /html\[data-ios-device="true"\]\s*\.android-menu-transition-ghost/);
