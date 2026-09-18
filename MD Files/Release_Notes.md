@@ -2,8 +2,10 @@
 
 ## iOS App Store & TestFlight Release Notes
 
-### TestFlight & App Store Release — Build 39 (v3.3.6, 2026-09-18)
+### TestFlight & App Store Release — Build 40 (v3.3.6, 2026-09-18)
 
+- **Apple Game Center Yetki Dosyası (`TwoPlayerSnake.entitlements`):**
+  - App Store Connect uyarısını ve Game Center kimlik doğrulama engelini çözmek için `com.apple.developer.game-center: true` yetkisi içeren `TwoPlayerSnake.entitlements` dosyası projeye eklendi ve `CODE_SIGN_ENTITLEMENTS` tanımlandı.
 - **Apple Game Center Entegrasyonu (`GameKit` / `GameCenterManager.swift`):**
   - Android Play Games'teki 15 başarımın tamamı (`ACH_FIRST_FOOD` - `ACH_ADVENTURE_COMPLETE`) Apple Game Center'a bağlandı.
   - Uygulama açılışında `GKLocalPlayer.local.authenticateHandler` ile Game Center oturumu otomatik doğrulanır.
@@ -15,8 +17,8 @@
 - **Patreon Destek Sisteminin Kaldırılması:**
   - Oyunun tüm HTML ve offline dosyalarındaki Patreon bağlantıları ve CSS'leri 21 dilde temizlendi.
 - **Proje Meta Verileri & Sürüm Yükseltme:**
-  - `Info.plist`: `CFBundleShortVersionString = 3.3.6`, `CFBundleVersion = 39`.
-  - `project.pbxproj`: `MARKETING_VERSION = 3.3.6`, `CURRENT_PROJECT_VERSION = 39`, `GameCenterManager.swift` ve `GameKit.framework` kaynaklara eklendi.
+  - `Info.plist`: `CFBundleShortVersionString = 3.3.6`, `CFBundleVersion = 40`.
+  - `project.pbxproj`: `MARKETING_VERSION = 3.3.6`, `CURRENT_PROJECT_VERSION = 40`, `TwoPlayerSnake.entitlements`, `GameCenterManager.swift` ve `GameKit.framework` kaynaklara eklendi.
   - `mobile_offline_fallback.html`: v3.3.6 sürümüyle senkronize edildi.
 - **iPhone (iOS App & Mobile Safari) Menü ve Demo Yılan Performans Devrimi:**
   - **İç İçe Blur Yükünün Kaldırılması:** 3x Retina ekranda 60 FPS canvas üzerinde çalışan `.main-menu-actions` üzerindeki gereksiz ikinci `backdrop-filter` kaldırıldı (`backdrop-filter: none`). Butonlar arkadaki kartın cam efekti üzerinde estetiğini %100 korurken GPU bellek okuma/yazma döngüsü %75 azaltıldı.

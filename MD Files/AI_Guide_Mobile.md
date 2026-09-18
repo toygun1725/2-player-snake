@@ -11,19 +11,21 @@ Bu belge, mobil surum uzerinde calisacak yapay zekalar icin guncel teknik refera
 > Web yayını henüz yapılmadı; Git push siteyi güncellemez.
 > Ayrıntılar: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
 
-- Aktif referans surum: `v3.3.6` (iOS: Build 39)
+- Aktif referans surum: `v3.3.6` (iOS: Build 40)
 - Temel referans dosya: `2 Player Snake Mobile v3.3.6.html`
 - Kaynak/yayin durumu: v3.3.6 mobil ve PC kaynak dosyalari olusturuldu. Patreon destek sistemi oyun kodlarindan tamamen cikarildi.
 - Android durumu: Android cevrimdisi fallback `mobile_offline_fallback.html` v3.3.6 ile esitlendi.
-- iOS durumu: iOS Build 39 hazirlandi; Game Center (15 basarim), App Store doğrudan puanlama modal baglantisi, iPhone menü ve demo yılan donanım hızlandırma optimizasyonu, v3.3.6 cevrimdisi fallback ve Xcode pbxproj guncellendi.
+- iOS durumu: iOS Build 40 hazirlandi; Game Center yetki dosyasi (`TwoPlayerSnake.entitlements`), Game Center (15 basarim), App Store doğrudan puanlama modal baglantisi, iPhone menü ve demo yılan donanım hızlandırma optimizasyonu, v3.3.6 cevrimdisi fallback ve Xcode pbxproj guncellendi.
 - Dosya yapisi: her sey tek HTML dosyasindadir; CSS veya JS ayirma yapilmaz.
 - Tasarim dili: koyu cyberpunk zemin, neon pembe ve turkuaz glow, camimsi panel dili, mobil odakli dar yerlesim.
 - Ana menu logosu web uzerindeki guncel logo kaynagini kullanir; gerekirse yerel fallback ile calisir.
 
-## Son Guncelleme (v3.3.6 - iOS Build 39)
-- **v3.3.6**: Patreon Destek Sisteminin Kaldirilmasi, Apple Game Center ve App Store Puanlama Entegrasyonu, iPhone Menü & Demo Yılan Performans Devrimi.
+## Son Guncelleme (v3.3.6 - iOS Build 40)
+- **v3.3.6**: Patreon Destek Sisteminin Kaldirilmasi, Apple Game Center ve App Store Puanlama Entegrasyonu, Game Center Yetki Dosyasi (`TwoPlayerSnake.entitlements`), iPhone Menü & Demo Yılan Performans Devrimi.
   - **Patreon Kaldirildi:** Ayarlar > Gelistiriciler (Developers) modalinda yer alan Patreon bagis ve destek bolumu 21 dilde tamamen temizlendi.
   - **CSS Temizligi:** `.btn-patreon`, `.btn-patreon i`, `.btn-patreon:active` stilleri ve ilgili buton secicileri kaldirildi.
+  - **Apple Game Center Yetki Dosyası (`TwoPlayerSnake.entitlements`):**
+    - App Store Connect'teki `To enable Game Center for your app, you must add the com.apple.developer.game-center entitlement in Xcode` uyarısını gidermek ve fiziksel cihazlarda Game Center oturumunu aktif etmek için `TwoPlayerSnake.entitlements` dosyası eklendi ve `CODE_SIGN_ENTITLEMENTS` tanımlandı.
   - **Apple Game Center Entegrasyonu (`GameKit` / `GameCenterManager.swift`):**
     - Android Play Games'teki 15 basarim (`ACH_FIRST_FOOD` - `ACH_ADVENTURE_COMPLETE`) birebir iOS Game Center'a entegre edildi.
     - Acilista `GKLocalPlayer.local.authenticateHandler` ile kullanici otomatik dogrulanir.
@@ -40,7 +42,7 @@ Bu belge, mobil surum uzerinde calisacak yapay zekalar icin guncel teknik refera
     - **Safari Demo Polling Koruması:** Demo modunda/menüde periyodik 700KB versiyon çekme döngüsü iOS cihazlar için engellenerek Garbage Collection (GC) takılmaları önlendi.
     - **Android ve PC Güvencesi:** Tüm CSS iyileştirmeleri `@supports (-webkit-touch-callout: none)` ve `html[data-ios-device="true"]` ile izole edildi; Android ve PC masaüstü tarayıcıları kesinlikle etkilenmedi.
   - **Cevrimdisi Senkron:** iOS ve Android `mobile_offline_fallback.html` dosyalari v3.3.6 ile senkronize edildi.
-  - **iOS Build 39:** `Info.plist` ve `project.pbxproj` icinde `MARKETING_VERSION = 3.3.6` ve `CURRENT_PROJECT_VERSION = 39` tanimlandi.
+  - **iOS Build 40:** `Info.plist` ve `project.pbxproj` icinde `MARKETING_VERSION = 3.3.6` ve `CURRENT_PROJECT_VERSION = 40` tanimlandi; Game Center entitlement eklendi.
   - **Dogrulama:** `node --test tests/ios-runtime.test.cjs` 21/21 test ile %100 basarili gecti.
 
 ## Onceki Guncelleme (v3.3.5)
