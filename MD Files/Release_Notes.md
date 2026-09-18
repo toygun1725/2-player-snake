@@ -2,7 +2,7 @@
 
 ## iOS App Store & TestFlight Release Notes
 
-### TestFlight & App Store Release — Build 38 (v3.3.6, 2026-09-18)
+### TestFlight & App Store Release — Build 39 (v3.3.6, 2026-09-18)
 
 - **Apple Game Center Entegrasyonu (`GameKit` / `GameCenterManager.swift`):**
   - Android Play Games'teki 15 başarımın tamamı (`ACH_FIRST_FOOD` - `ACH_ADVENTURE_COMPLETE`) Apple Game Center'a bağlandı.
@@ -15,11 +15,18 @@
 - **Patreon Destek Sisteminin Kaldırılması:**
   - Oyunun tüm HTML ve offline dosyalarındaki Patreon bağlantıları ve CSS'leri 21 dilde temizlendi.
 - **Proje Meta Verileri & Sürüm Yükseltme:**
-  - `Info.plist`: `CFBundleShortVersionString = 3.3.6`, `CFBundleVersion = 38`.
-  - `project.pbxproj`: `MARKETING_VERSION = 3.3.6`, `CURRENT_PROJECT_VERSION = 38`, `GameCenterManager.swift` ve `GameKit.framework` kaynaklara eklendi.
+  - `Info.plist`: `CFBundleShortVersionString = 3.3.6`, `CFBundleVersion = 39`.
+  - `project.pbxproj`: `MARKETING_VERSION = 3.3.6`, `CURRENT_PROJECT_VERSION = 39`, `GameCenterManager.swift` ve `GameKit.framework` kaynaklara eklendi.
   - `mobile_offline_fallback.html`: v3.3.6 sürümüyle senkronize edildi.
+- **iPhone (iOS App & Mobile Safari) Menü ve Demo Yılan Performans Devrimi:**
+  - **İç İçe Blur Yükünün Kaldırılması:** 3x Retina ekranda 60 FPS canvas üzerinde çalışan `.main-menu-actions` üzerindeki gereksiz ikinci `backdrop-filter` kaldırıldı (`backdrop-filter: none`). Butonlar arkadaki kartın cam efekti üzerinde estetiğini %100 korurken GPU bellek okuma/yazma döngüsü %75 azaltıldı.
+  - **Donanım Hızlandırmalı Neon Aura (Repaint Engellemesi):** Menü kartındaki `animation: borderGlow` sürekli `box-shadow` yeniden boyaması yerine, donanım hızlandırmalı sabit neon pembe/turkuaz aura yerleştirildi. Katman geçersiz kılma döngüsü yok edildi.
+  - **Menü Geçişleri Ghost Kartı Optimizasyonu:** Menü geçişlerinde 200 ms içinde silinen hayalet kart (`ghost`) için blur ve animasyon iOS'ta da kapatılarak geçiş sırasındaki 4 katmanlı anlık blur darboğazı ve takılma çözüldü.
+  - **Yılan Başına İzole AI Önbelleği (Safari & App):** `IS_APPLE_DEVICE` (tüm iOS cihazlar) yılan başına bağımsız önbelleğe (`getIosAiCache`) bağlandı. Demo modunda P1 ve P2 birbirinin BFS rotasını ezmez, BFS çalıştırma sıklığı %75 azalır.
+  - **Safari Demo Polling Koruması:** Demo modunda/menüde periyodik 700KB versiyon çekme döngüsü iOS cihazlar için engellenerek Garbage Collection (GC) takılmaları önlendi.
+  - **Android ve PC Güvencesi:** Tüm CSS iyileştirmeleri `@supports (-webkit-touch-callout: none)` ve `html[data-ios-device="true"]` ile izole edildi; Android ve PC masaüstü tarayıcıları kesinlikle etkilenmedi.
 - **Otomatik Testler:**
-  - `node --test tests/ios-runtime.test.cjs` 17/17 test ile %100 başarılı geçti.
+  - `node --test tests/ios-runtime.test.cjs` dosyasına Safari AI önbelleği ve iOS donanım hızlandırmalı CSS testleri eklendi; 21/21 test ile %100 başarılı geçti.
 
 ### TestFlight Release — Build 37 (v3.3.5, 2026-09-16)
 

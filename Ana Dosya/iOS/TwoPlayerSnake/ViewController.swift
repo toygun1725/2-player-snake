@@ -404,8 +404,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         let queryItems = [
             URLQueryItem(name: "app", value: "android"),
             URLQueryItem(name: "app_platform", value: "ios"),
-            URLQueryItem(name: "app_ver", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.3.5"),
-            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "37"),
+            URLQueryItem(name: "app_ver", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.3.6"),
+            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "39"),
             URLQueryItem(name: "app_device", value: "mobile")
         ]
 

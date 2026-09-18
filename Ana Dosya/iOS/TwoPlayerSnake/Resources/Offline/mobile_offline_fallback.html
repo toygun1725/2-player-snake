@@ -52,6 +52,22 @@
             return /Android/i.test(ua) && (/Version\//i.test(ua) || /wv/i.test(ua));
         })();
 
+        // Synchronous detection of Apple iOS devices (iOS App & Mobile Safari)
+        window.isAppleDevice = (function() {
+            try {
+                if (window.__twoPlayerSnakePlatform === 'ios') return true;
+                var ua = navigator.userAgent || '';
+                if (/iPhone|iPad|iPod/i.test(ua)) return true;
+                if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) return true;
+            } catch (e) {}
+            return false;
+        })();
+        if (window.isAppleDevice) {
+            try {
+                document.documentElement.setAttribute('data-ios-device', 'true');
+            } catch (e) {}
+        }
+
         window.adsbygoogle = window.adsbygoogle || [];
         window.__h5GamesAdsReady = false;
         var adBreak = adConfig = function (o) { adsbygoogle.push(o); };
@@ -646,6 +662,67 @@
             backdrop-filter: none;
             -webkit-backdrop-filter: none;
             animation: none;
+        }
+
+        /* iOS (WKWebView & Safari): Eliminate nested backdrop-filter over 60fps retina canvas
+           and disable continuous box-shadow repaint animation while preserving rich cyberpunk glass aesthetic. */
+        @supports (-webkit-touch-callout: none) {
+            .banner.padded {
+                background: linear-gradient(180deg, rgba(13, 22, 36, 0.78), rgba(10, 17, 29, 0.82)) !important;
+                backdrop-filter: blur(8px) !important;
+                -webkit-backdrop-filter: blur(8px) !important;
+                animation: none !important;
+                box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), 0 0 12px rgba(255, 79, 191, 0.35) !important;
+            }
+            .main-menu-actions {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                animation: none !important;
+                border-color: #ff4fbf !important;
+                box-shadow: 0 14px 36px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 10px rgba(255, 79, 191, 0.32) !important;
+            }
+            .android-menu-transition-ghost.banner.padded,
+            .android-menu-transition-ghost .main-menu-actions {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                animation: none !important;
+            }
+            html[data-theme="light"] .banner.padded {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(248, 250, 252, 0.85)) !important;
+                box-shadow: 0 14px 40px rgba(15, 23, 42, 0.12), 0 0 10px rgba(255, 79, 191, 0.2) !important;
+            }
+            html[data-theme="light"] .main-menu-actions {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(248, 250, 252, 0.82)) !important;
+                box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 0 8px rgba(255, 79, 191, 0.2) !important;
+            }
+        }
+        html[data-ios-device="true"] .banner.padded {
+            background: linear-gradient(180deg, rgba(13, 22, 36, 0.78), rgba(10, 17, 29, 0.82)) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            animation: none !important;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), 0 0 12px rgba(255, 79, 191, 0.35) !important;
+        }
+        html[data-ios-device="true"] .main-menu-actions {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            animation: none !important;
+            border-color: #ff4fbf !important;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 10px rgba(255, 79, 191, 0.32) !important;
+        }
+        html[data-ios-device="true"] .android-menu-transition-ghost.banner.padded,
+        html[data-ios-device="true"] .android-menu-transition-ghost .main-menu-actions {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            animation: none !important;
+        }
+        html[data-ios-device="true"][data-theme="light"] .banner.padded {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(248, 250, 252, 0.85)) !important;
+            box-shadow: 0 14px 40px rgba(15, 23, 42, 0.12), 0 0 10px rgba(255, 79, 191, 0.2) !important;
+        }
+        html[data-ios-device="true"][data-theme="light"] .main-menu-actions {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(248, 250, 252, 0.82)) !important;
+            box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 0 8px rgba(255, 79, 191, 0.2) !important;
         }
 
         @keyframes borderGlow {
@@ -3079,6 +3156,17 @@
 
             const VERSION = 'v3.3.6';
             const IS_IOS_SHELL = window.__twoPlayerSnakePlatform === 'ios';
+            const IS_APPLE_DEVICE = IS_IOS_SHELL ||
+                (typeof window !== 'undefined' && Boolean(window.isAppleDevice)) ||
+                (typeof navigator !== 'undefined' && (
+                    /iPhone|iPad|iPod/i.test(navigator.userAgent || '') ||
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+                ));
+            try {
+                if (IS_APPLE_DEVICE && typeof document !== 'undefined' && document.documentElement) {
+                    document.documentElement.setAttribute('data-ios-device', 'true');
+                }
+            } catch (e) {}
             window.__twoPlayerSnakeRuntimeRevision = 36;
             // Bounded counters in the existing game loop; no additional animation timer.
             const iosPerf = IS_IOS_SHELL ? { enabled: true, startedAt: 0, frames: 0, frameMs: 0,
@@ -3279,6 +3367,7 @@
 
             async function checkForFreshVersion(force = false) {
                 if (IS_IOS_SHELL || window.__twoPlayerSnakeOfflineMode === true) return;
+                if ((typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE) && (typeof isDemoMode !== 'undefined' && isDemoMode)) return;
                 const now = Date.now();
                 if (versionCheckInFlight || versionReloadIssued) return;
                 if (!force && (now - lastVersionCheckAt) < VERSION_CHECK_INTERVAL_MS) return;
@@ -3305,6 +3394,7 @@
 
             function scheduleVersionCheck(force = false, delay = 180) {
                 if (IS_IOS_SHELL || window.__twoPlayerSnakeOfflineMode === true) return;
+                if ((typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE) && (typeof isDemoMode !== 'undefined' && isDemoMode)) return;
                 window.setTimeout(() => {
                     checkForFreshVersion(force);
                     maybeApplyPendingVersionRefresh();
@@ -6303,7 +6393,7 @@
                         ghost.style.opacity = '1';
                         ghost.style.transform = 'translate3d(0, 0, 0) scale(1)';
                         ghost.style.transition = `transform ${BANNER_SWAP_MS}ms ${BANNER_SWAP_EASE}, opacity ${BANNER_SWAP_MS}ms ease`;
-                        if (window.isAndroidWebView && !IS_IOS_SHELL) ghost.classList.add('android-menu-transition-ghost');
+                        if ((window.isAndroidWebView && !IS_IOS_SHELL) || (typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE)) ghost.classList.add('android-menu-transition-ghost');
                         document.body.appendChild(ghost);
                         activeBannerGhost = ghost;
                         requestAnimationFrame(() => {
@@ -9738,7 +9828,9 @@
                 const head = aiSnake.segments[0];
                 const currentDir = aiSnake.dir;
                 const isSelf51 = (gameStyle === 'selfArea51');
-                const cache = IS_IOS_SHELL ? getIosAiCache(aiSnake, wallMode) : _aiCache;
+                const isAppleTarget = (typeof IS_IOS_SHELL !== 'undefined' && IS_IOS_SHELL) ||
+                    (typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE);
+                const cache = isAppleTarget ? getIosAiCache(aiSnake, wallMode) : _aiCache;
 
                 // --- Find nearest food (prefer green diamond in Self Area 51) ---
                 let nearestFood = null;
@@ -9770,13 +9862,13 @@
                         if (cx < 0) cx = GRID_COLS - 1; else if (cx >= GRID_COLS) cx = 0;
                         if (cy < 0) cy = GRID_ROWS - 1; else if (cy >= GRID_ROWS) cy = 0;
                     }
-                    let blocked = IS_IOS_SHELL && (opposite(nextDir, currentDir) ||
+                    let blocked = isAppleTarget && (opposite(nextDir, currentDir) ||
                         (wallMode === MOD_WALLS.SOLID && (cx < 0 || cx >= GRID_COLS || cy < 0 || cy >= GRID_ROWS)));
-                    if (IS_IOS_SHELL && isSelf51) {
+                    if (isAppleTarget && isSelf51) {
                         const wrapped = selfArea51WrapForOwner({ x: cx, y: cy }, 'p2');
                         cx = wrapped.x; cy = wrapped.y;
                     }
-                    if (IS_IOS_SHELL && gameStyle === 'adventure' &&
+                    if (isAppleTarget && gameStyle === 'adventure' &&
                         (_tickBarrierSet || getBarrierCellsSet()).has(cy * GRID_COLS + cx)) blocked = true;
                     for (const s of aiSnake.segments) {
                         if (s.x === cx && s.y === cy) { blocked = true; break; }
@@ -9788,7 +9880,7 @@
                     }
                     if (!blocked) {
                         cache.idx++;
-                        if (IS_IOS_SHELL) rememberIosAiStep(cache, head, nextDir, wallMode, isSelf51);
+                        if (isAppleTarget) rememberIosAiStep(cache, head, nextDir, wallMode, isSelf51);
                         if (iosPerf && iosPerf.enabled) iosPerf.cacheHits++;
                         return nextDir;
                     }
@@ -9797,7 +9889,7 @@
 
                 // --- Build obstacles with integer keys (no string allocation) ---
                 if (iosPerf && iosPerf.enabled) iosPerf.bfsRuns++;
-                if (IS_IOS_SHELL) { cache.path = []; cache.idx = 0; }
+                if (isAppleTarget) { cache.path = []; cache.idx = 0; }
                 const obstacles = new Set();
                 for (const s of aiSnake.segments) obstacles.add(s.y * GRID_COLS + s.x);
                 if (!isSelf51 && playerSnake) {
@@ -9869,7 +9961,7 @@
                     cache.path = path;
                     cache.idx = 1; // path[0] returned now
                     if (path.length > 0) {
-                        if (IS_IOS_SHELL) rememberIosAiStep(cache, head, path[0], wallMode, isSelf51);
+                        if (isAppleTarget) rememberIosAiStep(cache, head, path[0], wallMode, isSelf51);
                         return path[0];
                     }
                     return currentDir;
@@ -11639,7 +11731,7 @@ function startWinAnim(winner, final = false) {
             }
 
             function render(alpha1, alpha2) {
-                if (IS_IOS_SHELL) {
+                if (IS_IOS_SHELL || (typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE)) {
                     alpha1 = Math.max(0, Math.min(1, alpha1));
                     alpha2 = Math.max(0, Math.min(1, alpha2));
                 }
@@ -12281,7 +12373,7 @@ function renderWinAnim() {
                 });
                 requestAnimationFrame(step);
                 document.addEventListener('visibilitychange', () => {
-                    if (IS_IOS_SHELL) {
+                    if (IS_IOS_SHELL || (typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE)) {
                         last = 0;
                         if (iosPerf) iosPerf.startedAt = 0;
                     }

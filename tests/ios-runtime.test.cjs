@@ -88,10 +88,10 @@ test('bridge forwards unlockAchievement and review requests to native shell', ()
   assert.ok(actions.includes('requestReview'));
 });
 
-function aiFixture(html, ios = true) {
+function aiFixture(html, ios = true, appleDevice = false) {
   const source = html.slice(html.indexOf('const _aiCache ='), html.indexOf('function softReset('));
   assert.match(source, /function calculateAIMove/);
-  const c = { IS_IOS_SHELL: ios, GRID_COLS: 24, GRID_ROWS: 36, gameStyle: 'normal',
+  const c = { IS_IOS_SHELL: ios, IS_APPLE_DEVICE: appleDevice, GRID_COLS: 24, GRID_ROWS: 36, gameStyle: 'normal',
     iosPerf: { enabled: true, cacheHits: 0, bfsRuns: 0 },
     MOD_WALLS: { SOLID: 'solid', NONE: 'none' }, _tickBarrierSet: new Set(),
     getBarrierCellsSet() { return c._tickBarrierSet; },
@@ -138,6 +138,22 @@ for (const file of files) {
     const legacy = aiFixture(html, false), a = snake(2, 5), b = snake(20, 15, -1);
     for (let n = 0; n < 4; n++) { move(a, legacy.calculateAIMove(a, b, foods, 'solid')); move(b, legacy.calculateAIMove(b, a, foods, 'solid')); }
     assert.equal(legacy.iosPerf.bfsRuns, 8);
+  });
+  test(`${file}: iOS Safari (IS_IOS_SHELL: false, IS_APPLE_DEVICE: true) retains independent per-snake AI caching`, () => {
+    const safari = aiFixture(html, false, true), p1 = snake(2, 5), p2 = snake(20, 15, -1);
+    const foods = [{ x: 10, y: 5 }, { x: 12, y: 15 }];
+    for (let n = 0; n < 4; n++) {
+      move(p1, safari.calculateAIMove(p1, p2, foods, 'solid'));
+      move(p2, safari.calculateAIMove(p2, p1, foods, 'solid'));
+    }
+    assert.equal(safari.iosPerf.bfsRuns, 2); assert.equal(safari.iosPerf.cacheHits, 6);
+    assert.notEqual(safari.cache(p1), safari.cache(p2));
+  });
+  test(`${file}: iOS CSS rules contain hardware-accelerated scoped blur and shadow optimizations`, () => {
+    assert.match(html, /@supports \(-webkit-touch-callout:\s*none\)/);
+    assert.match(html, /html\[data-ios-device="true"\]\s*\.banner\.padded/);
+    assert.match(html, /html\[data-ios-device="true"\]\s*\.main-menu-actions/);
+    assert.match(html, /html\[data-ios-device="true"\]\s*\.android-menu-transition-ghost/);
   });
   test(`${file}: moving obstacles and geometry invalidate stale paths`, () => {
     const c = aiFixture(html), s = snake(2, 5), food = [{ x: 10, y: 5 }];

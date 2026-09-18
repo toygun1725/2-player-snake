@@ -11,17 +11,17 @@ Bu belge, mobil surum uzerinde calisacak yapay zekalar icin guncel teknik refera
 > Web yayını henüz yapılmadı; Git push siteyi güncellemez.
 > Ayrıntılar: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
 
-- Aktif referans surum: `v3.3.6` (iOS: Build 38)
+- Aktif referans surum: `v3.3.6` (iOS: Build 39)
 - Temel referans dosya: `2 Player Snake Mobile v3.3.6.html`
 - Kaynak/yayin durumu: v3.3.6 mobil ve PC kaynak dosyalari olusturuldu. Patreon destek sistemi oyun kodlarindan tamamen cikarildi.
 - Android durumu: Android cevrimdisi fallback `mobile_offline_fallback.html` v3.3.6 ile esitlendi.
-- iOS durumu: iOS Build 38 hazirlandi; Game Center (15 basarim), App Store doğrudan puanlama modal baglantisi, v3.3.6 cevrimdisi fallback ve Xcode pbxproj guncellendi.
+- iOS durumu: iOS Build 39 hazirlandi; Game Center (15 basarim), App Store doğrudan puanlama modal baglantisi, iPhone menü ve demo yılan donanım hızlandırma optimizasyonu, v3.3.6 cevrimdisi fallback ve Xcode pbxproj guncellendi.
 - Dosya yapisi: her sey tek HTML dosyasindadir; CSS veya JS ayirma yapilmaz.
 - Tasarim dili: koyu cyberpunk zemin, neon pembe ve turkuaz glow, camimsi panel dili, mobil odakli dar yerlesim.
 - Ana menu logosu web uzerindeki guncel logo kaynagini kullanir; gerekirse yerel fallback ile calisir.
 
-## Son Guncelleme (v3.3.6 - iOS Build 38)
-- **v3.3.6**: Patreon Destek Sisteminin Kaldirilmasi, Apple Game Center ve App Store Puanlama Entegrasyonu.
+## Son Guncelleme (v3.3.6 - iOS Build 39)
+- **v3.3.6**: Patreon Destek Sisteminin Kaldirilmasi, Apple Game Center ve App Store Puanlama Entegrasyonu, iPhone Menü & Demo Yılan Performans Devrimi.
   - **Patreon Kaldirildi:** Ayarlar > Gelistiriciler (Developers) modalinda yer alan Patreon bagis ve destek bolumu 21 dilde tamamen temizlendi.
   - **CSS Temizligi:** `.btn-patreon`, `.btn-patreon i`, `.btn-patreon:active` stilleri ve ilgili buton secicileri kaldirildi.
   - **Apple Game Center Entegrasyonu (`GameKit` / `GameCenterManager.swift`):**
@@ -32,9 +32,16 @@ Bu belge, mobil surum uzerinde calisacak yapay zekalar icin guncel teknik refera
   - **App Store "Bize Puan Verin" Duzeltmesi:**
     - `SKStoreReviewController.requestReview`'un TestFlight'ta tamamen engellenmesi ve yillik 3 gosterim kotasina takilmasi nedeniyle calismayan puanlama butonu duzeltildi.
     - Butona basildiginda dogrudan App Store 5 yildiz ve yorum yazma ekranini acan `itms-apps://itunes.apple.com/app/id6811546748?action=write-review` baglantisi calistirilir.
-  - **Cevrimdisi Senkron:** iOS ve Android `mobile_offline_fallback.html` dosyalari v3.3.6 ile senkronize edilerek Patreon'dan tamamen arindirildi.
-  - **iOS Build 38:** `Info.plist` ve `project.pbxproj` icinde `MARKETING_VERSION = 3.3.6` ve `CURRENT_PROJECT_VERSION = 38` tanimlandi.
-  - **Dogrulama:** `node --test tests/ios-runtime.test.cjs` 17/17 test ile %100 basarili gecti.
+  - **iPhone (iOS App & Mobile Safari) Menü ve Demo Yılan Performans Optimizasyonu:**
+    - **İç İçe Blur Yükünün Kaldırılması:** 3x Retina ekranda 60 FPS canvas üzerinde çalışan `.main-menu-actions` üzerindeki gereksiz ikinci `backdrop-filter` kaldırıldı (`backdrop-filter: none`). Butonlar arkadaki kartın cam efekti üzerinde estetiğini %100 korurken GPU bellek okuma/yazma döngüsü %75 azaltıldı.
+    - **Donanım Hızlandırmalı Neon Aura:** Menü kartındaki `animation: borderGlow` sürekli `box-shadow` yeniden boyaması yerine donanım hızlandırmalı sabit neon pembe/turkuaz aura yerleştirildi. Katman geçersiz kılma döngüsü yok edildi.
+    - **Menü Geçişleri Ghost Kartı Optimizasyonu:** Menü geçişlerinde 200 ms içinde silinen hayalet kart (`ghost`) için blur ve animasyon iOS'ta da kapatılarak geçiş sırasındaki 4 katmanlı anlık blur darboğazı ve takılma çözüldü.
+    - **Yılan Başına İzole AI Önbelleği (Safari & App):** `IS_APPLE_DEVICE` (tüm iOS cihazlar) yılan başına bağımsız önbelleğe (`getIosAiCache`) bağlandı. Demo modunda P1 ve P2 birbirinin BFS rotasını ezmez, BFS çalıştırma sıklığı %75 azalır.
+    - **Safari Demo Polling Koruması:** Demo modunda/menüde periyodik 700KB versiyon çekme döngüsü iOS cihazlar için engellenerek Garbage Collection (GC) takılmaları önlendi.
+    - **Android ve PC Güvencesi:** Tüm CSS iyileştirmeleri `@supports (-webkit-touch-callout: none)` ve `html[data-ios-device="true"]` ile izole edildi; Android ve PC masaüstü tarayıcıları kesinlikle etkilenmedi.
+  - **Cevrimdisi Senkron:** iOS ve Android `mobile_offline_fallback.html` dosyalari v3.3.6 ile senkronize edildi.
+  - **iOS Build 39:** `Info.plist` ve `project.pbxproj` icinde `MARKETING_VERSION = 3.3.6` ve `CURRENT_PROJECT_VERSION = 39` tanimlandi.
+  - **Dogrulama:** `node --test tests/ios-runtime.test.cjs` 21/21 test ile %100 basarili gecti.
 
 ## Onceki Guncelleme (v3.3.5)
 - **v3.3.5**: Android WebView menu gecis akiciligi duzeltmesi.

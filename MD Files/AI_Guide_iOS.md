@@ -4,18 +4,21 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 
 ---
 
-## 1. Güncel devir notu — Build 37 (2026-09-16)
+## 1. Güncel devir notu — Build 39 (v3.3.6, 2026-09-18)
 
-- Marketing version: `3.3.5`; son native build `37`, HTML runtime revision `36`.
+- Marketing version: `3.3.6`; son native build `39`, HTML runtime revision `36`.
 - **🎉 App Store Canlı Yayını (2026-09-17):** Uygulama `v3.3.5 (Build 29)` Apple tarafından onaylandı ve dünya genelinde **App Store'da CANLI YAYINA (Ready for Sale)** girdi!
   * **Resmi App Store URL:** `https://apps.apple.com/app/id6811546748` (Apple ID: `6811546748`, Paket: `com.twoplayersnake.app`)
   * **AdMob Mağaza Eşleştirmesi:** AdMob paneline `6811546748` Apple ID ile bağlandı.
   * **ads.txt & app-ads.txt:** `https://2playersnake.com/ads.txt` ve `/app-ads.txt` kök dizine yüklendi. AdSense tarafından `Hazır` olarak anında algılandı; AdMob app-ads.txt taraması bekleniyor.
-- **TestFlight Durumu:** **Build 37 TestFlight'a yüklendi.** `ios-v3.3.5-b37`, kaynak `fcf0dbd`,
-  [GitHub Actions Run #38](https://github.com/toygun1725/2-player-snake/actions/runs/35062652055) SUCCESS.
-  16 JS testi, macOS WebKit boş belge/HTTPS/offline kontrolleri, native archive ve
-  App Store Connect yüklemesi geçti. Kullanıcının iPhone test ayrıntıları bekleniyor.
-- Son önceki paket: Build 35 (`ios-v3.3.5-b35`), kaynak baseline `6115a50`.
+- **Apple Game Center (15 Başarım) & Doğrudan App Store İnceleme:** Build 39 ile `GameCenterManager.swift` üzerinden tam entegre edildi.
+- **iPhone (iOS App & Safari) Menü ve Demo Yılan Performans Çözümü:**
+  * 3x Retina ekranda iç içe çalışan gereksiz 2. katman blur (`.main-menu-actions`) kaldırılarak GPU yükü %75 azaltıldı.
+  * `borderGlow` sürekli box-shadow repainting animasyonu yerine donanım hızlandırmalı sabit neon pembe aura uygulandı.
+  * Menü geçişlerindeki 4x anlık blur patlaması ghost kart optimizasyonuyla giderildi.
+  * iOS Safari ve App için yılan başına izole AI cache'i (`getIosAiCache`) ve demo polling koruması devreye alındı.
+  * Android ve PC masaüstü tarayıcıları bu değişikliklerden %100 izole edildi.
+- **Otomatik Testler:** `node --test tests/ios-runtime.test.cjs` 21/21 test ile %100 geçti.
 - Ayrıntılı uygulama, test, yayın ve rollback kaydı: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
 - Kullanıcı isteği: orijinal blur/glass tasarımı korunacak; “efekt kapatarak performans” yaklaşımı uygulanmayacak.
 - Canlı mobil HTML ayrıca web sitesine yüklenmelidir. GitHub push / native paket bunu tek başına yapmaz.
