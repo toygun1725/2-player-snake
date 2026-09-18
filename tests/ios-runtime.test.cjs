@@ -6,7 +6,7 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const files = [
-  'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.5.html',
+  'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.6.html',
   'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html'
 ];
 const bridge = read('Ana Dosya/iOS/TwoPlayerSnake/Bridge/ios_bridge_bootstrap.js');
@@ -76,6 +76,16 @@ test('offline skips network ads; premium keeps established reward entitlement', 
   f.context.TwoPlayerSnakeAppSettings = { adsRemoved: true };
   f.context.adBreak({ type: 'reward', ...callbacks });
   assert.deepEqual([viewed, dismissed], [1, 1]);
+});
+test('bridge forwards unlockAchievement and review requests to native shell', () => {
+  const f = bridgeFixture();
+  f.context.Android.unlockAchievement('ACH_FIRST_FOOD');
+  f.context.Android.emit(JSON.stringify({ name: 'unlockAchievement', payload: { key: 'ACH_AI_HUNTER' } }));
+  f.context.Android.requestReview();
+  const actions = f.messages.map(m => m.action);
+  assert.ok(actions.includes('unlockAchievement'));
+  assert.ok(actions.includes('emit'));
+  assert.ok(actions.includes('requestReview'));
 });
 
 function aiFixture(html, ios = true) {

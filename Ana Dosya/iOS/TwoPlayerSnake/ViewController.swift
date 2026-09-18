@@ -63,6 +63,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         setupNetworkMonitoring()
         setupKeyboardHandling()
 
+        GameCenterManager.shared.authenticateLocalPlayer(presentingVC: self)
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handlePremiumStatusChanged),

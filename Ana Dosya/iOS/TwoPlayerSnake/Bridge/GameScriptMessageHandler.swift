@@ -1,6 +1,8 @@
 import Foundation
+import UIKit
 import WebKit
 import StoreKit
+import GameKit
 
 final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
 
@@ -86,11 +88,19 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
 
         case "showAchievements":
             print("Bridge: Başarımlar Menüsü İstendi")
-            // HTML başarımlar menüsünü aç
-            viewController?.evaluateJavaScript("if(typeof window.openHtmlAchievementsMenu==='function'){window.openHtmlAchievementsMenu();}")
+            if GameCenterManager.shared.isAuthenticated {
+                GameCenterManager.shared.showAchievements(from: viewController)
+            } else {
+                // Game Center oturumu yoksa oyun içi HTML başarımlar menüsünü aç
+                viewController?.evaluateJavaScript("if(typeof window.openHtmlAchievementsMenu==='function'){window.openHtmlAchievementsMenu();}")
+            }
+
+        case "unlockAchievement":
+            handleUnlockAchievement(payload: payload)
 
         case "emit":
             print("Bridge: Emit Event: \(String(describing: payload))")
+            handleEmitEvent(payload: payload)
 
         default:
             print("Bridge: Bilinmeyen eylem: \(action)")
@@ -151,7 +161,16 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
 
     private func requestInAppReview() {
         DispatchQueue.main.async {
-            if let windowScene = self.viewController?.view.window?.windowScene {
+            // Apple HIG: Kullanıcı menüden "Bize Puan Ver!" butonuna bizzat tıkladığında,
+            // SKStoreReviewController kota kısıtlamasına (yılda max 3 ve TestFlight'ta kapalı) takılmamak
+            // ve doğrudan 5 yıldız/yorum penceresini açmak için resmi App Store write-review URL'i açılır.
+            let appId = "6811546748"
+            if let reviewUrl = URL(string: "itms-apps://itunes.apple.com/app/id\(appId)?action=write-review"),
+               UIApplication.shared.canOpenURL(reviewUrl) {
+                UIApplication.shared.open(reviewUrl, options: [:], completionHandler: nil)
+            } else if let webUrl = URL(string: "https://apps.apple.com/app/id\(appId)?action=write-review") {
+                UIApplication.shared.open(webUrl, options: [:], completionHandler: nil)
+            } else if let windowScene = self.viewController?.view.window?.windowScene {
                 if #available(iOS 14.0, *) {
                     SKStoreReviewController.requestReview(in: windowScene)
                 } else {
@@ -206,5 +225,40 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
                 )
             }
         }
+    }
+
+    private func handleEmitEvent(payload: Any?) {
+        var dict: [String: Any]? = payload as? [String: Any]
+        if dict == nil, let str = payload as? String, let data = str.data(using: .utf8) {
+            dict = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+        }
+
+        guard let eventDict = dict, let name = eventDict["name"] as? String else { return }
+
+        switch name {
+        case "unlockAchievement":
+            handleUnlockAchievement(payload: eventDict["payload"])
+        default:
+            break
+        }
+    }
+
+    private func handleUnlockAchievement(payload: Any?) {
+        var achKey: String? = nil
+        if let dict = payload as? [String: Any] {
+            achKey = dict["key"] as? String
+        } else if let str = payload as? String {
+            if let data = str.data(using: .utf8),
+               let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+               let k = json["key"] as? String {
+                achKey = k
+            } else {
+                achKey = str
+            }
+        }
+
+        guard let key = achKey, !key.isEmpty else { return }
+        print("Bridge: Başarım kilidi açılıyor: \(key)")
+        GameCenterManager.shared.reportAchievement(identifier: key)
     }
 }

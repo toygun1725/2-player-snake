@@ -30,6 +30,8 @@
 		2P0000000000000000000049 /* AppTrackingTransparency.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000048 /* AppTrackingTransparency.framework */; };
 		2P0000000000000000000051 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000050 /* AdSupport.framework */; };
 		2P0000000000000000000092 /* Orbitron-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000093 /* Orbitron-Bold.ttf */; };
+		2P0000000000000000000103 /* GameCenterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000102 /* GameCenterManager.swift */; };
+		2P0000000000000000000105 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000104 /* GameKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -58,6 +60,8 @@
 		2P0000000000000000000046 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		2P0000000000000000000048 /* AppTrackingTransparency.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppTrackingTransparency.framework; path = System/Library/Frameworks/AppTrackingTransparency.framework; sourceTree = SDKROOT; };
 		2P0000000000000000000050 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
+		2P0000000000000000000102 /* GameCenterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCenterManager.swift; sourceTree = "<group>"; };
+		2P0000000000000000000104 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +75,7 @@
 				2P0000000000000000000047 /* StoreKit.framework in Frameworks */,
 				2P0000000000000000000049 /* AppTrackingTransparency.framework in Frameworks */,
 				2P0000000000000000000051 /* AdSupport.framework in Frameworks */,
+				2P0000000000000000000105 /* GameKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,6 +102,7 @@
 				2P0000000000000000000081 /* Network */,
 				2P0000000000000000000082 /* Ads */,
 				2P0000000000000000000088 /* Purchases */,
+				2P0000000000000000000106 /* GameCenter */,
 				2P0000000000000000000083 /* Bridge */,
 				2P0000000000000000000085 /* Resources */,
 				2P0000000000000000000026 /* LaunchScreen.storyboard */,
@@ -159,6 +165,14 @@
 			path = Bridge;
 			sourceTree = "<group>";
 		};
+		2P0000000000000000000106 /* GameCenter */ = {
+			isa = PBXGroup;
+			children = (
+				2P0000000000000000000102 /* GameCenterManager.swift */,
+			);
+			path = GameCenter;
+			sourceTree = "<group>";
+		};
 		2P0000000000000000000084 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -168,6 +182,7 @@
 				2P0000000000000000000046 /* StoreKit.framework */,
 				2P0000000000000000000048 /* AppTrackingTransparency.framework */,
 				2P0000000000000000000050 /* AdSupport.framework */,
+				2P0000000000000000000104 /* GameKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -267,6 +282,7 @@
 				2P0000000000000000000021 /* AdManager.swift in Sources */,
 				2P0000000000000000000023 /* GameScriptMessageHandler.swift in Sources */,
 				2P0000000000000000000087 /* IAPManager.swift in Sources */,
+				2P0000000000000000000103 /* GameCenterManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -342,7 +358,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 38;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -399,7 +415,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 38;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
@@ -410,7 +426,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 38;
 				DEVELOPMENT_TEAM = GUFQF359Q7;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TwoPlayerSnake/Info.plist;
@@ -418,7 +434,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.3.5;
+				MARKETING_VERSION = 3.3.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.twoplayersnake.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -434,7 +450,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 38;
 				DEVELOPMENT_TEAM = GUFQF359Q7;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TwoPlayerSnake/Info.plist;
@@ -442,7 +458,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.3.5;
+				MARKETING_VERSION = 3.3.6;
 				PRODUCT_BUNDLE_IDENTIFIER = com.twoplayersnake.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

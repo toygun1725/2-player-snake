@@ -52,7 +52,7 @@ final class SmokeTest: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
         if stage == -1 {
             webView.loadHTMLString("<!doctype html><html><body></body></html>", baseURL: URL(string: "https://2playersnake.com/"))
         } else if stage == 0 {
-            let html = try String(contentsOf: root.appendingPathComponent("Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.5.html"), encoding: .utf8)
+            let html = try String(contentsOf: root.appendingPathComponent("Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.6.html"), encoding: .utf8)
             // HTTPS origin is intentional: fonts must also work across the custom-scheme boundary.
             webView.loadHTMLString(html, baseURL: URL(string: "https://2playersnake.com/wp-content/uploads/game-mobile/index.html"))
         } else {

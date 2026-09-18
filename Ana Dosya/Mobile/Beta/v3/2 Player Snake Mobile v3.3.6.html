@@ -4,7 +4,14 @@
 <head>
     <meta charset="utf-8" />
     <title>2 Player Snake Mobile v3.3.6 - Play Online & Local</title>
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+        // Only a native shell that advertises the bundled asset handler uses local URLs.
+        window.__twoPlayerSnakeUseNativeAssets = window.__twoPlayerSnakePlatform === 'ios' &&
+            typeof window.__twoPlayerSnakeAssetBaseUrl === 'string';
+        if (!window.__twoPlayerSnakeUseNativeAssets) {
+            document.write('<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"><\/script>');
+        }
+    </script>
     <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -17,11 +24,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="2 Player Snake">
     <meta name="application-name" content="2 Player Snake">
-    <link rel="apple-touch-icon" sizes="180x180" href="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp">
-    <link rel="apple-touch-icon" sizes="152x152" href="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp">
-    <link rel="apple-touch-icon" sizes="120x120" href="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp">
-    <link rel="apple-touch-icon" href="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp">
-    <link rel="icon" sizes="192x192" href="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp">
+    <script>
+        if (window.__twoPlayerSnakeUseNativeAssets) {
+            document.write('<link rel="icon" href="' + window.__twoPlayerSnakeAssetBaseUrl + 'logo.png">');
+        } else {
+            document.write("    <link rel=\"apple-touch-icon\" sizes=\"180x180\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"apple-touch-icon\" sizes=\"152x152\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"apple-touch-icon\" sizes=\"120x120\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"apple-touch-icon\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"icon\" sizes=\"192x192\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n");
+        }
+    </script>
     <link rel="manifest" href="/manifest.json">
     <script>
     var _lastInnerHeight = 0;
@@ -81,14 +90,14 @@
         }
     </script>
 
-    <!-- Import fonts -->
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=VT323&display=swap"
-        rel="stylesheet">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Build 36: bundled font/icon resources in native iOS; web/Android retain their URLs. -->
+    <script>
+        if (window.__twoPlayerSnakeUseNativeAssets) {
+            document.write('<style id="ios-bundled-fonts">' + window.__twoPlayerSnakeNativeAssetCss + '</style>');
+        } else {
+            document.write("    <!-- Import fonts -->\n    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n    <link href=\"https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=VT323&display=swap\"\n        rel=\"stylesheet\">\n    <!-- Font Awesome for icons -->\n    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\"\n        integrity=\"sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==\"\n        crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />\n\n");
+        }
+    </script>
 
     <!-- Version: v3.3.6 Mobile -->
     <style>
@@ -2960,7 +2969,11 @@
     <!-- v2.93.0: Loading Splash Screen -->
     <div id="loading-splash">
         <div class="splash-logo-wrap">
-            <img class="splash-logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake" onerror="this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';">
+            <script>
+                document.write('<img class="splash-logo" src="' + (window.__twoPlayerSnakeUseNativeAssets
+                    ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png'
+                    : 'https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp') + '" alt="2 Player Snake" ' + "onerror=\"this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';\"" + '>');
+            </script>
         </div>
         <div class="splash-bar-wrap">
             <div class="splash-bar-fill" id="splashBarFill"></div>
@@ -3082,6 +3095,36 @@
               ============================= */
 
             const VERSION = 'v3.3.6';
+            const IS_IOS_SHELL = window.__twoPlayerSnakePlatform === 'ios';
+            window.__twoPlayerSnakeRuntimeRevision = 36;
+            // Bounded counters in the existing game loop; no additional animation timer.
+            const iosPerf = IS_IOS_SHELL ? { enabled: true, startedAt: 0, frames: 0, frameMs: 0,
+                over50ms: 0, maxFrameMs: 0, aiCalls: 0, aiMs: 0, aiMaxMs: 0, bfsRuns: 0,
+                cacheHits: 0, reported: false, source: window.__twoPlayerSnakeOfflineMode ? 'offline' : 'remote' } : null;
+            if (iosPerf) window.__twoPlayerSnakeDiagnostics = iosPerf;
+            function recordIosFrame(time, delta) {
+                if (!iosPerf || !iosPerf.enabled || document.hidden) return;
+                if (!iosPerf.startedAt) { iosPerf.startedAt = time; return; }
+                iosPerf.frames++; iosPerf.frameMs += delta;
+                iosPerf.maxFrameMs = Math.max(iosPerf.maxFrameMs, delta);
+                if (delta > 50) iosPerf.over50ms++;
+                if (time - iosPerf.startedAt >= 120000 && !iosPerf.reported) {
+                    iosPerf.reported = true; iosPerf.enabled = false;
+                    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iOS) {
+                        window.webkit.messageHandlers.iOS.postMessage({ action: 'performanceReport', payload: JSON.stringify(iosPerf) });
+                    }
+                }
+            }
+            function measuredAIMove(aiSnake, playerSnake, foods, wallMode) {
+                if (!iosPerf || !iosPerf.enabled) return calculateAIMove(aiSnake, playerSnake, foods, wallMode);
+                const started = performance.now();
+                try { return calculateAIMove(aiSnake, playerSnake, foods, wallMode); }
+                finally {
+                    const elapsed = performance.now() - started;
+                    iosPerf.aiCalls++; iosPerf.aiMs += elapsed;
+                    iosPerf.aiMaxMs = Math.max(iosPerf.aiMaxMs, elapsed);
+                }
+            }
             const VERSION_CHECK_INTERVAL_MS = 2000;
 
             // Online Socket variables
@@ -3252,6 +3295,7 @@
             }
 
             async function checkForFreshVersion(force = false) {
+                if (IS_IOS_SHELL || window.__twoPlayerSnakeOfflineMode === true) return;
                 const now = Date.now();
                 if (versionCheckInFlight || versionReloadIssued) return;
                 if (!force && (now - lastVersionCheckAt) < VERSION_CHECK_INTERVAL_MS) return;
@@ -3277,6 +3321,7 @@
             }
 
             function scheduleVersionCheck(force = false, delay = 180) {
+                if (IS_IOS_SHELL || window.__twoPlayerSnakeOfflineMode === true) return;
                 window.setTimeout(() => {
                     checkForFreshVersion(force);
                     maybeApplyPendingVersionRefresh();
@@ -6184,7 +6229,7 @@
             function transitionToMenu(openFn, direction = 'forward') {
                 // Keep the last rendered demo frame during the swap. Gameplay is never
                 // frozen: this only applies while the Android WebView is showing its menu demo.
-                if (window.isAndroidWebView) {
+                if (window.isAndroidWebView && !IS_IOS_SHELL) {
                     menuDemoFreezeUntil = performance.now() + BANNER_SWAP_MS + 40;
                 }
                 pendingBannerTransition = direction;
@@ -6275,7 +6320,7 @@
                         ghost.style.opacity = '1';
                         ghost.style.transform = 'translate3d(0, 0, 0) scale(1)';
                         ghost.style.transition = `transform ${BANNER_SWAP_MS}ms ${BANNER_SWAP_EASE}, opacity ${BANNER_SWAP_MS}ms ease`;
-                        if (window.isAndroidWebView) ghost.classList.add('android-menu-transition-ghost');
+                        if (window.isAndroidWebView && !IS_IOS_SHELL) ghost.classList.add('android-menu-transition-ghost');
                         document.body.appendChild(ghost);
                         activeBannerGhost = ghost;
                         requestAnimationFrame(() => {
@@ -7464,7 +7509,7 @@
 
                 showBanner(`<div class="main-menu-shell">
       <div class="main-menu-logo-wrap">
-        <img class="main-menu-logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';">
+        <img class="main-menu-logo" src="${(window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp')}" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';">
       </div>
       <div class="main-menu-actions">
         <div class="main-menu-btns">
@@ -8487,7 +8532,7 @@
                 markMenuScreen(MENU_IDS.PLAY_SPLIT, true);
                 showBanner(`<div class="main-menu-shell">
       <div class="main-menu-logo-wrap">
-        <img class="main-menu-logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';">
+        <img class="main-menu-logo" src="${(window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp')}" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';">
       </div>
       <div class="main-menu-actions">
         <div class="main-menu-btns">
@@ -9674,6 +9719,29 @@
 
             // AI BFS path cache — avoids recalculating every tick when nothing changed
             const _aiCache = { foodX: -1, foodY: -1, path: [], idx: 0 };
+            let iosAiCaches = new WeakMap();
+            function getIosAiCache(snake, wallMode) {
+                let cache = iosAiCaches.get(snake);
+                const head = snake.segments[0];
+                if (!cache || cache.cols !== GRID_COLS || cache.rows !== GRID_ROWS ||
+                    cache.wallMode !== wallMode || cache.style !== gameStyle ||
+                    cache.expectedX !== head.x || cache.expectedY !== head.y) {
+                    cache = { foodX: -1, foodY: -1, path: [], idx: 0, cols: GRID_COLS,
+                        rows: GRID_ROWS, wallMode: wallMode, style: gameStyle };
+                    iosAiCaches.set(snake, cache);
+                }
+                return cache;
+            }
+            function rememberIosAiStep(cache, head, direction, wallMode, isSelf51) {
+                let x = head.x + direction.x, y = head.y + direction.y;
+                if (isSelf51) {
+                    const wrapped = selfArea51WrapForOwner({ x: x, y: y }, 'p2');
+                    x = wrapped.x; y = wrapped.y;
+                } else if (wallMode !== MOD_WALLS.SOLID) {
+                    x = (x + GRID_COLS) % GRID_COLS; y = (y + GRID_ROWS) % GRID_ROWS;
+                }
+                cache.expectedX = x; cache.expectedY = y;
+            }
 
             // AI Snake pathfinding using optimized BFS
             // v2.98.8 perf fixes:
@@ -9687,6 +9755,7 @@
                 const head = aiSnake.segments[0];
                 const currentDir = aiSnake.dir;
                 const isSelf51 = (gameStyle === 'selfArea51');
+                const cache = IS_IOS_SHELL ? getIosAiCache(aiSnake, wallMode) : _aiCache;
 
                 // --- Find nearest food (prefer green diamond in Self Area 51) ---
                 let nearestFood = null;
@@ -9709,16 +9778,23 @@
 
                 // --- Path cache check ---
                 // If food hasn't moved and we still have steps left, verify next step is clear
-                if (_aiCache.foodX === nearestFood.x && _aiCache.foodY === nearestFood.y &&
-                    _aiCache.idx < _aiCache.path.length) {
-                    const nextDir = _aiCache.path[_aiCache.idx];
+                if (cache.foodX === nearestFood.x && cache.foodY === nearestFood.y &&
+                    cache.idx < cache.path.length) {
+                    const nextDir = cache.path[cache.idx];
                     let cx = head.x + nextDir.x;
                     let cy = head.y + nextDir.y;
                     if (!isSelf51 && wallMode !== MOD_WALLS.SOLID) {
                         if (cx < 0) cx = GRID_COLS - 1; else if (cx >= GRID_COLS) cx = 0;
                         if (cy < 0) cy = GRID_ROWS - 1; else if (cy >= GRID_ROWS) cy = 0;
                     }
-                    let blocked = false;
+                    let blocked = IS_IOS_SHELL && (opposite(nextDir, currentDir) ||
+                        (wallMode === MOD_WALLS.SOLID && (cx < 0 || cx >= GRID_COLS || cy < 0 || cy >= GRID_ROWS)));
+                    if (IS_IOS_SHELL && isSelf51) {
+                        const wrapped = selfArea51WrapForOwner({ x: cx, y: cy }, 'p2');
+                        cx = wrapped.x; cy = wrapped.y;
+                    }
+                    if (IS_IOS_SHELL && gameStyle === 'adventure' &&
+                        (_tickBarrierSet || getBarrierCellsSet()).has(cy * GRID_COLS + cx)) blocked = true;
                     for (const s of aiSnake.segments) {
                         if (s.x === cx && s.y === cy) { blocked = true; break; }
                     }
@@ -9728,13 +9804,17 @@
                         }
                     }
                     if (!blocked) {
-                        _aiCache.idx++;
+                        cache.idx++;
+                        if (IS_IOS_SHELL) rememberIosAiStep(cache, head, nextDir, wallMode, isSelf51);
+                        if (iosPerf && iosPerf.enabled) iosPerf.cacheHits++;
                         return nextDir;
                     }
                     // Next step is blocked — fall through to recalculate
                 }
 
                 // --- Build obstacles with integer keys (no string allocation) ---
+                if (iosPerf && iosPerf.enabled) iosPerf.bfsRuns++;
+                if (IS_IOS_SHELL) { cache.path = []; cache.idx = 0; }
                 const obstacles = new Set();
                 for (const s of aiSnake.segments) obstacles.add(s.y * GRID_COLS + s.x);
                 if (!isSelf51 && playerSnake) {
@@ -9801,11 +9881,14 @@
                         cur = entry.parentKey;
                     }
                     // Store in cache for subsequent ticks
-                    _aiCache.foodX = nearestFood.x;
-                    _aiCache.foodY = nearestFood.y;
-                    _aiCache.path = path;
-                    _aiCache.idx = 1; // path[0] returned now
-                    if (path.length > 0) return path[0];
+                    cache.foodX = nearestFood.x;
+                    cache.foodY = nearestFood.y;
+                    cache.path = path;
+                    cache.idx = 1; // path[0] returned now
+                    if (path.length > 0) {
+                        if (IS_IOS_SHELL) rememberIosAiStep(cache, head, path[0], wallMode, isSelf51);
+                        return path[0];
+                    }
                     return currentDir;
                 }
 
@@ -9881,6 +9964,7 @@
                 foods = [];
                 // v2.98.8: Reset AI path cache on each round so stale paths from
                 // previous rounds can't be accidentally reused.
+                iosAiCaches = new WeakMap();
                 _aiCache.foodX = -1; _aiCache.foodY = -1;
                 _aiCache.path = []; _aiCache.idx = 0;
                 resetArcadeFxState();
@@ -11572,6 +11656,10 @@ function startWinAnim(winner, final = false) {
             }
 
             function render(alpha1, alpha2) {
+                if (IS_IOS_SHELL) {
+                    alpha1 = Math.max(0, Math.min(1, alpha1));
+                    alpha2 = Math.max(0, Math.min(1, alpha2));
+                }
                 ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
                 drawGrid();
                 drawGridRipples();
@@ -11715,9 +11803,10 @@ function renderWinAnim() {
                 if (!last) last = time;
                 let delta = time - last;
                 last = time;
+                recordIosFrame(time, delta);
                 if (delta > 60) delta = 60; // Lag veya menü geçişlerinde yılanın ışınlanmasını (jump) önler
 
-                if (window.isAndroidWebView && isDemoMode && time < menuDemoFreezeUntil) {
+                if (window.isAndroidWebView && !IS_IOS_SHELL && isDemoMode && time < menuDemoFreezeUntil) {
                     requestAnimationFrame(step);
                     return;
                 }
@@ -11842,7 +11931,7 @@ function renderWinAnim() {
                     if (acc1 >= interval1) {
                         prepareMovementTick();
                         if (isDemoMode && snakes.p1 && snakes.p2) {
-                            const m1 = calculateAIMove(snakes.p1, snakes.p2, foods, currentWallMode);
+                            const m1 = measuredAIMove(snakes.p1, snakes.p2, foods, currentWallMode);
                             if (m1) snakes.p1.nextDir = m1;
                         }
                         moveSnake(snakes.p1, 'p1');
@@ -11881,7 +11970,7 @@ function renderWinAnim() {
                         if (acc2 >= interval2) {
                             prepareMovementTick();
                             if ((isDemoMode || (gameMode === '1P' && aiSnakeEnabled)) && snakes.p1 && snakes.p2) {
-                                const m2 = calculateAIMove(snakes.p2, snakes.p1, foods, currentWallMode);
+                                const m2 = measuredAIMove(snakes.p2, snakes.p1, foods, currentWallMode);
                                 if (m2) snakes.p2.nextDir = m2;
                             } 
                             moveSnake(snakes.p2, 'p2');
@@ -12208,12 +12297,33 @@ function renderWinAnim() {
                     if (!document.hidden) scheduleVersionCheck(false, 120);
                 });
                 requestAnimationFrame(step);
+                document.addEventListener('visibilitychange', () => {
+                    if (IS_IOS_SHELL) {
+                        last = 0;
+                        if (iosPerf) iosPerf.startedAt = 0;
+                    }
+                }, { passive: true });
+                if (typeof window.__twoPlayerSnakeGameReady === 'function') window.__twoPlayerSnakeGameReady();
             }
 
             // v2.93.2: Preroll removed on all platforms. Mobile preroll format caused
             // full-page redirect when dismissed, kicking users off the site.
             // Between-rounds and rewarded-continue ads remain active.
-            setTimeout(() => { splashComplete(initGame); }, SPLASH_DURATION_MS);
+            setTimeout(() => {
+                if (IS_IOS_SHELL && document.fonts) {
+                    let started = false;
+                    const begin = () => { if (!started) { started = true; splashComplete(initGame); } };
+                    const fontDeadline = setTimeout(begin, 2000);
+                    Promise.all([
+                        document.fonts.load('900 16px Orbitron'),
+                        document.fonts.load('400 16px VT323'),
+                        document.fonts.load('900 16px "Font Awesome 6 Free"'),
+                        document.fonts.load('400 16px "Font Awesome 6 Brands"')
+                    ]).then(() => { clearTimeout(fontDeadline); begin(); }, () => { clearTimeout(fontDeadline); begin(); });
+                } else {
+                    splashComplete(initGame);
+                }
+            }, SPLASH_DURATION_MS);
         })();</script>
 </body>
 

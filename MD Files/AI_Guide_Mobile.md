@@ -11,15 +11,32 @@ Bu belge, mobil surum uzerinde calisacak yapay zekalar icin guncel teknik refera
 > Web yayını henüz yapılmadı; Git push siteyi güncellemez.
 > Ayrıntılar: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
 
-- Aktif referans surum: `v3.3.5`
-- Temel referans dosya: `2 Player Snake Mobile v3.3.5.html`
-- Kaynak/yayin durumu: v3.3.5 mobil ve PC kaynak dosyalari olusturuldu. Bu surumdeki fonksiyonel duzeltme Android WebView'a ozeldir.
-- Android durumu: Android shell'in son AAB'si `v3.3.5` / versionCode **69** olarak derlendi ve imzalandı (`2PlayerSnake-v3.3.5-release.aab`). Çevrimdışı fallback `mobile_offline_fallback.html` v3.3.5 ile eşitlendi.
+- Aktif referans surum: `v3.3.6` (iOS: Build 38)
+- Temel referans dosya: `2 Player Snake Mobile v3.3.6.html`
+- Kaynak/yayin durumu: v3.3.6 mobil ve PC kaynak dosyalari olusturuldu. Patreon destek sistemi oyun kodlarindan tamamen cikarildi.
+- Android durumu: Android cevrimdisi fallback `mobile_offline_fallback.html` v3.3.6 ile esitlendi.
+- iOS durumu: iOS Build 38 hazirlandi; Game Center (15 basarim), App Store doğrudan puanlama modal baglantisi, v3.3.6 cevrimdisi fallback ve Xcode pbxproj guncellendi.
 - Dosya yapisi: her sey tek HTML dosyasindadir; CSS veya JS ayirma yapilmaz.
 - Tasarim dili: koyu cyberpunk zemin, neon pembe ve turkuaz glow, camimsi panel dili, mobil odakli dar yerlesim.
 - Ana menu logosu web uzerindeki guncel logo kaynagini kullanir; gerekirse yerel fallback ile calisir.
 
-## Son Guncelleme (v3.3.5)
+## Son Guncelleme (v3.3.6 - iOS Build 38)
+- **v3.3.6**: Patreon Destek Sisteminin Kaldirilmasi, Apple Game Center ve App Store Puanlama Entegrasyonu.
+  - **Patreon Kaldirildi:** Ayarlar > Gelistiriciler (Developers) modalinda yer alan Patreon bagis ve destek bolumu 21 dilde tamamen temizlendi.
+  - **CSS Temizligi:** `.btn-patreon`, `.btn-patreon i`, `.btn-patreon:active` stilleri ve ilgili buton secicileri kaldirildi.
+  - **Apple Game Center Entegrasyonu (`GameKit` / `GameCenterManager.swift`):**
+    - Android Play Games'teki 15 basarim (`ACH_FIRST_FOOD` - `ACH_ADVENTURE_COMPLETE`) birebir iOS Game Center'a entegre edildi.
+    - Acilista `GKLocalPlayer.local.authenticateHandler` ile kullanici otomatik dogrulanir.
+    - Basarim kazanildiginda `GKAchievement.report` ile Apple Game Center sunucularina iletilir ve yerel tamamlama banner'i gosterilir.
+    - Menuden "Basarimlar" tiklandiginda kullanici bagliysa yerel Apple Game Center basarimlar penceresi (`GKGameCenterViewController`) acilir; bagli degilse oyun ici HTML neon modal gosterilir.
+  - **App Store "Bize Puan Verin" Duzeltmesi:**
+    - `SKStoreReviewController.requestReview`'un TestFlight'ta tamamen engellenmesi ve yillik 3 gosterim kotasina takilmasi nedeniyle calismayan puanlama butonu duzeltildi.
+    - Butona basildiginda dogrudan App Store 5 yildiz ve yorum yazma ekranini acan `itms-apps://itunes.apple.com/app/id6811546748?action=write-review` baglantisi calistirilir.
+  - **Cevrimdisi Senkron:** iOS ve Android `mobile_offline_fallback.html` dosyalari v3.3.6 ile senkronize edilerek Patreon'dan tamamen arindirildi.
+  - **iOS Build 38:** `Info.plist` ve `project.pbxproj` icinde `MARKETING_VERSION = 3.3.6` ve `CURRENT_PROJECT_VERSION = 38` tanimlandi.
+  - **Dogrulama:** `node --test tests/ios-runtime.test.cjs` 17/17 test ile %100 basarili gecti.
+
+## Onceki Guncelleme (v3.3.5)
 - **v3.3.5**: Android WebView menu gecis akiciligi duzeltmesi.
   - **Canli demo korumasi:** Android WebView'da menu penceresi degisirken arka plan demosu sadece gecis suresince (`340 ms`) son render karesinde tutulur. Oyun ici render ve mobil tarayici akisi degismez; gecis tamamlaninca demo yeniden akar.
   - **Giden kart optimizasyonu:** Gecis boyunca olusturulan eski menu kopyasinda yalnizca Android WebView icin `backdrop-filter` ve animasyonlu kart parlamasi kapatilir. Gelen kartin mevcut cam gorunumu korunur.

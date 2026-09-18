@@ -2,6 +2,25 @@
 
 ## iOS App Store & TestFlight Release Notes
 
+### TestFlight & App Store Release — Build 38 (v3.3.6, 2026-09-18)
+
+- **Apple Game Center Entegrasyonu (`GameKit` / `GameCenterManager.swift`):**
+  - Android Play Games'teki 15 başarımın tamamı (`ACH_FIRST_FOOD` - `ACH_ADVENTURE_COMPLETE`) Apple Game Center'a bağlandı.
+  - Uygulama açılışında `GKLocalPlayer.local.authenticateHandler` ile Game Center oturumu otomatik doğrulanır.
+  - Başarım kilidi açıldığında `GKAchievement.report` ile Game Center'a iletilir ve yerel tamamlama banner'ı gösterilir.
+  - Menüden "Başarımlar" seçildiğinde kullanıcı bağlıysa yerel `GKGameCenterViewController` arayüzü sunulur; bağlı değilse oyun içi neon HTML başarımlar penceresi fallback olarak açılır.
+- **App Store "Bize Puan Verin" Doğrudan İnceleme Modalı:**
+  - `SKStoreReviewController.requestReview`'un TestFlight'ta engellenmesi ve yıllık 3 gösterim kotasına takılması sorunları giderildi.
+  - Menüdeki butona tıklandığında `itms-apps://itunes.apple.com/app/id6811546748?action=write-review` resmi derin bağlantısı açılarak kullanıcı doğrudan 5 yıldız seçebileceği ve yorum yazabileceği App Store formuna yönlendirilir.
+- **Patreon Destek Sisteminin Kaldırılması:**
+  - Oyunun tüm HTML ve offline dosyalarındaki Patreon bağlantıları ve CSS'leri 21 dilde temizlendi.
+- **Proje Meta Verileri & Sürüm Yükseltme:**
+  - `Info.plist`: `CFBundleShortVersionString = 3.3.6`, `CFBundleVersion = 38`.
+  - `project.pbxproj`: `MARKETING_VERSION = 3.3.6`, `CURRENT_PROJECT_VERSION = 38`, `GameCenterManager.swift` ve `GameKit.framework` kaynaklara eklendi.
+  - `mobile_offline_fallback.html`: v3.3.6 sürümüyle senkronize edildi.
+- **Otomatik Testler:**
+  - `node --test tests/ios-runtime.test.cjs` 17/17 test ile %100 başarılı geçti.
+
 ### TestFlight Release — Build 37 (v3.3.5, 2026-09-16)
 
 **Yükleme doğrulandı:** [Run #38](https://github.com/toygun1725/2-player-snake/actions/runs/35062652055)
@@ -189,9 +208,28 @@ iOS v1.0.0 (Build 14) Yenilikleri:
 
 ---
 
+## Core Game Release Notes (v3.3.6, 2026-09-18)
+
+> Durum (2026-09-18): Mobil ve PC ana oyun dosyaları (`2 Player Snake Mobile v3.3.6.html`, `2 Player Snake PC v3.3.6.html`) ile iOS ve Android çevrimdışı fallback (`mobile_offline_fallback.html`) dosyaları `v3.3.6` sürümüne yükseltildi.
+
+- **PC Ana Menüye "iPhone'da Oyna" Butonu Eklendi:**
+  - PC sürümünde "Android'te Oyna" butonunun hemen üzerine `menuPlayOnIphone` butonu eklendi.
+  - Tıklandığında doğrudan canlı App Store sayfasına (`https://apps.apple.com/us/app/2-player-snake/id6811546748`, Apple ID: `6811546748`) yönlendirir.
+  - Hover durumunda iOS / App Store resmi canlı elektrik mavisi gradyanı (`linear-gradient(135deg, #0071e3 0%, #00c6ff 100%)`) ile parlar.
+  - 21 dilin tamamında (`playOnIphone`) eksiksiz yerelleştirildi.
+- **Patreon Destek Sistemi Tamamen Kaldırıldı:**
+  - Ayarlar > Geliştiriciler (Developers) modalında yer alan Patreon bağış ve destek bölümü 21 dilde tamamen temizlendi.
+  - CSS stilleri (`.btn-patreon`, `.btn-patreon i`, `.btn-patreon:active`), buton seçicileri ve hover sweep efektleri tamamen kaldırıldı.
+  - Geliştiriciler modalında sırasıyla: Geliştiriciler, Instagram, Haklar ve Lisans, Kullanım Koşulları, İletişim/Website ve Sürüm (`v3.3.6`) bölümleri kesintisiz ve temiz bir akışla sunulmaktadır.
+- **Sürüm Senkronizasyonu:**
+  - Mobil, PC, iOS offline fallback ve Android offline fallback sürümleri `v3.3.6` olarak senkronize edildi.
+  - Otomatik test suite'i (`tests/ios-runtime.test.cjs`) `v3.3.6.html` dosyasına bağlandı ve 16/16 test başarıyla doğrulandı.
+
+---
+
 ## Play Store Release Notes
 
-> Durum (2026-09-04): Güncel mobil ve PC web kaynak referansı `v3.3.5`. Android shell'in son AAB'si `v3.3.5` / versionCode **69** olarak derlendi, R8 bellek ve kalite optimizasyonları ile imzalandı (`2PlayerSnake-v3.3.5-release.aab`).
+> Durum (2026-09-18): Güncel mobil ve PC web kaynak referansı `v3.3.6`. Android shell'in son AAB'si `v3.3.5` / versionCode **69** olarak derlendi, R8 bellek ve kalite optimizasyonları ile imzalandı (`2PlayerSnake-v3.3.5-release.aab`). Çevrimdışı fallback `mobile_offline_fallback.html` v3.3.6 ile eşitlendi.
 
 ## Published Play Store Release Notes (v3.3.5 / Code 69)
 

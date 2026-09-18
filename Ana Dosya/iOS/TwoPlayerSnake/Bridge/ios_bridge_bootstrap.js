@@ -88,6 +88,9 @@
     },
     showAchievements: function () {
       postToNative("showAchievements", {});
+    },
+    unlockAchievement: function (key) {
+      postToNative("unlockAchievement", { key: key });
     }
   };
 
@@ -107,6 +110,9 @@
     },
     onGameOver: function (payload) {
       window.Android.onGameOver(safeSerialize(payload));
+    },
+    unlockAchievement: function (key) {
+      window.Android.unlockAchievement(key);
     }
   };
 
@@ -123,6 +129,9 @@
         break;
       case "gameOver":
         window.TwoPlayerSnakeNative.onGameOver(payload);
+        break;
+      case "unlockAchievement":
+        window.TwoPlayerSnakeNative.unlockAchievement(payload && payload.key ? payload.key : payload);
         break;
       default:
         window.TwoPlayerSnakeNative.emit(name, payload);

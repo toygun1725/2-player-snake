@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>2 Player Snake Mobile v3.3.5 - Play Online & Local</title>
+    <title>2 Player Snake Mobile v3.3.6 - Play Online & Local</title>
     <script>window.__twoPlayerSnakeUseNativeAssets = window.__twoPlayerSnakePlatform === 'ios' && typeof window.__twoPlayerSnakeAssetBaseUrl === 'string'; window.__twoPlayerSnakeOfflineMode = true; window.io = function () { throw new Error("Online multiplayer requires an internet connection."); };</script>
     <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -86,7 +86,7 @@
         }
     </script>
 
-    <!-- Version: v3.3.5 Mobile -->
+    <!-- Version: v3.3.6 Mobile -->
     <style>
         :root {
             --bg: #0b0f14;
@@ -791,7 +791,6 @@
         }
 
         .btn-instagram,
-        .btn-patreon,
         .game-end-btn {
             position: relative;
             overflow: hidden;
@@ -1055,37 +1054,6 @@
             letter-spacing: 0.08em;
             opacity: 0.72;
             transform: translateY(-2px);
-        }
-
-        .btn-patreon {
-            background: linear-gradient(135deg, #ff424d 0%, #f96854 100%);
-            color: white !important;
-            border: none;
-            padding: 12px 18px;
-            border-radius: 12px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin: 14px 0;
-            width: 100%;
-            box-shadow: 0 4px 15px rgba(255, 66, 77, 0.4);
-            text-transform: uppercase;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: transform 0.1s, filter 0.1s;
-        }
-
-        .btn-patreon i {
-            font-size: 20px;
-        }
-
-        .btn-patreon:active {
-            transform: scale(0.98);
-            filter: brightness(0.9);
         }
 
         .btn-instagram {
@@ -3109,7 +3077,7 @@
               2 Player Snake - Beta v3.2.2 Mobile
               ============================= */
 
-            const VERSION = 'v3.3.5';
+            const VERSION = 'v3.3.6';
             const IS_IOS_SHELL = window.__twoPlayerSnakePlatform === 'ios';
             window.__twoPlayerSnakeRuntimeRevision = 36;
             // Bounded counters in the existing game loop; no additional animation timer.
@@ -3451,11 +3419,6 @@
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Instagram'da Takip Et</button>
 </div>
 <div class="developers-section">
-  <h3>🤝 Bizi destekleyin!</h3>
-  <p>Bizi Patreon sayfamızdan destekleyin ve oyunu geliştirmemize katkı sağlayın!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Patreon'da Destekle</button>
-</div>
-<div class="developers-section">
   <h3>📜 Haklar ve Lisans</h3>
   <p>Oyun üzerindeki tüm geliştirme, tasarım ve içerik hakları geliştiricilerine aittir. İzinsiz kopyalama, paylaşma veya ticari amaçlarla kullanma yasaktır.</p>
 </div>
@@ -3531,11 +3494,6 @@
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Follow on Instagram</button>
 </div>
 <div class="developers-section">
-  <h3>🤝 Support Us!</h3>
-  <p>Support us via our Patreon page and contribute to improving the game!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Support on Patreon</button>
-</div>
-<div class="developers-section">
   <h3>📜 Rights & License</h3>
   <p>All development, design, and content rights for the game belong to the developers. Unauthorized copying, sharing, or commercial use is prohibited.</p>
 </div>
@@ -3605,11 +3563,6 @@
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Suivre sur Instagram</button>
 </div>
 <div class="developers-section">
-  <h3>🤝 Soutenez-nous !</h3>
-  <p>Soutenez-nous via notre page Patreon et contribuez à l'amélioration du jeu !</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Soutenir sur Patreon</button>
-</div>
-<div class="developers-section">
   <h3>📜 Droits et Licence</h3>
   <p>Tous les droits de développement, conception et contenu du jeu appartiennent aux développeurs. La copie, le partage ou l'utilisation commerciale non autorisées sont interdits.</p>
 </div>
@@ -3663,11 +3616,6 @@
   <h3>📸 Instagram</h3>
   <p>Seguici su Instagram per aggiornamenti e notizie!</p>
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Seguici su Instagram</button>
-</div>
-<div class="developers-section">
-  <h3>🤝 Sostienici!</h3>
-  <p>Sostienici tramite la nostra pagina Patreon e contribuisci a migliorare il gioco!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Sostienici su Patreon</button>
 </div>
 <div class="developers-section">
   <h3>📜 Diritti & Licenza</h3>
@@ -3729,11 +3677,6 @@
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Síguenos en Instagram</button>
 </div>
 <div class="developers-section">
-  <h3>🤝 ¡Apóyanos!</h3>
-  <p>¡Apóyanos a través de nuestra página de Patreon y contribuye a mejorar el juego!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Apóyanos en Patreon</button>
-</div>
-<div class="developers-section">
   <h3>📜 Derechos & Licencia</h3>
   <p>Todos los derechos de desarrollo, diseño y contenido del juego pertenecen a los desarrolladores. Se prohíbe la copia, compartición o uso comercial no autorizados.</p>
 </div>
@@ -3793,11 +3736,6 @@
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Auf Instagram folgen</button>
 </div>
 <div class="developers-section">
-  <h3>🤝 Unterstütze uns!</h3>
-  <p>Unterstütze uns über unsere Patreon-Seite und trage zur Verbesserung des Spiels bei!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Auf Patreon unterstützen</button>
-</div>
-<div class="developers-section">
   <h3>📜 Rechte & Lizenz</h3>
   <p>Alle Entwicklungs-, Design- und Inhaltsrechte für das Spiel liegen bei den Entwicklern. Unerlaubtes Kopieren, Teilen oder kommerzielle Nutzung ist untersagt.</p>
 </div>
@@ -3833,11 +3771,6 @@
 <div class="developers-section">
   <h3>📸 Instagram</h3>
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> 在 Instagram 上关注我们</button>
-</div>
-<div class="developers-section">
-  <h3>🤝 支持我们！</h3>
-  <p>请通过 Patreon 页面支持我们，帮助我们改进游戏！</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> 在 Patreon 上支持我们</button>
 </div></div>`
                 },
                 hi: {
@@ -3861,11 +3794,6 @@
 <div class="developers-section">
   <h3>📸 Instagram</h3>
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Instagram पर फॉलो करें</button>
-</div>
-<div class="developers-section">
-  <h3>🤝 हमें समर्थन दें!</h3>
-  <p>Patreon पेज के माध्यम से हमें समर्थन दें और गेम को बेहतर बनाने में योगदान दें!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Patreon पर समर्थन करें</button>
 </div></div>`
                 },
                 pl: {
@@ -3889,11 +3817,6 @@
 <div class="developers-section">
   <h3>📸 Instagram</h3>
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Obserwuj na Instagramie</button>
-</div>
-<div class="developers-section">
-  <h3>🤝 Wesprzyj nas!</h3>
-  <p>Wesprzyj nas przez naszą stronę Patreon i pomóż ulepszać grę!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Wesprzyj na Patreon</button>
 </div></div>`
                 },
                 ptbr: {
@@ -3917,11 +3840,6 @@
 <div class="developers-section">
   <h3>📸 Instagram</h3>
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Siga-nos no Instagram</button>
-</div>
-<div class="developers-section">
-  <h3>🤝 Apoie-nos!</h3>
-  <p>Apoie-nos pela nossa página do Patreon e contribua para melhorar o jogo!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Apoie no Patreon</button>
 </div></div>`
                 },
                 ar: {
@@ -3981,11 +3899,6 @@
   <h3>📸 Instagram</h3>
   <p>تابعنا على إنستغرام للتحديثات والأخبار!</p>
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> تابع على إنستغرام</button>
-</div>
-<div class="developers-section">
-  <h3>🤝 ادعمنا!</h3>
-  <p>ادعمنا عبر صفحة Patreon وساهم في تطوير اللعبة!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> ادعم على Patreon</button>
 </div>
 <div class="developers-section">
   <h3>📜 الحقوق والترخيص</h3>
@@ -4063,11 +3976,6 @@
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Подписаться в Instagram</button>
 </div>
 <div class="developers-section">
-  <h3>🤝 Поддержите нас!</h3>
-  <p>Поддержите проект на Patreon и помогите развитию игры!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Patreon</button>
-</div>
-<div class="developers-section">
   <h3>📜 Права и лицензия</h3>
   <p>Все права на разработку, дизайн и контент принадлежат авторам. Копирование и коммерческое использование без разрешения запрещены.</p>
 </div>
@@ -4141,11 +4049,6 @@
   <h3>📸 Instagram</h3>
   <p>Ikuti kami di Instagram untuk pembaruan!</p>
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Ikuti di Instagram</button>
-</div>
-<div class="developers-section">
-  <h3>🤝 Dukung kami!</h3>
-  <p>Dukung lewat Patreon dan bantu kami menyempurnakan game!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Patreon</button>
 </div>
 <div class="developers-section">
   <h3>📜 Hak & Lisensi</h3>
@@ -4223,11 +4126,6 @@
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Instagramでフォロー</button>
 </div>
 <div class="developers-section">
-  <h3>🤝 サポート</h3>
-  <p>Patreonで支援してゲーム改善にご協力ください。</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Patreon</button>
-</div>
-<div class="developers-section">
   <h3>📜 権利とライセンス</h3>
   <p>開発・デザイン・コンテンツの権利は開発者に帰属します。無断複製・商用利用は禁止です。</p>
 </div>
@@ -4303,11 +4201,6 @@
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> 인스타그램 팔로우</button>
 </div>
 <div class="developers-section">
-  <h3>🤝 후원</h3>
-  <p>Patreon으로 후원하고 게임 개선에 참여해 주세요.</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Patreon</button>
-</div>
-<div class="developers-section">
   <h3>📜 권리·라이선스</h3>
   <p>개발·디자인·콘텐츠 권리는 개발자에게 있습니다. 무단 복제·상업적 이용을 금지합니다.</p>
 </div>
@@ -4378,11 +4271,6 @@
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Theo dõi trên Instagram</button>
 </div>
 <div class="developers-section">
-  <h3>🤝 Ủng Hộ Chúng Tôi!</h3>
-  <p>Ủng hộ chúng tôi qua trang Patreon và giúp cải thiện trò chơi!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Ủng Hộ trên Patreon</button>
-</div>
-<div class="developers-section">
   <h3>📜 Quyền & Giấy Phép</h3>
   <p>Tất cả quyền phát triển, thiết kế và nội dung thuộc về nhà phát triển. Nghiêm cấm sao chép hoặc sử dụng thương mại trái phép.</p>
 </div>
@@ -4447,11 +4335,6 @@
   <h3>📸 Instagram</h3>
   <p>ติดตามเราบน Instagram เพื่ออัปเดตข่าวสาร!</p>
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> ติดตามบน Instagram</button>
-</div>
-<div class="developers-section">
-  <h3>🤝 สนับสนุนเรา!</h3>
-  <p>สนับสนุนเราผ่านหน้า Patreon และช่วยปรับปรุงเกม!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> สนับสนุนบน Patreon</button>
 </div>
 <div class="developers-section">
   <h3>📜 สิทธิ์ & ใบอนุญาต</h3>
@@ -4520,11 +4403,6 @@
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Sundan sa Instagram</button>
 </div>
 <div class="developers-section">
-  <h3>🤝 Suportahan Kami!</h3>
-  <p>Suportahan kami sa pamamagitan ng aming Patreon page at tumulong sa pagpapabuti ng laro!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Suportahan sa Patreon</button>
-</div>
-<div class="developers-section">
   <h3>📜 Mga Karapatan & Lisensya</h3>
   <p>Lahat ng karapatan sa pagbuo, disenyo at nilalaman ng laro ay pag-aari ng mga developer. Ipinagbabawal ang hindi awtorisadong pagkopya o komersyal na paggamit.</p>
 </div>
@@ -4589,11 +4467,6 @@
   <h3>📸 Instagram</h3>
   <p>Volg ons op Instagram voor updates en nieuws!</p>
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Volgen op Instagram</button>
-</div>
-<div class="developers-section">
-  <h3>🤝 Steun Ons!</h3>
-  <p>Steun ons via onze Patreon-pagina en help het spel te verbeteren!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Steunen op Patreon</button>
 </div>
 <div class="developers-section">
   <h3>📜 Rechten & Licentie</h3>
@@ -4662,11 +4535,6 @@
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Ακολουθήστε στο Instagram</button>
 </div>
 <div class="developers-section">
-  <h3>🤝 Υποστηρίξτε Μας!</h3>
-  <p>Υποστηρίξτε μας μέσω της σελίδας Patreon και βοηθήστε στη βελτίωση του παιχνιδιού!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Υποστηρίξτε στο Patreon</button>
-</div>
-<div class="developers-section">
   <h3>📜 Δικαιώματα & Άδεια</h3>
   <p>Όλα τα δικαιώματα ανάπτυξης, σχεδιασμού και περιεχομένου ανήκουν στους προγραμματιστές. Απαγορεύεται η μη εξουσιοδοτημένη αντιγραφή ή εμπορική χρήση.</p>
 </div>
@@ -4731,11 +4599,6 @@
   <h3>📸 Instagram</h3>
   <p>Sledujte nás na Instagramu pro aktualizace!</p>
   <button class="btn-instagram" onclick="window.open('https://www.instagram.com/2playersnake', '_blank')"><i class="fa-brands fa-instagram"></i> Sledovat na Instagramu</button>
-</div>
-<div class="developers-section">
-  <h3>🤝 Podpořte nás!</h3>
-  <p>Podpořte nás prostřednictvím naší stránky Patreon a pomozte vylepšit hru!</p>
-  <button class="btn-patreon" onclick="window.open('https://www.patreon.com/c/2playersnake/collections', '_blank')"><i class="fa-brands fa-patreon"></i> Podpořit na Patreon</button>
 </div>
 <div class="developers-section">
   <h3>📜 Práva & Licence</h3>

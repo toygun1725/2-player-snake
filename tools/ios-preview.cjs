@@ -21,7 +21,7 @@ const server = http.createServer((req, res) => {
   if (url.pathname !== '/') { res.writeHead(404).end(); return; }
   const file = url.searchParams.get('source') === 'offline'
     ? path.join(nativeRoot, 'Resources/Offline/mobile_offline_fallback.html')
-    : path.join(root, 'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.5.html');
+    : path.join(root, 'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.6.html');
   let html = fs.readFileSync(file, 'utf8');
   if (url.searchParams.get('platform') !== 'web') {
     let bridge = fs.readFileSync(path.join(nativeRoot, 'Bridge/ios_bridge_bootstrap.js'), 'utf8');

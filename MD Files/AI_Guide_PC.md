@@ -3,13 +3,22 @@
 Bu belge, PC surumunde calisacak yapay zekalar icin guncel teknik referanstir. PC surumu de mobil gibi tek HTML dosyada yasamalidir; CSS, JS, i18n, canvas cizimi, reklam mantigi ve sentetik sesler ayni dosyada tutulur.
 
 ### Referans Surum
-- Aktif referans surum: `v3.3.5`
-- Temel referans dosya: `2 Player Snake PC v3.3.5.html`
-- Kaynak/yayin durumu: v3.3.5 mobil ve PC kaynak dosyalari olusturuldu. Bu surumdeki fonksiyonel duzeltme Android WebView'a ozeldir; PC dosyasi surum paritesini korur.
+- Aktif referans surum: `v3.3.6`
+- Temel referans dosya: `2 Player Snake PC v3.3.6.html`
+- Kaynak/yayin durumu: v3.3.6 mobil ve PC kaynak dosyalari olusturuldu. Patreon destek sistemi oyun kodlarindan tamamen cikarildi.
 - Dosya yapisi: oyun mantigi, HUD, popup'lar, ceviriler and sesler tek HTML icindedir.
 - Tasarim dili: neon cyberpunk, koyu mavi arka plan, pembe ve turkuaz glow, camimsi HUD panelleri.
 
-## Son Guncelleme (v3.3.5)
+## Son Guncelleme (v3.3.6)
+- **v3.3.6**: Patreon Destek Sisteminin Kaldirilmasi, "iPhone'da Oyna" Butonu ve Surum Senkronizasyonu.
+  - **iPhone'da Oyna Butonu:** Ana Menü'de "Android'te Oyna" butonunun hemen uzerine `menuPlayOnIphone` butonu eklendi. Tıklandığında App Store bağlantısına (`https://apps.apple.com/us/app/2-player-snake/id6811546748`) gider.
+  - **Tasarım & Hover Stili:** `.btn.btn-iphone-play` butonu menüdeki cam panel tasarımını korur; hover durumunda canlı iOS elektrik mavisi gradyanı (`linear-gradient(135deg, #0071e3 0%, #00c6ff 100%)`) alır.
+  - **21 Dilde Çeviri:** `playOnIphone` anahtarı 21 dilin tamamında (`tr`, `en`, `fr`, `it`, `es`, `de`, `zh`, `hi`, `pl`, `pt`, `ar`, `ru`, `id`, `ja`, `ko`, `vi`, `th`, `tl`, `nl`, `el`, `cs`) sözlüğe eklendi.
+  - **Patreon Kaldirildi:** Ayarlar > Gelistiriciler (Developers) modalinda yer alan Patreon bagis ve destek bolumu 21 dilde tamamen temizlendi.
+  - **CSS Temizligi:** `.btn-patreon`, `.btn-patreon i`, `.btn-patreon:active` stilleri ile hover sweep efekt secicileri (`.btn-patreon::after`, `.btn-patreon:hover::after`) kaldirildi.
+  - **Surum Senkronu:** `2 Player Snake PC v3.3.6.html` olarak yeni referans dosyasi olusturuldu; `VERSION = 'v3.3.6'` sabiti guncellendi.
+
+## Onceki Guncelleme (v3.3.5)
 - **v3.3.5**: Mobil Android WebView menu gecisi duzeltmesiyle surum paritesi.
   - PC oyun mantigi ve goruntusu degismedi.
   - PC kaynak dosyasi `v3.3.5` olarak olusturuldu; `VERSION` sabiti guncellendi.
