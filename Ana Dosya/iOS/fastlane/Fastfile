@@ -214,10 +214,38 @@ platform :ios do
       upload_to_testflight(
         api_key: api_key,
         ipa: ipa_path,
-        skip_waiting_for_build_processing: true, # CI runner'ın boş yere beklemesini önler
+        skip_waiting_for_build_processing: true, # CI runner'in bos yere beklemesini onler
         changelog: "2 Player Snake iOS Beta Derlemesi (#{build_num})"
       )
-      UI.success("2 Player Snake başarıyla TestFlight'a yüklendi!")
+      UI.success("2 Player Snake basariyla TestFlight'a yuklendi!")
+
+      # 9. App Store Metadata + Ekran Goruntuleri Yukle (deliver)
+      fastlane_dir = File.expand_path("../..", __FILE__)
+      meta_path    = File.join(fastlane_dir, "fastlane", "metadata")
+      shots_path   = File.join(fastlane_dir, "fastlane", "screenshots")
+
+      if Dir.exist?(meta_path) || Dir.exist?(shots_path)
+        UI.message("App Store metadata ve ekran goruntuleri yukleniyor...")
+        begin
+          upload_to_app_store(
+            api_key: api_key,
+            app_identifier: "com.twoplayersnake.app",
+            skip_binary_upload: true,
+            skip_screenshots: !Dir.exist?(shots_path),
+            skip_metadata: !Dir.exist?(meta_path),
+            overwrite_screenshots: true,
+            submit_for_review: false,
+            screenshots_path: shots_path,
+            metadata_path: meta_path,
+            languages: Dir.glob("#{meta_path}/*").select { |f| File.directory?(f) }.map { |f| File.basename(f) },
+            force: true,
+            precheck_include_in_app_purchases: false
+          )
+          UI.success("App Store metadata ve ekran goruntuleri yuklendi!")
+        rescue => ex
+          UI.important("App Store metadata yukleme uyarisi (#{ex.message}) — devam ediliyor.")
+        end
+      end
     else
       UI.user_error!("TwoPlayerSnake.xcodeproj bulunamadı! Lütfen proje yolunu kontrol edin: #{proj_path}")
     end

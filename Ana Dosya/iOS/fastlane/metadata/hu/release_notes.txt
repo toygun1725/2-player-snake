@@ -1,0 +1,4 @@
+﻿- Added Apple Game Center integration with 15 achievements to unlock!
+- High performance and 60 FPS fluidity optimizations for iPhone menus and animations.
+- Added direct App Store review and rating shortcut.
+- General bug fixes, visual polishes, and stability improvements.

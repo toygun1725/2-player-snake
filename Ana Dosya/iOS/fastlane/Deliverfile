@@ -1,0 +1,19 @@
+# Deliverfile — fastlane deliver configuration for 2 Player Snake
+# This configures App Store Connect metadata + screenshots upload
+
+app_identifier "com.twoplayersnake.app"
+skip_binary_upload true
+force true
+submit_for_review false
+
+# Screenshot paths (fastlane/screenshots/<locale>/<device_type>/)
+screenshots_path "./fastlane/screenshots"
+
+# Metadata paths (fastlane/metadata/<locale>/)
+metadata_path "./fastlane/metadata"
+
+# Override: upload screenshots every time
+overwrite_screenshots true
+
+# App Store primary locale
+primary_first_language "en-US"

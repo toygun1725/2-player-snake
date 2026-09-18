@@ -1,0 +1,1 @@
+﻿snake,2 player,multiplayer,offline,party,arcade,retro,pvp,two player,duo,worm,classic,battle
