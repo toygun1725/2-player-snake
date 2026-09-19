@@ -2,11 +2,14 @@
 
 ## iOS App Store & TestFlight Release Notes
 
-### TestFlight Release — Build 45 (v3.3.7, 2026-09-19)
+### App Store & TestFlight Release — Build 45 (v3.3.7, 2026-09-19)
 
-- **Durum:** **🚀 TESTFLIGHT DERLEMESİ & DAĞITIMI BAŞLATILDI (Build 45)** 🟢
-- **Tarih:** 19 Eylül 2026, 22:55 (TSI)
+- **Durum:** **🎉 APPLE İNCELEMESİNE GÖNDERİLDİ (Waiting for Review)** 🟡
+- **Gönderim Tarihi:** 19 Eylül 2026, 23:08 (TSI)
+- **Submission ID:** `56fe5578-39ff-4c0c-b05a-87c56ed0c11b`
 - **Uygulama Sürümü:** `3.3.7 (45)` (`CFBundleShortVersionString = 3.3.7`, `CFBundleVersion = 45`)
+- **İncelemeye Gönderilen Öğeler (16):** iOS App 3.3.7 (Build 45) + 15 Game Center Başarımı
+- **GitHub Run:** [Run #35465802316](https://github.com/toygun1725/2-player-snake/actions/runs/35465802316) (`ios-v3.3.7-b45` / `4098d9c`)
 - **App Store Çoklu Dil Desteği (`CFBundleLocalizations`):**
   - App Store ürün sayfasında "Diller: Sadece İngilizce" görünmesi sorunu çözüldü.
   - Oyunun desteklediği 21 dil `CFBundleLocalizations` etiketiyle `Info.plist` içine tanımlandı:
