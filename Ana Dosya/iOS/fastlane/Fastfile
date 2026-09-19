@@ -119,7 +119,7 @@ platform :ios do
     if (version_num.nil? || version_num.empty?) && ENV["GITHUB_REF_NAME"] && ENV["GITHUB_REF_NAME"] =~ /^ios-v([0-9.]+)-b/
       version_num = $1
     end
-    version_num ||= ENV["MARKETING_VERSION"] || "3.3.6"
+    version_num ||= ENV["MARKETING_VERSION"] || "3.3.7"
 
     proj_path = File.expand_path("../TwoPlayerSnake.xcodeproj", __dir__)
     UI.message("Xcode Proje Yolu: #{proj_path}")

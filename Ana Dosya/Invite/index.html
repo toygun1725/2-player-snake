@@ -63,7 +63,11 @@
         <img class="logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake">
         <div class="loader"></div>
         <h1>Oyuna Katılınıyor</h1>
-        <p>Lütfen bekleyin, lobiye yönlendiriliyorsunuz...</p>
+        <p id="statusMsg">Lütfen bekleyin, lobiye yönlendiriliyorsunuz...</p>
+        <div id="appButtons" style="margin-top: 24px; display: flex; flex-direction: column; gap: 12px; align-items: center;">
+            <a id="btnOpenApp" href="#" style="display: none; background: #00e5ff; color: #000; font-weight: bold; text-decoration: none; padding: 12px 28px; border-radius: 25px; font-size: 15px; box-shadow: 0 0 15px rgba(0,229,255,0.4);">UYGULAMADA AÇ</a>
+            <a id="btnPlayWeb" href="#" style="display: none; color: #8888aa; font-size: 13px; text-decoration: underline;">Web Sürümünde Oyna</a>
+        </div>
     </div>
 
     <script>
@@ -73,21 +77,48 @@
             const room = urlParams.get('room');
             const mode = urlParams.get('mode');
 
-            // Build target WordPress URL
+            // Build target URLs
             const targetBase = 'https://2playersnake.com/wp-content/uploads/game-mobile/index.html';
             let targetUrl = targetBase;
+            let schemeUrl = 'twoplayersnake://invite';
             
             if (room) {
                 targetUrl += '?room=' + encodeURIComponent(room);
+                schemeUrl += '?room=' + encodeURIComponent(room);
                 if (mode) {
                     targetUrl += '&mode=' + encodeURIComponent(mode);
+                    schemeUrl += '&mode=' + encodeURIComponent(mode);
                 }
             }
 
-            // Perform redirection after a short delay for smooth UI transition
+            const btnOpenApp = document.getElementById('btnOpenApp');
+            const btnPlayWeb = document.getElementById('btnPlayWeb');
+            const statusMsg = document.getElementById('statusMsg');
+
+            if (btnOpenApp) {
+                btnOpenApp.href = schemeUrl;
+                btnOpenApp.style.display = 'inline-block';
+            }
+            if (btnPlayWeb) {
+                btnPlayWeb.href = targetUrl;
+                btnPlayWeb.style.display = 'inline-block';
+            }
+
+            // iOS & Android device detection
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isAndroid = /Android/.test(navigator.userAgent);
+
+            if (room && (isIOS || isAndroid)) {
+                // Try launching native app first
+                window.location.href = schemeUrl;
+            }
+
+            // Fallback redirect to web version if app is not installed or opened
             setTimeout(function() {
-                window.location.replace(targetUrl);
-            }, 800);
+                if (!document.hidden) {
+                    window.location.replace(targetUrl);
+                }
+            }, 1500);
         })();
     </script>
 </body>

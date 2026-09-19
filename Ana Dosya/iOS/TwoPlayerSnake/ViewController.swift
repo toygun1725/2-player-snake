@@ -41,6 +41,10 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     private var activeNavigation: WKNavigation?
     private var loadStartedAt = Date()
 
+    // MARK: - Deep Link Durumu
+    private var pendingDeepLinkRoom: String?
+    private var pendingDeepLinkMode: String?
+
     override var prefersStatusBarHidden: Bool {
         return true
     }
@@ -71,6 +75,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             name: IAPManager.premiumStatusDidChangeNotification,
             object: nil
         )
+
+        NotificationManager.shared.handleAppLaunch()
 
         loadGame()
     }
@@ -401,13 +407,21 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
         guard var components = URLComponents(string: baseGameUrl) else { return }
 
-        let queryItems = [
+        var queryItems = [
             URLQueryItem(name: "app", value: "android"),
             URLQueryItem(name: "app_platform", value: "ios"),
-            URLQueryItem(name: "app_ver", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.3.6"),
-            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "41"),
+            URLQueryItem(name: "app_ver", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.3.7"),
+            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "44"),
             URLQueryItem(name: "app_device", value: "mobile")
         ]
+
+        if let room = pendingDeepLinkRoom {
+            queryItems.append(URLQueryItem(name: "shortcut", value: "online"))
+            queryItems.append(URLQueryItem(name: "room", value: room))
+            if let mode = pendingDeepLinkMode {
+                queryItems.append(URLQueryItem(name: "mode", value: mode))
+            }
+        }
 
         components.queryItems = queryItems
 
@@ -632,7 +646,13 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         coldStartWatchdogTimer?.invalidate()
         coldStartWatchdogTimer = nil
         publishSettingsToGame()
-        showStartButton()
+
+        if pendingDeepLinkRoom != nil {
+            executePendingDeepLink()
+        } else {
+            showStartButton()
+        }
+
         print("[GameReady] source=\(isShowingOfflineGame ? "offline" : "remote") seconds=\(Date().timeIntervalSince(loadStartedAt))")
         if isTeaserDismissed && !isShowingOfflineGame {
             AdManager.shared.requestTrackingAuthorization()
@@ -711,6 +731,46 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: buttonTitle, style: .default, handler: nil))
             self.present(alert, animated: true, completion: nil)
+        }
+    }
+
+    // MARK: - Deep Linking (Universal Links & Custom Scheme)
+    func handleDeepLink(url: URL) {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true) else { return }
+
+        let room = components.queryItems?.first(where: { $0.name == "room" })?.value
+        let mode = components.queryItems?.first(where: { $0.name == "mode" })?.value
+
+        guard let targetRoom = room, !targetRoom.isEmpty else { return }
+
+        pendingDeepLinkRoom = targetRoom
+        pendingDeepLinkMode = mode
+
+        print("[DeepLink] Received invite link - room: \(targetRoom), mode: \(mode ?? "default")")
+
+        if isGameLoaded {
+            executePendingDeepLink()
+        }
+    }
+
+    private func executePendingDeepLink() {
+        guard let room = pendingDeepLinkRoom else { return }
+        let mode = pendingDeepLinkMode ?? "normal"
+        pendingDeepLinkRoom = nil
+        pendingDeepLinkMode = nil
+
+        // Davet linki ile gelindiyse teaser videoyu hemen sonlandır ve odaya geç
+        dismissTeaserVideo()
+
+        let escapedRoom = room.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "'", with: "\\'")
+        let escapedMode = mode.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "'", with: "\\'")
+        let js = "if (typeof window.joinOnlineRoom === 'function') { window.joinOnlineRoom('\(escapedRoom)', '\(escapedMode)'); }"
+        webView.evaluateJavaScript(js) { _, error in
+            if let error = error {
+                print("[DeepLink] Failed to execute joinOnlineRoom: \(error)")
+            } else {
+                print("[DeepLink] Successfully invoked window.joinOnlineRoom for room \(escapedRoom)")
+            }
         }
     }
 }

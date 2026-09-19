@@ -32,6 +32,9 @@
 		2P0000000000000000000092 /* Orbitron-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000093 /* Orbitron-Bold.ttf */; };
 		2P0000000000000000000103 /* GameCenterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000102 /* GameCenterManager.swift */; };
 		2P0000000000000000000105 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000104 /* GameKit.framework */; };
+		2P0000000000000000000112 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000111 /* NotificationManager.swift */; };
+		2P0000000000000000000114 /* NotificationStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000113 /* NotificationStrings.swift */; };
+		2P0000000000000000000116 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000115 /* UserNotifications.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,6 +66,9 @@
 		2P0000000000000000000102 /* GameCenterManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCenterManager.swift; sourceTree = "<group>"; };
 		2P0000000000000000000104 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 		2P0000000000000000000108 /* TwoPlayerSnake.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TwoPlayerSnake.entitlements; sourceTree = "<group>"; };
+		2P0000000000000000000111 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		2P0000000000000000000113 /* NotificationStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationStrings.swift; sourceTree = "<group>"; };
+		2P0000000000000000000115 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +83,7 @@
 				2P0000000000000000000049 /* AppTrackingTransparency.framework in Frameworks */,
 				2P0000000000000000000051 /* AdSupport.framework in Frameworks */,
 				2P0000000000000000000105 /* GameKit.framework in Frameworks */,
+				2P0000000000000000000116 /* UserNotifications.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,6 +111,7 @@
 				2P0000000000000000000082 /* Ads */,
 				2P0000000000000000000088 /* Purchases */,
 				2P0000000000000000000106 /* GameCenter */,
+				2P0000000000000000000110 /* Notifications */,
 				2P0000000000000000000083 /* Bridge */,
 				2P0000000000000000000085 /* Resources */,
 				2P0000000000000000000026 /* LaunchScreen.storyboard */,
@@ -175,6 +183,15 @@
 			path = GameCenter;
 			sourceTree = "<group>";
 		};
+		2P0000000000000000000110 /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				2P0000000000000000000111 /* NotificationManager.swift */,
+				2P0000000000000000000113 /* NotificationStrings.swift */,
+			);
+			path = Notifications;
+			sourceTree = "<group>";
+		};
 		2P0000000000000000000084 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -185,6 +202,7 @@
 				2P0000000000000000000048 /* AppTrackingTransparency.framework */,
 				2P0000000000000000000050 /* AdSupport.framework */,
 				2P0000000000000000000104 /* GameKit.framework */,
+				2P0000000000000000000115 /* UserNotifications.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -285,6 +303,8 @@
 				2P0000000000000000000023 /* GameScriptMessageHandler.swift in Sources */,
 				2P0000000000000000000087 /* IAPManager.swift in Sources */,
 				2P0000000000000000000103 /* GameCenterManager.swift in Sources */,
+				2P0000000000000000000112 /* NotificationManager.swift in Sources */,
+				2P0000000000000000000114 /* NotificationStrings.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -360,7 +380,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 44;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -417,7 +437,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 44;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
@@ -429,7 +449,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = TwoPlayerSnake/TwoPlayerSnake.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 44;
 				DEVELOPMENT_TEAM = GUFQF359Q7;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TwoPlayerSnake/Info.plist;
@@ -437,7 +457,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.3.6;
+				MARKETING_VERSION = 3.3.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.twoplayersnake.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -454,7 +474,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = TwoPlayerSnake/TwoPlayerSnake.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 44;
 				DEVELOPMENT_TEAM = GUFQF359Q7;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TwoPlayerSnake/Info.plist;
@@ -462,7 +482,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.3.6;
+				MARKETING_VERSION = 3.3.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.twoplayersnake.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

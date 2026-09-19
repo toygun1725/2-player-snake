@@ -766,6 +766,40 @@
             box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 0 8px rgba(255, 79, 191, 0.2) !important;
         }
 
+        /* ── iOS Bottom Controller Dock: Edge-to-edge flush indicator boxes ── */
+        html[data-ios-device="true"] #p1-controls {
+            padding-bottom: 0 !important;
+        }
+        html[data-ios-device="true"] #p1-controls.dual-ai .panel-with-btns,
+        html[data-ios-device="true"] #p1-controls:not(.dual-ai) .panel-with-btns {
+            padding-bottom: 0 !important;
+        }
+        html[data-ios-device="true"] #p1-controls:not(.dual-ai) #p1StatPanel {
+            padding-bottom: 0 !important;
+        }
+        html[data-ios-device="true"] #p1-controls .turn-btn {
+            height: 100% !important;
+        }
+        html[data-ios-device="true"] #p1-controls .turn-btn.left {
+            border-bottom-left-radius: 0 !important;
+        }
+        html[data-ios-device="true"] #p1-controls .turn-btn.right {
+            border-bottom-right-radius: 0 !important;
+        }
+        html[data-ios-device="true"] #p1-controls .turn-btn > svg {
+            transform: translateY(calc(-0.35 * env(safe-area-inset-bottom, 0px))) !important;
+        }
+        html[data-ios-device="true"] #p1-controls .player-stat-panel {
+            padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+            justify-content: center !important;
+        }
+        html[data-ios-device="true"] #p1-controls .player-stat-panel::before {
+            border-radius: 12px !important;
+        }
+        html[data-ios-device="true"] #p1-controls.dual-ai #pauseBtnP1 {
+            transform: translate(-50%, calc(-50% - 0.35 * env(safe-area-inset-bottom, 0px))) !important;
+        }
+
         @keyframes borderGlow {
             0% {
                 border-color: #ff4fbf;
@@ -8161,6 +8195,16 @@
 
                 setupSocketListeners();
             }
+
+            window.joinOnlineRoom = function(targetRoom, targetMode) {
+                if (!targetRoom) return;
+                try {
+                    if (typeof cleanupOnlineGame === 'function') cleanupOnlineGame();
+                    if (typeof closePauseBubbles === 'function') closePauseBubbles();
+                    if (typeof stopConfetti === 'function') stopConfetti();
+                } catch(e) {}
+                startOnlineServerConnectionWithRoom(targetRoom, targetMode || 'normal');
+            };
 
             function setupSocketListeners() {
                 if (!socket) return;

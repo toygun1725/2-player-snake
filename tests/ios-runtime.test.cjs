@@ -6,7 +6,7 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const files = [
-  'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.6.html',
+  'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.7.html',
   'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html'
 ];
 const bridge = read('Ana Dosya/iOS/TwoPlayerSnake/Bridge/ios_bridge_bootstrap.js');
@@ -155,6 +155,8 @@ for (const file of files) {
     assert.match(html, /html\[data-ios-device="true"\]\s*\.banner\.padded/);
     assert.match(html, /html\[data-ios-device="true"\]\s*\.main-menu-actions/);
     assert.match(html, /html\[data-ios-device="true"\]\s*\.android-menu-transition-ghost/);
+    assert.match(html, /html\[data-ios-device="true"\]\s*#p1-controls\s*\{[\s\S]*?padding-bottom:\s*0\s*!important/);
+    assert.match(html, /html\[data-ios-device="true"\]\s*#p1-controls\s*\.player-stat-panel::before\s*\{[\s\S]*?border-radius:\s*12px\s*!important/);
   });
   test(`${file}: moving obstacles and geometry invalidate stale paths`, () => {
     const c = aiFixture(html), s = snake(2, 5), food = [{ x: 10, y: 5 }];
@@ -187,3 +189,40 @@ test('online/offline AI implementation stays identical', () => {
   const chunks = files.map(file => { const h = read(file); return h.slice(h.indexOf('const _aiCache ='), h.indexOf('function softReset(')); });
   assert.equal(chunks[0], chunks[1]);
 });
+
+test('both online and offline HTML expose window.joinOnlineRoom', () => {
+  for (const file of files) {
+    const html = read(file);
+    assert.match(html, /window\.joinOnlineRoom\s*=\s*function/);
+    assert.match(html, /startOnlineServerConnectionWithRoom\(targetRoom,\s*targetMode/);
+  }
+});
+
+test('apple-app-site-association has valid json and correct App ID for Universal Links', () => {
+  const aasaContent = read('Ana Dosya/apple-app-site-association');
+  const aasa = JSON.parse(aasaContent);
+  assert.ok(aasa.applinks, 'missing applinks key');
+  assert.ok(Array.isArray(aasa.applinks.details), 'details should be array');
+  const appDetail = aasa.applinks.details[0];
+  assert.equal(appDetail.appID, 'GUFQF359Q7.com.twoplayersnake.app');
+  assert.ok(appDetail.paths.includes('/invite*'));
+});
+
+test('TwoPlayerSnake.entitlements contains applinks:2playersnake.com', () => {
+  const entitlements = read('Ana Dosya/iOS/TwoPlayerSnake/TwoPlayerSnake.entitlements');
+  assert.match(entitlements, /applinks:2playersnake\.com/);
+});
+
+test('Info.plist contains twoplayersnake URL scheme', () => {
+  const plist = read('Ana Dosya/iOS/TwoPlayerSnake/Info.plist');
+  assert.match(plist, /<string>twoplayersnake<\/string>/);
+});
+
+test('project.pbxproj includes NotificationManager, NotificationStrings, and UserNotifications.framework', () => {
+  const pbx = read('Ana Dosya/iOS/TwoPlayerSnake.xcodeproj/project.pbxproj');
+  assert.match(pbx, /NotificationManager\.swift in Sources/);
+  assert.match(pbx, /NotificationStrings\.swift in Sources/);
+  assert.match(pbx, /UserNotifications\.framework in Frameworks/);
+  assert.match(pbx, /CODE_SIGN_ENTITLEMENTS = TwoPlayerSnake\/TwoPlayerSnake\.entitlements;/);
+});
+

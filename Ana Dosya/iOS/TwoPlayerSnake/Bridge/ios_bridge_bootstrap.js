@@ -399,7 +399,7 @@
 
         /* Bottom player: insets above Home Indicator */
         #p1-controls:not(.dual-ai) #p1StatPanel {
-          padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+          padding-bottom: 0 !important;
         }
         #p1-controls:not(.dual-ai) .turn-btn > svg {
           transform: translateY(calc(-0.35 * env(safe-area-inset-bottom, 0px)));
@@ -413,8 +413,19 @@
         #p1-controls.dual-ai .turn-btn > svg {
           transform: translateY(calc(-0.35 * env(safe-area-inset-bottom, 0px)));
         }
-        #p1-controls.dual-ai .panel-with-btns {
+        #p1-controls.dual-ai .panel-with-btns,
+        #p1-controls:not(.dual-ai) .panel-with-btns {
+          padding-bottom: 0 !important;
+        }
+        #p1-controls .player-stat-panel {
           padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+          justify-content: center !important;
+        }
+        #p1-controls .player-stat-panel::before {
+          border-radius: 12px !important;
+        }
+        #p1-controls.dual-ai #pauseBtnP1 {
+          transform: translate(-50%, calc(-50% - 0.35 * env(safe-area-inset-bottom, 0px))) !important;
         }
 
         /* Canvas: flex alanı tam doldursun, gap bırakmasın */

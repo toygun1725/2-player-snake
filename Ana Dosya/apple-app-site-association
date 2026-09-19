@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "GUFQF359Q7.com.twoplayersnake.app",
+        "paths": [
+          "/invite",
+          "/invite/*",
+          "/invite*"
+        ]
+      }
+    ]
+  }
+}
