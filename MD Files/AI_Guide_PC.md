@@ -3,13 +3,18 @@
 Bu belge, PC surumunde calisacak yapay zekalar icin guncel teknik referanstir. PC surumu de mobil gibi tek HTML dosyada yasamalidir; CSS, JS, i18n, canvas cizimi, reklam mantigi ve sentetik sesler ayni dosyada tutulur.
 
 ### Referans Surum
-- Aktif referans surum: `v3.3.6`
-- Temel referans dosya: `2 Player Snake PC v3.3.6.html`
-- Kaynak/yayin durumu: v3.3.6 mobil ve PC kaynak dosyalari olusturuldu. Patreon destek sistemi oyun kodlarindan tamamen cikarildi.
+- Aktif referans surum: `v3.3.7`
+- Temel referans dosya: `2 Player Snake PC v3.3.7.html`
+- Kaynak/yayin durumu: v3.3.7 mobil ve PC kaynak dosyalari olusturuldu. WhatsApp/web oda davetleri icin `window.joinOnlineRoom` eklendi.
 - Dosya yapisi: oyun mantigi, HUD, popup'lar, ceviriler and sesler tek HTML icindedir.
 - Tasarim dili: neon cyberpunk, koyu mavi arka plan, pembe ve turkuaz glow, camimsi HUD panelleri.
 
-## Son Guncelleme (v3.3.6)
+## Son Guncelleme (v3.3.7)
+- **v3.3.7**: Web/Online Oda Katılım Köprüsü ve Sürüm Senkronizasyonu.
+  - **Oda Katılım Köprüsü:** PC oyununa `window.joinOnlineRoom(roomCode, gameStyleName)` fonksiyonu eklendi; dış bağlantılardan odaya bağlanma yeteneği sağlandı.
+  - **Surum Senkronu:** `2 Player Snake PC v3.3.7.html` olarak yeni referans dosyası oluşturuldu; başlık ve `VERSION = 'v3.3.7'` sabiti güncellendi.
+
+## Onceki Guncelleme (v3.3.6)
 - **v3.3.6**: Patreon Destek Sisteminin Kaldirilmasi, "iPhone'da Oyna" Butonu ve Surum Senkronizasyonu.
   - **iPhone'da Oyna Butonu:** Ana Menü'de "Android'te Oyna" butonunun hemen uzerine `menuPlayOnIphone` butonu eklendi. Tıklandığında App Store bağlantısına (`https://apps.apple.com/us/app/2-player-snake/id6811546748`) gider.
   - **Tasarım & Hover Stili:** `.btn.btn-iphone-play` butonu menüdeki cam panel tasarımını korur; hover durumunda canlı iOS elektrik mavisi gradyanı (`linear-gradient(135deg, #0071e3 0%, #00c6ff 100%)`) alır.

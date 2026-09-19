@@ -11,16 +11,24 @@ Bu belge, mobil surum uzerinde calisacak yapay zekalar icin guncel teknik refera
 > Web yayını henüz yapılmadı; Git push siteyi güncellemez.
 > Ayrıntılar: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
 
-- Aktif referans surum: `v3.3.6` (iOS: Build 42 - App Store'da Resmi Olarak ONAYLANDI & YAYINDA / Ready for Distribution)
-- Temel referans dosya: `2 Player Snake Mobile v3.3.6.html`
-- Kaynak/yayin durumu: v3.3.6 mobil ve PC kaynak dosyalari olusturuldu. Patreon destek sistemi oyun kodlarindan tamamen cikarildi.
-- Android durumu: Android cevrimdisi fallback `mobile_offline_fallback.html` v3.3.6 ile esitlendi.
-- iOS durumu: iOS Build 42 hazirlandi ve App Store tarafindan resmi olarak onaylandi (Ready for Distribution); 26 dilde yerellestirme tamamlandi; Game Center yetki dosyasi (`TwoPlayerSnake.entitlements`), Game Center (15 basarim), App Store doğrudan puanlama modal baglantisi, iPhone menü ve demo yılan donanım hızlandırma optimizasyonu, v3.3.6 cevrimdisi fallback ve Xcode pbxproj guncellendi.
+- Aktif referans surum: `v3.3.7` (iOS: Build 44 TestFlight)
+- Temel referans dosya: `2 Player Snake Mobile v3.3.7.html`
+- Kaynak/yayin durumu: v3.3.7 mobil ve PC kaynak dosyalari olusturuldu. WhatsApp davetleri icin `window.joinOnlineRoom` eklendi.
+- Android durumu: Android cevrimdisi fallback `mobile_offline_fallback.html` v3.3.6/v3.3.7 ile esitlendi.
+- iOS durumu: iOS Build 44 TestFlight dagitimina cikarildi; Universal Links (`applinks:2playersnake.com`, `apple-app-site-association`, `twoplayersnake://`), 21 dilde yerel bildirim sistemi (`NotificationManager.swift`, `NotificationStrings.swift`), iPhone HUD alt panel ovalestirmesi ve v3.3.7 guncellendi.
 - Dosya yapisi: her sey tek HTML dosyasindadir; CSS veya JS ayirma yapilmaz.
 - Tasarim dili: koyu cyberpunk zemin, neon pembe ve turkuaz glow, camimsi panel dili, mobil odakli dar yerlesim.
 - Ana menu logosu web uzerindeki guncel logo kaynagini kullanir; gerekirse yerel fallback ile calisir.
 
-## Son Guncelleme (v3.3.6 - iOS Build 42 - App Store'da Yayında)
+## Son Guncelleme (v3.3.7 - iOS Build 44 TestFlight)
+- **v3.3.7**: Universal Links (WhatsApp Davetiyle Dogrudan Odaya Giris), iOS Re-engagement Bildirimleri (21 Dil), iPhone HUD Alt Panel Oval Tasarimi ve Sürüm Senkronu.
+  - **Universal Links & WhatsApp Daveti:** WhatsApp'tan paylasilan `https://2playersnake.com/invite?room=...&mode=...` baglantisina basildiginda tarayici yerine dogrudan iPhone uygulamasinin acilmasi ve `window.joinOnlineRoom` ile teaser videoyu atlayarak odaya baglanmasi saglandi.
+  - **Re-engagement Bildirimleri (iOS):** Android ile ayni 21 dilde 1. Gun (24s), 3. Gun (72s) ve 7. Gun (168s) yerel bildirimleri planlandi. 3. acilista nazik izin istenir, her acilista sayaclar sifirlanir.
+  - **iPhone HUD Alt Panel Oval Tasarimi:** iPhone'daki renkli gosterge kutularinin alt koseleri Android ile birebir oval estetik (`border-radius: 12px`, `padding-bottom: 0`) kazandi.
+  - **Surum Senkronu:** `2 Player Snake Mobile v3.3.7.html` olusturuldu; baslik ve `VERSION = 'v3.3.7'` tanimlandi.
+  - **Dogrulama:** `node --test tests/ios-runtime.test.cjs` 26/26 test ile basariyla gecti.
+
+## Onceki Guncelleme (v3.3.6 - iOS Build 42 - App Store'da Yayında)
 - **v3.3.6**: Patreon Destek Sisteminin Kaldirilmasi, Apple Game Center ve App Store Puanlama Entegrasyonu, Game Center Yetki Dosyasi (`TwoPlayerSnake.entitlements`), iPhone Menü & Demo Yılan Performans Devrimi.
   - **Patreon Kaldirildi:** Ayarlar > Gelistiriciler (Developers) modalinda yer alan Patreon bagis ve destek bolumu 21 dilde tamamen temizlendi.
   - **CSS Temizligi:** `.btn-patreon`, `.btn-patreon i`, `.btn-patreon:active` stilleri ve ilgili buton secicileri kaldirildi.

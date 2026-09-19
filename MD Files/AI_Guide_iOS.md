@@ -4,9 +4,31 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 
 ---
 
-## 1. Güncel devir notu — Build 42 (v3.3.6, 2026-09-18)
+## 1. Güncel devir notu — Build 44 (v3.3.7, 2026-09-19)
 
-- Marketing version: `3.3.6`; son native build `42`, HTML runtime revision `36`.
+- Marketing version: `3.3.7`; son native build `44`, HTML runtime referansı `v3.3.7`.
+- **Universal Links & WhatsApp Daveti (Doğrudan Uygulama Açma):**
+  * `https://2playersnake.com/invite?room=...&mode=...` bağlantısı tıklandığında Safari yerine yerel iPhone uygulaması açılır.
+  * Teaser video otomatik atlanır ve doğrudan arkadaşın odasına bağlanılır.
+  * `TwoPlayerSnake.entitlements` dosyasına `applinks:2playersnake.com` yetkisi tanımlandı.
+  * `Info.plist` içine `twoplayersnake://` custom scheme eklendi.
+  * Sunucuda `public_html/.well-known/apple-app-site-association` Apple doğrulama dosyası canlıda aktif (HTTP 200 OK).
+  * Web fallback için `public_html/invite/index.html` güncellendi ("UYGULAMADA AÇ" butonu ve app scheme).
+  * `SceneDelegate.swift` ve `ViewController.swift` derin bağlantıları karşılayıp `window.joinOnlineRoom` üzerinden maça bağlar.
+- **Re-engagement Bildirimleri (iOS - 21 Dil):**
+  * `UNUserNotificationCenter` ile Android ile birebir paralel çalışan yerel bildirim altyapısı kuruldu (`NotificationManager.swift`, `NotificationStrings.swift`).
+  * 21 farklı dilde 1. Gün (24s), 3. Gün (72s) ve 7. Gün (168s) aralıklarında yerel bildirim planlanır.
+  * Oyuncu her oyuna girdiğinde sayaçlar sıfırlanır; 3. açılışta Apple HIG uyumlu izin istenir.
+- **HTML Sürümleri (v3.3.7):**
+  * Yeni `2 Player Snake Mobile v3.3.7.html` ve `2 Player Snake PC v3.3.7.html` oluşturuldu; `window.joinOnlineRoom` eklendi.
+- **UI Alt Panel Düzenlemesi:**
+  * iPhone ekranının altında renkli oyuncu stat kutularının alt köşeleri Android ile aynı oval estetiğe (`border-radius: 12px`, `padding-bottom: 0`) kavuşturuldu.
+- **Otomatik Testler:**
+  * `node --test tests/ios-runtime.test.cjs` 26/26 test ile %100 başarılı geçti.
+- **TestFlight CI/CD Dağıtımı:**
+  * Tag `ios-v3.3.7-b44` ile GitHub Actions Run #35463663786 üzerinden TestFlight derleme ve dağıtımı başlatıldı.
+
+## 1.1. Önceki App Store Sürümü — Build 42 (v3.3.6, 2026-09-18)
 - **🎉 App Store Canlı Yayında (Ready for Distribution - 2026-09-18):**
   * Uygulama **v3.3.6 (Build 42)** gönderildikten sadece 2.5 saat sonra Apple tarafından resmi olarak **ONAYLANDI ve DÜNYA GENELİNDE YAYINA GİRDİ (Ready for Distribution)**!
   * **26 Dilde Eksiksiz Yerelleştirme:** App Store Connect mağaza listelemesi 26 dilde (Türkçe, İspanyolca, Almanca, Fransızca, İtalyanca, Portekizce, Rusça, Felemenkçe, Lehçe, Arapça, Çince, Japonca, Korece, Hintçe, Endonezce, Tayca, Vietnamca, İbranice, İngilizce UK, Çekçe, Danca, Fince, Yunanca, Macarca, İsveççe, İngilizce US) Apple standartlarına uygun emojilerden arındırılmış temiz kurşun işaretli (`•`) şablonla onaylandı.

@@ -2,6 +2,31 @@
 
 ## iOS App Store & TestFlight Release Notes
 
+### TestFlight Release — Build 44 (v3.3.7, 2026-09-19)
+
+- **Durum:** **🚀 TESTFLIGHT DERLEMESİ & DAĞITIMI BAŞLATILDI (Build 44)** 🟢
+- **Tarih:** 19 Eylül 2026, 22:15 (TSI)
+- **GitHub Run:** [Run #35463663786](https://github.com/toygun1725/2-player-snake/actions/runs/35463663786) (`ios-v3.3.7-b44` / `db055d3`)
+- **Uygulama Sürümü:** `3.3.7 (44)` (`CFBundleShortVersionString = 3.3.7`, `CFBundleVersion = 44`)
+- **Universal Links & WhatsApp Daveti (Doğrudan Uygulama Açma):**
+  - WhatsApp, Notlar veya Mesajlar üzerinden paylaşılan `https://2playersnake.com/invite?room=...&mode=...` bağlantısına tıklandığında Safari/Chrome arayüzü yerine doğrudan iPhone'daki yerel **2 Player Snake** uygulaması açılır.
+  - Teaser video otomatik atlanır ve oyuncu doğrudan arkadaşının odasına/maçına yönlendirilir.
+  - Sunucu tarafında `public_html/.well-known/apple-app-site-association` doğrulaması aktif edildi (HTTP 200 OK).
+  - Web fallback için `public_html/invite/index.html` güncellenerek `twoplayersnake://` custom scheme ve "UYGULAMADA AÇ" butonu eklendi.
+  - `TwoPlayerSnake.entitlements` dosyasına `applinks:2playersnake.com` yetkisi tanımlandı.
+- **Re-engagement Bildirimleri (iOS - 21 Dil):**
+  - Android sürümündeki yerel bildirim mimarisi `UserNotifications.framework` ile iOS'a taşındı (`NotificationManager.swift`, `NotificationStrings.swift`).
+  - **1. Gün (24 saat)**, **3. Gün (72 saat)** ve **7. Gün (168 saat)** aralıklarında 21 farklı dilde yerel bildirim planlanır.
+  - Oyuncu her oyuna girdiğinde sayaçlar sıfırlanır (aktif kullanıcı asla rahatsız edilmez).
+  - Apple HIG yönergeleriyle tam uyumlu olarak bildirim izni **3. uygulama açılışında** istenir.
+- **HTML Sürüm Senkronizasyonu (v3.3.7):**
+  - Yeni `2 Player Snake Mobile v3.3.7.html` ve `2 Player Snake PC v3.3.7.html` referans dosyaları oluşturuldu; `VERSION = 'v3.3.7'` tanımlandı.
+  - Hem mobil hem PC HTML dosyalarına oda davetleri için `window.joinOnlineRoom` köprüsü entegre edildi.
+- **UI & Güvenli Alan İyileştirmesi:**
+  - iPhone HUD panel alt göstergeleri Android ile birebir oval tasarıma (`border-radius: 12px`, `padding-bottom: 0`) kavuşturuldu.
+- **Otomatik Testler:**
+  - `node --test tests/ios-runtime.test.cjs` 26/26 test ile %100 başarılı geçti.
+
 ### App Store Release — Build 42 (v3.3.6, 2026-09-18)
 
 - **Durum:** **🎉 APPLE TARAFINDAN ONAYLANDI & YAYINDA (Ready for Distribution)** 🟢
