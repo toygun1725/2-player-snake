@@ -2,9 +2,22 @@
 
 ## iOS App Store & TestFlight Release Notes
 
+### TestFlight Release — Build 45 (v3.3.7, 2026-09-19)
+
+- **Durum:** **🚀 TESTFLIGHT DERLEMESİ & DAĞITIMI BAŞLATILDI (Build 45)** 🟢
+- **Tarih:** 19 Eylül 2026, 22:55 (TSI)
+- **Uygulama Sürümü:** `3.3.7 (45)` (`CFBundleShortVersionString = 3.3.7`, `CFBundleVersion = 45`)
+- **App Store Çoklu Dil Desteği (`CFBundleLocalizations`):**
+  - App Store ürün sayfasında "Diller: Sadece İngilizce" görünmesi sorunu çözüldü.
+  - Oyunun desteklediği 21 dil `CFBundleLocalizations` etiketiyle `Info.plist` içine tanımlandı:
+    `en`, `tr`, `fr`, `it`, `es`, `de`, `zh-Hans`, `zh`, `hi`, `pl`, `pt`, `pt-BR`, `ar`, `ru`, `id`, `ja`, `ko`, `vi`, `th`, `fil`, `tl`, `nl`, `el`, `cs`.
+  - Artık App Store mağaza sayfasındaki Bilgiler (Information) bölümünde tüm diller resmi olarak listelenir.
+- **Universal Links & Re-engagement Bildirimleri:**
+  - Build 44 ile entegre edilen ve gerçek cihazda onaylanan Universal Links ve 21 dilde yerel bildirimler korundu.
+
 ### TestFlight Release — Build 44 (v3.3.7, 2026-09-19)
 
-- **Durum:** **🚀 TESTFLIGHT DERLEMESİ & DAĞITIMI BAŞLATILDI (Build 44)** 🟢
+- **Durum:** **✅ TESTFLIGHT'A BAŞARIYLA YÜKLENDİ & CİHAZDA DOĞRULANDI (Build 44)** 🟢
 - **Tarih:** 19 Eylül 2026, 22:15 (TSI)
 - **GitHub Run:** [Run #35463663786](https://github.com/toygun1725/2-player-snake/actions/runs/35463663786) (`ios-v3.3.7-b44` / `db055d3`)
 - **Uygulama Sürümü:** `3.3.7 (44)` (`CFBundleShortVersionString = 3.3.7`, `CFBundleVersion = 44`)

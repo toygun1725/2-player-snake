@@ -226,3 +226,15 @@ test('project.pbxproj includes NotificationManager, NotificationStrings, and Use
   assert.match(pbx, /CODE_SIGN_ENTITLEMENTS = TwoPlayerSnake\/TwoPlayerSnake\.entitlements;/);
 });
 
+test('Info.plist contains CFBundleLocalizations for multi-language App Store listing', () => {
+  const plist = read('Ana Dosya/iOS/TwoPlayerSnake/Info.plist');
+  assert.match(plist, /<key>CFBundleLocalizations<\/key>/);
+  assert.match(plist, /<string>tr<\/string>/);
+  assert.match(plist, /<string>en<\/string>/);
+  assert.match(plist, /<string>de<\/string>/);
+  assert.match(plist, /<string>fr<\/string>/);
+  assert.match(plist, /<string>es<\/string>/);
+  assert.match(plist, /<string>zh-Hans<\/string>/);
+  assert.match(plist, /<string>ja<\/string>/);
+});
+

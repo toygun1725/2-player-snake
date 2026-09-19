@@ -4,9 +4,10 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 
 ---
 
-## 1. Güncel devir notu — Build 44 (v3.3.7, 2026-09-19)
+## 1. Güncel devir notu — Build 45 (v3.3.7, 2026-09-19)
 
-- Marketing version: `3.3.7`; son native build `44`, HTML runtime referansı `v3.3.7`.
+- Marketing version: `3.3.7`; son native build `45`, HTML runtime referansı `v3.3.7`.
+- **App Store Çoklu Dil Desteği (`CFBundleLocalizations`):** `Info.plist` içine 21 desteklenen dil eklenerek App Store sayfasında tüm dillerin resmi olarak görünmesi sağlandı.
 - **Universal Links & WhatsApp Daveti (Doğrudan Uygulama Açma):**
   * `https://2playersnake.com/invite?room=...&mode=...` bağlantısı tıklandığında Safari yerine yerel iPhone uygulaması açılır.
   * Teaser video otomatik atlanır ve doğrudan arkadaşın odasına bağlanılır.
