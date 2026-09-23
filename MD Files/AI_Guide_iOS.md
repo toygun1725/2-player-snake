@@ -23,6 +23,9 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
   * Native iPhone WebView'de (`IS_IOS_SHELL`) canvas neon galibiyet efektleri ve `.banner.winner-glass-banner.padded` buzlu cam blurları aktif edildi.
 - **90 Saniye Global Reklam Kuralı:**
   * `cooldownMs: 90000` ve `AdManager.showInterstitial` merkezi denetimi ile art arda reklam gösterimi engellendi.
+- **CI/CD & TestFlight Dağıtımı:**
+  * Tag `ios-v3.4.2-b46` ile GitHub Actions Run #52 (ID: `35898272736`) üzerinden başarıyla derlendi ve App Store Connect / TestFlight'a yüklendi.
+  * 43/43 otomatik test ve macOS WebKit duman testleri eksiksiz geçti.
 
 ## 1.2. Önceki Native Shell Durumu — Build 45 (v3.3.7, 2026-09-19)
 

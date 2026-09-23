@@ -22,6 +22,28 @@
 - **Otomatik Testler:**
   - `node --test tests/ios-runtime.test.cjs` 43/43 test (%100) başarıyla geçti.
 
+<en-US>
+What's New in iOS v3.4.2:
+• Dynamic "VS AI" Mode: 1-Player mode setup now clearly labels the AI battle option as "VS AI" for seamless match creation.
+• Ergonomic D-Pad Controls: Enlarged, repositioned Pause and Sound buttons with tactile haptic feedback and anti-spam protection.
+• Cyberpunk Neon Glow & Frosted Glass: Restored vivid neon glow and frosted glass visual effects for iPhone displays.
+• Improved Ad Experience: Added a 90-second global cooldown between interstitial ads to prevent consecutive interruptions.
+• Universal Match Invites: Join friends instantly with one tap via direct room invitation links.
+• 21-Language Localization: Complete multilingual support across all game menus and options.
+• Performance & Stability: Enhanced 60 FPS rendering and offline fallback support.
+</en-US>
+
+<tr-TR>
+iOS v3.4.2 Yenilikleri:
+• Dinamik "VS YAPAY ZEKA" Modu: Tek kişilik oyun kurulumunda yapay zeka kapışması artık dinamik olarak "VS YAPAY ZEKA" adıyla gösterilir.
+• Ergonomik D-Pad Kontrolleri: Büyütülen ve panel içine yerleştirilen Pause ve Ses butonları, dokunsal titreşim (haptic) ve seri basış koruması.
+• Cyberpunk Neon Işıltısı ve Buzlu Cam: iPhone ekranları için neon zafer parlamaları ve buzlu cam görsel efektleri aktif edildi.
+• İyileştirilmiş Reklam Deneyimi: Art arda reklam gösterimini engellemek için geçiş reklamları arasına 90 saniyelik küresel bekleme süresi eklendi.
+• Evrensel Maç Davetleri: Doğrudan oda bağlantı linkleriyle tek tıkla arkadaşlarınızın maçına katılabilme imkanı.
+• 21 Dilde Tam Yerelleştirme: Tüm menü ve oyun modlarında 21 dilde eksiksiz dil desteği.
+• Performans ve Kararlılık: 60 FPS akıcı oyun deneyimi ve optimize edilmiş çevrimdışı oynanış.
+</tr-TR>
+
 ### Sürüm v3.4.2 — PC Tek Pencereli Hızlı Kurulum Paneli & Sürüm Senkronizasyonu (2026-09-20)
 
 - **PC Tek Pencereli Bütünleşik Hızlı Kurulum Dashboard'u (`openPCQuickSetupMenu`):**
