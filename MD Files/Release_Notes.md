@@ -21,6 +21,11 @@
   - Mobil, PC, iOS offline fallback ve Android offline fallback HTML dosyaları bit-for-bit senkronize edildi.
 - **Otomatik Testler:**
   - `node --test tests/ios-runtime.test.cjs` 43/43 test (%100) başarıyla geçti.
+- **App Store Gönderimi (Submission):**
+  - Sürüm: `3.4.2 (46)`
+  - Gönderim Zamanı: 23 Eylül 2026, 21:26 (Sep 23, 2026 at 9:26 PM)
+  - Submission ID: `9dc8d811-3306-4b52-8d8f-fc2a0e4753e4`
+  - Durum: 🟡 **Waiting for Review** (Apple İncelemesi Bekleniyor)
 
 <en-US>
 What's New in iOS v3.4.2:
