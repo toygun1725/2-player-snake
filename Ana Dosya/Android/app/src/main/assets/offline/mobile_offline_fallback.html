@@ -4,14 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <title>2 Player Snake Mobile v3.4.2 - Play Online & Local</title>
-    <script>
-        // Only a native shell that advertises the bundled asset handler uses local URLs.
-        window.__twoPlayerSnakeUseNativeAssets = window.__twoPlayerSnakePlatform === 'ios' &&
-            typeof window.__twoPlayerSnakeAssetBaseUrl === 'string';
-        if (!window.__twoPlayerSnakeUseNativeAssets) {
-            document.write('<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"><\/script>');
-        }
-    </script>
+    <script>window.__twoPlayerSnakeUseNativeAssets = window.__twoPlayerSnakePlatform === 'ios' && typeof window.__twoPlayerSnakeAssetBaseUrl === 'string'; window.__twoPlayerSnakeOfflineMode = true; window.io = function () { throw new Error("Online multiplayer requires an internet connection."); };</script>
     <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -25,13 +18,9 @@
     <meta name="apple-mobile-web-app-title" content="2 Player Snake">
     <meta name="application-name" content="2 Player Snake">
     <script>
-        if (window.__twoPlayerSnakeUseNativeAssets) {
-            document.write('<link rel="icon" href="' + window.__twoPlayerSnakeAssetBaseUrl + 'logo.png">');
-        } else {
-            document.write("    <link rel=\"apple-touch-icon\" sizes=\"180x180\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"apple-touch-icon\" sizes=\"152x152\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"apple-touch-icon\" sizes=\"120x120\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"apple-touch-icon\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"icon\" sizes=\"192x192\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n");
-        }
+        document.write('<link rel="icon" href="' + (window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'offline_logo.png') + '">');
     </script>
-    <link rel="manifest" href="/manifest.json">
+    <!-- No web manifest fetch for a packaged file:// document. -->
     <script>
     var _lastInnerHeight = 0;
     function checkViewportChange() {
@@ -83,9 +72,9 @@
         window.__h5GamesAdsReady = false;
         var adBreak = adConfig = function (o) { adsbygoogle.push(o); };
 
-        if (window.isAndroidWebView) {
+        if (window.__twoPlayerSnakeOfflineMode === true || window.isAndroidWebView) {
             document.documentElement.classList.add('android-webview');
-            console.log('Android WebView detected. Google H5 Ads script load bypassed.');
+            console.log('Native offline mode detected. Google H5 Ads script load bypassed.');
         } else {
             // Load Google H5 Ads script dynamically only on non-Android WebView devices
             var script = document.createElement('script');
@@ -110,8 +99,6 @@
     <script>
         if (window.__twoPlayerSnakeUseNativeAssets) {
             document.write('<style id="ios-bundled-fonts">' + window.__twoPlayerSnakeNativeAssetCss + '</style>');
-        } else {
-            document.write("    <!-- Import fonts -->\n    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n    <link href=\"https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=VT323&display=swap\"\n        rel=\"stylesheet\">\n    <!-- Font Awesome for icons -->\n    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\"\n        integrity=\"sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==\"\n        crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />\n\n");
         }
     </script>
 
@@ -3970,11 +3957,7 @@
     <!-- v2.93.0: Loading Splash Screen -->
     <div id="loading-splash">
         <div class="splash-logo-wrap">
-            <script>
-                document.write('<img class="splash-logo" src="' + (window.__twoPlayerSnakeUseNativeAssets
-                    ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png'
-                    : 'https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp') + '" alt="2 Player Snake" ' + "onerror=\"this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';\"" + '>');
-            </script>
+            <script>document.write('<img class="splash-logo" src="' + (window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'offline_logo.png') + '" alt="2 Player Snake">');</script>
         </div>
         <div class="splash-bar-wrap">
             <div class="splash-bar-fill" id="splashBarFill"></div>
@@ -9695,7 +9678,7 @@
 
                 showBanner(`<div class="main-menu-shell">
       <div class="main-menu-logo-wrap">
-        <img class="main-menu-logo" src="${(window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp')}" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';">
+        <img class="main-menu-logo" src="${(window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'offline_logo.png')}" alt="2 Player Snake logo">
       </div>
       <div class="main-menu-actions">
         <div class="main-menu-btns">
@@ -10741,7 +10724,7 @@
                 markMenuScreen(MENU_IDS.PLAY_SPLIT, true);
                 showBanner(`<div class="main-menu-shell">
       <div class="main-menu-logo-wrap">
-        <img class="main-menu-logo" src="${(window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp')}" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';">
+        <img class="main-menu-logo" src="${(window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'offline_logo.png')}" alt="2 Player Snake logo">
       </div>
       <div class="main-menu-actions">
         <div class="main-menu-btns">
