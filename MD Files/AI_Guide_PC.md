@@ -3,13 +3,49 @@
 Bu belge, PC surumunde calisacak yapay zekalar icin guncel teknik referanstir. PC surumu de mobil gibi tek HTML dosyada yasamalidir; CSS, JS, i18n, canvas cizimi, reklam mantigi ve sentetik sesler ayni dosyada tutulur.
 
 ### Referans Surum
-- Aktif referans surum: `v3.3.7`
-- Temel referans dosya: `2 Player Snake PC v3.3.7.html`
-- Kaynak/yayin durumu: v3.3.7 mobil ve PC kaynak dosyalari olusturuldu. WhatsApp/web oda davetleri icin `window.joinOnlineRoom` eklendi.
-- Dosya yapisi: oyun mantigi, HUD, popup'lar, ceviriler and sesler tek HTML icindedir.
-- Tasarim dili: neon cyberpunk, koyu mavi arka plan, pembe ve turkuaz glow, camimsi HUD panelleri.
+- Aktif referans surum: `v3.4.2` (Final Sürüm)
+- Temel referans dosya: `2 Player Snake PC v3.4.2.html`
+- Kaynak/yayin durumu: v3.4.2 mobil ve PC kaynak dosyalari senkronize olarak olusturuldu. PC sürümündeki iki aşamalı kurulum menüsü mobildeki gibi tek bir şık ve bütünleşik Hızlı Kurulum (`openPCQuickSetupMenu`) paneline dönüştürüldü.
 
-## Son Guncelleme (v3.3.7)
+## Son Guncelleme (v3.4.2 - PC Tek Pencereli Hızlı Kurulum Dashboard'u & Mobil Paritesi)
+- **v3.4.2**: PC Tek Pencereli Bütünleşik Hızlı Kurulum Paneli (`openPCQuickSetupMenu`), 2 Aşamalı Menü Akışının Kaldırılması ve Mobil Paritesi.
+  - **Tek Pencereli Dashboard Mimarisi (`openPCQuickSetupMenu`):**
+    - Eski 2 aşamalı akış (`openPCSetupScreen1` mod seçimi ➔ `openPCSetupScreen2` seçenekler) kaldırılarak mobildeki gibi tek bir ekranda birleştirildi.
+    - Ana menüden "Oyna" ➔ "Yerel Oyun" tıklandığında doğrudan 2 sütunlu şık neon kontrol paneli açılır.
+  - **2 Sütunlu Dengeli Düzen (`.pc-qs-wrap`):**
+    - **Sol Sütun:** 1P vs 2P kartı, Oyun Modu 2x2 kartı (Klasik, VS YAPAY ZEKA / Hızlı Rekabetçi, Alan 51, Macera), Duvar Modu kartı (dinamik görünürlük), Boost kartı (dinamik görünürlük).
+    - **Sağ Sütun:** Hız/Zorluk kartı, Renk ve İsim kartı, büyük "BAŞLA" butonu, alt aksiyon satırında "Geri" ve `?` "Mod Bilgisi" butonları.
+  - **Dinamik Kurallar & Tek Tıkla Başlama:**
+    - Menü açıldığında v3.4.1 varsayılanları (1P - VS YAPAY ZEKA - DUVARSIZ - NORMAL - Boost Açık) hazır seçili gelir; oyuncu doğrudan "BAŞLA"ya basarak maçı anında başlatabilir.
+    - 1P ↔ 2P değişiminde mod butonu ismi dinamik olarak "VS YAPAY ZEKA" ↔ "HIZLI REKABETÇİ" olarak güncellenir.
+    - Macera veya Alan 51 seçildiğinde Duvar kartı kendiliğinden gizlenir; Hızlı Rekabetçi dışında Boost kartı otomatik gizlenir.
+  - **Surum Senkronu:** `2 Player Snake PC v3.4.2.html` oluşturuldu; `VERSION = 'v3.4.2'` güncellendi.
+
+## Onceki Guncelleme (v3.4.1 - Varsayılan Hızlı Kurulum & Sürüm Senkronizasyonu)
+- **v3.4.1**: Varsayılan Kurulum Seçenekleri (1P, DUVARSIZ, NORMAL) ve Mobil-PC Sürüm Senkronizasyonu.
+  - **Varsayılan Seçenekler:** PC Hızlı Kurulum Ekran 2 (`openPCSetupScreen2`) üzerinde oyuncu modu **1P**, duvar modu **DUVARSIZ** (`MOD_WALLS.NONE`) ve hız modu **NORMAL** olarak varsayılan seçili (active) başlatılır. Oyuncu doğrudan "BAŞLA" butonuna bastığında bu ayarlarla oyuna girebilir.
+  - **Surum Senkronu:** `2 Player Snake PC v3.4.1.html` olarak yeni referans dosyası oluşturuldu; başlık, yorum satırları ve `VERSION = 'v3.4.1'` sabiti güncellendi. Mobil v3.4.1 sürümü ile tam sürüm paritesi sağlandı.
+
+## Onceki Guncelleme (v3.4.0 - Dinamik "VS YAPAY ZEKA" / "VS AI" Menü İsimlendirmesi & 21 Dil Yerelleştirmesi)
+- **v3.4.0**: Dinamik 1P vs AI Menü İsimlendirmesi, 21 Dilde `vsAiMode` Sözlüğü, Mobil & PC Sürüm Senkronizasyonu.
+  - **Dinamik Mod Başlığı (1P vs AI Netliği):**
+    - PC Hızlı Kurulum Ekran 2 (`openPCSetupScreen2`) üzerinde Hızlı Rekabetçi modu seçildiğinde, oyuncu **1P** butonuna bastığında başlık dinamik olarak **"VS YAPAY ZEKA"** (İngilizce: **"VS AI"**) adına güncellenir.
+    - **2P** butonuna basıldığında ise başlık anında orijinal **"HIZLI REKABETÇİ"** (**"FAST COMPETITIVE"**) adına döner.
+  - **21 Dilde `vsAiMode` Entegrasyonu:**
+    - 21 dilin tamamında yerelleştirilmiş AI düello terimleri `EXTRA_STRINGS` sözlüğüne entegre edildi.
+  - **Surum Senkronu:** `2 Player Snake PC v3.4.0.html` olarak yeni referans dosyası oluşturuldu; başlık, yorum satırları ve `VERSION = 'v3.4.0'` sabiti güncellendi. Mobil v3.4.0 sürümü ile tam sürüm paritesi sağlandı.
+
+## Onceki Guncelleme (v3.3.9 - Final Sürüm)
+- **v3.3.9**: Final Sürüm ve Mobil-PC Sürüm Senkronizasyonu.
+  - **Surum Senkronu:** `2 Player Snake PC v3.3.9.html` olarak yeni referans dosyası oluşturuldu; başlık, yorum satırları ve `VERSION = 'v3.3.9'` sabiti güncellendi.
+  - Mobil v3.3.9 final sürümü ile tam sürüm paritesi sağlandı.
+
+## Onceki Guncelleme (v3.3.8)
+- **v3.3.8**: Final Sürüm ve Mobil-PC Sürüm Senkronizasyonu.
+  - **Surum Senkronu:** `2 Player Snake PC v3.3.8.html` olarak yeni referans dosyası oluşturuldu; başlık ve `VERSION = 'v3.3.8'` sabiti güncellendi.
+  - Mobil v3.3.8 final sürümü ile sürüm paritesi sağlandı.
+
+## Onceki Guncelleme (v3.3.7)
 - **v3.3.7**: Web/Online Oda Katılım Köprüsü ve Sürüm Senkronizasyonu.
   - **Oda Katılım Köprüsü:** PC oyununa `window.joinOnlineRoom(roomCode, gameStyleName)` fonksiyonu eklendi; dış bağlantılardan odaya bağlanma yeteneği sağlandı.
   - **Surum Senkronu:** `2 Player Snake PC v3.3.7.html` olarak yeni referans dosyası oluşturuldu; başlık ve `VERSION = 'v3.3.7'` sabiti güncellendi.
@@ -176,6 +212,11 @@ Bu belge, PC surumunde calisacak yapay zekalar icin guncel teknik referanstir. P
 - **v3.1.03**: Çevrimiçi sunucu bağlantı akışı optimize edilerek Render sunucusu arka planda uyanırken geçiş reklamı (interstitial) gösterilmesi sağlandı. PC sürümünde de bu reklamlı bağlantı akışı kodlanarak v3.1.03 sürümüne yükseltildi.
 - **Mobil v3.1.03**: Mobil istemci dosyası `Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.1.03.html` ile sürüm senkronizasyonu sağlandı.
 - **Offline Fallback v3.1.03**: `Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html` da v3.1.03'e güncellenerek yeni reklamlı bağlantı akışı aktarıldı.
+
+## Son Guncelleme (v3.3.8)
+- **v3.3.8 (2026-09-20)**: PC ve mobil platformlar arasında tam sürüm ve online deterministik rastgele renk algoritması senkronizasyonu sağlandı.
+- **Online Deterministik Yılan Renkleri (`selectOnlineRoomColors`)**: Çevrimiçi maçlarda (rastgele eşleşme ve özel oda) sabit Pembe/Turkuaz yerine her yeni maç ve rövanşta 9 seçkin renkten (Lime hariç) çakışmayan 2 renk belirlenir (72 kombinasyon). 32-bit hash ve PRNG (`roomId + '_' + onlineMatchIndex`) ile PC ve Mobil oyuncuları çapraz platformda dahi aynı renkleri görür. Roundlar boyunca renkler korunur; yalnızca yeni maç/rövanş başlangıcında yenilenir.
+- **PC Sürüm Senkronizasyonu**: `Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.3.8.html` dosyası oluşturuldu ve güncellendi.
 
 ## Son Guncelleme (v3.1.02)
 - **v3.1.02**: Mobil ve Android offline fallback istemcileri v3.1.02 sürümüne yükseltilerek oyuncu gösterge paneli (HUD) maksimum genişliği 94px'ten 80px'e (çift paneller için 188px'ten 160px'e) düşürülüp yön tuşlarının dokunma alanları genişletildi. Self Area 51 modundaki gösterge metni ("13/51") hafifçe yukarı taşındı. PC sürümünde kod değişikliği yapılmadan sürüm senkronizasyonu sağlandı.

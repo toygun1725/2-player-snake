@@ -1,0 +1,6 @@
+/* App Display Name */
+"CFBundleDisplayName" = "2 Player Snake";
+"CFBundleName" = "2 Player Snake";
+
+/* ATT Permission */
+"NSUserTrackingUsageDescription" = "Tento identifikátor bude použit k poskytování personalizovaných reklam a zlepšení vašeho herního zážitku.";

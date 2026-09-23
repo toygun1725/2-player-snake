@@ -82,7 +82,7 @@ final class IAPManager: NSObject {
             if let error = error {
                 print("IAPManager: getOfferings hatası: \(error.localizedDescription)")
                 DispatchQueue.main.async {
-                    completion(false, "Satın alma seçenekleri yüklenemedi: \(error.localizedDescription)")
+                    completion(false, error.localizedDescription)
                 }
                 return
             }
@@ -110,7 +110,7 @@ final class IAPManager: NSObject {
             guard let packageToBuy = targetPackage else {
                 print("IAPManager: 'lifetime' veya 'remove_ads_premium' paketi bulunamadı!")
                 DispatchQueue.main.async {
-                    completion(false, "Satın alma paketi bulunamadı. Lütfen daha sonra tekrar deneyin.")
+                    completion(false, AppStrings.IAP.packageNotFoundMessage)
                 }
                 return
             }

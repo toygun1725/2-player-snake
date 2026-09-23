@@ -141,7 +141,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             guard let self = self, let progress = change.newValue else { return }
             let clamped = max(0.08, min(1.0, Float(progress)))
             self.teaserProgressBar.setProgress(clamped, animated: true)
-            self.teaserPercentLabel.text = "%\(Int(clamped * 100)) hazır"
+            self.teaserPercentLabel.text = AppStrings.Teaser.percentText(for: Int(clamped * 100))
             // Network progress reaching 100% does not mean initGame has completed.
         }
     }
@@ -223,13 +223,13 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         teaserGlassPanel.clipsToBounds = true
 
         teaserTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        teaserTitleLabel.text = "İKİ OYUNCU. TEK ARENA. HAZIR OL..."
+        teaserTitleLabel.text = AppStrings.Teaser.title
         teaserTitleLabel.font = .systemFont(ofSize: 15, weight: .black)
         teaserTitleLabel.textColor = .white
         teaserTitleLabel.textAlignment = .center
 
         teaserSubtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        teaserSubtitleLabel.text = "Kontroller, ses ve performans ayarlanıyor..."
+        teaserSubtitleLabel.text = AppStrings.Teaser.subtitle
         teaserSubtitleLabel.font = .systemFont(ofSize: 12, weight: .semibold)
         teaserSubtitleLabel.textColor = UIColor(white: 0.82, alpha: 1.0)
         teaserSubtitleLabel.textAlignment = .center
@@ -242,7 +242,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         teaserProgressBar.setProgress(0.08, animated: false)
 
         teaserPercentLabel.translatesAutoresizingMaskIntoConstraints = false
-        teaserPercentLabel.text = "%8 hazır"
+        teaserPercentLabel.text = AppStrings.Teaser.percentText(for: 8)
         teaserPercentLabel.font = .systemFont(ofSize: 12, weight: .bold)
         teaserPercentLabel.textColor = .white
         teaserPercentLabel.textAlignment = .center
@@ -410,8 +410,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         var queryItems = [
             URLQueryItem(name: "app", value: "android"),
             URLQueryItem(name: "app_platform", value: "ios"),
-            URLQueryItem(name: "app_ver", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.3.7"),
-            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "44"),
+            URLQueryItem(name: "app_ver", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.4.2"),
+            URLQueryItem(name: "app_code", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "46"),
             URLQueryItem(name: "app_device", value: "mobile")
         ]
 
@@ -470,16 +470,16 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
 
 
         let alert = UIAlertController(
-            title: "Bağlantı Geri Geldi",
-            message: "Çevrimiçi mod, reklamlar ve en güncel oyun sürümü için oyun yeniden yüklenecek. Mevcut yerel maçın kaybolur.",
+            title: AppStrings.Offline.reconnectTitle,
+            message: AppStrings.Offline.reconnectMessage,
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "Şimdi Yükle", style: .default) { [weak self] _ in
+        alert.addAction(UIAlertAction(title: AppStrings.Offline.reconnectActionReload, style: .default) { [weak self] _ in
             guard let self = self else { return }
             self.isGameLoaded = false
             self.loadGame()
         })
-        alert.addAction(UIAlertAction(title: "Offline Devam Et", style: .cancel))
+        alert.addAction(UIAlertAction(title: AppStrings.Offline.reconnectActionCancel, style: .cancel))
         present(alert, animated: true)
     }
 
@@ -491,14 +491,14 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         view.addSubview(offlineContainer)
 
         offlineTitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        offlineTitleLabel.text = "Bağlantı Yok"
+        offlineTitleLabel.text = AppStrings.Offline.title
         offlineTitleLabel.font = .systemFont(ofSize: 24, weight: .bold)
         offlineTitleLabel.textColor = .white
         offlineTitleLabel.textAlignment = .center
         offlineContainer.addSubview(offlineTitleLabel)
 
         offlineSubtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        offlineSubtitleLabel.text = "Oyun yüklenemedi. Lütfen tekrar dene."
+        offlineSubtitleLabel.text = AppStrings.Offline.subtitle
         offlineSubtitleLabel.font = .systemFont(ofSize: 15, weight: .regular)
         offlineSubtitleLabel.textColor = .lightGray
         offlineSubtitleLabel.textAlignment = .center
@@ -506,7 +506,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         offlineContainer.addSubview(offlineSubtitleLabel)
 
         retryButton.translatesAutoresizingMaskIntoConstraints = false
-        retryButton.setTitle("Tekrar Dene", for: .normal)
+        retryButton.setTitle(AppStrings.Offline.retryButton, for: .normal)
         retryButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
         retryButton.backgroundColor = UIColor(red: 0.133, green: 0.773, blue: 0.369, alpha: 1.0)
         retryButton.setTitleColor(.black, for: .normal)
@@ -725,11 +725,12 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         evaluateJavaScript(js)
     }
 
-    func showAlert(title: String, message: String, buttonTitle: String = "Tamam") {
+    func showAlert(title: String, message: String, buttonTitle: String? = nil) {
+        let buttonText = buttonTitle ?? AppStrings.Offline.okButton
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: buttonTitle, style: .default, handler: nil))
+            alert.addAction(UIAlertAction(title: buttonText, style: .default, handler: nil))
             self.present(alert, animated: true, completion: nil)
         }
     }

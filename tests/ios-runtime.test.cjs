@@ -6,7 +6,8 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const files = [
-  'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.7.html',
+  'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.9.html',
+  'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.8.html',
   'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html'
 ];
 const bridge = read('Ana Dosya/iOS/TwoPlayerSnake/Bridge/ios_bridge_bootstrap.js');
@@ -187,7 +188,9 @@ for (const file of files) {
 
 test('online/offline AI implementation stays identical', () => {
   const chunks = files.map(file => { const h = read(file); return h.slice(h.indexOf('const _aiCache ='), h.indexOf('function softReset(')); });
-  assert.equal(chunks[0], chunks[1]);
+  for (let i = 1; i < chunks.length; i++) {
+    assert.equal(chunks[i], chunks[0]);
+  }
 });
 
 test('both online and offline HTML expose window.joinOnlineRoom', () => {
@@ -237,4 +240,178 @@ test('Info.plist contains CFBundleLocalizations for multi-language App Store lis
   assert.match(plist, /<string>zh-Hans<\/string>/);
   assert.match(plist, /<string>ja<\/string>/);
 });
+
+test('v3.3.9 mobile and offline fallback implement 3-column D-Pad and opponent panel layout', () => {
+  const v339Files = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.9.html',
+    'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
+    'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html'
+  ];
+  for (const f of v339Files) {
+    const html = read(f);
+    // 3-column D-Pad structure in P1 and P2
+    assert.match(html, /<div class="dpad-cluster dpad-only" id="p1Dpad">[\s\S]*?class="dpad-btn dpad-tall left"[\s\S]*?class="dpad-col-center"[\s\S]*?class="dpad-btn up"[\s\S]*?class="dpad-btn down"[\s\S]*?class="dpad-btn dpad-tall right"/);
+    assert.match(html, /<div class="dpad-cluster dpad-only" id="p2Dpad">[\s\S]*?class="dpad-btn dpad-tall left"[\s\S]*?class="dpad-col-center"[\s\S]*?class="dpad-btn up"[\s\S]*?class="dpad-btn down"[\s\S]*?class="dpad-btn dpad-tall right"/);
+    // Controls modal 3-column mini preview
+    assert.match(html, /<div class="dpad-mini-grid">[\s\S]*?class="ctrl-mini-box mini-tall"[\s\S]*?class="dpad-mini-col"[\s\S]*?class="ctrl-mini-box mini-up"[\s\S]*?class="ctrl-mini-box mini-down"[\s\S]*?class="ctrl-mini-box mini-tall"/);
+    // CSS rules for opponent panel & pause placement in D-Pad mode
+    assert.match(html, /#p1-controls:is\(\.mode-2p,\s*\.dual-ai\)\.layout-dpad\s+#p1OpponentPanel/);
+    assert.match(html, /#p1-controls:is\(\.mode-2p,\s*\.dual-ai\)\.layout-dpad\s+#pauseBtnP1/);
+    assert.match(html, /#p1-controls\.layout-dpad\s+#aiStatPanel\s*\{[\s\S]*?display:\s*none\s*!important/);
+    // hasOpponent in applyPlayerControlLayout
+    assert.match(html, /const hasOpponent = \(is2P \|\| \(gameMode === '1P' && aiSnakeEnabled\) \|\| \(typeof isOnlineMode !== 'undefined' && isOnlineMode\)\);/);
+
+    // v3.3.9 D-Pad vertical stretch with stat panels (no empty vertical dead space)
+    assert.match(html, /#p1-controls\.layout-dpad\s*\{[\s\S]*?align-items:\s*stretch;/);
+    assert.match(html, /\.dpad-col-center\s+\.dpad-btn\s*\{[\s\S]*?height:\s*calc\(50%\s*-\s*3px\);/);
+
+    // v3.3.9 Ergonomic D-Pad adjustments:
+    // 1. Widened Up/Down buttons horizontally (clamp(75px, 23vw, 108px))
+    assert.match(html, /\.dpad-col-center\s*\{[\s\S]*?max-width:\s*clamp\(75px,\s*23vw,\s*108px\);/);
+    // 2. Solo 1P enlarged Pause & Sound buttons (36px x 36px, SVG 19px x 19px)
+    assert.match(html, /#p1-controls\.layout-dpad:not\(\.mode-2p\):not\(\.dual-ai\)\s+#pauseBtnP1[\s\S]*?width:\s*36px\s*!important;\s*height:\s*36px\s*!important;/);
+    assert.match(html, /#p1-controls\.layout-dpad:not\(\.mode-2p\):not\(\.dual-ai\)\s+#pauseBtnP1\s*>\s*svg[\s\S]*?width:\s*19px\s*!important;\s*height:\s*19px\s*!important;/);
+    // 3. P2 full-height stretch matching P1 (safe area on parent, unrotated symmetric 6px 8px padding)
+    assert.match(html, /#p2-controls\.layout-dpad\s*\{[\s\S]*?padding-top:\s*var\(--safe-area-top\)\s*!important;/);
+    assert.match(html, /#p2-controls\.layout-dpad\s+\.ctrl-content-rotated\s*\{[\s\S]*?padding:\s*6px\s*8px\s*!important;/);
+    // 4. Opponent mode Pause & Sound buttons embedded inside stat panels (static, margin top)
+    assert.match(html, /#p1-controls:is\(\.mode-2p,\s*\.dual-ai\)\.layout-dpad\s+#pauseBtnP1[\s\S]*?position:\s*static\s*!important;[\s\S]*?margin:\s*(?:4px|8px)\s*auto\s*(?:0|2px)\s*!important;/);
+    assert.match(html, /#p1-controls:is\(\.mode-2p,\s*\.dual-ai\)\.layout-dpad\s+#soundBtnP1[\s\S]*?position:\s*static\s*!important;[\s\S]*?margin:\s*(?:4px|8px)\s*auto\s*(?:0|2px)\s*!important;/);
+    // 5. 1PvsAI panel width fix (100% full width, exactly matching 1Pvs2P)
+    assert.match(html, /#p1-controls\.dual-ai\.layout-dpad\s+\.player-stat-panel\s*\{[\s\S]*?flex:\s*1\s*1\s*100%\s*!important;\s*max-width:\s*100%\s*!important;/);
+
+    // v3.3.9 Sound toggle buttons (mirror symmetry in opponent modes, stacked in Solo 1P)
+    assert.match(html, /id="soundBtnP1"\s+class="panel-sound-btn soundBtn"/);
+    assert.match(html, /id="soundBtnP2"\s+class="panel-sound-btn soundBtn"/);
+    assert.match(html, /#p1-controls:is\(\.mode-2p,\s*\.dual-ai\)\.layout-dpad\s+#soundBtnP1/);
+    assert.match(html, /#p1-controls\.layout-dpad:not\(\.mode-2p\):not\(\.dual-ai\)\s+#soundBtnP1/);
+    assert.match(html, /\['soundBtnP1',\s*'soundBtnP2'\]\.forEach/);
+  }
+});
+
+test('PC v3.3.9 html exists, scripts parse cleanly and VERSION is v3.3.9', () => {
+  const pcPath = 'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.3.9.html';
+  const html = read(pcPath);
+  assert.match(html, /<title>2 Player Snake \| v3\.3\.9<\/title>/);
+  assert.match(html, /const VERSION = 'v3\.3\.9';/);
+  assert.match(html, /window\.joinOnlineRoom\s*=\s*function/);
+  const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+  for (const s of scripts) {
+    assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${pcPath}`);
+  }
+});
+
+test('v3.4.0 mobile implements dynamic vsAiMode and 21 languages', () => {
+  const p = 'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.0.html';
+  const html = read(p);
+  assert.match(html, /const VERSION = 'v3\.4\.0';/);
+  assert.match(html, /vsAiMode/);
+  assert.match(html, /\(qs\.playerMode === '1P' \? t\('vsAiMode'\) : t\('fastCompetitiveMode'\)\)/);
+  const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+  for (const s of scripts) {
+    assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+  }
+});
+
+test('PC v3.4.0 html exists, scripts parse cleanly and dynamic vsAiMode is implemented', () => {
+  const pcPath = 'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.0.html';
+  const html = read(pcPath);
+  assert.match(html, /<title>2 Player Snake \| v3\.4\.0<\/title>/);
+  assert.match(html, /const VERSION = 'v3\.4\.0';/);
+  assert.match(html, /vsAiMode/);
+  assert.match(html, /h1\.textContent = \(qs2\.playerMode === '1P'\) \? t\('vsAiMode'\) : t\('fastCompetitiveMode'\);/);
+  const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+  for (const s of scripts) {
+    assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${pcPath}`);
+  }
+});
+
+test('v3.4.1 mobile implements v3.4.1 defaults and online UI layout fix', () => {
+  const p = 'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.1.html';
+  const html = read(p);
+  assert.match(html, /const VERSION = 'v3\.4\.1';/);
+  assert.match(html, /gameStyle:\s*'fastCompetitive'/);
+  assert.match(html, /wallMode:\s*MOD_WALLS\.NONE/);
+  assert.match(html, /speedMode:\s*'NORMAL'/);
+  assert.match(html, /if\s*\(p1OppPanel\)\s*p1OppPanel\.style\.display\s*=\s*'flex'/);
+  assert.match(html, /applyPlayerControlLayout\('p1',\s*p1ControlLayout\);[\s\S]*?return;\s*\}/);
+  const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+  for (const s of scripts) {
+    assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+  }
+});
+
+test('PC v3.4.1 html exists, scripts parse cleanly and defaults to 1P NONE NORMAL', () => {
+  const pcPath = 'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.1.html';
+  const html = read(pcPath);
+  assert.match(html, /<title>2 Player Snake \| v3\.4\.1<\/title>/);
+  assert.match(html, /const VERSION = 'v3\.4\.1';/);
+  assert.match(html, /playerMode:\s*'1P'/);
+  assert.match(html, /wallMode:\s*MOD_WALLS\.NONE/);
+  assert.match(html, /speedMode:\s*'NORMAL'/);
+  const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+  for (const s of scripts) {
+    assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${pcPath}`);
+  }
+});
+
+test('v3.4.2 mobile and offline fallback implement v3.4.2 and parse cleanly', () => {
+  const targets = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.2.html',
+    'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
+    'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html'
+  ];
+  for (const p of targets) {
+    const html = read(p);
+    assert.match(html, /const VERSION = 'v3\.4\.2';/);
+    assert.match(html, /gameStyle:\s*'fastCompetitive'/);
+    assert.match(html, /wallMode:\s*MOD_WALLS\.NONE/);
+    assert.match(html, /speedMode:\s*'NORMAL'/);
+    assert.match(html, /if\s*\(p1OppPanel\)\s*p1OppPanel\.style\.display\s*=\s*'flex'/);
+    assert.match(html, /applyPlayerControlLayout\('p1',\s*p1ControlLayout\);[\s\S]*?return;\s*\}/);
+    const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+    for (const s of scripts) {
+      assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+    }
+  }
+});
+
+test('PC v3.4.2 html implements unified openPCQuickSetupMenu and all scripts parse cleanly', () => {
+  const pcPath = 'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.2.html';
+  const html = read(pcPath);
+  assert.match(html, /<title>2 Player Snake \| v3\.4\.2<\/title>/);
+  assert.match(html, /const VERSION = 'v3\.4\.2';/);
+  assert.match(html, /function openPCQuickSetupMenu\(\)/);
+  assert.match(html, /navigateTo\(openPCQuickSetupMenu\)/);
+  assert.match(html, /pqs-gm-normal/);
+  assert.match(html, /pqs-gm-fast/);
+  assert.match(html, /pqs-gm-self51/);
+  assert.match(html, /pqs-gm-adv/);
+  assert.match(html, /pqs-info/);
+  assert.match(html, /gameStyle:\s*'fastCompetitive'/);
+  assert.match(html, /wallMode:\s*MOD_WALLS\.NONE/);
+  assert.match(html, /speedMode:\s*'NORMAL'/);
+  const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+  for (const s of scripts) {
+    assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${pcPath}`);
+  }
+});
+
+test('v3.4.2 AdManager enforces 90s cooldown and centrally blocks rapid interstitials', () => {
+  const files = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.2.html',
+    'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
+    'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.2.html'
+  ];
+  for (const f of files) {
+    const html = read(f);
+    assert.match(html, /cooldownMs:\s*90000/);
+    assert.match(html, /showInterstitial\s*\(\s*\{[\s\S]*?this\.isGlobalCooldownActive\(\)/);
+  }
+});
+
+
+
+
 

@@ -188,15 +188,15 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
             if success {
                 vc.publishSettingsToGame()
                 vc.showAlert(
-                    title: "👑 Reklamlar Kaldırıldı!",
-                    message: "Teşekkürler! Artık reklamsız bir deneyimin tadını çıkarabilirsin.",
-                    buttonTitle: "Harika!"
+                    title: AppStrings.IAP.removeAdsSuccessTitle,
+                    message: AppStrings.IAP.removeAdsSuccessMessage,
+                    buttonTitle: AppStrings.IAP.awesomeButton
                 )
             } else if let error = errorMessage, !error.isEmpty {
                 vc.showAlert(
-                    title: "Hata",
-                    message: "Satın alma başarısız: \(error)",
-                    buttonTitle: "Tamam"
+                    title: AppStrings.IAP.errorTitle,
+                    message: AppStrings.IAP.purchaseFailedMessage(with: error),
+                    buttonTitle: AppStrings.Offline.okButton
                 )
             }
         }
@@ -209,19 +209,19 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
             guard let self = self, let vc = self.viewController else { return }
             if let error = errorMessage, !error.isEmpty {
                 vc.showAlert(
-                    title: "Hata",
-                    message: "Satın alımlar geri yüklenemedi: \(error)",
-                    buttonTitle: "Tamam"
+                    title: AppStrings.IAP.errorTitle,
+                    message: AppStrings.IAP.restoreFailedMessage(with: error),
+                    buttonTitle: AppStrings.Offline.okButton
                 )
             } else {
                 vc.publishSettingsToGame()
                 let msg = isPremium
-                    ? "👑 Reklamsız satın alımın başarıyla geri yüklendi!"
-                    : "Bu Apple hesabında daha önce reklam kaldırma satın alımı bulunamadı."
+                    ? AppStrings.IAP.restoreSuccessMessage
+                    : AppStrings.IAP.restoreNotFoundMessage
                 vc.showAlert(
-                    title: "Satın Alımları Geri Yükle",
+                    title: AppStrings.IAP.restoreTitle,
                     message: msg,
-                    buttonTitle: "Tamam"
+                    buttonTitle: AppStrings.Offline.okButton
                 )
             }
         }

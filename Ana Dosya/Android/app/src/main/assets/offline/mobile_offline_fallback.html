@@ -3,8 +3,15 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>2 Player Snake Mobile v3.3.6 - Play Online & Local</title>
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <title>2 Player Snake Mobile v3.4.2 - Play Online & Local</title>
+    <script>
+        // Only a native shell that advertises the bundled asset handler uses local URLs.
+        window.__twoPlayerSnakeUseNativeAssets = window.__twoPlayerSnakePlatform === 'ios' &&
+            typeof window.__twoPlayerSnakeAssetBaseUrl === 'string';
+        if (!window.__twoPlayerSnakeUseNativeAssets) {
+            document.write('<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"><\/script>');
+        }
+    </script>
     <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -17,11 +24,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="2 Player Snake">
     <meta name="application-name" content="2 Player Snake">
-    <link rel="apple-touch-icon" sizes="180x180" href="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp">
-    <link rel="apple-touch-icon" sizes="152x152" href="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp">
-    <link rel="apple-touch-icon" sizes="120x120" href="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp">
-    <link rel="apple-touch-icon" href="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp">
-    <link rel="icon" sizes="192x192" href="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp">
+    <script>
+        if (window.__twoPlayerSnakeUseNativeAssets) {
+            document.write('<link rel="icon" href="' + window.__twoPlayerSnakeAssetBaseUrl + 'logo.png">');
+        } else {
+            document.write("    <link rel=\"apple-touch-icon\" sizes=\"180x180\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"apple-touch-icon\" sizes=\"152x152\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"apple-touch-icon\" sizes=\"120x120\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"apple-touch-icon\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"icon\" sizes=\"192x192\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n");
+        }
+    </script>
     <link rel="manifest" href="/manifest.json">
     <script>
     var _lastInnerHeight = 0;
@@ -54,6 +63,22 @@
             return /Android/i.test(ua) && (/Version\//i.test(ua) || /wv/i.test(ua));
         })();
 
+        // Synchronous detection of Apple iOS devices (iOS App & Mobile Safari)
+        window.isAppleDevice = (function() {
+            try {
+                if (window.__twoPlayerSnakePlatform === 'ios') return true;
+                var ua = navigator.userAgent || '';
+                if (/iPhone|iPad|iPod/i.test(ua)) return true;
+                if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) return true;
+            } catch (e) {}
+            return false;
+        })();
+        if (window.isAppleDevice) {
+            try {
+                document.documentElement.setAttribute('data-ios-device', 'true');
+            } catch (e) {}
+        }
+
         window.adsbygoogle = window.adsbygoogle || [];
         window.__h5GamesAdsReady = false;
         var adBreak = adConfig = function (o) { adsbygoogle.push(o); };
@@ -81,22 +106,24 @@
         }
     </script>
 
-    <!-- Import fonts -->
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=VT323&display=swap"
-        rel="stylesheet">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Build 36: bundled font/icon resources in native iOS; web/Android retain their URLs. -->
+    <script>
+        if (window.__twoPlayerSnakeUseNativeAssets) {
+            document.write('<style id="ios-bundled-fonts">' + window.__twoPlayerSnakeNativeAssetCss + '</style>');
+        } else {
+            document.write("    <!-- Import fonts -->\n    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n    <link href=\"https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=VT323&display=swap\"\n        rel=\"stylesheet\">\n    <!-- Font Awesome for icons -->\n    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\"\n        integrity=\"sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==\"\n        crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />\n\n");
+        }
+    </script>
 
-    <!-- Version: v3.3.6 Mobile -->
+    <!-- Version: v3.4.2 Mobile -->
     <style>
         :root {
             --bg: #0b0f14;
             --grid: #1a2537;
             --p1: #ff4fbf;
             --p2: #35e6e6;
+            --p1-rgb: 255, 79, 191;
+            --p2-rgb: 53, 230, 230;
             --gold: #ffd166;
             --heart: #ff1744;
             --ui-tile: #0c141f;
@@ -328,8 +355,8 @@
         #p1-controls.dual-ai #p1StatPanel {
             z-index: 5;
         }
-        /* Pause btn floats at center boundary — no horizontal space taken */
-        #p1-controls.dual-ai #pauseBtnP1 {
+        /* Pause btn floats at center boundary in two-btn mode — no horizontal space taken */
+        #p1-controls.dual-ai:not(.layout-dpad) #pauseBtnP1 {
             position: absolute;
             left: 100%;
             top: 50%;
@@ -339,7 +366,7 @@
             height: 36px;
             margin-top: 0;
         }
-        #p1-controls.dual-ai #pauseBtnP1 > svg {
+        #p1-controls.dual-ai:not(.layout-dpad) #pauseBtnP1 > svg {
             width: 18px;
             height: 18px;
         }
@@ -650,6 +677,168 @@
             backdrop-filter: none;
             -webkit-backdrop-filter: none;
             animation: none;
+        }
+
+        /* iOS (WKWebView & Safari): Hardware-accelerated canvas blur and glass aesthetic without compositor stalls */
+        @supports (-webkit-touch-callout: none) {
+            #canvasWrap.paused-blur > canvas {
+                filter: blur(6px) !important;
+                -webkit-filter: blur(6px) !important;
+                transform: translateZ(0);
+                -webkit-transform: translateZ(0);
+                will-change: filter, transform;
+            }
+            #canvasWrap.paused-blur::after {
+                background: rgba(8, 12, 18, 0.20) !important;
+            }
+            html[data-theme="light"] #canvasWrap.paused-blur::after {
+                background: rgba(255, 255, 255, 0.25) !important;
+            }
+            .banner.padded {
+                background: linear-gradient(180deg, rgba(13, 22, 36, 0.94), rgba(10, 17, 29, 0.96)) !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                animation: none !important;
+                box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 12px rgba(255, 79, 191, 0.35) !important;
+            }
+            .main-menu-actions {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                animation: none !important;
+                border-color: #ff4fbf !important;
+                box-shadow: 0 14px 36px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 10px rgba(255, 79, 191, 0.32) !important;
+            }
+            .main-menu-logo-wrap::before {
+                filter: none !important;
+                -webkit-filter: none !important;
+            }
+            .main-menu-logo {
+                filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.40)) !important;
+                -webkit-filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.40)) !important;
+            }
+            .android-menu-transition-ghost.banner.padded,
+            .android-menu-transition-ghost .main-menu-actions {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                animation: none !important;
+            }
+            html[data-theme="light"] .banner.padded {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95)) !important;
+                box-shadow: 0 14px 40px rgba(15, 23, 42, 0.12), 0 0 10px rgba(255, 79, 191, 0.2) !important;
+            }
+            html[data-theme="light"] .main-menu-actions {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.90)) !important;
+                box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 0 8px rgba(255, 79, 191, 0.2) !important;
+            }
+            .banner.winner-glass-banner.padded {
+                background: linear-gradient(160deg, rgba(10, 16, 28, 0.34), rgba(18, 28, 46, 0.20)) !important;
+                backdrop-filter: blur(16px) saturate(145%) !important;
+                -webkit-backdrop-filter: blur(16px) saturate(145%) !important;
+                box-shadow: 0 14px 36px rgba(0, 0, 0, 0.26), 0 0 20px rgba(53, 230, 230, 0.18), 0 0 16px rgba(255, 79, 191, 0.16) !important;
+            }
+            html[data-theme="light"] .banner.winner-glass-banner.padded {
+                background: linear-gradient(160deg, rgba(255, 255, 255, 0.42), rgba(241, 245, 249, 0.26)) !important;
+                backdrop-filter: blur(16px) saturate(145%) !important;
+                -webkit-backdrop-filter: blur(16px) saturate(145%) !important;
+            }
+        }
+        html[data-ios-device="true"] #canvasWrap.paused-blur > canvas {
+            filter: blur(6px) !important;
+            -webkit-filter: blur(6px) !important;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+            will-change: filter, transform;
+        }
+        html[data-ios-device="true"] #canvasWrap.paused-blur::after {
+            background: rgba(8, 12, 18, 0.20) !important;
+        }
+        html[data-ios-device="true"][data-theme="light"] #canvasWrap.paused-blur::after {
+            background: rgba(255, 255, 255, 0.25) !important;
+        }
+        html[data-ios-device="true"] .banner.padded {
+            background: linear-gradient(180deg, rgba(13, 22, 36, 0.94), rgba(10, 17, 29, 0.96)) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            animation: none !important;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 12px rgba(255, 79, 191, 0.35) !important;
+        }
+        html[data-ios-device="true"] .main-menu-actions {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            animation: none !important;
+            border-color: #ff4fbf !important;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 10px rgba(255, 79, 191, 0.32) !important;
+        }
+        html[data-ios-device="true"] .main-menu-logo-wrap::before {
+            filter: none !important;
+            -webkit-filter: none !important;
+        }
+        html[data-ios-device="true"] .main-menu-logo {
+            filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.40)) !important;
+            -webkit-filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.40)) !important;
+        }
+        html[data-ios-device="true"] .android-menu-transition-ghost.banner.padded,
+        html[data-ios-device="true"] .android-menu-transition-ghost .main-menu-actions {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            animation: none !important;
+        }
+        html[data-ios-device="true"][data-theme="light"] .banner.padded {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95)) !important;
+            box-shadow: 0 14px 40px rgba(15, 23, 42, 0.12), 0 0 10px rgba(255, 79, 191, 0.2) !important;
+        }
+        html[data-ios-device="true"][data-theme="light"] .main-menu-actions {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.90)) !important;
+            box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 0 8px rgba(255, 79, 191, 0.2) !important;
+        }
+        html[data-ios-device="true"] .banner.winner-glass-banner.padded {
+            background: linear-gradient(160deg, rgba(10, 16, 28, 0.34), rgba(18, 28, 46, 0.20)) !important;
+            backdrop-filter: blur(16px) saturate(145%) !important;
+            -webkit-backdrop-filter: blur(16px) saturate(145%) !important;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.26), 0 0 20px rgba(53, 230, 230, 0.18), 0 0 16px rgba(255, 79, 191, 0.16) !important;
+        }
+        html[data-ios-device="true"][data-theme="light"] .banner.winner-glass-banner.padded {
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.42), rgba(241, 245, 249, 0.26)) !important;
+            backdrop-filter: blur(16px) saturate(145%) !important;
+            -webkit-backdrop-filter: blur(16px) saturate(145%) !important;
+        }
+
+        /* ── iOS Bottom Controller Dock: Edge-to-edge flush indicator boxes ── */
+        html[data-ios-device="true"] #p1-controls {
+            padding-bottom: 0 !important;
+        }
+        html[data-ios-device="true"] #p1-controls.dual-ai .panel-with-btns,
+        html[data-ios-device="true"] #p1-controls:not(.dual-ai) .panel-with-btns {
+            padding-bottom: 0 !important;
+        }
+        html[data-ios-device="true"] #p1-controls:not(.dual-ai) #p1StatPanel {
+            padding-bottom: 0 !important;
+        }
+        html[data-ios-device="true"] #p1-controls .turn-btn {
+            height: 100% !important;
+        }
+        html[data-ios-device="true"] #p1-controls .turn-btn.left {
+            border-bottom-left-radius: 0 !important;
+        }
+        html[data-ios-device="true"] #p1-controls .turn-btn.right {
+            border-bottom-right-radius: 0 !important;
+        }
+        html[data-ios-device="true"] #p1-controls .turn-btn > svg {
+            transform: translateY(calc(-0.35 * env(safe-area-inset-bottom, 0px))) !important;
+        }
+        html[data-ios-device="true"] #p1-controls .player-stat-panel {
+            padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+            justify-content: center !important;
+        }
+        html[data-ios-device="true"] #p1-controls.layout-dpad .player-stat-panel {
+            padding-bottom: 2px !important;
+            padding-top: 2px !important;
+        }
+        html[data-ios-device="true"] #p1-controls .player-stat-panel::before {
+            border-radius: 12px !important;
+        }
+        html[data-ios-device="true"] #p1-controls.dual-ai:not(.layout-dpad) #pauseBtnP1 {
+            transform: translate(-50%, calc(-50% - 0.35 * env(safe-area-inset-bottom, 0px))) !important;
         }
 
         @keyframes borderGlow {
@@ -1743,20 +1932,23 @@
             opacity: 0;
         }
 
-        /* Fan target positions — P1 */
-        .p1-bubbles .pause-bubble:nth-child(1) { --tx: -62px; --ty: -154px; }
-        .p1-bubbles .pause-bubble:nth-child(2) { --tx: 0px;   --ty: -198px; }
-        .p1-bubbles .pause-bubble:nth-child(3) { --tx: 62px;  --ty: -154px; }
+        /* Fan target positions — P1 (4 bubbles: Home, Sound, Controls, Settings) */
+        .p1-bubbles .pause-bubble:nth-child(1) { --tx: -96px; --ty: -130px; }
+        .p1-bubbles .pause-bubble:nth-child(2) { --tx: -34px; --ty: -186px; }
+        .p1-bubbles .pause-bubble:nth-child(3) { --tx: 34px;  --ty: -186px; }
+        .p1-bubbles .pause-bubble:nth-child(4) { --tx: 96px;  --ty: -130px; }
 
         /* Fan target positions — P2 (same coords, parent already rotated 180°) */
-        .p2-bubbles .pause-bubble:nth-child(1) { --tx: -62px; --ty: -154px; }
-        .p2-bubbles .pause-bubble:nth-child(2) { --tx: 0px;   --ty: -198px; }
-        .p2-bubbles .pause-bubble:nth-child(3) { --tx: 62px;  --ty: -154px; }
+        .p2-bubbles .pause-bubble:nth-child(1) { --tx: -96px; --ty: -130px; }
+        .p2-bubbles .pause-bubble:nth-child(2) { --tx: -34px; --ty: -186px; }
+        .p2-bubbles .pause-bubble:nth-child(3) { --tx: 34px;  --ty: -186px; }
+        .p2-bubbles .pause-bubble:nth-child(4) { --tx: 96px;  --ty: -130px; }
 
         /* Compact fan positions for 1P vs AI mode (body-anchored, button is low on screen) */
-        .anchored-compact.p1-bubbles .pause-bubble:nth-child(1) { --tx: -62px; --ty: -130px; }
-        .anchored-compact.p1-bubbles .pause-bubble:nth-child(2) { --tx: 0px;   --ty: -190px; }
-        .anchored-compact.p1-bubbles .pause-bubble:nth-child(3) { --tx: 62px;  --ty: -130px; }
+        .anchored-compact.p1-bubbles .pause-bubble:nth-child(1) { --tx: -96px; --ty: -115px; }
+        .anchored-compact.p1-bubbles .pause-bubble:nth-child(2) { --tx: -34px; --ty: -170px; }
+        .anchored-compact.p1-bubbles .pause-bubble:nth-child(3) { --tx: 34px;  --ty: -170px; }
+        .anchored-compact.p1-bubbles .pause-bubble:nth-child(4) { --tx: 96px;  --ty: -115px; }
 
 
         .pause-bubble:active {
@@ -2303,6 +2495,44 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: left;
             -webkit-overflow-scrolling: touch;
+        }
+
+        .banner.developers-banner {
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            width: var(--settings-w, min(86vw, 370px)) !important;
+            max-width: min(var(--settings-w, 370px), 90vw) !important;
+            height: var(--settings-h, min(82vh, 600px)) !important;
+            max-height: min(var(--settings-h, 600px), 86vh) !important;
+        }
+
+        .banner.developers-banner h1 {
+            flex-shrink: 0;
+            margin: 0 0 8px 0;
+        }
+
+        .banner.developers-banner #developersContainer {
+            flex: 1 1 auto;
+            min-height: 0;
+            max-height: none;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+            box-sizing: border-box;
+            margin: 6px 0 10px;
+            padding: 8px 10px;
+        }
+
+        .banner.developers-banner .menu-back-divider {
+            flex-shrink: 0;
+            margin-top: 6px;
+            padding-top: 6px;
+        }
+
+        .banner.developers-banner .btn.back {
+            flex-shrink: 0;
         }
 
         #developersContainer::-webkit-scrollbar {
@@ -2948,8 +3178,788 @@
         [data-theme="light"] .achievement-card.unlocked .achievement-title-text {
             color: #15803d;
         }
-        [data-theme="light"] .achievement-desc-text {
-            color: #4a5568;
+        /* ===== v3.3.9: D-Pad & Classic Two-Button Control Layout ===== */
+        .dpad-only {
+            display: none !important;
+        }
+
+        .twobtn-only {
+            display: flex;
+        }
+
+        .turn-separator.twobtn-only {
+            display: block;
+        }
+
+        /* When layout-dpad is active */
+        #p1-controls.layout-dpad {
+            display: flex;
+            align-items: stretch;
+            justify-content: space-between;
+            padding: 6px 8px;
+            padding-bottom: calc(6px + var(--safe-area-bottom));
+            box-sizing: border-box;
+        }
+
+        #p2-controls.layout-dpad {
+            padding-top: var(--safe-area-top) !important;
+            padding-bottom: 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        #p2-controls.layout-dpad .ctrl-content-rotated {
+            display: flex;
+            align-items: stretch;
+            justify-content: space-between;
+            padding: 6px 8px !important;
+            box-sizing: border-box;
+            height: 100%;
+            width: 100%;
+        }
+
+        #p2-controls.layout-dpad .player-stat-panel {
+            padding-top: 1px !important;
+            padding-bottom: 1px !important;
+        }
+
+        .layout-dpad .twobtn-only {
+            display: none !important;
+        }
+
+        .layout-dpad .dpad-only {
+            display: flex !important;
+        }
+
+        #p1-controls.layout-dpad .panel-with-btns,
+        #p2-controls.layout-dpad .panel-with-btns {
+            flex: 0 0 72px;
+            max-width: 74px;
+            height: 100%;
+            margin: 0;
+            justify-content: center;
+        }
+
+        #p1-controls.layout-dpad #aiStatPanel {
+            display: none !important;
+        }
+
+        #p1-controls.dual-ai.layout-dpad .player-stat-panel {
+            flex: 1 1 100% !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* D-Pad Buttons - v3.3.9: 3-Column Ergonomic Arcade/Gamepad Layout (istediğim.png) */
+        .dpad-cluster {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            justify-content: center;
+            gap: 6px;
+            height: 100%;
+            padding: 0 4px;
+            touch-action: none;
+            z-index: 5;
+            box-sizing: border-box;
+        }
+
+        .dpad-col-center {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            height: 100%;
+            flex: 1 1 0;
+            max-width: clamp(75px, 23vw, 108px);
+            justify-content: space-between;
+        }
+
+        .dpad-btn {
+            border-radius: 14px;
+            background-color: var(--ui-tile-soft);
+            border: 1px solid var(--ui-tile-border);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            touch-action: none;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+            transition: transform 0.06s, background-color 0.1s, border-color 0.1s;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .dpad-btn.dpad-tall {
+            height: 100%;
+            flex: 1 1 0;
+            max-width: clamp(56px, 16vw, 80px);
+            border-radius: 16px;
+        }
+
+        .dpad-col-center .dpad-btn {
+            width: 100%;
+            height: calc(50% - 3px);
+            flex: 1 1 0;
+            border-radius: 14px;
+        }
+
+        .dpad-btn svg {
+            pointer-events: none;
+            width: clamp(24px, 6.2vw, 28px);
+            height: clamp(24px, 6.2vw, 28px);
+            stroke: var(--text);
+            opacity: 0.85;
+            stroke-width: 2.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .dpad-btn:active, .dpad-btn.pressed {
+            transform: scale(0.93);
+            background-color: #2a3f5d;
+        }
+
+        [data-player="p1"].dpad-btn:active, [data-player="p1"].dpad-btn.pressed {
+            background-color: rgba(var(--p1-rgb, 255, 79, 191), 0.28);
+            border-color: var(--p1);
+            box-shadow: 0 0 16px var(--p1);
+        }
+
+        [data-player="p2"].dpad-btn:active, [data-player="p2"].dpad-btn.pressed {
+            background-color: rgba(var(--p2-rgb, 53, 230, 230), 0.28);
+            border-color: var(--p2);
+            box-shadow: 0 0 16px var(--p2);
+        }
+
+        [data-theme="light"] .dpad-btn {
+            background-color: var(--ui-tile-soft);
+            border-color: var(--ui-tile-border);
+            color: var(--text);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        [data-theme="light"] [data-player="p1"].dpad-btn:active,
+        [data-theme="light"] [data-player="p1"].dpad-btn.pressed {
+            background-color: #ffe4e6;
+            border-color: #e11d48;
+        }
+
+        [data-theme="light"] [data-player="p2"].dpad-btn:active,
+        [data-theme="light"] [data-player="p2"].dpad-btn.pressed {
+            background-color: #e0f2fe;
+            border-color: #0284c7;
+        }
+
+        /* v3.3.9: Panel Sound (Mute/Unmute) Button */
+        .panel-sound-btn {
+            width: 28px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.55);
+            border: 2px solid rgba(255, 255, 255, 0.85);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background-color 0.15s, transform 0.08s;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .panel-sound-btn:active {
+            background-color: rgba(255, 255, 255, 0.75);
+            transform: scale(0.92);
+        }
+
+        .panel-sound-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: #111;
+            pointer-events: none;
+        }
+
+        .layout-twobtn .panel-sound-btn {
+            display: none !important;
+        }
+
+        /* Right Slot for D-Pad Mode (receives pause & sound buttons in Solo 1P) */
+        .dpad-slot-right {
+            flex: 0 0 50px;
+            max-width: 54px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            position: relative;
+        }
+
+        #p1-controls.layout-dpad:not(.mode-2p):not(.dual-ai) .dpad-slot-right,
+        #p2-controls.layout-dpad:not(.mode-2p) .dpad-slot-right {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        #p1-controls.layout-dpad:not(.mode-2p):not(.dual-ai) #pauseBtnP1,
+        #p1-controls.layout-dpad:not(.mode-2p):not(.dual-ai) #soundBtnP1,
+        #p2-controls.layout-dpad:not(.mode-2p) #pauseBtnP2,
+        #p2-controls.layout-dpad:not(.mode-2p) #soundBtnP2 {
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            transform: none !important;
+            margin: 0 auto !important;
+            width: 36px !important;
+            height: 36px !important;
+            display: flex !important;
+        }
+
+        #p1-controls.layout-dpad:not(.mode-2p):not(.dual-ai) #pauseBtnP1 > svg,
+        #p1-controls.layout-dpad:not(.mode-2p):not(.dual-ai) #soundBtnP1 > svg,
+        #p2-controls.layout-dpad:not(.mode-2p) #pauseBtnP2 > svg,
+        #p2-controls.layout-dpad:not(.mode-2p) #soundBtnP2 > svg {
+            width: 19px !important;
+            height: 19px !important;
+        }
+
+        /* 1P vs 2P, 1P vs AI, Online: D-Pad Layout - Opponent Stat Panel on far right & Pause/Sound buttons attached */
+        #p1-controls:is(.mode-2p, .dual-ai).layout-dpad .dpad-slot-right,
+        #p2-controls.mode-2p.layout-dpad .dpad-slot-right {
+            flex: 0 0 72px;
+            max-width: 74px;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #p1-controls:is(.mode-2p, .dual-ai).layout-dpad #p1OpponentPanel,
+        #p2-controls.mode-2p.layout-dpad #p2OpponentPanel {
+            display: flex !important;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            z-index: 20;
+        }
+
+        #p1-controls:is(.mode-2p, .dual-ai).layout-dpad .panel-with-btns,
+        #p2-controls.mode-2p.layout-dpad .panel-with-btns {
+            position: relative;
+            z-index: 20;
+        }
+
+        #p1-controls:is(.mode-2p, .dual-ai).layout-dpad #p1StatPanel,
+        #p2-controls.mode-2p.layout-dpad #p2StatPanel {
+            position: relative;
+            z-index: 20;
+        }
+
+        /* Pause Button (embedded inside Player Stat Panel beneath series dots) */
+        #p1-controls:is(.mode-2p, .dual-ai).layout-dpad #pauseBtnP1,
+        #p2-controls.mode-2p.layout-dpad #pauseBtnP2 {
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            transform: none !important;
+            width: 33px !important;
+            height: 33px !important;
+            margin: 8px auto 2px !important;
+            z-index: 20 !important;
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            display: flex !important;
+        }
+
+        #p1-controls:is(.mode-2p, .dual-ai).layout-dpad #pauseBtnP1::after,
+        #p2-controls.mode-2p.layout-dpad #pauseBtnP2::after {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            border-radius: 50%;
+            pointer-events: auto;
+        }
+
+        #p1-controls:is(.mode-2p, .dual-ai).layout-dpad #pauseBtnP1 > svg,
+        #p2-controls.mode-2p.layout-dpad #pauseBtnP2 > svg {
+            width: 17px !important;
+            height: 17px !important;
+            pointer-events: none !important;
+        }
+
+        /* Sound Button (embedded inside Opponent Stat Panel beneath series dots) */
+        #p1-controls:is(.mode-2p, .dual-ai).layout-dpad #soundBtnP1,
+        #p2-controls.mode-2p.layout-dpad #soundBtnP2 {
+            position: static !important;
+            left: auto !important;
+            right: auto !important;
+            top: auto !important;
+            transform: none !important;
+            width: 33px !important;
+            height: 33px !important;
+            margin: 8px auto 2px !important;
+            z-index: 20 !important;
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            display: flex !important;
+        }
+
+        #p1-controls:is(.mode-2p, .dual-ai).layout-dpad #soundBtnP1::after,
+        #p2-controls.mode-2p.layout-dpad #soundBtnP2::after {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            border-radius: 50%;
+            pointer-events: auto;
+        }
+
+        #p1-controls:is(.mode-2p, .dual-ai).layout-dpad #soundBtnP1 > svg,
+        #p2-controls.mode-2p.layout-dpad #soundBtnP2 > svg {
+            width: 17px !important;
+            height: 17px !important;
+            pointer-events: none !important;
+        }
+
+        /* Player Selection Tabs for 2P Controls Modal */
+        .ctrl-player-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            width: 100%;
+        }
+
+        .ctrl-player-tab {
+            flex: 1;
+            padding: 9px 10px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            color: var(--muted);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .ctrl-player-tab .tab-player-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .ctrl-player-tab .tab-player-dot.dot-p1 {
+            background: var(--p1);
+            box-shadow: 0 0 8px var(--p1);
+        }
+
+        .ctrl-player-tab .tab-player-dot.dot-p2 {
+            background: var(--p2);
+            box-shadow: 0 0 8px var(--p2);
+        }
+
+        .ctrl-player-tab[data-player="p1"].active {
+            background: rgba(255, 79, 191, 0.16);
+            border-color: var(--p1);
+            color: #ffffff;
+            box-shadow: 0 0 14px rgba(255, 79, 191, 0.3);
+        }
+
+        .ctrl-player-tab[data-player="p2"].active {
+            background: rgba(53, 230, 230, 0.16);
+            border-color: var(--p2);
+            color: #ffffff;
+            box-shadow: 0 0 14px rgba(53, 230, 230, 0.3);
+        }
+
+        /* Dynamic styling of selected card based on active player */
+        .controls-modal-card.player-p2 .ctrl-opt-card.selected {
+            border-color: var(--p2);
+            background: rgba(53, 230, 230, 0.12);
+            box-shadow: 0 0 16px rgba(53, 230, 230, 0.22);
+        }
+
+        .controls-modal-card.player-p2 .ctrl-opt-card.selected .ctrl-opt-check {
+            background: var(--p2);
+        }
+
+        /* ===== v3.3.8: Kontroller Ayar Modalı ===== */
+        .controls-modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 4000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: rgba(8, 12, 18, 0.65);
+            backdrop-filter: blur(14px) saturate(120%);
+            -webkit-backdrop-filter: blur(14px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.22s ease;
+        }
+
+        .controls-modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .controls-modal-card {
+            width: min(92vw, 360px);
+            background: linear-gradient(135deg, rgba(13, 22, 36, 0.96), rgba(10, 17, 29, 0.94));
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 22px 20px 20px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.65), 0 0 30px rgba(53, 230, 230, 0.1);
+            transform: scale(0.93) translateY(12px);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .controls-modal-overlay.active .controls-modal-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .controls-modal-card.facing-p2 {
+            transform: scale(0.93) translateY(-12px) rotate(180deg);
+        }
+
+        .controls-modal-overlay.active .controls-modal-card.facing-p2 {
+            transform: scale(1) translateY(0) rotate(180deg);
+        }
+
+        .controls-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .controls-modal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 19px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            text-transform: none;
+        }
+
+        .controls-modal-close {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--muted);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+        }
+
+        .controls-modal-close:active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .controls-modal-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 10px;
+            text-transform: none;
+        }
+
+        .controls-options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .ctrl-opt-card {
+            border: 2px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 14px 10px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            transition: all 0.2s ease;
+        }
+
+        .ctrl-opt-card.selected {
+            border-color: var(--p1);
+            background: rgba(255, 79, 191, 0.10);
+            box-shadow: 0 0 16px rgba(255, 79, 191, 0.18);
+        }
+
+        .ctrl-opt-check {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--p1);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 900;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ctrl-opt-card.selected .ctrl-opt-check {
+            display: flex;
+        }
+
+        .ctrl-opt-icons {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 10px;
+            min-height: 38px;
+        }
+
+        .ctrl-mini-box {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .dpad-mini-grid {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .dpad-mini-col {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .dpad-mini-grid .ctrl-mini-box {
+            width: 17px;
+            height: 17px;
+            font-size: 9px;
+            border-radius: 4px;
+        }
+
+        .dpad-mini-grid .ctrl-mini-box.mini-tall {
+            height: 36px;
+            width: 15px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ctrl-opt-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 3px;
+            text-transform: none;
+        }
+
+        .ctrl-opt-sub {
+            font-size: 10.5px;
+            color: var(--muted);
+            line-height: 1.35;
+            text-transform: none;
+            text-align: left;
+        }
+
+        .ctrl-toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 14px;
+        }
+
+        .ctrl-toggle-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 2px;
+            text-transform: none;
+        }
+
+        .ctrl-toggle-desc {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: none;
+        }
+
+        .ctrl-switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+
+        .ctrl-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .ctrl-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 26px;
+            transition: 0.25s;
+        }
+
+        .ctrl-switch input:checked + .ctrl-slider {
+            background: #0f766e;
+        }
+
+        .ctrl-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: 0.25s;
+        }
+
+        .ctrl-switch input:checked + .ctrl-slider:before {
+            transform: translateX(20px);
+        }
+
+        .ctrl-modal-hint {
+            text-align: center;
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 14px;
+            text-transform: none;
+        }
+
+        .ctrl-modal-btn {
+            width: 100%;
+            padding: 12px 0;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: background 0.15s, transform 0.1s;
+        }
+
+        .ctrl-modal-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Light Theme Overrides for Controls Modal */
+        [data-theme="light"] .controls-modal-card {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.14);
+        }
+
+        [data-theme="light"] .controls-modal-title {
+            color: #0f172a;
+        }
+
+        [data-theme="light"] .controls-modal-close {
+            background: #f1f5f9;
+            color: #64748b;
+            border-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .ctrl-opt-card {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .ctrl-opt-card.selected {
+            border-color: #e11d48;
+            background: #fff1f2;
+        }
+
+        [data-theme="light"] .ctrl-opt-check {
+            background: #e11d48;
+        }
+
+        [data-theme="light"] .ctrl-mini-box {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+
+        [data-theme="light"] .ctrl-opt-name {
+            color: #0f172a;
+        }
+
+        [data-theme="light"] .ctrl-toggle-row {
+            border-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .ctrl-toggle-title {
+            color: #0f172a;
+        }
+
+        [data-theme="light"] .ctrl-slider {
+            background: #cbd5e1;
+        }
+
+        [data-theme="light"] .ctrl-modal-btn {
+            background: #0f172a;
+            color: #ffffff;
+            border-color: #0f172a;
         }
         /* ===== End Quick Setup ===== */
         </style>
@@ -2960,7 +3970,11 @@
     <!-- v2.93.0: Loading Splash Screen -->
     <div id="loading-splash">
         <div class="splash-logo-wrap">
-            <img class="splash-logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake" onerror="this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';">
+            <script>
+                document.write('<img class="splash-logo" src="' + (window.__twoPlayerSnakeUseNativeAssets
+                    ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png'
+                    : 'https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp') + '" alt="2 Player Snake" ' + "onerror=\"this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';\"" + '>');
+            </script>
         </div>
         <div class="splash-bar-wrap">
             <div class="splash-bar-fill" id="splashBarFill"></div>
@@ -2968,18 +3982,20 @@
         <div class="splash-text" id="splashText">Loading...</div>
     </div>
 
-    <div id="p2-controls" class="hud-hidden">
+    <div id="p2-controls" class="hud-hidden layout-twobtn">
         <!-- v13.1: entire content rotated 180° so P2 sees it correctly -->
         <div class="ctrl-content-rotated" style="display:flex;align-items:stretch;width:100%;height:100%;">
 
-            <!-- Left turn button -->
-            <div class="turn-btn left" data-dir="left" data-player="p2">
-                <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z" /></svg>
+            <!-- Two-button Left Turn (↰) -->
+            <div class="turn-btn left twobtn-only" data-dir="left" data-player="p2">
+                <svg viewBox="0 0 24 24">
+                    <path d="M 17 19 L 17 10 A 3 3 0 0 0 14 7 L 10.5 7 L 10.5 3.5 L 4 8.5 L 10.5 13.5 L 10.5 10 L 14 10 L 14 19 Z" />
+                </svg>
             </div>
-            <div class="turn-separator"></div>
+            <div class="turn-separator twobtn-only"></div>
 
-            <!-- Center: panel with pause inside -->
-            <div class="panel-with-btns">
+            <!-- Center: panel with pause inside (Two-Button Center / D-Pad Left) -->
+            <div class="panel-with-btns" id="p2PanelWithBtns">
                 <!-- P2 stat panel -->
                 <div class="player-stat-panel p2-panel" id="p2StatPanel">
                     <div class="panel-player-name p2-name" id="p2PanelName" lang="en"></div>
@@ -2992,10 +4008,43 @@
                 </div>
             </div>
 
-            <div class="turn-separator"></div>
-            <!-- Right turn button -->
-            <div class="turn-btn right" data-dir="right" data-player="p2">
-                <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" /></svg>
+            <!-- D-Pad Center Cluster (v3.3.9: 3-Column Ergonomic Arcade Layout) -->
+            <div class="dpad-cluster dpad-only" id="p2Dpad">
+                <button class="dpad-btn dpad-tall left" data-dir="left" data-player="p2" aria-label="Left">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <div class="dpad-col-center">
+                    <button class="dpad-btn up" data-dir="up" data-player="p2" aria-label="Up">
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                    </button>
+                    <button class="dpad-btn down" data-dir="down" data-player="p2" aria-label="Down">
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+                    </button>
+                </div>
+                <button class="dpad-btn dpad-tall right" data-dir="right" data-player="p2" aria-label="Right">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+            </div>
+
+            <!-- D-Pad Mode Right Slot (receives pause/sound in Solo, or opponent panel in 2P mode) -->
+            <div class="dpad-slot-right dpad-only" id="p2DpadRightSlot">
+                <div class="player-stat-panel p1-panel opponent-panel" id="p2OpponentPanel" style="display:none;">
+                    <div class="panel-player-name p1-name" id="p2OpponentName" lang="en"></div>
+                    <div class="panel-length-number p1-num" id="p2OpponentLen">0</div>
+                    <div class="panel-dots" id="p2OpponentDots"></div>
+                    <div id="soundBtnP2" class="panel-sound-btn soundBtn" aria-label="Sound Toggle">
+                        <svg class="soundOnIcon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                        <svg class="soundOffIcon" viewBox="0 0 24 24" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27l4.73 4.73H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="turn-separator twobtn-only"></div>
+            <!-- Two-button Right Turn (↱) -->
+            <div class="turn-btn right twobtn-only" data-dir="right" data-player="p2">
+                <svg viewBox="0 0 24 24">
+                    <path d="M 7 19 L 7 10 A 3 3 0 0 1 10 7 L 13.5 7 L 13.5 3.5 L 20 8.5 L 13.5 13.5 L 13.5 10 L 10 10 L 10 19 Z" />
+                </svg>
             </div>
 
         </div>
@@ -3026,17 +4075,19 @@
         </div>
     </div>
 
-    <div id="p1-controls" class="hud-hidden">
+    <div id="p1-controls" class="hud-hidden layout-twobtn">
 
-        <!-- Left turn button -->
-        <div class="turn-btn left" data-dir="left" data-player="p1">
-            <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z" /></svg>
+        <!-- Two-button Left Turn (↰) -->
+        <div class="turn-btn left twobtn-only" data-dir="left" data-player="p1">
+            <svg viewBox="0 0 24 24">
+                <path d="M 17 19 L 17 10 A 3 3 0 0 0 14 7 L 10.5 7 L 10.5 3.5 L 4 8.5 L 10.5 13.5 L 10.5 10 L 14 10 L 14 19 Z" />
+            </svg>
         </div>
-        <div class="turn-separator"></div>
+        <div class="turn-separator twobtn-only"></div>
 
-        <!-- Center: panels + pause button -->
-        <div class="panel-with-btns">
-            <!-- P1 stat panel (pause btn lives here; floats to center in dual-ai mode) -->
+        <!-- Center: panels + pause button (Two-Button Center / D-Pad Left) -->
+        <div class="panel-with-btns" id="p1PanelWithBtns">
+            <!-- P1 stat panel -->
             <div class="player-stat-panel p1-panel" id="p1StatPanel">
                 <div class="panel-player-name p1-name" id="p1PanelName" lang="en"></div>
                 <div class="panel-length-number p1-num" id="p1PanelLen">0</div>
@@ -3054,10 +4105,43 @@
             </div>
         </div>
 
-        <div class="turn-separator"></div>
-        <!-- Right turn button -->
-        <div class="turn-btn right" data-dir="right" data-player="p1">
-            <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" /></svg>
+        <!-- D-Pad Center Cluster (v3.3.9: 3-Column Ergonomic Arcade Layout) -->
+        <div class="dpad-cluster dpad-only" id="p1Dpad">
+            <button class="dpad-btn dpad-tall left" data-dir="left" data-player="p1" aria-label="Left">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </button>
+            <div class="dpad-col-center">
+                <button class="dpad-btn up" data-dir="up" data-player="p1" aria-label="Up">
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                </button>
+                <button class="dpad-btn down" data-dir="down" data-player="p1" aria-label="Down">
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+                </button>
+            </div>
+            <button class="dpad-btn dpad-tall right" data-dir="right" data-player="p1" aria-label="Right">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+        </div>
+
+        <!-- D-Pad Mode Right Slot (receives pause/sound in Solo, or opponent panel in 2P/AI mode) -->
+        <div class="dpad-slot-right dpad-only" id="p1DpadRightSlot">
+            <div class="player-stat-panel p2-panel opponent-panel" id="p1OpponentPanel" style="display:none;">
+                <div class="panel-player-name p2-name" id="p1OpponentName" lang="en"></div>
+                <div class="panel-length-number p2-num" id="p1OpponentLen">0</div>
+                <div class="panel-dots" id="p1OpponentDots"></div>
+                <div id="soundBtnP1" class="panel-sound-btn soundBtn" aria-label="Sound Toggle">
+                    <svg class="soundOnIcon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                    <svg class="soundOffIcon" viewBox="0 0 24 24" style="display:none;"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27l4.73 4.73H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="turn-separator twobtn-only"></div>
+        <!-- Two-button Right Turn (↱) -->
+        <div class="turn-btn right twobtn-only" data-dir="right" data-player="p1">
+            <svg viewBox="0 0 24 24">
+                <path d="M 7 19 L 7 10 A 3 3 0 0 1 10 7 L 13.5 7 L 13.5 3.5 L 20 8.5 L 13.5 13.5 L 13.5 10 L 10 10 L 10 19 Z" />
+            </svg>
         </div>
 
         <!-- Hidden legacy score elements -->
@@ -3072,16 +4156,128 @@
             </div>
         </div>
         <div class="series-corner" id="p1Series" style="display:none!important"></div>
-        <div id="settingsBtnP1" style="display:none!important"></div>
+    </div>
+
+    <!-- ====== Kontroller Ayar Modalı (v3.3.9) ====== -->
+    <div class="controls-modal-overlay" id="controlsModalOverlay">
+        <div class="controls-modal-card">
+            <div class="controls-modal-header">
+                <div class="controls-modal-title" id="controlsModalTitle">Kontroller</div>
+                <button class="controls-modal-close" id="closeControlsModalBtn" aria-label="Close">&times;</button>
+            </div>
+
+            <!-- 2P Oyuncu Seçim Sekmeleri (Yalnızca 2P modunda görünür) -->
+            <div class="ctrl-player-tabs" id="ctrlPlayerTabs" style="display:none;">
+                <button class="ctrl-player-tab active" data-player="p1" id="tabP1">
+                    <span class="tab-player-dot dot-p1"></span> <span id="tabP1Text">Oyuncu 1 (P1)</span>
+                </button>
+                <button class="ctrl-player-tab" data-player="p2" id="tabP2">
+                    <span class="tab-player-dot dot-p2"></span> <span id="tabP2Text">Oyuncu 2 (P2)</span>
+                </button>
+            </div>
+
+            <div class="controls-modal-section-title" id="ctrlSectionTitle">Düğme düzeni</div>
+
+            <div class="controls-options-grid">
+                <!-- İki Düğme Kartı (↰ ve ↱) -->
+                <div class="ctrl-opt-card" id="ctrlOptTwoBtn" data-layout="two-btn">
+                    <div class="ctrl-opt-check">✓</div>
+                    <div class="ctrl-opt-icons">
+                        <span class="ctrl-mini-box" aria-label="Turn Left">
+                            <svg viewBox="0 0 24 24" width="16" height="16" style="fill:currentColor;display:block;"><path d="M 17 19 L 17 10 A 3 3 0 0 0 14 7 L 10.5 7 L 10.5 3.5 L 4 8.5 L 10.5 13.5 L 10.5 10 L 14 10 L 14 19 Z"/></svg>
+                        </span>
+                        <span class="ctrl-mini-box" aria-label="Turn Right">
+                            <svg viewBox="0 0 24 24" width="16" height="16" style="fill:currentColor;display:block;"><path d="M 7 19 L 7 10 A 3 3 0 0 1 10 7 L 13.5 7 L 13.5 3.5 L 20 8.5 L 13.5 13.5 L 13.5 10 L 10 10 L 10 19 Z"/></svg>
+                        </span>
+                    </div>
+                    <div class="ctrl-opt-name" id="ctrlTwoBtnName">İki düğme</div>
+                    <div class="ctrl-opt-sub" id="ctrlTwoBtnDesc">Yılanın sağına / soluna dön.</div>
+                </div>
+
+                <!-- Dört Yön Kartı (Varsayılan seçili) -->
+                <div class="ctrl-opt-card selected" id="ctrlOptDpad" data-layout="dpad">
+                    <div class="ctrl-opt-check">✓</div>
+                    <div class="ctrl-opt-icons">
+                        <div class="dpad-mini-grid">
+                            <span class="ctrl-mini-box mini-tall">←</span>
+                            <div class="dpad-mini-col">
+                                <span class="ctrl-mini-box mini-up">↑</span>
+                                <span class="ctrl-mini-box mini-down">↓</span>
+                            </div>
+                            <span class="ctrl-mini-box mini-tall">→</span>
+                        </div>
+                    </div>
+                    <div class="ctrl-opt-name" id="ctrlDpadName">Dört yön</div>
+                    <div class="ctrl-opt-sub" id="ctrlDpadDesc">Ekranda seçtiğin yöne git.</div>
+                </div>
+            </div>
+
+            <!-- Kaydırarak Kontrol Toggle -->
+            <div class="ctrl-toggle-row" id="ctrlSwipeRow">
+                <div class="ctrl-toggle-info">
+                    <div class="ctrl-toggle-title" id="ctrlSwipeTitle">Kaydırarak kontrol</div>
+                    <div class="ctrl-toggle-desc" id="ctrlSwipeDesc">Düğmelerle birlikte kullanılabilir.</div>
+                </div>
+                <label class="ctrl-switch">
+                    <input type="checkbox" id="ctrlSwipeToggle" checked>
+                    <span class="ctrl-slider"></span>
+                </label>
+            </div>
+
+            <div class="ctrl-modal-hint" id="ctrlModalHint">Dört yön seçildi. Tercihin hatırlanır.</div>
+
+            <button class="ctrl-modal-btn" id="ctrlModalConfirmBtn">Tamam</button>
+        </div>
     </div>
 
     <script>
         (() => {
             /* ==============================
-              2 Player Snake - Beta v3.2.2 Mobile
+              2 Player Snake - Beta v3.4.2 Mobile
               ============================= */
 
-            const VERSION = 'v3.3.6';
+            const VERSION = 'v3.4.2';
+            const IS_IOS_SHELL = window.__twoPlayerSnakePlatform === 'ios';
+            const IS_APPLE_DEVICE = IS_IOS_SHELL ||
+                (typeof window !== 'undefined' && Boolean(window.isAppleDevice)) ||
+                (typeof navigator !== 'undefined' && (
+                    /iPhone|iPad|iPod/i.test(navigator.userAgent || '') ||
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+                ));
+            try {
+                if (IS_APPLE_DEVICE && typeof document !== 'undefined' && document.documentElement) {
+                    document.documentElement.setAttribute('data-ios-device', 'true');
+                }
+            } catch (e) {}
+            window.__twoPlayerSnakeRuntimeRevision = 36;
+            // Bounded counters in the existing game loop; no additional animation timer.
+            const iosPerf = IS_IOS_SHELL ? { enabled: true, startedAt: 0, frames: 0, frameMs: 0,
+                over50ms: 0, maxFrameMs: 0, aiCalls: 0, aiMs: 0, aiMaxMs: 0, bfsRuns: 0,
+                cacheHits: 0, reported: false, source: window.__twoPlayerSnakeOfflineMode ? 'offline' : 'remote' } : null;
+            if (iosPerf) window.__twoPlayerSnakeDiagnostics = iosPerf;
+            function recordIosFrame(time, delta) {
+                if (!iosPerf || !iosPerf.enabled || document.hidden) return;
+                if (!iosPerf.startedAt) { iosPerf.startedAt = time; return; }
+                iosPerf.frames++; iosPerf.frameMs += delta;
+                iosPerf.maxFrameMs = Math.max(iosPerf.maxFrameMs, delta);
+                if (delta > 50) iosPerf.over50ms++;
+                if (time - iosPerf.startedAt >= 120000 && !iosPerf.reported) {
+                    iosPerf.reported = true; iosPerf.enabled = false;
+                    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iOS) {
+                        window.webkit.messageHandlers.iOS.postMessage({ action: 'performanceReport', payload: JSON.stringify(iosPerf) });
+                    }
+                }
+            }
+            function measuredAIMove(aiSnake, playerSnake, foods, wallMode) {
+                if (!iosPerf || !iosPerf.enabled) return calculateAIMove(aiSnake, playerSnake, foods, wallMode);
+                const started = performance.now();
+                try { return calculateAIMove(aiSnake, playerSnake, foods, wallMode); }
+                finally {
+                    const elapsed = performance.now() - started;
+                    iosPerf.aiCalls++; iosPerf.aiMs += elapsed;
+                    iosPerf.aiMaxMs = Math.max(iosPerf.aiMaxMs, elapsed);
+                }
+            }
             const VERSION_CHECK_INTERVAL_MS = 2000;
 
             // Online Socket variables
@@ -3094,6 +4290,7 @@
             let lastP1Update = 0;
             let lastP2Update = 0;
             let onlineRoomId = null;
+            let onlineMatchIndex = 0;
             let myRole = null; // 'p1' or 'p2'
             let onlineSessionToken = null;
             let partnerName = '';
@@ -3252,6 +4449,8 @@
             }
 
             async function checkForFreshVersion(force = false) {
+                if (IS_IOS_SHELL || window.__twoPlayerSnakeOfflineMode === true) return;
+                if ((typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE) && (typeof isDemoMode !== 'undefined' && isDemoMode)) return;
                 const now = Date.now();
                 if (versionCheckInFlight || versionReloadIssued) return;
                 if (!force && (now - lastVersionCheckAt) < VERSION_CHECK_INTERVAL_MS) return;
@@ -3277,6 +4476,8 @@
             }
 
             function scheduleVersionCheck(force = false, delay = 180) {
+                if (IS_IOS_SHELL || window.__twoPlayerSnakeOfflineMode === true) return;
+                if ((typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE) && (typeof isDemoMode !== 'undefined' && isDemoMode)) return;
                 window.setTimeout(() => {
                     checkForFreshVersion(force);
                     maybeApplyPendingVersionRefresh();
@@ -4596,7 +5797,8 @@
                     watchAdToContinue: 'Devam etmek için reklam izle',
                     localMode: 'YEREL OYNA',
                     onlineMode: 'ÇEVRİMİÇİ OYNA',
-                    achievements: 'Başarımlar'
+                    achievements: 'Başarımlar',
+                    controls: 'Kontroller'
                 },
                 en: {
                     colorPick: 'Name & Color', namePlaceholder: 'Name',
@@ -4607,7 +5809,8 @@
                     watchAdToContinue: 'Watch an ad to continue',
                     localMode: 'PLAY LOCAL',
                     onlineMode: 'PLAY ONLINE',
-                    achievements: 'Achievements'
+                    achievements: 'Achievements',
+                    controls: 'Controls'
                 },
                 fr: {
                     colorPick: 'Nom & Couleur', namePlaceholder: 'Nom',
@@ -4617,7 +5820,8 @@
                     rewardedDeclined: 'La publicité n\'a pas été terminée.',
                     watchAdToContinue: 'Regarder une pub pour continuer',
                     localMode: 'JOUER EN LOCAL',
-                    onlineMode: 'JOUER EN LIGNE'
+                    onlineMode: 'JOUER EN LIGNE',
+                    controls: 'Commandes'
                 },
                 it: {
                     colorPick: 'Nome & Colore', namePlaceholder: 'Nome',
@@ -4627,7 +5831,8 @@
                     rewardedDeclined: 'L\'annuncio non è stato completato.',
                     watchAdToContinue: 'Guarda una pubblicità per continuare',
                     localMode: 'GIOCA IN LOCALE',
-                    onlineMode: 'GIOCA ONLINE'
+                    onlineMode: 'GIOCA ONLINE',
+                    controls: 'Comandi'
                 },
                 es: {
                     colorPick: 'Nombre y Color', namePlaceholder: 'Nombre',
@@ -4637,7 +5842,8 @@
                     rewardedDeclined: 'El anuncio no se completó.',
                     watchAdToContinue: 'Mira un anuncio para continuar',
                     localMode: 'JUEGO LOCAL',
-                    onlineMode: 'JUEGO ONLINE'
+                    onlineMode: 'JUEGO ONLINE',
+                    controls: 'Controles'
                 },
                 de: {
                     colorPick: 'Name & Farbe', namePlaceholder: 'Name',
@@ -4647,7 +5853,8 @@
                     rewardedDeclined: 'Die Werbung wurde nicht abgeschlossen.',
                     watchAdToContinue: 'Sieh Werbung an, um fortzusetzen',
                     localMode: 'LOKAL SPIELEN',
-                    onlineMode: 'ONLINE SPIELEN'
+                    onlineMode: 'ONLINE SPIELEN',
+                    controls: 'Steuerung'
                 },
                 zh: {
                     colorPick: '名字和颜色', namePlaceholder: '名字',
@@ -4800,6 +6007,101 @@
                     onlineMode: 'HRÁT ONLINE'
                 }
             };
+            
+            const VS_AI_STRINGS = {
+          "tr": {
+                    "vsAiMode": "VS YAPAY ZEKA",
+                    "fastCompetitiveMode": "Hızlı Rekabetçi"
+          },
+          "en": {
+                    "vsAiMode": "VS AI",
+                    "fastCompetitiveMode": "Fast Competitive"
+          },
+          "fr": {
+                    "vsAiMode": "VS IA",
+                    "fastCompetitiveMode": "Comp. Rapide"
+          },
+          "it": {
+                    "vsAiMode": "VS IA",
+                    "fastCompetitiveMode": "Comp. Veloce"
+          },
+          "es": {
+                    "vsAiMode": "VS IA",
+                    "fastCompetitiveMode": "Comp. Rápido"
+          },
+          "de": {
+                    "vsAiMode": "VS KI",
+                    "fastCompetitiveMode": "Schnell Wettkampf"
+          },
+          "zh": {
+                    "vsAiMode": "VS AI",
+                    "fastCompetitiveMode": "快速竞技"
+          },
+          "hi": {
+                    "vsAiMode": "VS AI",
+                    "fastCompetitiveMode": "फास्ट कॉम्पिटिटिव"
+          },
+          "pl": {
+                    "vsAiMode": "VS AI",
+                    "fastCompetitiveMode": "Szybka Rywalizacja"
+          },
+          "ptbr": {
+                    "vsAiMode": "VS IA",
+                    "fastCompetitiveMode": "Competitivo Rápido"
+          },
+          "pt-BR": {
+                    "vsAiMode": "VS IA",
+                    "fastCompetitiveMode": "Competitivo Rápido"
+          },
+          "ar": {
+                    "vsAiMode": "ضد الذكاء الاصطناعي",
+                    "fastCompetitiveMode": "تنافس سريع"
+          },
+          "ru": {
+                    "vsAiMode": "ПРОТИВ ИИ",
+                    "fastCompetitiveMode": "Быстрый соревновательный"
+          },
+          "id": {
+                    "vsAiMode": "VS AI",
+                    "fastCompetitiveMode": "Kompetitif Cepat"
+          },
+          "ja": {
+                    "vsAiMode": "VS AI",
+                    "fastCompetitiveMode": "高速対戦"
+          },
+          "ko": {
+                    "vsAiMode": "VS AI",
+                    "fastCompetitiveMode": "빠른 경쟁"
+          },
+          "vi": {
+                    "vsAiMode": "VS AI",
+                    "fastCompetitiveMode": "Cạnh Tranh Nhanh"
+          },
+          "th": {
+                    "vsAiMode": "VS AI",
+                    "fastCompetitiveMode": "แข่งขันเร็ว"
+          },
+          "tl": {
+                    "vsAiMode": "VS AI",
+                    "fastCompetitiveMode": "Mabilis na Kompetisyon"
+          },
+          "nl": {
+                    "vsAiMode": "VS AI",
+                    "fastCompetitiveMode": "Snel Competitief"
+          },
+          "el": {
+                    "vsAiMode": "VS AI",
+                    "fastCompetitiveMode": "Γρήγορος Ανταγωνισμός"
+          },
+          "cs": {
+                    "vsAiMode": "VS AI",
+                    "fastCompetitiveMode": "Rychlá soutěž"
+          }
+};
+            Object.keys(VS_AI_STRINGS).forEach(locale => {
+                EXTRA_STRINGS[locale] = { ...(EXTRA_STRINGS[locale] || {}), ...VS_AI_STRINGS[locale] };
+            });
+
             const MOBILE_V254_OVERRIDES = {
                 tr: {
                     colorPick: 'Ad & Renk', namePlaceholder: 'Ad',
@@ -5096,6 +6398,347 @@
             Object.keys(ONLINE_STRINGS).forEach(locale => {
                 EXTRA_STRINGS[locale] = { ...(EXTRA_STRINGS[locale] || {}), ...ONLINE_STRINGS[locale] };
             });
+            const CONTROLS_STRINGS = {
+                tr: {
+                    controls: 'Kontroller',
+                    ctrlPlayer1: 'Oyuncu 1 (P1)',
+                    ctrlPlayer2: 'Oyuncu 2 (P2)',
+                    ctrlButtonLayout: 'Düğme düzeni',
+                    ctrlTwoBtn: 'İki düğme',
+                    ctrlTwoBtnDesc: 'Yılanın sağına / soluna dön.',
+                    ctrlDpad: 'Dört yön',
+                    ctrlDpadDesc: 'Ekranda seçtiğin yöne git.',
+                    ctrlSwipeTitle: 'Kaydırarak kontrol',
+                    ctrlSwipeDesc: 'Düğmelerle birlikte kullanılabilir.',
+                    ctrlHintDpad: 'Dört yön seçildi. Tercihin hatırlanır.',
+                    ctrlHintTwoBtn: 'İki düğme seçildi. Tercihin hatırlanır.',
+                    ctrlHint2P: '{player} için {layout} seçildi.',
+                    ctrlConfirm: 'Tamam'
+                },
+                en: {
+                    controls: 'Controls',
+                    ctrlPlayer1: 'Player 1 (P1)',
+                    ctrlPlayer2: 'Player 2 (P2)',
+                    ctrlButtonLayout: 'Button layout',
+                    ctrlTwoBtn: 'Two buttons',
+                    ctrlTwoBtnDesc: 'Turn left / right of snake.',
+                    ctrlDpad: 'D-Pad',
+                    ctrlDpadDesc: 'Move in chosen direction on screen.',
+                    ctrlSwipeTitle: 'Swipe control',
+                    ctrlSwipeDesc: 'Can be used alongside buttons.',
+                    ctrlHintDpad: 'D-Pad selected. Preference saved.',
+                    ctrlHintTwoBtn: 'Two buttons selected. Preference saved.',
+                    ctrlHint2P: '{player}: {layout} selected.',
+                    ctrlConfirm: 'OK'
+                },
+                fr: {
+                    controls: 'Commandes',
+                    ctrlPlayer1: 'Joueur 1 (J1)',
+                    ctrlPlayer2: 'Joueur 2 (J2)',
+                    ctrlButtonLayout: 'Disposition des boutons',
+                    ctrlTwoBtn: 'Deux boutons',
+                    ctrlTwoBtnDesc: 'Tourner à gauche / droite du serpent.',
+                    ctrlDpad: 'Pavé directionnel',
+                    ctrlDpadDesc: 'Aller dans la direction choisie à l\'écran.',
+                    ctrlSwipeTitle: 'Contrôle par balayage',
+                    ctrlSwipeDesc: 'Peut être utilisé en plus des boutons.',
+                    ctrlHintDpad: 'Pavé directionnel choisi. Préférence enregistrée.',
+                    ctrlHintTwoBtn: 'Deux boutons choisis. Préférence enregistrée.',
+                    ctrlHint2P: '{player} : {layout} sélectionné.',
+                    ctrlConfirm: 'OK'
+                },
+                it: {
+                    controls: 'Comandi',
+                    ctrlPlayer1: 'Giocatore 1 (P1)',
+                    ctrlPlayer2: 'Giocatore 2 (P2)',
+                    ctrlButtonLayout: 'Disposizione pulsanti',
+                    ctrlTwoBtn: 'Due pulsanti',
+                    ctrlTwoBtnDesc: 'Gira a sinistra / destra del serpente.',
+                    ctrlDpad: 'D-Pad',
+                    ctrlDpadDesc: 'Muoviti nella direzione scelta sullo schermo.',
+                    ctrlSwipeTitle: 'Controllo a scorrimento',
+                    ctrlSwipeDesc: 'Può essere usato insieme ai pulsanti.',
+                    ctrlHintDpad: 'D-Pad selezionato. Preferenza salvata.',
+                    ctrlHintTwoBtn: 'Due pulsanti selezionati. Preferenza salvata.',
+                    ctrlHint2P: '{player}: {layout} selezionato.',
+                    ctrlConfirm: 'OK'
+                },
+                es: {
+                    controls: 'Controles',
+                    ctrlPlayer1: 'Jugador 1 (J1)',
+                    ctrlPlayer2: 'Jugador 2 (J2)',
+                    ctrlButtonLayout: 'Distribución de botones',
+                    ctrlTwoBtn: 'Dos botones',
+                    ctrlTwoBtnDesc: 'Gira a la izquierda / derecha de la serpiente.',
+                    ctrlDpad: 'D-Pad',
+                    ctrlDpadDesc: 'Muévete en la dirección elegida en pantalla.',
+                    ctrlSwipeTitle: 'Control por deslizamiento',
+                    ctrlSwipeDesc: 'Se puede usar junto con los botones.',
+                    ctrlHintDpad: 'D-Pad seleccionado. Preferencia guardada.',
+                    ctrlHintTwoBtn: 'Dos botones seleccionados. Preferencia guardada.',
+                    ctrlHint2P: '{player}: {layout} seleccionado.',
+                    ctrlConfirm: 'Aceptar'
+                },
+                de: {
+                    controls: 'Steuerung',
+                    ctrlPlayer1: 'Spieler 1 (S1)',
+                    ctrlPlayer2: 'Spieler 2 (S2)',
+                    ctrlButtonLayout: 'Tasten-Layout',
+                    ctrlTwoBtn: 'Zwei Tasten',
+                    ctrlTwoBtnDesc: 'Drehe nach links / rechts der Schlange.',
+                    ctrlDpad: 'D-Pad',
+                    ctrlDpadDesc: 'Bewege dich in die gewählte Bildschirmrichtung.',
+                    ctrlSwipeTitle: 'Wischsteuerung',
+                    ctrlSwipeDesc: 'Kann parallel zu den Tasten genutzt werden.',
+                    ctrlHintDpad: 'D-Pad ausgewählt. Einstellung gespeichert.',
+                    ctrlHintTwoBtn: 'Zwei Tasten ausgewählt. Einstellung gespeichert.',
+                    ctrlHint2P: '{player}: {layout} ausgewählt.',
+                    ctrlConfirm: 'OK'
+                },
+                zh: {
+                    controls: '控制',
+                    ctrlPlayer1: '玩家 1 (P1)',
+                    ctrlPlayer2: '玩家 2 (P2)',
+                    ctrlButtonLayout: '按键布局',
+                    ctrlTwoBtn: '双键模式',
+                    ctrlTwoBtnDesc: '向蛇的左侧/右侧转弯。',
+                    ctrlDpad: '十字键',
+                    ctrlDpadDesc: '按屏幕上选择的方向移动。',
+                    ctrlSwipeTitle: '滑动控制',
+                    ctrlSwipeDesc: '可与按键配合使用。',
+                    ctrlHintDpad: '已选择十字键。设置已保存。',
+                    ctrlHintTwoBtn: '已选择双键模式。设置已保存。',
+                    ctrlHint2P: '{player}：已选择 {layout}',
+                    ctrlConfirm: '确定'
+                },
+                hi: {
+                    controls: 'नियंत्रण',
+                    ctrlPlayer1: 'खिलाड़ी 1 (P1)',
+                    ctrlPlayer2: 'खिलाड़ी 2 (P2)',
+                    ctrlButtonLayout: 'बटन लेआउट',
+                    ctrlTwoBtn: 'दो बटन',
+                    ctrlTwoBtnDesc: 'सांप के बाएं / दाएं मुड़ें।',
+                    ctrlDpad: 'D-Pad',
+                    ctrlDpadDesc: 'स्क्रीन पर चुनी गई दिशा में जाएं।',
+                    ctrlSwipeTitle: 'स्वाइप नियंत्रण',
+                    ctrlSwipeDesc: 'बटनों के साथ भी इस्तेमाल किया जा सकता है।',
+                    ctrlHintDpad: 'D-Pad चुना गया। प्राथमिकता सहेजी गई।',
+                    ctrlHintTwoBtn: 'दो बटन चुने गए। प्राथमिकता सहेजी गई।',
+                    ctrlHint2P: '{player}: {layout} चुना गया।',
+                    ctrlConfirm: 'ठीक है'
+                },
+                pl: {
+                    controls: 'Sterowanie',
+                    ctrlPlayer1: 'Gracz 1 (P1)',
+                    ctrlPlayer2: 'Gracz 2 (P2)',
+                    ctrlButtonLayout: 'Układ przycisków',
+                    ctrlTwoBtn: 'Dwa przyciski',
+                    ctrlTwoBtnDesc: 'Skręcaj w lewo / prawo węża.',
+                    ctrlDpad: 'D-Pad',
+                    ctrlDpadDesc: 'Poruszaj się w wybranym kierunku na ekranie.',
+                    ctrlSwipeTitle: 'Sterowanie gestami',
+                    ctrlSwipeDesc: 'Można używać równolegle z przyciskami.',
+                    ctrlHintDpad: 'Wybrano D-Pad. Wybór zapamiętany.',
+                    ctrlHintTwoBtn: 'Wybrano dwa przyciski. Wybór zapamiętany.',
+                    ctrlHint2P: '{player}: wybrano {layout}.',
+                    ctrlConfirm: 'OK'
+                },
+                ptbr: {
+                    controls: 'Controles',
+                    ctrlPlayer1: 'Jogador 1 (P1)',
+                    ctrlPlayer2: 'Jogador 2 (P2)',
+                    ctrlButtonLayout: 'Layout de botões',
+                    ctrlTwoBtn: 'Dois botões',
+                    ctrlTwoBtnDesc: 'Vire à esquerda / direita da cobra.',
+                    ctrlDpad: 'D-Pad',
+                    ctrlDpadDesc: 'Mova-se na direção escolhida na tela.',
+                    ctrlSwipeTitle: 'Controle por deslize',
+                    ctrlSwipeDesc: 'Pode ser usado junto com os botões.',
+                    ctrlHintDpad: 'D-Pad selecionado. Preferência salva.',
+                    ctrlHintTwoBtn: 'Dois botões selecionados. Preferência salva.',
+                    ctrlHint2P: '{player}: {layout} selecionado.',
+                    ctrlConfirm: 'OK'
+                },
+                ar: {
+                    controls: 'عناصر التحكم',
+                    ctrlPlayer1: 'اللاعب 1 (P1)',
+                    ctrlPlayer2: 'اللاعب 2 (P2)',
+                    ctrlButtonLayout: 'تخطيط الأزرار',
+                    ctrlTwoBtn: 'زران',
+                    ctrlTwoBtnDesc: 'انعطف ليمين أو يسار الأفعى.',
+                    ctrlDpad: 'لوحة الاتجاهات',
+                    ctrlDpadDesc: 'تحرك في الاتجاه المحدد على الشاشة.',
+                    ctrlSwipeTitle: 'التحكم بالسحب',
+                    ctrlSwipeDesc: 'يمكن استخدامه مع الأزرار.',
+                    ctrlHintDpad: 'تم اختيار لوحة الاتجاهات. تم حفظ التفضيل.',
+                    ctrlHintTwoBtn: 'تم اختيار الزرين. تم حفظ التفضيل.',
+                    ctrlHint2P: '{player}: تم اختيار {layout}.',
+                    ctrlConfirm: 'حسناً'
+                },
+                ru: {
+                    controls: 'Управление',
+                    ctrlPlayer1: 'Игрок 1 (P1)',
+                    ctrlPlayer2: 'Игрок 2 (P2)',
+                    ctrlButtonLayout: 'Раскладка кнопок',
+                    ctrlTwoBtn: 'Две кнопки',
+                    ctrlTwoBtnDesc: 'Поворот влево / вправо от змейки.',
+                    ctrlDpad: 'D-Pad',
+                    ctrlDpadDesc: 'Движение в выбранном направлении экрана.',
+                    ctrlSwipeTitle: 'Управление свайпами',
+                    ctrlSwipeDesc: 'Можно использовать вместе с кнопками.',
+                    ctrlHintDpad: 'Выбран D-Pad. Выбор сохранен.',
+                    ctrlHintTwoBtn: 'Выбраны две кнопки. Выбор сохранен.',
+                    ctrlHint2P: '{player}: выбран {layout}.',
+                    ctrlConfirm: 'ОК'
+                },
+                id: {
+                    controls: 'Kontrol',
+                    ctrlPlayer1: 'Pemain 1 (P1)',
+                    ctrlPlayer2: 'Pemain 2 (P2)',
+                    ctrlButtonLayout: 'Tata letak tombol',
+                    ctrlTwoBtn: 'Dua tombol',
+                    ctrlTwoBtnDesc: 'Belok ke kiri / kanan ular.',
+                    ctrlDpad: 'D-Pad',
+                    ctrlDpadDesc: 'Bergerak ke arah yang dipilih di layar.',
+                    ctrlSwipeTitle: 'Kontrol geser',
+                    ctrlSwipeDesc: 'Dapat digunakan bersamaan dengan tombol.',
+                    ctrlHintDpad: 'D-Pad dipilih. Pilihan disimpan.',
+                    ctrlHintTwoBtn: 'Dua tombol dipilih. Pilihan disimpan.',
+                    ctrlHint2P: '{player}: {layout} dipilih.',
+                    ctrlConfirm: 'OK'
+                },
+                ja: {
+                    controls: '操作設定',
+                    ctrlPlayer1: 'プレイヤー1 (P1)',
+                    ctrlPlayer2: 'プレイヤー2 (P2)',
+                    ctrlButtonLayout: 'ボタン配置',
+                    ctrlTwoBtn: '2ボタン',
+                    ctrlTwoBtnDesc: 'ヘビの左右へ旋回。',
+                    ctrlDpad: '十字キー',
+                    ctrlDpadDesc: '画面で選んだ方向に進む。',
+                    ctrlSwipeTitle: 'スワイプ操作',
+                    ctrlSwipeDesc: 'ボタンと併用できます。',
+                    ctrlHintDpad: '十字キーを選択しました。設定を保存しました。',
+                    ctrlHintTwoBtn: '2ボタンを選択しました。設定を保存しました。',
+                    ctrlHint2P: '{player}：{layout}を選択',
+                    ctrlConfirm: 'OK'
+                },
+                ko: {
+                    controls: '조작 설정',
+                    ctrlPlayer1: '플레이어 1 (P1)',
+                    ctrlPlayer2: '플레이어 2 (P2)',
+                    ctrlButtonLayout: '버튼 배치',
+                    ctrlTwoBtn: '2버튼',
+                    ctrlTwoBtnDesc: '뱀 기준 좌/우 회전.',
+                    ctrlDpad: '십자키',
+                    ctrlDpadDesc: '화면에서 선택한 방향으로 이동.',
+                    ctrlSwipeTitle: '스와이프 조작',
+                    ctrlSwipeDesc: '버튼과 함께 사용할 수 있습니다.',
+                    ctrlHintDpad: '십자키가 선택되었습니다. 설정이 저장됩니다.',
+                    ctrlHintTwoBtn: '2버튼이 선택되었습니다. 설정이 저장됩니다.',
+                    ctrlHint2P: '{player}: {layout} 선택됨',
+                    ctrlConfirm: '확인'
+                },
+                vi: {
+                    controls: 'Điều khiển',
+                    ctrlPlayer1: 'Người chơi 1 (P1)',
+                    ctrlPlayer2: 'Người chơi 2 (P2)',
+                    ctrlButtonLayout: 'Bố cục nút',
+                    ctrlTwoBtn: 'Hai nút',
+                    ctrlTwoBtnDesc: 'Rẽ trái / phải theo hướng rắn.',
+                    ctrlDpad: 'D-Pad',
+                    ctrlDpadDesc: 'Di chuyển theo hướng đã chọn trên màn hình.',
+                    ctrlSwipeTitle: 'Điều khiển vuốt',
+                    ctrlSwipeDesc: 'Có thể dùng kết hợp với các nút bấm.',
+                    ctrlHintDpad: 'Đã chọn D-Pad. Đã lưu tùy chọn.',
+                    ctrlHintTwoBtn: 'Đã chọn hai nút. Đã lưu tùy chọn.',
+                    ctrlHint2P: '{player}: Đã chọn {layout}',
+                    ctrlConfirm: 'OK'
+                },
+                th: {
+                    controls: 'การควบคุม',
+                    ctrlPlayer1: 'ผู้เล่น 1 (P1)',
+                    ctrlPlayer2: 'ผู้เล่น 2 (P2)',
+                    ctrlButtonLayout: 'รูปแบบปุ่ม',
+                    ctrlTwoBtn: 'สองปุ่ม',
+                    ctrlTwoBtnDesc: 'เลี้ยวซ้าย / ขวาของตัวงู',
+                    ctrlDpad: 'ปุ่ม 4 ทิศทาง',
+                    ctrlDpadDesc: 'เคลื่อนที่ไปตามทิศทางที่เลือกบนหน้าจอ',
+                    ctrlSwipeTitle: 'ควบคุมด้วยการปัด',
+                    ctrlSwipeDesc: 'สามารถใช้ร่วมกับปุ่มกดได้',
+                    ctrlHintDpad: 'เลือกปุ่ม 4 ทิศทางแล้ว บันทึกการตั้งค่าแล้ว',
+                    ctrlHintTwoBtn: 'เลือกสองปุ่มแล้ว บันทึกการตั้งค่าแล้ว',
+                    ctrlHint2P: '{player}: เลือก {layout} แล้ว',
+                    ctrlConfirm: 'ตกลง'
+                },
+                tl: {
+                    controls: 'Mga Kontrol',
+                    ctrlPlayer1: 'Manlalaro 1 (P1)',
+                    ctrlPlayer2: 'Manlalaro 2 (P2)',
+                    ctrlButtonLayout: 'Layout ng buton',
+                    ctrlTwoBtn: 'Dalawang buton',
+                    ctrlTwoBtnDesc: 'Lumiko sa kaliwa / kanan ng ahas.',
+                    ctrlDpad: 'D-Pad',
+                    ctrlDpadDesc: 'Gumalaw sa napiling direksyon sa screen.',
+                    ctrlSwipeTitle: 'Pag-swipe na kontrol',
+                    ctrlSwipeDesc: 'Maaaring gamitin kasabay ng mga buton.',
+                    ctrlHintDpad: 'Napili ang D-Pad. Na-save ang kagustuhan.',
+                    ctrlHintTwoBtn: 'Napili ang dalawang buton. Na-save ang kagustuhan.',
+                    ctrlHint2P: '{player}: Napili ang {layout}',
+                    ctrlConfirm: 'OK'
+                },
+                nl: {
+                    controls: 'Besturing',
+                    ctrlPlayer1: 'Speler 1 (P1)',
+                    ctrlPlayer2: 'Speler 2 (P2)',
+                    ctrlButtonLayout: 'Knoppenindeling',
+                    ctrlTwoBtn: 'Twee knoppen',
+                    ctrlTwoBtnDesc: 'Draai naar links / rechts van de slang.',
+                    ctrlDpad: 'D-Pad',
+                    ctrlDpadDesc: 'Beweeg in de gekozen richting op het scherm.',
+                    ctrlSwipeTitle: 'Veegbediening',
+                    ctrlSwipeDesc: 'Kan naast de knoppen worden gebruikt.',
+                    ctrlHintDpad: 'D-Pad geselecteerd. Voorkeur opgeslagen.',
+                    ctrlHintTwoBtn: 'Twee knoppen geselecteerd. Voorkeur opgeslagen.',
+                    ctrlHint2P: '{player}: {layout} geselecteerd.',
+                    ctrlConfirm: 'OK'
+                },
+                el: {
+                    controls: 'Χειριστήρια',
+                    ctrlPlayer1: 'Παίκτης 1 (P1)',
+                    ctrlPlayer2: 'Παίκτης 2 (P2)',
+                    ctrlButtonLayout: 'Διάταξη κουμπιών',
+                    ctrlTwoBtn: 'Δύο κουμπιά',
+                    ctrlTwoBtnDesc: 'Στρίψτε αριστερά / δεξιά του φιδιού.',
+                    ctrlDpad: 'D-Pad',
+                    ctrlDpadDesc: 'Κινηθείτε προς την κατεύθυνση που επιλέγετε στην οθόνη.',
+                    ctrlSwipeTitle: 'Έλεγχος με σάρωση',
+                    ctrlSwipeDesc: 'Μπορεί να χρησιμοποιηθεί παράλληλα με τα κουμπιά.',
+                    ctrlHintDpad: 'Επιλέχθηκε το D-Pad. Η προτίμηση αποθηκεύτηκε.',
+                    ctrlHintTwoBtn: 'Επιλέχθηκαν δύο κουμπιά. Η προτίμηση αποθηκεύτηκε.',
+                    ctrlHint2P: '{player}: Επιλέχθηκε {layout}.',
+                    ctrlConfirm: 'OK'
+                },
+                cs: {
+                    controls: 'Ovládání',
+                    ctrlPlayer1: 'Hráč 1 (P1)',
+                    ctrlPlayer2: 'Hráč 2 (P2)',
+                    ctrlButtonLayout: 'Rozvržení tlačítek',
+                    ctrlTwoBtn: 'Dvě tlačítka',
+                    ctrlTwoBtnDesc: 'Zatáčejte doleva / doprava z pohledu hada.',
+                    ctrlDpad: 'D-Pad',
+                    ctrlDpadDesc: 'Pohyb ve zvoleném směru na obrazovce.',
+                    ctrlSwipeTitle: 'Ovládání přejetím',
+                    ctrlSwipeDesc: 'Lze používat současně s tlačítky.',
+                    ctrlHintDpad: 'Vybrán D-Pad. Volba uložena.',
+                    ctrlHintTwoBtn: 'Vybrána dvě tlačítka. Volba uložena.',
+                    ctrlHint2P: '{player}: Vybráno {layout}.',
+                    ctrlConfirm: 'OK'
+                }
+            };
+            Object.keys(CONTROLS_STRINGS).forEach(locale => {
+                EXTRA_STRINGS[locale] = { ...(EXTRA_STRINGS[locale] || {}), ...CONTROLS_STRINGS[locale] };
+            });
             const LANG_STORAGE_KEY = 'neoSnakeLangMobile';
             const langCycle = ['en', 'tr', 'fr', 'it', 'es', 'de', 'zh', 'hi', 'pl', 'ptbr', 'ar', 'ru', 'id', 'ja', 'ko', 'vi', 'th', 'tl', 'nl', 'el', 'cs'];
             function detectBrowserLang() {
@@ -5319,6 +6962,12 @@
             function updatePlayerColors(p1_hex, p2_hex) {
                 document.documentElement.style.setProperty('--p1', p1_hex);
                 if (p2_hex) document.documentElement.style.setProperty('--p2', p2_hex);
+                const rgb1 = hexToRgb(p1_hex);
+                document.documentElement.style.setProperty('--p1-rgb', `${rgb1.r}, ${rgb1.g}, ${rgb1.b}`);
+                if (p2_hex) {
+                    const rgb2 = hexToRgb(p2_hex);
+                    document.documentElement.style.setProperty('--p2-rgb', `${rgb2.r}, ${rgb2.g}, ${rgb2.b}`);
+                }
                 playerColors.p1 = p1_hex;
                 if (p2_hex) playerColors.p2 = p2_hex;
 
@@ -5346,35 +6995,58 @@
                     aiPanel.style.setProperty('--pg', c.g);
                     aiPanel.style.setProperty('--pb', c.b);
                 }
+                const p1OppPanel = document.getElementById('p1OpponentPanel');
+                if (p1OppPanel && p2_hex) {
+                    const c = hexToRgb(p2_hex);
+                    p1OppPanel.style.setProperty('--pr', c.r);
+                    p1OppPanel.style.setProperty('--pg', c.g);
+                    p1OppPanel.style.setProperty('--pb', c.b);
+                }
+                const p2OppPanel = document.getElementById('p2OpponentPanel');
+                if (p2OppPanel && p1PanelHex) {
+                    const c = hexToRgb(p1PanelHex);
+                    p2OppPanel.style.setProperty('--pr', c.r);
+                    p2OppPanel.style.setProperty('--pg', c.g);
+                    p2OppPanel.style.setProperty('--pb', c.b);
+                }
 
                 // Update panel name glow colors
                 const p1NameEl = document.getElementById('p1PanelName');
                 const p2NameEl = document.getElementById('p2PanelName');
                 const aiNameEl = document.getElementById('aiPanelName');
+                const p1OppNameEl = document.getElementById('p1OpponentName');
+                const p2OppNameEl = document.getElementById('p2OpponentName');
                 if (p1NameEl) { p1NameEl.style.color = p1_hex; p1NameEl.style.textShadow = `0 0 8px ${p1_hex}`; }
                 if (p2NameEl && p2_hex) { p2NameEl.style.color = p2_hex; p2NameEl.style.textShadow = `0 0 8px ${p2_hex}`; }
                 if (aiNameEl && p2_hex) { aiNameEl.style.color = p2_hex; aiNameEl.style.textShadow = `0 0 8px ${p2_hex}`; }
+                if (p1OppNameEl && p2_hex) { p1OppNameEl.style.color = p2_hex; p1OppNameEl.style.textShadow = `0 0 8px ${p2_hex}`; }
+                if (p2OppNameEl && p1_hex) { p2OppNameEl.style.color = p1_hex; p2OppNameEl.style.textShadow = `0 0 8px ${p1_hex}`; }
 
                 const p1NumEl = document.getElementById('p1PanelLen');
                 const p2NumEl = document.getElementById('p2PanelLen');
                 const aiNumEl = document.getElementById('aiPanelLen');
+                const p1OppNumEl = document.getElementById('p1OpponentLen');
+                const p2OppNumEl = document.getElementById('p2OpponentLen');
                 if (p1NumEl) { p1NumEl.style.color = p1_hex; p1NumEl.style.textShadow = `0 0 12px ${p1_hex}`; }
                 if (p2NumEl && p2_hex) { p2NumEl.style.color = p2_hex; p2NumEl.style.textShadow = `0 0 12px ${p2_hex}`; }
                 if (aiNumEl && p2_hex) { aiNumEl.style.color = p2_hex; aiNumEl.style.textShadow = `0 0 12px ${p2_hex}`; }
+                if (p1OppNumEl && p2_hex) { p1OppNumEl.style.color = p2_hex; p1OppNumEl.style.textShadow = `0 0 12px ${p2_hex}`; }
+                if (p2OppNumEl && p1_hex) { p2OppNumEl.style.color = p1_hex; p2OppNumEl.style.textShadow = `0 0 12px ${p1_hex}`; }
             }
 
-            function setOnlineRandomColors(roomId) {
-                if (!roomId) return;
-                const availableColors = COLOR_PALETTE.filter(c => c.name !== 'Lime');
+            function selectOnlineRoomColors(roomId, matchIndex = 0) {
+                if (!roomId) return { p1: COLOR_PALETTE[0].hex, p2: COLOR_PALETTE[1].hex };
+                const availableColors = COLOR_PALETTE.filter(c => c.name !== 'Lime' && c.hex !== '#AEEA00');
                 
-                // Hash roomId string to a 32-bit integer seed
+                // Hash roomId string + matchIndex to a 32-bit integer seed
+                const seedStr = String(roomId) + '_' + String(matchIndex);
                 let hash = 0;
-                for (let i = 0; i < roomId.length; i++) {
-                    const char = roomId.charCodeAt(i);
+                for (let i = 0; i < seedStr.length; i++) {
+                    const char = seedStr.charCodeAt(i);
                     hash = ((hash << 5) - hash) + char;
                     hash = hash & hash;
                 }
-                let seed = Math.abs(hash);
+                let seed = Math.abs(hash) + 1;
 
                 // Seeded random number generator
                 function seededRandom() {
@@ -5391,8 +7063,13 @@
                 const idx2 = Math.floor(seededRandom() * remainingColors.length);
                 const color2 = remainingColors[idx2].hex;
 
-                // Apply the selected colors
-                updatePlayerColors(color1, color2);
+                return { p1: color1, p2: color2 };
+            }
+
+            function setOnlineRandomColors(roomId, matchIndex = 0) {
+                const colors = selectOnlineRoomColors(roomId, matchIndex);
+                updatePlayerColors(colors.p1, colors.p2);
+                return colors;
             }
 
             /* === Canvas === */
@@ -5402,7 +7079,7 @@
             let GRID_COLS = 24, GRID_ROWS = 36; // Mobile-friendly grid
             let NOTCH_SAFE_ROWS = 0; // Cells reserved for the notch area
             const BASE_TPS = 14.2;
-            let dpr = window.isAndroidWebView ? 1.35 : Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+            let dpr = (window.isAndroidWebView || IS_IOS_SHELL || (typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE)) ? 1.35 : Math.max(1, Math.min(2, window.devicePixelRatio || 1));
             
             function getLocalOptimalRows() {
                 const st = document.getElementById('stage');
@@ -5452,6 +7129,28 @@
             /* === Sound === */
             let audioCtx; let muted = localStorage.getItem('neoSnakeMutedMobile') === '1';
             let settingsFromPause = false;
+            let controlsFromPause = false;
+            let controlsFromSettings = false;
+            let controlsFromOnboarding = false;
+            let controlsOnboardingCallback = null;
+            const ONBOARDING_CONTROLS_KEY = 'twoPlayerSnake_hasSeenControls';
+
+            function hasSeenControlsOnboarding() {
+                try {
+                    return localStorage.getItem(ONBOARDING_CONTROLS_KEY) === 'true';
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            function markControlsOnboardingSeen() {
+                try {
+                    localStorage.setItem(ONBOARDING_CONTROLS_KEY, 'true');
+                } catch (e) {}
+            }
+
+            let lastSettingsBannerHeight = 0;
+            let lastSettingsBannerWidth = 0;
             let pauseFromPlayer = 'p1';
 
             function updateSoundIcons() {
@@ -5459,7 +7158,11 @@
                 document.querySelectorAll('.soundOffIcon').forEach(icon => icon.style.display = muted ? 'block' : 'none');
             }
 
+            let lastSoundToggleTime = 0;
             function toggleSound() {
+                const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+                if (now - lastSoundToggleTime < 350) return;
+                lastSoundToggleTime = now;
                 muted = !muted;
                 localStorage.setItem('neoSnakeMutedMobile', muted ? '1' : '0');
                 updateSoundIcons();
@@ -5469,7 +7172,6 @@
                     SFX.menuClick();
                 }
             }
-            document.querySelectorAll('.soundBtn').forEach(btn => btn.addEventListener('click', toggleSound));
 
             function ensureAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
             function tone(freq, dur, { type = 'square', gain = 0.06, attack = 0.004, release = 0.06, sweep = 0 } = {}) {
@@ -5649,7 +7351,7 @@
             }
 
             const AdManager = {
-                cooldownMs: 30000,
+                cooldownMs: 90000,
                 startAdChance: 0.30,
                 snapshotDepth: 5,
                 lastAdShownAt: 0,
@@ -5717,7 +7419,7 @@
 
                 maybeShowStartAdThenStart(startFn) {
                     this.beginMatchCycle();
-                    if (!this.isSdkReady() || this.adInProgress) {
+                    if (!this.isSdkReady() || this.adInProgress || this.isGlobalCooldownActive()) {
                         startFn();
                         return;
                     }
@@ -5760,7 +7462,7 @@
                 },
 
                 showInterstitial({ type, name, recordKind, soundMode = null, onDone }) {
-                    if (!this.isSdkReady()) {
+                    if (!this.isSdkReady() || this.adInProgress || this.isGlobalCooldownActive()) {
                         if (onDone) onDone();
                         return;
                     }
@@ -5825,7 +7527,8 @@
                         roundCount > 0 &&
                         roundCount % 3 === 0 &&
                         this.isSdkReady() &&
-                        !this.adInProgress;
+                        !this.adInProgress &&
+                        !this.isGlobalCooldownActive();
 
                     if (!shouldTry) {
                         if (onDone) onDone();
@@ -6112,32 +7815,62 @@
                     // Solo 1P: no round dots
                     if (p1DotsEl) p1DotsEl.innerHTML = '';
                     if (p1NameEl) p1NameEl.textContent = (playerNames.p1 && playerNames.p1.trim()) || '';
+                    const p1OppDotsEl = document.getElementById('p1OpponentDots');
+                    const p2OppDotsEl = document.getElementById('p2OpponentDots');
+                    if (p1OppDotsEl) p1OppDotsEl.innerHTML = '';
+                    if (p2OppDotsEl) p2OppDotsEl.innerHTML = '';
                 } else if (gameMode === '1P' && aiSnakeEnabled) {
                     // P1 panel shows P1 dots; AI panel shows AI dots
+                    const aiDots = buildPanelDots(games.p2, 'p2', lastGames.p2);
                     if (p1DotsEl) p1DotsEl.innerHTML = buildPanelDots(games.p1, 'p1', lastGames.p1);
-                    if (aiDotsEl) aiDotsEl.innerHTML = buildPanelDots(games.p2, 'p2', lastGames.p2);
-                    if (p2DotsEl) p2DotsEl.innerHTML = buildPanelDots(games.p2, 'p2', lastGames.p2);
+                    if (aiDotsEl) aiDotsEl.innerHTML = aiDots;
+                    if (p2DotsEl) p2DotsEl.innerHTML = aiDots;
                     if (p1NameEl) p1NameEl.textContent = (playerNames.p1 && playerNames.p1.trim()) || '';
                     if (aiNameEl) aiNameEl.textContent = '';
                     if (p2NameEl) p2NameEl.textContent = '';
+                    const p1OppDotsEl = document.getElementById('p1OpponentDots');
+                    const p2OppDotsEl = document.getElementById('p2OpponentDots');
+                    const p1OppNameEl = document.getElementById('p1OpponentName');
+                    if (p1OppDotsEl) p1OppDotsEl.innerHTML = aiDots;
+                    if (p1OppNameEl) p1OppNameEl.textContent = '';
+                    if (p2OppDotsEl) p2OppDotsEl.innerHTML = '';
                 } else if (typeof isOnlineMode !== 'undefined' && isOnlineMode) {
                     // Left panel (P1)
                     if (p1DotsEl) p1DotsEl.innerHTML = buildPanelDots(games.p1, 'p1', lastGames.p1);
                     if (p1NameEl) p1NameEl.textContent = myRole === 'p1' ? ((playerNames.p1 && playerNames.p1.trim()) || 'P1') : (partnerName || 'P1');
 
                     // Right panel (P2/AI)
-                    if (aiDotsEl) aiDotsEl.innerHTML = buildPanelDots(games.p2, 'p2', lastGames.p2);
-                    if (aiNameEl) aiNameEl.textContent = myRole === 'p2' ? ((playerNames.p1 && playerNames.p1.trim()) || 'P2') : (partnerName || 'P2');
+                    const oppDots = buildPanelDots(games.p2, 'p2', lastGames.p2);
+                    const oppName = myRole === 'p2' ? ((playerNames.p1 && playerNames.p1.trim()) || 'P2') : (partnerName || 'P2');
+                    if (aiDotsEl) aiDotsEl.innerHTML = oppDots;
+                    if (aiNameEl) aiNameEl.textContent = oppName;
+
+                    const p1OppDotsEl = document.getElementById('p1OpponentDots');
+                    const p1OppNameEl = document.getElementById('p1OpponentName');
+                    if (p1OppDotsEl) p1OppDotsEl.innerHTML = oppDots;
+                    if (p1OppNameEl) p1OppNameEl.textContent = oppName;
 
                     // Keep p2DotsEl and p2NameEl in sync (legacy/hidden)
-                    if (p2DotsEl) p2DotsEl.innerHTML = buildPanelDots(games.p2, 'p2', lastGames.p2);
-                    if (p2NameEl) p2NameEl.textContent = myRole === 'p2' ? (playerNames.p1 || 'P2') : (partnerName || 'P2');
+                    if (p2DotsEl) p2DotsEl.innerHTML = oppDots;
+                    if (p2NameEl) p2NameEl.textContent = oppName;
                 } else {
                     // 2P mode
-                    if (p1DotsEl) p1DotsEl.innerHTML = buildPanelDots(games.p1, 'p1', lastGames.p1);
-                    if (p2DotsEl) p2DotsEl.innerHTML = buildPanelDots(games.p2, 'p2', lastGames.p2);
+                    const p1Dots = buildPanelDots(games.p1, 'p1', lastGames.p1);
+                    const p2Dots = buildPanelDots(games.p2, 'p2', lastGames.p2);
+                    if (p1DotsEl) p1DotsEl.innerHTML = p1Dots;
+                    if (p2DotsEl) p2DotsEl.innerHTML = p2Dots;
                     if (p1NameEl) p1NameEl.textContent = (playerNames.p1 && playerNames.p1.trim()) || '';
                     if (p2NameEl) p2NameEl.textContent = (playerNames.p2 && playerNames.p2.trim()) || '';
+
+                    // Opponent panels in 2P D-Pad mode
+                    const p1OppDotsEl = document.getElementById('p1OpponentDots');
+                    const p2OppDotsEl = document.getElementById('p2OpponentDots');
+                    const p1OppNameEl = document.getElementById('p1OpponentName');
+                    const p2OppNameEl = document.getElementById('p2OpponentName');
+                    if (p1OppDotsEl) p1OppDotsEl.innerHTML = p2Dots;
+                    if (p2OppDotsEl) p2OppDotsEl.innerHTML = p1Dots;
+                    if (p1OppNameEl) p1OppNameEl.textContent = (playerNames.p2 && playerNames.p2.trim()) || '';
+                    if (p2OppNameEl) p2OppNameEl.textContent = (playerNames.p1 && playerNames.p1.trim()) || '';
                 }
 
                 // Also keep legacy series dots in sync (hidden but used by old code paths)
@@ -6179,12 +7912,19 @@
                 banner.style.transition = '';
                 banner.style.opacity = '';
                 banner.style.transform = '';
+                banner.style.minHeight = '';
+                banner.style.maxHeight = '';
+                banner.style.height = '';
+                banner.style.width = '';
+                banner.style.maxWidth = '';
+                banner.style.display = '';
+                banner.style.flexDirection = '';
             }
 
             function transitionToMenu(openFn, direction = 'forward') {
                 // Keep the last rendered demo frame during the swap. Gameplay is never
-                // frozen: this only applies while the Android WebView is showing its menu demo.
-                if (window.isAndroidWebView) {
+                // frozen: this only applies while the mobile menu is showing its demo background.
+                if (window.isAndroidWebView || IS_IOS_SHELL || (typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE)) {
                     menuDemoFreezeUntil = performance.now() + BANNER_SWAP_MS + 40;
                 }
                 pendingBannerTransition = direction;
@@ -6275,7 +8015,7 @@
                         ghost.style.opacity = '1';
                         ghost.style.transform = 'translate3d(0, 0, 0) scale(1)';
                         ghost.style.transition = `transform ${BANNER_SWAP_MS}ms ${BANNER_SWAP_EASE}, opacity ${BANNER_SWAP_MS}ms ease`;
-                        if (window.isAndroidWebView) ghost.classList.add('android-menu-transition-ghost');
+                        if ((window.isAndroidWebView && !IS_IOS_SHELL) || (typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE)) ghost.classList.add('android-menu-transition-ghost');
                         document.body.appendChild(ghost);
                         activeBannerGhost = ghost;
                         requestAnimationFrame(() => {
@@ -6368,10 +8108,10 @@
                 syncPauseButtons();
             }
 
-            function closePauseBubbles(andResume = false) {
+            function closePauseBubbles(andResume = false, keepBlur = false) {
                 // Remove canvas blur
                 const cw = document.getElementById('canvasWrap');
-                if (cw) cw.classList.remove('paused-blur');
+                if (cw && !keepBlur) cw.classList.remove('paused-blur');
 
                 // Shrink all bubbles then remove
                 document.querySelectorAll('.pause-bubbles').forEach(container => {
@@ -6442,29 +8182,34 @@
                     <div class="pause-bubble" data-action="sound">
                         ${soundSvg}
                     </div>
+                    <div class="pause-bubble" data-action="controls">
+                        <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                    </div>
                     <div class="pause-bubble" data-action="settings">
                         <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
                     </div>
                 `;
 
-                // 1P vs AI: button has complex absolute positioning, use body-append with exact coords.
-                // All other modes (2P etc): append directly to the pause button (original behaviour).
-                if (gameMode === '1P' && aiSnakeEnabled) {
-                    const bRect = pauseBtn.getBoundingClientRect();
-                    container.style.position = 'fixed';
-                    container.style.left = (bRect.left + bRect.width / 2) + 'px';
-                    container.style.top  = (bRect.top  + bRect.height / 2) + 'px';
-                    container.classList.add('anchored-compact');
-                    document.body.appendChild(container);
+                // Anchor pause bubbles to the horizontal center of the active control bar
+                const barEl = fromPlayer === 'p1' ? document.getElementById('p1-controls') : document.getElementById('p2-controls');
+                const barRect = barEl ? barEl.getBoundingClientRect() : pauseBtn.getBoundingClientRect();
+                container.style.position = 'fixed';
+                container.style.left = (barRect.left + barRect.width / 2) + 'px';
+                if (fromPlayer === 'p1') {
+                    container.style.top = (barRect.top + 30) + 'px';
                 } else {
-                    pauseBtn.appendChild(container);
+                    container.style.top = (barRect.bottom - 30) + 'px';
+                    container.style.transform = 'rotate(180deg)';
                 }
-
+                if (gameMode === '1P' && aiSnakeEnabled) {
+                    container.classList.add('anchored-compact');
+                }
+                document.body.appendChild(container);
 
                 // Stagger bubble animations
                 const bubbles = container.querySelectorAll('.pause-bubble');
                 bubbles.forEach((b, i) => {
-                    setTimeout(() => b.classList.add('bubble-appear'), i * 150);
+                    setTimeout(() => b.classList.add('bubble-appear'), i * 120);
                 });
 
                 // Event: Home → main menu
@@ -6475,7 +8220,7 @@
                     const handleExit = () => {
                         transitionToMenu(openMainMenu, 'back');
                     };
-                    if (!isOnlineMode && Math.random() < 0.30) {
+                    if (!isOnlineMode && !AdManager.isGlobalCooldownActive() && Math.random() < 0.30) {
                         AdManager.showInterstitial({
                             type: 'start',
                             name: 'pause_exit_home',
@@ -6502,6 +8247,16 @@
                             ? `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>`
                             : `<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
                     }
+                });
+
+                // Event: Kontroller → open controls modal (v3.3.8)
+                container.querySelector('[data-action="controls"]').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    SFX.menuClick();
+                    closePauseBubbles(false, true);
+                    controlsFromPause = true;
+                    pauseFromPlayer = fromPlayer;
+                    openControlsModal(fromPlayer);
                 });
 
                 // Event: Settings → open settings panel
@@ -6545,16 +8300,27 @@
                     if (p1StatPanel) p1StatPanel.style.display = 'flex';
                     if (p2StatPanel) p2StatPanel.style.display = 'flex';
                     if (aiStatPanel) aiStatPanel.style.display = 'flex';
+                    const p1OppPanel = document.getElementById('p1OpponentPanel');
+                    if (p1OppPanel) p1OppPanel.style.display = 'flex';
+
                     if (timeLabel) timeLabel.style.display = '';
+                    const oppDisplayName = myRole === 'p2' ? (playerNames.p1 || 'P2') : (partnerName || 'P2');
                     if (p1NameEl) p1NameEl.textContent = myRole === 'p1' ? (playerNames.p1 || 'P1') : (partnerName || 'P1');
-                    if (aiNameEl) aiNameEl.textContent = myRole === 'p2' ? (playerNames.p1 || 'P2') : (partnerName || 'P2');
-                    if (p2NameEl) p2NameEl.textContent = myRole === 'p2' ? (playerNames.p1 || 'P2') : (partnerName || 'P2');
+                    if (aiNameEl) aiNameEl.textContent = oppDisplayName;
+                    if (p2NameEl) p2NameEl.textContent = oppDisplayName;
+                    const p1OppNameEl = document.getElementById('p1OpponentName');
+                    if (p1OppNameEl) p1OppNameEl.textContent = oppDisplayName;
                     
                     const p1DotsEl = document.getElementById('p1PanelDots');
                     const p2DotsEl = document.getElementById('p2PanelDots');
+                    const p1OppDotsEl = document.getElementById('p1OpponentDots');
                     if (p1DotsEl) p1DotsEl.style.display = '';
                     if (aiDotsEl) aiDotsEl.style.display = '';
                     if (p2DotsEl) p2DotsEl.style.display = '';
+                    if (p1OppDotsEl) p1OppDotsEl.style.display = '';
+
+                    drawSeries();
+                    applyPlayerControlLayout('p1', p1ControlLayout);
                     return;
                 }
 
@@ -6590,9 +8356,15 @@
 
                 if (gameMode === '1P' && aiSnakeEnabled) {
                     // 1P+AI: dual-panel mode — P1 left, AI right
-                    if (p2Controls) p2Controls.classList.add('hud-hidden');
-                    if (p1Controls) p1Controls.classList.remove('hud-hidden');
-                    if (p1Controls) p1Controls.classList.add('dual-ai');
+                    if (p2Controls) {
+                        p2Controls.classList.add('hud-hidden');
+                        p2Controls.classList.remove('mode-2p');
+                    }
+                    if (p1Controls) {
+                        p1Controls.classList.remove('hud-hidden');
+                        p1Controls.classList.remove('mode-2p');
+                        p1Controls.classList.add('dual-ai');
+                    }
                     if (p1StatPanel) p1StatPanel.style.display = 'flex';
                     if (p2StatPanel) p2StatPanel.style.display = 'none';
                     if (aiStatPanel) aiStatPanel.style.display = 'flex';
@@ -6600,27 +8372,45 @@
                     if (timeLabel) timeLabel.style.display = '';
                 } else if (gameMode === '1P') {
                     // Solo 1P: only P1 panel, no dots, no AI panel
-                    if (p2Controls) p2Controls.classList.add('hud-hidden');
-                    if (p1Controls) p1Controls.classList.remove('hud-hidden');
-                    if (p1Controls) p1Controls.classList.remove('dual-ai');
+                    if (p2Controls) {
+                        p2Controls.classList.add('hud-hidden');
+                        p2Controls.classList.remove('mode-2p');
+                    }
+                    if (p1Controls) {
+                        p1Controls.classList.remove('hud-hidden');
+                        p1Controls.classList.remove('mode-2p');
+                        p1Controls.classList.remove('dual-ai');
+                    }
                     if (p1StatPanel) p1StatPanel.style.display = 'flex';
                     if (p2StatPanel) p2StatPanel.style.display = 'none';
                     if (aiStatPanel) aiStatPanel.style.display = 'none';
                     if (timeLabel) timeLabel.style.display = 'none';
                 } else if (gameMode === '2P' || isPreGameFlow) {
                     // 2P Flow or Mode Picker: both panels visible
-                    if (p2Controls) p2Controls.classList.remove('hud-hidden');
-                    if (p1Controls) p1Controls.classList.remove('hud-hidden');
-                    if (p1Controls) p1Controls.classList.remove('dual-ai');
+                    if (p2Controls) {
+                        p2Controls.classList.remove('hud-hidden');
+                        p2Controls.classList.add('mode-2p');
+                    }
+                    if (p1Controls) {
+                        p1Controls.classList.remove('hud-hidden');
+                        p1Controls.classList.add('mode-2p');
+                        p1Controls.classList.remove('dual-ai');
+                    }
                     if (p1StatPanel) p1StatPanel.style.display = 'flex';
                     if (p2StatPanel) p2StatPanel.style.display = 'flex';
                     if (aiStatPanel) aiStatPanel.style.display = 'none';
                     if (p2NameEl) p2NameEl.textContent = (playerNames.p2 && playerNames.p2.trim()) || '';
                     if (timeLabel) timeLabel.style.display = (isPreGameFlow ? 'none' : '');
                 } else { // main menu or other menus
-                    if (p2Controls) p2Controls.classList.add('hud-hidden');
-                    if (p1Controls) p1Controls.classList.add('hud-hidden');
-                    if (p1Controls) p1Controls.classList.remove('dual-ai');
+                    if (p2Controls) {
+                        p2Controls.classList.add('hud-hidden');
+                        p2Controls.classList.remove('mode-2p');
+                    }
+                    if (p1Controls) {
+                        p1Controls.classList.add('hud-hidden');
+                        p1Controls.classList.remove('mode-2p');
+                        p1Controls.classList.remove('dual-ai');
+                    }
                 }
 
                 // Common logic
@@ -6639,20 +8429,28 @@
                 if (p1NameEl) p1NameEl.textContent = (playerNames.p1 && playerNames.p1.trim()) || '';
 
                 drawSeries();
+                applyPlayerControlLayout('p1', p1ControlLayout);
+                applyPlayerControlLayout('p2', p2ControlLayout);
 
                 // v2.95.6: Self Area 51 — keep series dots visible (5 round wins to take match);
                 // hide only the round timer; activate per-player progress ring on the stat panels.
                 {
                     const isSelf51 = (gameStyle === 'selfArea51');
+                    const p1OppPanel = document.getElementById('p1OpponentPanel');
+                    const p2OppPanel = document.getElementById('p2OpponentPanel');
                     if (isSelf51) {
                         if (timeLabel) timeLabel.style.display = 'none';
                         if (p1StatPanel) p1StatPanel.classList.add('self51-active');
                         if (p2StatPanel) p2StatPanel.classList.add('self51-active');
                         if (aiStatPanel) aiStatPanel.classList.add('self51-active');
+                        if (p1OppPanel) p1OppPanel.classList.add('self51-active');
+                        if (p2OppPanel) p2OppPanel.classList.add('self51-active');
                     } else {
                         if (p1StatPanel) p1StatPanel.classList.remove('self51-active');
                         if (p2StatPanel) p2StatPanel.classList.remove('self51-active');
                         if (aiStatPanel) aiStatPanel.classList.remove('self51-active');
+                        if (p1OppPanel) p1OppPanel.classList.remove('self51-active');
+                        if (p2OppPanel) p2OppPanel.classList.remove('self51-active');
                     }
                 }
 
@@ -6668,6 +8466,8 @@
                 const p1Panel = document.getElementById('p1StatPanel');
                 const p2Panel = document.getElementById('p2StatPanel');
                 const aiPanel = document.getElementById('aiStatPanel');
+                const p1OppPanel = document.getElementById('p1OpponentPanel');
+                const p2OppPanel = document.getElementById('p2OpponentPanel');
                 // v2.95.6: ring color = player color
                 const colP1 = playerColors.p1 || '#00e5ff';
                 const colP2 = playerColors.p2 || '#ff4fbf';
@@ -6688,12 +8488,26 @@
                     aiPanel.style.setProperty('--self51-color', colP2);
                     aiPanel.style.setProperty('--self51-color-rgb', rgbP2);
                 }
+                if (p1OppPanel) {
+                    p1OppPanel.style.setProperty('--self51-pct', (pct2 * 360).toFixed(1) + 'deg');
+                    p1OppPanel.style.setProperty('--self51-color', colP2);
+                    p1OppPanel.style.setProperty('--self51-color-rgb', rgbP2);
+                }
+                if (p2OppPanel) {
+                    p2OppPanel.style.setProperty('--self51-pct', (pct1 * 360).toFixed(1) + 'deg');
+                    p2OppPanel.style.setProperty('--self51-color', colP1);
+                    p2OppPanel.style.setProperty('--self51-color-rgb', rgbP1);
+                }
                 const p1LenEl = document.getElementById('p1PanelLen');
                 const p2LenEl = document.getElementById('p2PanelLen');
                 const aiLenEl = document.getElementById('aiPanelLen');
+                const p1OppLenEl = document.getElementById('p1OpponentLen');
+                const p2OppLenEl = document.getElementById('p2OpponentLen');
                 if (p1LenEl) p1LenEl.innerHTML = `<span class="num-top">${l1}</span><hr class="fraction-line"/><span class="num-bottom">${SELF_AREA_51_TARGET}</span>`;
                 if (p2LenEl) p2LenEl.innerHTML = `<span class="num-top">${l2}</span><hr class="fraction-line"/><span class="num-bottom">${SELF_AREA_51_TARGET}</span>`;
                 if (aiLenEl) aiLenEl.innerHTML = `<span class="num-top">${l2}</span><hr class="fraction-line"/><span class="num-bottom">${SELF_AREA_51_TARGET}</span>`;
+                if (p1OppLenEl) p1OppLenEl.innerHTML = `<span class="num-top">${l2}</span><hr class="fraction-line"/><span class="num-bottom">${SELF_AREA_51_TARGET}</span>`;
+                if (p2OppLenEl) p2OppLenEl.innerHTML = `<span class="num-top">${l1}</span><hr class="fraction-line"/><span class="num-bottom">${SELF_AREA_51_TARGET}</span>`;
             }
             // v2.95.6: convert "#rrggbb" → "r,g,b" tuple for CSS rgba() usage
             function hexToRgbTuple(hex) {
@@ -6712,6 +8526,12 @@
                 html.setAttribute('lang', langAttr);
                 html.setAttribute('data-lang', lang);
                 html.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+                if (typeof updateControlsModalTexts === 'function') {
+                    updateControlsModalTexts();
+                }
+                if (typeof updateModalUI === 'function') {
+                    updateModalUI();
+                }
             }
 
 
@@ -6723,8 +8543,8 @@
 
                 // Local state — committed to globals only on START
                 const qs = {
-                    playerMode: null, gameStyle: null,
-                    wallMode: null, speedMode: null,
+                    playerMode: '1P', gameStyle: 'fastCompetitive',
+                    wallMode: MOD_WALLS.NONE, speedMode: 'NORMAL',
                     p1Color: playerColors.p1 || COLOR_PALETTE[0].hex,
                     p2Color: playerColors.p2 || COLOR_PALETTE[1].hex,
                     p1Name: playerNames.p1 || '',
@@ -6793,7 +8613,7 @@
             <div class="qs-section-title">${t('modePick')}</div>
             <div class="qs-btn-grid">
               ${opt('qs-gm-normal','normal','gameStyle',t('normalMode'))}
-              ${opt('qs-gm-fast','fastCompetitive','gameStyle',t('fastCompetitiveMode'))}
+              ${opt('qs-gm-fast','fastCompetitive','gameStyle', (qs.playerMode === '1P' ? t('vsAiMode') : t('fastCompetitiveMode')))}
               ${opt('qs-gm-self51','selfArea51','gameStyle',t('selfArea51Mode'))}
               ${opt('qs-gm-adv','adventure','gameStyle',t('adventureMode'))}
             </div>
@@ -6908,8 +8728,8 @@
                         const anySelected = qs.playerMode || qs.gameStyle || qs.wallMode || qs.speedMode;
 
                         if (!anySelected) {
-                            // Pure default: Normal + 1P + No Walls + Normal speed
-                            qs.playerMode = '1P'; qs.gameStyle = 'normal';
+                            // Pure default: 1P + VS YAPAY ZEKA + No Walls + Normal speed
+                            qs.playerMode = '1P'; qs.gameStyle = 'fastCompetitive';
                             qs.wallMode = MOD_WALLS.NONE; qs.speedMode = 'NORMAL';
                         } else {
                             // Validate required fields in order
@@ -7003,7 +8823,7 @@
                 showBanner(`<h1>${t('modePick')}</h1>
       <div style="display:flex;flex-direction:column;gap:4px;margin-top:10px;">
         <button class="btn big" id="normalModeBtn" style="text-align:center;">${t('normalMode')}</button>
-        <button class="btn big" id="fastCompBtn" style="text-align:center;">${t('fastCompetitiveMode')}</button>
+        <button class="btn big" id="fastCompBtn" style="text-align:center;">${(gameMode === '1P' ? t('vsAiMode') : t('fastCompetitiveMode'))}</button>
         <button class="btn big" id="selfArea51Btn" style="text-align:center;">${t('selfArea51Mode')}</button>
         <button class="btn big" id="adventureModeBtn" style="text-align:center;">${t('adventureMode')}</button>
       </div>${buildMenuBackButton('modeBack')}`);
@@ -7247,8 +9067,41 @@
             }
 
             /* === Input === */
-            document.getElementById('pauseBtnP1')?.addEventListener('click', (e) => { e.stopPropagation(); showPauseMenu('p1'); });
-            document.getElementById('pauseBtnP2')?.addEventListener('click', (e) => { e.stopPropagation(); showPauseMenu('p2'); });
+            let lastPauseTriggerTime = 0;
+            const handlePauseTrigger = (player, e) => {
+                if (e) {
+                    e.stopPropagation();
+                }
+                const now = performance.now();
+                if (now - lastPauseTriggerTime < 280) return;
+                lastPauseTriggerTime = now;
+                showPauseMenu(player);
+            };
+
+            ['pauseBtnP1', 'pauseBtnP2'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    const player = id === 'pauseBtnP1' ? 'p1' : 'p2';
+                    btn.addEventListener('click', (e) => handlePauseTrigger(player, e));
+                    btn.addEventListener('pointerdown', (e) => handlePauseTrigger(player, e));
+                }
+            });
+
+            const handleSoundTrigger = (e) => {
+                if (e) {
+                    if (e.cancelable) e.preventDefault();
+                    e.stopPropagation();
+                }
+                hapticVibrate(15);
+                toggleSound();
+            };
+            ['soundBtnP1', 'soundBtnP2'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    btn.addEventListener('pointerdown', handleSoundTrigger);
+                    btn.addEventListener('click', handleSoundTrigger);
+                }
+            });
 
             document.querySelectorAll('.turn-btn').forEach(btn => {
                 const player = btn.dataset.player;
@@ -7282,7 +9135,8 @@
                     ripple.style.left = `${x - size / 2}px`;
                     ripple.style.top = `${y - size / 2}px`;
 
-                    const playerColorHex = player === 'p1' ? 'var(--p1)' : 'var(--p2)';
+                    const activePlayer = (typeof isOnlineMode !== 'undefined' && isOnlineMode && myRole) ? myRole : (btn.getAttribute('data-player') || player);
+                    const playerColorHex = activePlayer === 'p1' ? 'var(--p1)' : 'var(--p2)';
                     
                     // Fading softly out to 100% boundary for a super smooth fade-out instead of a sharp 80% stop
                     ripple.style.background = `radial-gradient(circle, rgba(255,255,255,0.6) 0%, ${playerColorHex} 30%, transparent 100%)`;
@@ -7338,6 +9192,377 @@
                 btn.addEventListener('mousedown', handlePress, { passive: false }); // Also handle mouse for testing
             });
 
+            /* === v3.3.9: D-Pad & Controls Modal System (Independent P1/P2) === */
+            let p1ControlLayout = localStorage.getItem('neoSnake_controlLayout_p1') || localStorage.getItem('neoSnake_controlLayout') || 'two-btn';
+            let p2ControlLayout = localStorage.getItem('neoSnake_controlLayout_p2') || 'two-btn';
+            let isSwipeControlEnabled = localStorage.getItem('neoSnake_swipeEnabled') !== '0';
+            let activeModalPlayer = 'p1';
+
+            function applyPlayerControlLayout(player, layout) {
+                const is2P = (gameMode === '2P');
+                const hasOpponent = (is2P || (gameMode === '1P' && aiSnakeEnabled) || (typeof isOnlineMode !== 'undefined' && isOnlineMode));
+                if (player === 'p1') {
+                    p1ControlLayout = layout;
+                    localStorage.setItem('neoSnake_controlLayout_p1', layout);
+                    localStorage.setItem('neoSnake_controlLayout', layout);
+
+                    const p1c = document.getElementById('p1-controls');
+                    const p1Panel = document.getElementById('p1StatPanel');
+                    const p1PauseBtn = document.getElementById('pauseBtnP1');
+                    const p1SoundBtn = document.getElementById('soundBtnP1');
+                    const p1OppPanel = document.getElementById('p1OpponentPanel');
+                    const p1Slot = document.getElementById('p1DpadRightSlot');
+
+                    if (layout === 'dpad') {
+                        p1c?.classList.add('layout-dpad');
+                        p1c?.classList.remove('layout-twobtn');
+                        if (hasOpponent) {
+                            if (p1Panel && p1PauseBtn && p1PauseBtn.parentElement !== p1Panel) p1Panel.appendChild(p1PauseBtn);
+                            if (p1OppPanel && p1SoundBtn && p1SoundBtn.parentElement !== p1OppPanel) p1OppPanel.appendChild(p1SoundBtn);
+                        } else {
+                            if (p1Slot && p1PauseBtn && p1PauseBtn.parentElement !== p1Slot) p1Slot.appendChild(p1PauseBtn);
+                            if (p1Slot && p1SoundBtn && p1SoundBtn.parentElement !== p1Slot) p1Slot.appendChild(p1SoundBtn);
+                        }
+                    } else {
+                        p1c?.classList.remove('layout-dpad');
+                        p1c?.classList.add('layout-twobtn');
+                        if (p1Panel && p1PauseBtn && p1PauseBtn.parentElement !== p1Panel) p1Panel.appendChild(p1PauseBtn);
+                        if (p1OppPanel && p1SoundBtn && p1SoundBtn.parentElement !== p1OppPanel) p1OppPanel.appendChild(p1SoundBtn);
+                    }
+                } else if (player === 'p2') {
+                    p2ControlLayout = layout;
+                    localStorage.setItem('neoSnake_controlLayout_p2', layout);
+
+                    const p2c = document.getElementById('p2-controls');
+                    const p2Panel = document.getElementById('p2StatPanel');
+                    const p2PauseBtn = document.getElementById('pauseBtnP2');
+                    const p2SoundBtn = document.getElementById('soundBtnP2');
+                    const p2OppPanel = document.getElementById('p2OpponentPanel');
+                    const p2Slot = document.getElementById('p2DpadRightSlot');
+
+                    if (layout === 'dpad') {
+                        p2c?.classList.add('layout-dpad');
+                        p2c?.classList.remove('layout-twobtn');
+                        if (is2P) {
+                            if (p2Panel && p2PauseBtn && p2PauseBtn.parentElement !== p2Panel) p2Panel.appendChild(p2PauseBtn);
+                            if (p2OppPanel && p2SoundBtn && p2SoundBtn.parentElement !== p2OppPanel) p2OppPanel.appendChild(p2SoundBtn);
+                        } else {
+                            if (p2Slot && p2PauseBtn && p2PauseBtn.parentElement !== p2Slot) p2Slot.appendChild(p2PauseBtn);
+                            if (p2Slot && p2SoundBtn && p2SoundBtn.parentElement !== p2Slot) p2Slot.appendChild(p2SoundBtn);
+                        }
+                    } else {
+                        p2c?.classList.remove('layout-dpad');
+                        p2c?.classList.add('layout-twobtn');
+                        if (p2Panel && p2PauseBtn && p2PauseBtn.parentElement !== p2Panel) p2Panel.appendChild(p2PauseBtn);
+                        if (p2OppPanel && p2SoundBtn && p2SoundBtn.parentElement !== p2OppPanel) p2OppPanel.appendChild(p2SoundBtn);
+                    }
+                }
+                updateSoundIcons();
+            }
+
+            function applyControlLayout(layout) {
+                applyPlayerControlLayout('p1', layout);
+            }
+
+            function updateControlsModalTexts() {
+                const modalTitle = document.getElementById('controlsModalTitle');
+                if (modalTitle) modalTitle.textContent = t('controls');
+
+                const tabP1Text = document.getElementById('tabP1Text');
+                if (tabP1Text) tabP1Text.textContent = t('ctrlPlayer1');
+
+                const tabP2Text = document.getElementById('tabP2Text');
+                if (tabP2Text) tabP2Text.textContent = t('ctrlPlayer2');
+
+                const sectionTitle = document.getElementById('ctrlSectionTitle');
+                if (sectionTitle) sectionTitle.textContent = t('ctrlButtonLayout');
+
+                const twoBtnName = document.getElementById('ctrlTwoBtnName');
+                if (twoBtnName) twoBtnName.textContent = t('ctrlTwoBtn');
+
+                const twoBtnDesc = document.getElementById('ctrlTwoBtnDesc');
+                if (twoBtnDesc) twoBtnDesc.textContent = t('ctrlTwoBtnDesc');
+
+                const dpadName = document.getElementById('ctrlDpadName');
+                if (dpadName) dpadName.textContent = t('ctrlDpad');
+
+                const dpadDesc = document.getElementById('ctrlDpadDesc');
+                if (dpadDesc) dpadDesc.textContent = t('ctrlDpadDesc');
+
+                const swipeTitle = document.getElementById('ctrlSwipeTitle');
+                if (swipeTitle) swipeTitle.textContent = t('ctrlSwipeTitle');
+
+                const swipeDesc = document.getElementById('ctrlSwipeDesc');
+                if (swipeDesc) swipeDesc.textContent = t('ctrlSwipeDesc');
+
+                const confirmBtn = document.getElementById('ctrlModalConfirmBtn');
+                if (confirmBtn) confirmBtn.textContent = t('ctrlConfirm');
+            }
+
+            function updateModalUI() {
+                const is2P = (gameMode === '2P');
+                const tabsEl = document.getElementById('ctrlPlayerTabs');
+                const swipeRow = document.getElementById('ctrlSwipeRow');
+                const modalCard = document.querySelector('.controls-modal-card');
+                const tabP1 = document.getElementById('tabP1');
+                const tabP2 = document.getElementById('tabP2');
+                const optTwoBtn = document.getElementById('ctrlOptTwoBtn');
+                const optDpad = document.getElementById('ctrlOptDpad');
+                const hintEl = document.getElementById('ctrlModalHint');
+
+                if (tabsEl) tabsEl.style.display = is2P ? 'flex' : 'none';
+                if (swipeRow) swipeRow.style.display = is2P ? 'none' : 'flex';
+
+                if (is2P) {
+                    if (tabP1) tabP1.classList.toggle('active', activeModalPlayer === 'p1');
+                    if (tabP2) tabP2.classList.toggle('active', activeModalPlayer === 'p2');
+                    if (modalCard) modalCard.classList.toggle('player-p2', activeModalPlayer === 'p2');
+                } else {
+                    activeModalPlayer = 'p1';
+                    if (modalCard) modalCard.classList.remove('player-p2');
+                }
+
+                const currentLayout = (activeModalPlayer === 'p2') ? p2ControlLayout : p1ControlLayout;
+                if (optTwoBtn && optDpad) {
+                    optTwoBtn.classList.toggle('selected', currentLayout === 'two-btn');
+                    optDpad.classList.toggle('selected', currentLayout === 'dpad');
+                }
+
+                if (hintEl) {
+                    if (is2P) {
+                        const playerLabel = (activeModalPlayer === 'p2') ? t('ctrlPlayer2') : t('ctrlPlayer1');
+                        const layoutName = (currentLayout === 'dpad') ? t('ctrlDpad') : t('ctrlTwoBtn');
+                        const template = t('ctrlHint2P') || '{player}: {layout}';
+                        hintEl.textContent = template.replace('{player}', playerLabel).replace('{layout}', layoutName);
+                    } else {
+                        hintEl.textContent = (currentLayout === 'dpad')
+                            ? t('ctrlHintDpad')
+                            : t('ctrlHintTwoBtn');
+                    }
+                }
+            }
+
+            function openControlsModal(fromPlayer = 'p1', source = 'pause', onComplete = null) {
+                const modal = document.getElementById('controlsModalOverlay');
+                if (!modal) {
+                    if (typeof onComplete === 'function') onComplete();
+                    return;
+                }
+
+                if (source === 'onboarding') {
+                    controlsFromOnboarding = true;
+                    controlsFromSettings = false;
+                    controlsFromPause = false;
+                    controlsOnboardingCallback = onComplete;
+                } else if (source === 'settings') {
+                    controlsFromSettings = true;
+                    controlsFromPause = false;
+                    controlsFromOnboarding = false;
+                    controlsOnboardingCallback = null;
+                } else if (source === 'pause' || paused) {
+                    controlsFromPause = true;
+                    controlsFromSettings = false;
+                    controlsFromOnboarding = false;
+                    pauseFromPlayer = fromPlayer;
+                    controlsOnboardingCallback = null;
+                } else {
+                    controlsFromPause = false;
+                    controlsFromSettings = false;
+                    controlsFromOnboarding = false;
+                    controlsOnboardingCallback = null;
+                }
+
+                const isP2 = (gameMode === '2P' && fromPlayer === 'p2' && source !== 'settings');
+                const modalCard = modal.querySelector('.controls-modal-card');
+                if (modalCard) {
+                    modalCard.classList.toggle('facing-p2', isP2);
+                }
+
+                if (isP2) {
+                    activeModalPlayer = 'p2';
+                } else {
+                    activeModalPlayer = 'p1';
+                }
+
+                updateControlsModalTexts();
+                updateModalUI();
+
+                const swipeCheck = document.getElementById('ctrlSwipeToggle');
+                if (swipeCheck) swipeCheck.checked = isSwipeControlEnabled;
+
+                modal.classList.add('active');
+            }
+
+            function closeControlsModal() {
+                const modal = document.getElementById('controlsModalOverlay');
+                if (!modal) return;
+                modal.classList.remove('active');
+
+                markControlsOnboardingSeen();
+
+                if (controlsFromOnboarding) {
+                    controlsFromOnboarding = false;
+                    const cb = controlsOnboardingCallback;
+                    controlsOnboardingCallback = null;
+                    if (typeof cb === 'function') cb();
+                } else if (controlsFromPause) {
+                    controlsFromPause = false;
+                    document.querySelectorAll('.pause-bubbles').forEach(el => el.remove());
+                    showPauseMenu(pauseFromPlayer);
+                } else if (controlsFromSettings) {
+                    controlsFromSettings = false;
+                }
+            }
+
+            function initControlsModal() {
+                updateControlsModalTexts();
+                const tabP1 = document.getElementById('tabP1');
+                const tabP2 = document.getElementById('tabP2');
+                const optTwoBtn = document.getElementById('ctrlOptTwoBtn');
+                const optDpad = document.getElementById('ctrlOptDpad');
+                const swipeCheck = document.getElementById('ctrlSwipeToggle');
+                const closeBtn = document.getElementById('closeControlsModalBtn');
+                const confirmBtn = document.getElementById('ctrlModalConfirmBtn');
+                const modalOverlay = document.getElementById('controlsModalOverlay');
+
+                tabP1?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    SFX.menuClick();
+                    activeModalPlayer = 'p1';
+                    updateModalUI();
+                });
+
+                tabP2?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    SFX.menuClick();
+                    activeModalPlayer = 'p2';
+                    updateModalUI();
+                });
+
+                optTwoBtn?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    SFX.menuClick();
+                    applyPlayerControlLayout(activeModalPlayer, 'two-btn');
+                    updateModalUI();
+                });
+
+                optDpad?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    SFX.menuClick();
+                    applyPlayerControlLayout(activeModalPlayer, 'dpad');
+                    updateModalUI();
+                });
+
+                swipeCheck?.addEventListener('change', (e) => {
+                    isSwipeControlEnabled = e.target.checked;
+                    localStorage.setItem('neoSnake_swipeEnabled', isSwipeControlEnabled ? '1' : '0');
+                    SFX.menuClick();
+                });
+
+                closeBtn?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    SFX.menuClick();
+                    closeControlsModal();
+                });
+
+                confirmBtn?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    SFX.menuClick();
+                    closeControlsModal();
+                });
+
+                modalOverlay?.addEventListener('click', (e) => {
+                    if (e.target === modalOverlay) {
+                        closeControlsModal();
+                    }
+                });
+
+                applyPlayerControlLayout('p1', p1ControlLayout);
+                applyPlayerControlLayout('p2', p2ControlLayout);
+            }
+
+            function handleDpadPress(player, dirKey) {
+                ensureAudio();
+                hapticVibrate(15);
+
+                if (isOnlineMode) {
+                    if (!snakes || !snakes[myRole] || inCountdown || intermission || paused) return;
+                    socket.emit('directionChange', { roomId: onlineRoomId, direction: getAbsoluteDir(dirKey) });
+                    return;
+                }
+
+                if (!snakes || !snakes[player] || inCountdown || intermission || paused || !currentSpeedMode) return;
+                const s = snakes[player];
+                if (!s) return;
+
+                let targetDir;
+                if (player === 'p1') {
+                    const dirMapP1 = {
+                        up: { x: 0, y: -1 },
+                        down: { x: 0, y: 1 },
+                        left: { x: -1, y: 0 },
+                        right: { x: 1, y: 0 }
+                    };
+                    targetDir = dirMapP1[dirKey];
+                } else {
+                    // P2 is at the top looking down towards P1
+                    const dirMapP2 = {
+                        up: { x: 0, y: 1 },
+                        down: { x: 0, y: -1 },
+                        left: { x: 1, y: 0 },
+                        right: { x: -1, y: 0 }
+                    };
+                    targetDir = dirMapP2[dirKey];
+                }
+
+                if (targetDir && !opposite(targetDir, s.dir)) {
+                    s.nextDir = targetDir;
+                }
+            }
+
+            function initDpadButtons() {
+                document.querySelectorAll('.dpad-btn').forEach(btn => {
+                    const player = btn.dataset.player;
+                    const dir = btn.dataset.dir;
+
+                    const handlePress = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        btn.classList.add('pressed');
+                        handleDpadPress(player, dir);
+                    };
+                    const handleRelease = () => {
+                        btn.classList.remove('pressed');
+                    };
+
+                    btn.addEventListener('touchstart', handlePress, { passive: false });
+                    btn.addEventListener('touchend', handleRelease, { passive: true });
+                    btn.addEventListener('touchcancel', handleRelease, { passive: true });
+                    btn.addEventListener('mousedown', handlePress, { passive: false });
+                    btn.addEventListener('mouseup', handleRelease, { passive: true });
+                    btn.addEventListener('mouseleave', handleRelease, { passive: true });
+                });
+            }
+
+            // Keyboard input for desktop testing
+            window.addEventListener('keydown', (e) => {
+                const key = e.key.toLowerCase();
+                // P1 D-Pad: Arrow keys or WASD
+                if (e.key === 'ArrowUp' || key === 'w') handleDpadPress('p1', 'up');
+                if (e.key === 'ArrowDown' || key === 's') handleDpadPress('p1', 'down');
+                if (e.key === 'ArrowLeft' || key === 'a') handleDpadPress('p1', 'left');
+                if (e.key === 'ArrowRight' || key === 'd') handleDpadPress('p1', 'right');
+
+                // P2 D-Pad: IJKL
+                if (key === 'i') handleDpadPress('p2', 'up');
+                if (key === 'k') handleDpadPress('p2', 'down');
+                if (key === 'j') handleDpadPress('p2', 'left');
+                if (key === 'l') handleDpadPress('p2', 'right');
+            });
+
+            initControlsModal();
+            initDpadButtons();
+
             /* === Swipe Controls (1P & Online only) === */
             // v3.2.4: 4-direction swipe on canvas for single-player and online modes.
             // Disabled in '2P' local mode — two players share the screen, buttons are safer.
@@ -7349,6 +9574,7 @@
                 if (!canvasEl) return;
 
                 canvasEl.addEventListener('touchstart', function(e) {
+                    if (!isSwipeControlEnabled) return; // v3.3.8: respect swipe toggle
                     if (gameMode === '2P') return; // disabled for local 2P
                     const t = e.touches[0];
                     swipeStartX = t.clientX;
@@ -7356,6 +9582,7 @@
                 }, { passive: true });
 
                 canvasEl.addEventListener('touchend', function(e) {
+                    if (!isSwipeControlEnabled) return; // v3.3.8: respect swipe toggle
                     if (gameMode === '2P') return; // disabled for local 2P
                     if (!snakes || inCountdown || intermission || paused || !currentSpeedMode) return;
                     const t = e.changedTouches[0];
@@ -7443,10 +9670,14 @@
                 const p2NameEl = document.getElementById('p2PanelName');
                 const p1LenEl = document.getElementById('p1PanelLen');
                 const p2LenEl = document.getElementById('p2PanelLen');
+                const p1OppLenEl = document.getElementById('p1OpponentLen');
+                const p2OppLenEl = document.getElementById('p2OpponentLen');
                 if (p1NameEl) p1NameEl.textContent = '';
                 if (p2NameEl) p2NameEl.textContent = '';
                 if (p1LenEl) p1LenEl.textContent = '0';
                 if (p2LenEl) p2LenEl.textContent = '0';
+                if (p1OppLenEl) p1OppLenEl.textContent = '0';
+                if (p2OppLenEl) p2OppLenEl.textContent = '0';
 
                 if (resumeDemo) {
                     isDemoMode = true;
@@ -7464,7 +9695,7 @@
 
                 showBanner(`<div class="main-menu-shell">
       <div class="main-menu-logo-wrap">
-        <img class="main-menu-logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';">
+        <img class="main-menu-logo" src="${(window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp')}" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';">
       </div>
       <div class="main-menu-actions">
         <div class="main-menu-btns">
@@ -7625,6 +9856,7 @@
             }
 
             function leaveOnlineAfterStats() {
+                onlineMatchIndex = 0;
                 const roomId = onlineRoomId;
                 if (socket && roomId) socket.emit('leaveRoom', { roomId });
                 cleanupOnlineGame();
@@ -7757,6 +9989,7 @@
                 GRID_ROWS = 36;
                 resize();
                 onlineRoomId = null;
+                onlineMatchIndex = 0;
                 myRole = null;
                 onlineSessionToken = null;
                 gameMode = null;
@@ -7779,7 +10012,9 @@
                     cw.classList.remove('paused-blur', 'shake');
                 }
                 
-                // Reset HUD controls visibility
+                // Reset HUD controls visibility & button roles
+                const p1CtrlButtons = document.querySelectorAll('#p1-controls .dpad-btn, #p1-controls .turn-btn');
+                p1CtrlButtons.forEach(btn => btn.setAttribute('data-player', 'p1'));
                 const p2HUD = document.getElementById('p2-controls');
                 if (p2HUD) p2HUD.classList.remove('hud-hidden');
 
@@ -8003,11 +10238,23 @@
                 setupSocketListeners();
             }
 
+            window.joinOnlineRoom = function(targetRoom, targetMode) {
+                if (!targetRoom) return;
+                try {
+                    if (typeof cleanupOnlineGame === 'function') cleanupOnlineGame();
+                    if (typeof closePauseBubbles === 'function') closePauseBubbles();
+                    if (typeof stopConfetti === 'function') stopConfetti();
+                } catch(e) {}
+                startOnlineServerConnectionWithRoom(targetRoom, targetMode || 'normal');
+            };
+
             function setupSocketListeners() {
                 if (!socket) return;
 
                 socket.on('roomCreated', (data) => {
                     myRole = 'p1';
+                    onlineRoomId = data.roomId;
+                    onlineMatchIndex = 0;
                     onlineSessionToken = data.sessionToken;
                     openOnlineLobbyMenu(data.roomId, data.mode);
                 });
@@ -8015,6 +10262,7 @@
                 socket.on('roomJoined', (data) => {
                     myRole = 'p2';
                     onlineRoomId = data.roomId;
+                    onlineMatchIndex = 0;
                     onlineSessionToken = data.sessionToken;
                     if (data.partnerName) {
                         partnerName = data.partnerName;
@@ -8029,6 +10277,7 @@
                     clearInterval(matchmakingTimer);
                     myRole = data.role;
                     onlineRoomId = data.roomId;
+                    onlineMatchIndex = 0;
                     partnerName = data.partnerName;
                     onlineSessionToken = data.sessionToken;
                     isOnlineMode = true;
@@ -8036,7 +10285,7 @@
                 });
 
                 socket.on('gameInit', (data) => {
-                    setOnlineRandomColors(onlineRoomId);
+                    setOnlineRandomColors(onlineRoomId, onlineMatchIndex);
                     isDemoMode = false;
                     isOnlineMode = true;
                     GRID_COLS = data.gridCols || 24;
@@ -8056,6 +10305,10 @@
                     // Setup UI for Online HUD (hide P2 HUD so both use bottom controls)
                     const p2HUD = document.getElementById('p2-controls');
                     if (p2HUD) p2HUD.classList.add('hud-hidden');
+
+                    const localRole = (isOnlineMode && myRole === 'p2') ? 'p2' : 'p1';
+                    const p1CtrlButtons = document.querySelectorAll('#p1-controls .dpad-btn, #p1-controls .turn-btn');
+                    p1CtrlButtons.forEach(btn => btn.setAttribute('data-player', localRole));
                     
                     // No Canvas rotation for P2 client in online mode
                     const cw = document.getElementById('canvasWrap');
@@ -8397,6 +10650,7 @@
                 });
 
                 socket.on('rematchStart', () => {
+                    onlineMatchIndex++;
                     clearOnlineRematchWait();
                     const statsOverlay = document.querySelector('.game-end-overlay');
                     if (statsOverlay) statsOverlay.remove();
@@ -8487,7 +10741,7 @@
                 markMenuScreen(MENU_IDS.PLAY_SPLIT, true);
                 showBanner(`<div class="main-menu-shell">
       <div class="main-menu-logo-wrap">
-        <img class="main-menu-logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';">
+        <img class="main-menu-logo" src="${(window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp')}" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';">
       </div>
       <div class="main-menu-actions">
         <div class="main-menu-btns">
@@ -8978,6 +11232,11 @@
           <span class="btn-menu-sep"></span>
           <span class="btn-menu-text">${langLabel}</span>
         </button>
+        <button class="btn big btn-menu-row" id="menuControls">
+          <span class="btn-menu-icon"><i class="fa-solid fa-gamepad"></i></span>
+          <span class="btn-menu-sep"></span>
+          <span class="btn-menu-text">${t('controls')}</span>
+        </button>
         <button class="btn big btn-menu-row" id="toggleSound">
           <span class="btn-menu-icon"><i class="fa-solid fa-volume-high"></i></span>
           <span class="btn-menu-sep"></span>
@@ -9005,12 +11264,27 @@
         </button>` : ''}
         ${buildMenuBackButton('settingsBack')}
         <div class="menu-footer-note version-note">${VERSION}</div>
-      </div>`);
+      </div>`, true, 'settings-banner');
+
+                const sRect = banner.getBoundingClientRect();
+                lastSettingsBannerWidth = sRect.width || banner.offsetWidth;
+                lastSettingsBannerHeight = sRect.height || banner.offsetHeight;
+                if (lastSettingsBannerWidth > 0 && lastSettingsBannerHeight > 0) {
+                    document.documentElement.style.setProperty('--settings-w', `${lastSettingsBannerWidth}px`);
+                    document.documentElement.style.setProperty('--settings-h', `${lastSettingsBannerHeight}px`);
+                }
 
                 document.getElementById('toggleLang').onclick = () => {
                     SFX.menuClick();
                     navigateToMenu(MENU_IDS.LANGUAGE, 'forward');
                 };
+                const ctrlBtn = document.getElementById('menuControls');
+                if (ctrlBtn) {
+                    ctrlBtn.onclick = () => {
+                        SFX.menuClick();
+                        openControlsModal('p1', 'settings');
+                    };
+                }
                 document.getElementById('toggleSound').onclick = () => {
                     SFX.menuClick();
                     muted = !muted;
@@ -9056,7 +11330,7 @@
                 markMenuScreen(MENU_IDS.DEVELOPERS);
                 paused = true; intermission = true;
                 showBanner(`<h1>${t('developers')}</h1><div id="developersContainer">${t('developersText')}</div>
-      ${buildMenuBackButton('developersBack')}`);
+      ${buildMenuBackButton('developersBack')}`, true, 'developers-banner');
                 document.getElementById('developersBack').onclick = () => { SFX.menuClick(); goBack(MENU_IDS.SETTINGS); };
             }
 
@@ -9674,6 +11948,29 @@
 
             // AI BFS path cache — avoids recalculating every tick when nothing changed
             const _aiCache = { foodX: -1, foodY: -1, path: [], idx: 0 };
+            let iosAiCaches = new WeakMap();
+            function getIosAiCache(snake, wallMode) {
+                let cache = iosAiCaches.get(snake);
+                const head = snake.segments[0];
+                if (!cache || cache.cols !== GRID_COLS || cache.rows !== GRID_ROWS ||
+                    cache.wallMode !== wallMode || cache.style !== gameStyle ||
+                    cache.expectedX !== head.x || cache.expectedY !== head.y) {
+                    cache = { foodX: -1, foodY: -1, path: [], idx: 0, cols: GRID_COLS,
+                        rows: GRID_ROWS, wallMode: wallMode, style: gameStyle };
+                    iosAiCaches.set(snake, cache);
+                }
+                return cache;
+            }
+            function rememberIosAiStep(cache, head, direction, wallMode, isSelf51) {
+                let x = head.x + direction.x, y = head.y + direction.y;
+                if (isSelf51) {
+                    const wrapped = selfArea51WrapForOwner({ x: x, y: y }, 'p2');
+                    x = wrapped.x; y = wrapped.y;
+                } else if (wallMode !== MOD_WALLS.SOLID) {
+                    x = (x + GRID_COLS) % GRID_COLS; y = (y + GRID_ROWS) % GRID_ROWS;
+                }
+                cache.expectedX = x; cache.expectedY = y;
+            }
 
             // AI Snake pathfinding using optimized BFS
             // v2.98.8 perf fixes:
@@ -9687,6 +11984,9 @@
                 const head = aiSnake.segments[0];
                 const currentDir = aiSnake.dir;
                 const isSelf51 = (gameStyle === 'selfArea51');
+                const isAppleTarget = (typeof IS_IOS_SHELL !== 'undefined' && IS_IOS_SHELL) ||
+                    (typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE);
+                const cache = isAppleTarget ? getIosAiCache(aiSnake, wallMode) : _aiCache;
 
                 // --- Find nearest food (prefer green diamond in Self Area 51) ---
                 let nearestFood = null;
@@ -9709,16 +12009,23 @@
 
                 // --- Path cache check ---
                 // If food hasn't moved and we still have steps left, verify next step is clear
-                if (_aiCache.foodX === nearestFood.x && _aiCache.foodY === nearestFood.y &&
-                    _aiCache.idx < _aiCache.path.length) {
-                    const nextDir = _aiCache.path[_aiCache.idx];
+                if (cache.foodX === nearestFood.x && cache.foodY === nearestFood.y &&
+                    cache.idx < cache.path.length) {
+                    const nextDir = cache.path[cache.idx];
                     let cx = head.x + nextDir.x;
                     let cy = head.y + nextDir.y;
                     if (!isSelf51 && wallMode !== MOD_WALLS.SOLID) {
                         if (cx < 0) cx = GRID_COLS - 1; else if (cx >= GRID_COLS) cx = 0;
                         if (cy < 0) cy = GRID_ROWS - 1; else if (cy >= GRID_ROWS) cy = 0;
                     }
-                    let blocked = false;
+                    let blocked = isAppleTarget && (opposite(nextDir, currentDir) ||
+                        (wallMode === MOD_WALLS.SOLID && (cx < 0 || cx >= GRID_COLS || cy < 0 || cy >= GRID_ROWS)));
+                    if (isAppleTarget && isSelf51) {
+                        const wrapped = selfArea51WrapForOwner({ x: cx, y: cy }, 'p2');
+                        cx = wrapped.x; cy = wrapped.y;
+                    }
+                    if (isAppleTarget && gameStyle === 'adventure' &&
+                        (_tickBarrierSet || getBarrierCellsSet()).has(cy * GRID_COLS + cx)) blocked = true;
                     for (const s of aiSnake.segments) {
                         if (s.x === cx && s.y === cy) { blocked = true; break; }
                     }
@@ -9728,13 +12035,17 @@
                         }
                     }
                     if (!blocked) {
-                        _aiCache.idx++;
+                        cache.idx++;
+                        if (isAppleTarget) rememberIosAiStep(cache, head, nextDir, wallMode, isSelf51);
+                        if (iosPerf && iosPerf.enabled) iosPerf.cacheHits++;
                         return nextDir;
                     }
                     // Next step is blocked — fall through to recalculate
                 }
 
                 // --- Build obstacles with integer keys (no string allocation) ---
+                if (iosPerf && iosPerf.enabled) iosPerf.bfsRuns++;
+                if (isAppleTarget) { cache.path = []; cache.idx = 0; }
                 const obstacles = new Set();
                 for (const s of aiSnake.segments) obstacles.add(s.y * GRID_COLS + s.x);
                 if (!isSelf51 && playerSnake) {
@@ -9801,11 +12112,14 @@
                         cur = entry.parentKey;
                     }
                     // Store in cache for subsequent ticks
-                    _aiCache.foodX = nearestFood.x;
-                    _aiCache.foodY = nearestFood.y;
-                    _aiCache.path = path;
-                    _aiCache.idx = 1; // path[0] returned now
-                    if (path.length > 0) return path[0];
+                    cache.foodX = nearestFood.x;
+                    cache.foodY = nearestFood.y;
+                    cache.path = path;
+                    cache.idx = 1; // path[0] returned now
+                    if (path.length > 0) {
+                        if (isAppleTarget) rememberIosAiStep(cache, head, path[0], wallMode, isSelf51);
+                        return path[0];
+                    }
                     return currentDir;
                 }
 
@@ -9881,6 +12195,7 @@
                 foods = [];
                 // v2.98.8: Reset AI path cache on each round so stale paths from
                 // previous rounds can't be accidentally reused.
+                iosAiCaches = new WeakMap();
                 _aiCache.foodX = -1; _aiCache.foodY = -1;
                 _aiCache.path = []; _aiCache.idx = 0;
                 resetArcadeFxState();
@@ -9969,7 +12284,18 @@
                 AchievementTracker.resetRound();
 
                 return new Promise(resolve => {
-                    countdown(countdownNum).then(resolve);
+                    const startMatchCountdown = () => {
+                        countdown(countdownNum).then(resolve);
+                    };
+
+                    if (full && !isOnlineMode && !hasSeenControlsOnboarding()) {
+                        inCountdown = true;
+                        openControlsModal('p1', 'onboarding', () => {
+                            startMatchCountdown();
+                        });
+                    } else {
+                        startMatchCountdown();
+                    }
                 });
             }
             function awardGame(who) { 
@@ -10198,12 +12524,16 @@
                 const p1PanelLen = document.getElementById('p1PanelLen');
                 const p2PanelLen = document.getElementById('p2PanelLen');
                 const aiPanelLen = document.getElementById('aiPanelLen');
+                const p1OppPanelLen = document.getElementById('p1OpponentLen');
+                const p2OppPanelLen = document.getElementById('p2OpponentLen');
                 if (gameStyle === 'selfArea51') {
                     updateSelfArea51Panels();
                 } else {
                     if (p1PanelLen) p1PanelLen.textContent = p1DisplayLen;
                     if (p2PanelLen) p2PanelLen.textContent = p2Len;
                     if (aiPanelLen) aiPanelLen.textContent = p2Len;
+                    if (p1OppPanelLen) p1OppPanelLen.textContent = p2Len;
+                    if (p2OppPanelLen) p2OppPanelLen.textContent = p1DisplayLen;
                 }
 
                 // Keep legacy hidden elements in sync for any code that reads them
@@ -11338,7 +13668,7 @@ function startWinAnim(winner, final = false) {
                     }
 
                     ctx.save();
-                    if (isWinGlyph && !window.isAndroidWebView) {
+                    if (isWinGlyph && (!window.isAndroidWebView || IS_IOS_SHELL)) {
                         ctx.shadowColor = hexToRgba(color, 0.95);
                         ctx.shadowBlur = Math.max(8, Math.min(szX, szY) * 1.8);
                         ctx.fillStyle = hexToRgba(color, 0.94);
@@ -11348,7 +13678,7 @@ function startWinAnim(winner, final = false) {
 
                     ctx.fillRect(px, py, pixelSize, pixelSize);
 
-                    if (isWinGlyph && !window.isAndroidWebView) {
+                    if (isWinGlyph && (!window.isAndroidWebView || IS_IOS_SHELL)) {
                         const inset = Math.max(0.8, pixelSize * 0.16);
                         const innerSize = Math.max(1, pixelSize - inset * 2);
                         ctx.shadowBlur = 0;
@@ -11572,6 +13902,10 @@ function startWinAnim(winner, final = false) {
             }
 
             function render(alpha1, alpha2) {
+                if (IS_IOS_SHELL || (typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE)) {
+                    alpha1 = Math.max(0, Math.min(1, alpha1));
+                    alpha2 = Math.max(0, Math.min(1, alpha2));
+                }
                 ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
                 drawGrid();
                 drawGridRipples();
@@ -11715,9 +14049,11 @@ function renderWinAnim() {
                 if (!last) last = time;
                 let delta = time - last;
                 last = time;
+                recordIosFrame(time, delta);
                 if (delta > 60) delta = 60; // Lag veya menü geçişlerinde yılanın ışınlanmasını (jump) önler
 
-                if (window.isAndroidWebView && isDemoMode && time < menuDemoFreezeUntil) {
+                const isMenuDemoFreezeTarget = window.isAndroidWebView || IS_IOS_SHELL || (typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE);
+                if (isMenuDemoFreezeTarget && isDemoMode && time < menuDemoFreezeUntil) {
                     requestAnimationFrame(step);
                     return;
                 }
@@ -11842,7 +14178,7 @@ function renderWinAnim() {
                     if (acc1 >= interval1) {
                         prepareMovementTick();
                         if (isDemoMode && snakes.p1 && snakes.p2) {
-                            const m1 = calculateAIMove(snakes.p1, snakes.p2, foods, currentWallMode);
+                            const m1 = measuredAIMove(snakes.p1, snakes.p2, foods, currentWallMode);
                             if (m1) snakes.p1.nextDir = m1;
                         }
                         moveSnake(snakes.p1, 'p1');
@@ -11881,7 +14217,7 @@ function renderWinAnim() {
                         if (acc2 >= interval2) {
                             prepareMovementTick();
                             if ((isDemoMode || (gameMode === '1P' && aiSnakeEnabled)) && snakes.p1 && snakes.p2) {
-                                const m2 = calculateAIMove(snakes.p2, snakes.p1, foods, currentWallMode);
+                                const m2 = measuredAIMove(snakes.p2, snakes.p1, foods, currentWallMode);
                                 if (m2) snakes.p2.nextDir = m2;
                             } 
                             moveSnake(snakes.p2, 'p2');
@@ -12090,10 +14426,14 @@ function renderWinAnim() {
                 const p2NameEl = document.getElementById('p2PanelName');
                 const p1LenEl = document.getElementById('p1PanelLen');
                 const p2LenEl = document.getElementById('p2PanelLen');
+                const p1OppLenEl = document.getElementById('p1OpponentLen');
+                const p2OppLenEl = document.getElementById('p2OpponentLen');
                 if (p1NameEl) p1NameEl.textContent = '';
                 if (p2NameEl) p2NameEl.textContent = '';
                 if (p1LenEl) p1LenEl.textContent = '0';
                 if (p2LenEl) p2LenEl.textContent = '0';
+                if (p1OppLenEl) p1OppLenEl.textContent = '0';
+                if (p2OppLenEl) p2OppLenEl.textContent = '0';
 
                 // Common defaults for all shortcuts
                 currentWallMode = MOD_WALLS.NONE;
@@ -12208,12 +14548,33 @@ function renderWinAnim() {
                     if (!document.hidden) scheduleVersionCheck(false, 120);
                 });
                 requestAnimationFrame(step);
+                document.addEventListener('visibilitychange', () => {
+                    if (IS_IOS_SHELL || (typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE)) {
+                        last = 0;
+                        if (iosPerf) iosPerf.startedAt = 0;
+                    }
+                }, { passive: true });
+                if (typeof window.__twoPlayerSnakeGameReady === 'function') window.__twoPlayerSnakeGameReady();
             }
 
             // v2.93.2: Preroll removed on all platforms. Mobile preroll format caused
             // full-page redirect when dismissed, kicking users off the site.
             // Between-rounds and rewarded-continue ads remain active.
-            setTimeout(() => { splashComplete(initGame); }, SPLASH_DURATION_MS);
+            setTimeout(() => {
+                if (IS_IOS_SHELL && document.fonts) {
+                    let started = false;
+                    const begin = () => { if (!started) { started = true; splashComplete(initGame); } };
+                    const fontDeadline = setTimeout(begin, 2000);
+                    Promise.all([
+                        document.fonts.load('900 16px Orbitron'),
+                        document.fonts.load('400 16px VT323'),
+                        document.fonts.load('900 16px "Font Awesome 6 Free"'),
+                        document.fonts.load('400 16px "Font Awesome 6 Brands"')
+                    ]).then(() => { clearTimeout(fontDeadline); begin(); }, () => { clearTimeout(fontDeadline); begin(); });
+                } else {
+                    splashComplete(initGame);
+                }
+            }, SPLASH_DURATION_MS);
         })();</script>
 </body>
 

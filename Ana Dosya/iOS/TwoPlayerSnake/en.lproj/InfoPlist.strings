@@ -1,0 +1,6 @@
+/* App Display Name */
+"CFBundleDisplayName" = "2 Player Snake";
+"CFBundleName" = "2 Player Snake";
+
+/* ATT Permission */
+"NSUserTrackingUsageDescription" = "This identifier will be used to deliver personalized ads to you and improve your gaming experience.";

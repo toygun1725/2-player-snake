@@ -11,16 +11,72 @@ Bu belge, mobil surum uzerinde calisacak yapay zekalar icin guncel teknik refera
 > Web yayını henüz yapılmadı; Git push siteyi güncellemez.
 > Ayrıntılar: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
 
-- Aktif referans surum: `v3.3.7` (iOS: Build 44 TestFlight)
-- Temel referans dosya: `2 Player Snake Mobile v3.3.7.html`
-- Kaynak/yayin durumu: v3.3.7 mobil ve PC kaynak dosyalari olusturuldu. WhatsApp davetleri icin `window.joinOnlineRoom` eklendi.
-- Android durumu: Android cevrimdisi fallback `mobile_offline_fallback.html` v3.3.6/v3.3.7 ile esitlendi.
-- iOS durumu: iOS Build 44 TestFlight dagitimina cikarildi; Universal Links (`applinks:2playersnake.com`, `apple-app-site-association`, `twoplayersnake://`), 21 dilde yerel bildirim sistemi (`NotificationManager.swift`, `NotificationStrings.swift`), iPhone HUD alt panel ovalestirmesi ve v3.3.7 guncellendi.
+- Aktif referans surum: `v3.4.2` (Final Sürüm)
+- Temel referans dosya: `2 Player Snake Mobile v3.4.2.html`
+- Kaynak/yayin durumu: v3.4.2 mobil kaynak dosyasi olusturuldu. PC sürümünün mobildeki gibi tek pencereli Hızlı Kurulum dashboard'una geçirilmesiyle birlikte tam sürüm senkronizasyonu sağlandı.
+- Android durumu: Android cevrimdisi fallback `mobile_offline_fallback.html` v3.4.2 ile esitlendi; bir sonraki build icin hazir.
+- iOS durumu: iOS `mobile_offline_fallback.html` v3.4.2 ile esitlendi; uzaktan `https://2playersnake.com` yayini v3.4.2 ile guncellendiginde webview uzerinden aninda aktiflesir.
 - Dosya yapisi: her sey tek HTML dosyasindadir; CSS veya JS ayirma yapilmaz.
 - Tasarim dili: koyu cyberpunk zemin, neon pembe ve turkuaz glow, camimsi panel dili, mobil odakli dar yerlesim.
 - Ana menu logosu web uzerindeki guncel logo kaynagini kullanir; gerekirse yerel fallback ile calisir.
 
-## Son Guncelleme (v3.3.7 - iOS Build 44 TestFlight)
+## Son Guncelleme (v3.4.2 - PC Tek Pencereli Hızlı Kurulum Paritesi & Sürüm Senkronizasyonu)
+- **v3.4.2**: PC Hızlı Kurulum Tek Pencereli Dashboard Dönüşümü & Mobil/Fallback Sürüm Senkronizasyonu.
+  - **Sürüm Paritesi:** Mobil `2 Player Snake Mobile v3.4.2.html` ve PC `2 Player Snake PC v3.4.2.html` sürümleri tam senkron hale getirildi (`VERSION = 'v3.4.2'`).
+  - **PC'de Mobil Benzeri Tek Ekran:** PC'deki 2 aşamalı eski kurulum kaldırıldı; mobildeki `openQuickSetupMenu` gibi tek bir ekranda tüm ayarları sunan `openPCQuickSetupMenu` oluşturuldu.
+  - **Çevrimdışı Fallback Senkronu:** Hem iOS hem Android `mobile_offline_fallback.html` dosyaları `2 Player Snake Mobile v3.4.2.html` ile %100 bayt bayt eşitlendi; 42/42 test doğrulandı.
+
+## Onceki Guncelleme (v3.4.1 - Varsayılan Mod: 1P VS AI & Online HUD D-Pad Layout Düzeltmesi)
+- **v3.4.1**: Hızlı Kurulum Varsayılan Modu (1P - VS YAPAY ZEKA - DUVARSIZ - NORMAL), Online Maç Rakip Paneli Sıkışma & Buton Taşması Düzeltmesi, Mobil & PC Senkronizasyonu.
+  - **Varsayılan Mod Değişikliği (1P - VS YAPAY ZEKA - DUVARSIZ - NORMAL):**
+    - Hızlı Kurulum menüsü (`openQuickSetupMenu`) açıldığında varsayılan olarak **1P**, **VS YAPAY ZEKA** (`fastCompetitive`), **DUVARSIZ** (`MOD_WALLS.NONE`) ve **NORMAL** hız seçili ve butonları aktif (highlighted) olarak gelir.
+    - Oyuncu hiçbir seçeneğe dokunmadan doğrudan "BAŞLA" butonuna bastığında da maç bu ayarlarla (1P VS AI, duvarsız, normal hız) başlar.
+  - **Online Maç Rakip Paneli Sıkışma & Buton Taşması Düzeltmesi:**
+    - Sorun: Daha önce 1P Solo modunda oynamış bir cihazda D-Pad aktifken `#pauseBtnP1` ve `#soundBtnP1` butonları `.dpad-slot-right` içine taşınıyordu. Ardından Online maça girildiğinde, `updateUIVisibility()` fonksiyonu `isOnlineMode` bloğunda erken `return;` yaptığı için `applyPlayerControlLayout('p1', p1ControlLayout)` çağrılmıyor; butonlar `.dpad-slot-right` yuvasında kalıyor ve sağ rakip panelini (`#p1OpponentPanel`) 18 piksele sıkıştırıp butonları ekran dışına taşırıyordu.
+    - Çözüm: `updateUIVisibility()` içindeki `isOnlineMode` bloğuna rakip panelinin (`#p1OpponentPanel`) `display: flex` yapılması, rakip adı (`p1OpponentName`) ve seri noktalarının (`p1OpponentDots`) gösterilmesi, `drawSeries()` ve en önemlisi `applyPlayerControlLayout('p1', p1ControlLayout)` çağrısı eklendi. Böylece online maça başlandığında butonlar panellerin içine (Pause soldaki P1 paneline, Ses sağdaki rakip paneline) düzgün şekilde dağıtılır ve rakip paneli tam genişliğinde görünür.
+  - **PC Sürüm Senkronu:** `2 Player Snake PC v3.4.1.html` oluşturuldu; PC hızlı kurulum 2. ekranında da 1P, DUVARSIZ ve NORMAL varsayılan olarak pre-selected hale getirildi.
+  - **Çevrimdışı Fallback Senkronu:** iOS ve Android `mobile_offline_fallback.html` dosyaları `2 Player Snake Mobile v3.4.1.html` ile %100 birebir eşitlendi; 40/40 test başarıyla geçti.
+
+### Onceki Guncelleme (v3.4.0 - Dinamik "VS YAPAY ZEKA" / "VS AI" Menü İsimlendirmesi & 21 Dil Yerelleştirmesi)
+- **v3.4.0**: Dinamik 1P vs AI Menü İsimlendirmesi, 21 Dilde `vsAiMode` Sözlüğü, Mobil & PC & Çevrimdışı Fallback Senkronizasyonu.
+  - **Dinamik Mod İsimlendirmesi (1P vs AI Netliği):**
+    - Hızlı Kurulum (`openQuickSetupMenu`) ekranında üstteki oyuncu modu butonlarından **1P** seçildiğinde, oyun modlarındaki ikinci buton dinamik olarak **"VS YAPAY ZEKA"** (İngilizce: **"VS AI"**) adına bürünür.
+    - **2P** seçildiğinde ise aynı buton anında orijinal **"HIZLI REKABETÇİ"** (**"FAST COMPETITIVE"**) adına döner.
+    - Bu sayede tek kişilik modda yapay zekaya karşı oynamak isteyen oyuncuların modu kolayca ve sezgisel olarak bulabilmesi sağlandı.
+  - **21 Dilde `vsAiMode` Entegrasyonu:**
+    - Desteklenen 21 dilin tamamında (`tr`, `en`, `fr`, `it`, `es`, `de`, `zh`, `hi`, `pl`, `ptbr`/`pt-BR`, `ar`, `ru`, `id`, `ja`, `ko`, `vi`, `th`, `tl`, `nl`, `el`, `cs`) yerelleştirilmiş terimler (`VS IA`, `VS KI`, `ПРОТИВ ИИ`, `ضد الذكاء الاصطناعي` vb.) `EXTRA_STRINGS` sözlüğüne eklendi.
+  - **Sürüm Senkronu:** Hem `2 Player Snake Mobile v3.4.0.html` hem de `2 Player Snake PC v3.4.0.html` oluşturuldu; `VERSION = 'v3.4.0'` tanımlandı.
+  - **Çevrimdışı Fallback Senkronu:** Hem iOS (`Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`) hem Android (`Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html`) dosyaları v3.4.0 ile %100 eşitlendi; 38/38 otomatik test doğrulandı.
+
+## Onceki Guncelleme (v3.3.9 - Ergonomik 3 Sütunlu D-Pad, Gömülü Panel Butonları & HUD Simetrisi)
+- **v3.3.9**: 3 Sütunlu Ergonomik D-Pad Tasarımı, D-Pad Buton Yüksekliği ve Enine Genişletme, Panel İçi Gömülü Pause/Ses Butonları, 1P Solo Büyük Butonlar, 2P Yükseklik/Ölçek Düzeltmesi ve 1P vs AI Panel Eşitlemesi.
+  - **D-Pad Yukarı & Aşağı Enine Genişletme:** Orta sütundaki Yukarı (`↑`) ve Aşağı (`↓`) butonlarının maksimum genişliği `clamp(75px, 23vw, 108px)` seviyesine çıkarıldı (eski: 60-82px). D-Pad butonları arcade gamepad tarzında daha etli/kare ve başparmak için çok daha rahat dokunulabilir hale getirildi.
+  - **Panel İçi Gömülü Pause & Ses Butonları (Rakip Modları):**
+    - D-Pad modunda Pause ve Ses butonları panellerin dışına taşarak ortadaki D-Pad'i sıkıştırmaz (`position: absolute; left/right: calc(100% + 21px)` kaldırıldı).
+    - **Sol Stat Paneli (P1 / P2):** Pause butonu doğrudan panelin içine, seri galibiyet noktalarının altına ortalanarak yerleştirildi (`position: static; margin: 4px auto 0;`).
+    - **Sağ Rakip Paneli:** Ses açma/kapama butonu doğrudan rakip panelinin içine, seri noktalarının altına ortalanarak yerleştirildi (`position: static; margin: 4px auto 0;`).
+    - Bu sayede paneller ile D-Pad arasındaki ~70px'lik ölü boşluk yok edildi; D-Pad kümesi ekranın ortasında maksimum ferahlığa kavuştu.
+  - **1P Solo Buton Büyütme:** Tek kişilik Solo modda sağ yuvadaki (`.dpad-slot-right`) dikey Pause ve Ses butonları 28px'ten **36px**'e (+8px), ikonları 15px'ten **19px**'e büyütüldü; yuva genişliği 50px'e çıkarılarak dokunmatik ergonomi artırıldı.
+  - **1P vs 2P Modunda 2P Buton Ölçek & Yükseklik Düzeltmesi:**
+    - Üstteki 2P kontrol çubuğunun 180° ters dönen içeriğinde (`.ctrl-content-rotated`) güvenli alan çentiğinin yanlış döndürülmesinden kaynaklanan buton basıklığı giderildi.
+    - `#p2-controls.layout-dpad` doğrudan `padding-top: var(--safe-area-top)` ile güvenli alanı dışarıdan karşılar; `.ctrl-content-rotated` unrotated olarak %100 yükseklik ve simetrik `padding: 6px 8px` alarak P1 ile birebir piksel pikselliğe eşitlendi.
+  - **1P vs AI Modu HUD'ının 1Pvs2P ile %100 Birebir Eşitlenmesi:**
+    - İki butonlu moddan kalan `.dual-ai .player-stat-panel { max-width: 50%; }` kuralı D-Pad modunda geçersiz kılındı (`max-width: 100% !important; flex: 1 1 100% !important;`).
+    - Solda P1 paneli (içinde Pause butonu), ortada genişletilmiş 3 sütunlu D-Pad, sağda AI rakip paneli (içinde Ses butonu) tam 72px genişlikle 1Pvs2P'deki P1 HUD'ı ile %100 aynı görünüme kavuşturuldu.
+  - **Sürüm Senkronu:** Hem `2 Player Snake Mobile v3.3.9.html` hem de `2 Player Snake PC v3.3.9.html` oluşturuldu; `VERSION = 'v3.3.9'` tanımlandı.
+  - **Çevrimdışı Fallback Senkronu:** Hem iOS hem Android `mobile_offline_fallback.html` dosyaları v3.3.9 ile eşitlendi; 36/36 otomatik test doğrulandı.
+
+## Onceki Guncelleme (v3.3.8 - D-Pad & Kontroller Modalı & Deterministik Renkler)
+- **v3.3.8**: 2 Kişilik D-Pad Pause Butonu ve Stacking İyileştirmesi, Ayarlar İçi Kontroller Menüsü, 21 Dilde Kontroller Modalı, Geliştiriciler Penceresi Boyut Eşitlemesi ve Çevrimdışı Fallback Senkronizasyonu.
+  - **2P D-Pad Pause Butonu & Stacking Context:** 2 Kişilik D-Pad modundaki pause buton boyutu 29px'e (+3px) çıkartıldı, `(calc(100% + 21px), 21px)` ile kenar boşlukları dengelendi. `.panel-with-btns` ve `.player-stat-panel` `z-index: 20`, pause butonu `z-index: 30` yapıldı; `.dpad-cluster` (`z-index: 5`) alanının tıklamaları bloke etmesi giderilerek fare ve dokunma tıklamaları tam aktif edildi.
+  - **Ayarlar İçi Kontroller Butonu:** Ayarlar penceresinde Dil ve Ses butonları arasına "Kontroller" butonu (`settingsControlsBtn`) eklendi.
+  - **21 Dilde Kontroller Modalı (`CONTROLS_STRINGS`):** Kontroller modalının tüm metinleri (başlık, D-Pad, Joystick, Swipe, İpuçları) 21 dilin tamamında eksiksiz çevrildi ve `updateControlsStrings()` fonksiyonuyla dinamik dil değişimine bağlandı.
+  - **Geliştiriciler Penceresi Boyut Sabitleme:** Geliştiriciler modalının boyutları Ayarlar modalı ile CSS değişkenleri (`--settings-w`, `--settings-h`) üzerinden birebir kilitlendi, iç kaydırma (`overflow-y: auto`) ile taşmalar engellendi.
+  - **Surum Senkronu:** `2 Player Snake Mobile v3.3.8.html` oluşturuldu; başlık ve `VERSION = 'v3.3.8'` tanımlandı.
+  - **İlk Maç Öncesi Kontroller Onboarding (Tek Seferlik):** Oyunu mobil tarayıcıda, Android veya iOS uygulamasında ilk kez oynayan kullanıcılara, maça girmeden önce ("Oyna" butonuna basıldığında) geri sayım öncesinde Kontroller penceresi otomatik açılır. Oyuncu kontrol şemasını görüp onayladığında (`localStorage: twoPlayerSnake_hasSeenControls`), tercih hafızaya kalıcı kaydedilir ve sonraki maçlarda doğrudan geri sayıma geçer.
+  - **Çevrimdışı Fallback Senkronu:** Hem iOS (`Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`) hem Android (`Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html`) çevrimdışı paketleri v3.3.8 ile eşitlendi; 27/27 test doğrulandı. Bir sonraki derleme (build) için hazırlandı.
+
+## Onceki Guncelleme (v3.3.7 - iOS Build 44 TestFlight)
 - **v3.3.7**: Universal Links (WhatsApp Davetiyle Dogrudan Odaya Giris), iOS Re-engagement Bildirimleri (21 Dil), iPhone HUD Alt Panel Oval Tasarimi ve Sürüm Senkronu.
   - **Universal Links & WhatsApp Daveti:** WhatsApp'tan paylasilan `https://2playersnake.com/invite?room=...&mode=...` baglantisina basildiginda tarayici yerine dogrudan iPhone uygulamasinin acilmasi ve `window.joinOnlineRoom` ile teaser videoyu atlayarak odaya baglanmasi saglandi.
   - **Re-engagement Bildirimleri (iOS):** Android ile ayni 21 dilde 1. Gun (24s), 3. Gun (72s) ve 7. Gun (168s) yerel bildirimleri planlandi. 3. acilista nazik izin istenir, her acilista sayaclar sifirlanir.
@@ -839,6 +895,17 @@ Mobilde bundan sonraki islerde kaynak gercek su alanlardir:
 - Mobil UI, dokunmatik panel, safe-area ve reklam akislari `game-mobile` icin optimize edilidir.
 - GPGPC'de ayni mobil URL'nin acilmasi dikey/kilitli gorunum sorunlari uretir.
 - Gelecek AI, mobil bugfix yaparken bu URL ayrimini bozmamalidir.
+
+## v3.3.8 - Kontroller Modalı, D-Pad Pause Düzeni ve Online Deterministik Yılan Renkleri (2026-09-20)
+- **2P D-Pad Pause Butonu**: Boyutu 29px'e (+3px) çıkarıldı, konumu `(calc(100% + 21px), 21px)` olarak ayarlandı. Z-index ve stacking context düzeltildi (`z-index: 30`), `.dpad-cluster` tıklama engeli giderildi.
+- **Ayarlar Menüsüne Kontroller Seçeneği**: Ayarlar modalına Dil ve Ses butonları arasına "Kontroller" butonu (`settingsControlsBtn`) eklendi.
+- **21 Dil Kontroller Çevirisi (`CONTROLS_STRINGS`)**: 21 resmi dilin tamamında başlık, D-Pad, İki Düğme ve Swipe kontrolleri eksiksiz yerelleştirildi.
+- **İlk Maç Öncesi Kontrol Onboarding**: Oyunu ilk kez açanlara ilk maç öncesinde kontrol şeması otomatik sunulur (`localStorage: twoPlayerSnake_hasSeenControls`).
+- **Online Maçlarda Deterministik Rastgele Yılan Renkleri**:
+  - `selectOnlineRoomColors(roomId, matchIndex)` fonksiyonu ile `roomId + '_' + onlineMatchIndex` tohumundan 9 canlı renkten (Lime hariç) çakışmayan 2 renk belirlenir (72 kombinasyon).
+  - Her iki oyuncu (telefon veya PC) kendi ekranında tam olarak aynı renkleri (örneğin P1 Kırmızı, P2 Sarı) görür.
+  - Roundlar arasında yılan renkleri asla değişmez; yalnızca maç tamamlanıp rövanş ("Yeniden Oyna") alındığında yeni bir renk çifti atanır.
+  - P2 oyuncusu için alt kontrol barındaki (`#p1-controls`) butonlar dinamik olarak P2 yılanının renginde parlar (`--p2-rgb`).
 
 
 

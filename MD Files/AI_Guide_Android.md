@@ -6,7 +6,8 @@ Bu rehber, ilk Android promptunda istenen hedefleri ve bugun bu hedeflere gore f
 
 ## Referans Durum
 - Android shell kaynagi: `d:\#3 Vibecoding\AI Games\2 Player Snake\Ana Dosya\Android`
-- Guncel web kaynak referansi: `2 Player Snake Mobile v3.3.5 / PC v3.3.5`
+- Guncel web kaynak referansi: `2 Player Snake Mobile v3.4.2 / PC v3.4.2`
+- Android cevrimdisi fallback: `mobile_offline_fallback.html` (v3.4.2 ile esitlendi - PC tek pencereli Hızlı Kurulum paneli paritesi ve mobil v3.4.2 senkronu)
 - Guncel kaynak `versionCode`: **69**
 - Guncel kaynak `versionName`: **`v3.3.5`**
 - Yayin/AAB durumu: versionCode 69 (v3.3.5) AAB derlendi ve imzalandı (`2PlayerSnake-v3.3.5-release.aab` ve `app/build/outputs/bundle/release/app-release.aab`).

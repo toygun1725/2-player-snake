@@ -4,7 +4,27 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 
 ---
 
-## 1. Güncel devir notu — Build 45 (v3.3.7, 2026-09-19)
+## 1. Güncel HTML & Çevrimdışı Fallback Durumu (v3.4.2, 2026-09-23)
+
+- HTML Runtime & Web Referansı: `2 Player Snake Mobile v3.4.2.html` ve `2 Player Snake PC v3.4.2.html`.
+- iOS Çevrimdışı Fallback (`TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`): v3.4.2 ile eşitlendi.
+- Otomatik Testler: `node --test tests/ios-runtime.test.cjs` 43/43 test (%100) başarıyla geçti.
+
+## 1.1. Native Shell Durumu — Build 46 (v3.4.2, 2026-09-23)
+
+- Marketing version: `3.4.2`; son native build `46`, HTML runtime referansı `v3.4.2`.
+- **App Store 21 Dil Desteği (`knownRegions` & `.lproj` Paketleri):**
+  * App Store Connect'in tüm dilleri algılaması için Xcode projesine 21 dilin `InfoPlist.strings` / `CFBundleDisplayName` paketleri bağlandı.
+  * `AppStrings.swift` güncellenerek 21 dilin native metinleri senkronize edildi.
+- **D-Pad Panel İçi Buton Ergonomisi:**
+  * Pause ve Ses butonları 28px'ten 33px'e büyütülüp stat panellerinde aşağı kaydırıldı (`margin: 8px auto 2px !important;`).
+  * Ses butonuna 350ms throttle ve dokunsal geri bildirim (haptic) eklendi.
+- **iOS Neon Glow & Frosted Glass:**
+  * Native iPhone WebView'de (`IS_IOS_SHELL`) canvas neon galibiyet efektleri ve `.banner.winner-glass-banner.padded` buzlu cam blurları aktif edildi.
+- **90 Saniye Global Reklam Kuralı:**
+  * `cooldownMs: 90000` ve `AdManager.showInterstitial` merkezi denetimi ile art arda reklam gösterimi engellendi.
+
+## 1.2. Önceki Native Shell Durumu — Build 45 (v3.3.7, 2026-09-19)
 
 - Marketing version: `3.3.7`; son native build `45`, HTML runtime referansı `v3.3.7`.
 - **App Store Çoklu Dil Desteği (`CFBundleLocalizations`):** `Info.plist` içine 21 desteklenen dil eklenerek App Store sayfasında tüm dillerin resmi olarak görünmesi sağlandı.

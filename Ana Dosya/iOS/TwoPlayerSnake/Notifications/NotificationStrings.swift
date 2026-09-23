@@ -91,7 +91,7 @@ enum NotificationStrings {
     /// Cihaz dilini algılayıp ilgili aşamanın metnini döndürür.
     /// Dil bulunamazsa İngilizce (EN) fallback kullanılır.
     static func get(for stage: Stage) -> NotificationText {
-        let langCode = Locale.current.languageCode?.lowercased() ?? "en"
+        let langCode = AppStrings.currentLanguageCode
         let map: [String: NotificationText]
         switch stage {
         case .day1: map = day1
