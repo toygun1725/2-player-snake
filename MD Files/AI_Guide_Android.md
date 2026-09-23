@@ -8,11 +8,21 @@ Bu rehber, ilk Android promptunda istenen hedefleri ve bugun bu hedeflere gore f
 - Android shell kaynagi: `d:\#3 Vibecoding\AI Games\2 Player Snake\Ana Dosya\Android`
 - Guncel web kaynak referansi: `2 Player Snake Mobile v3.4.2 / PC v3.4.2`
 - Android cevrimdisi fallback: `mobile_offline_fallback.html` (v3.4.2 ile esitlendi - PC tek pencereli Hızlı Kurulum paneli paritesi ve mobil v3.4.2 senkronu)
-- Guncel kaynak `versionCode`: **69**
-- Guncel kaynak `versionName`: **`v3.3.5`**
-- Yayin/AAB durumu: versionCode 69 (v3.3.5) AAB derlendi ve imzalandı (`2PlayerSnake-v3.3.5-release.aab` ve `app/build/outputs/bundle/release/app-release.aab`).
+- Guncel kaynak `versionCode`: **70**
+- Guncel kaynak `versionName`: **`v3.4.2`**
+- Yayin/AAB durumu: versionCode 70 (v3.4.2) AAB derlendi ve imzalandı (`2PlayerSnake-v3.4.2-release.aab` ve `app/build/outputs/bundle/release/app-release.aab`).
 
-## Son Android Shell Notu (versionCode 69 / v3.3.5)
+## Son Android Shell Notu (versionCode 70 / v3.4.2)
+- **versionCode 70 (v3.4.2)**: 21 Dil ASO Desteği, Dinamik VS AI Modu, D-Pad Ergonomisi ve 90s Reklam Cooldown Kuralı.
+  - **Sürüm ve Runtime Senkronu:** Mobil v3.4.2 ile tam senkronizasyon sağlandı (`versionCode: 70`, `versionName: v3.4.2`).
+  - **Dinamik "VS YAPAY ZEKA" (VS AI) Modu:** Tek kişilik oyun kurulumunda yapay zeka seçeneği 21 dilde dinamik olarak adlandırıldı.
+  - **D-Pad Panel İçi Butonlar:** Pause ve Ses butonları 33px'e büyütülüp aşağı kaydırıldı, ses butonuna 350ms throttle ve haptic feedback eklendi.
+  - **90 Saniye Global Reklam Kuralı:** Art arda reklam çıkmasını engellemek için `showInterstitial` merkezi kapısına 90 saniyelik küresel cooldown eklendi.
+  - **Çevrimdışı Fallback:** `mobile_offline_fallback.html` v3.4.2 ile %100 eşitlendi.
+  - `versionCode`: 69 → 70, `versionName`: v3.3.5 → v3.4.2.
+  - AAB: `2PlayerSnake-v3.4.2-release.aab` derlendi ve imzalandı.
+
+## Önceki Android Shell Notu (versionCode 69 / v3.3.5)
 - **versionCode 69 (v3.3.5)**: Google Play Kalite, Bellek Optimizasyonu ve Yaşam Döngüsü Uyum Sürümü.
   - **Bellek Yönetimi (RAM & Lifecycle):** `MainActivity` ve `SnakeApplication` içinde `onTrimMemory(level)` ve `onLowMemory()` yaşam döngüleri entegre edildi. Sistem kritik RAM baskısı altındayken veya arka plana geçildiğinde WebView önbelleği (`clearCache(false)`) ve bellek kancaları tetiklenir.
   - **Arka Plan CPU/RAM Dondurma:** `onPause` esnasında `webView.onPause()` ve `webView.pauseTimers()` çağrılarak arka planda çalışan timer ve animasyonların RAM/CPU tüketimi durdurulur; `onResume` ile `webView.onResume()` ve `webView.resumeTimers()` üzerinden kesintisiz devam eder.

@@ -49,6 +49,19 @@ iOS v3.4.2 Yenilikleri:
 • Performans ve Kararlılık: 60 FPS akıcı oyun deneyimi ve optimize edilmiş çevrimdışı oynanış.
 </tr-TR>
 
+### Android Google Play Release — versionCode 70 (v3.4.2) (2026-09-23)
+
+- **Sürüm & Paket Bilgileri:**
+  - `versionCode`: **70** (Önceki: 69)
+  - `versionName`: **v3.4.2** (Önceki: v3.3.5)
+  - İmzalı Dağıtım Paketi: `Ana Dosya/Android/2PlayerSnake-v3.4.2-release.aab`
+- **Öne Çıkan Geliştirmeler:**
+  - **Dinamik "VS YAPAY ZEKA" (VS AI) Modu:** Tek kişilik oyun kurulumunda 21 dilde dinamik yapay zeka seçeneği.
+  - **D-Pad Panel İçi Butonlar:** Pause ve Ses butonları 33px'e büyütüldü, aşağı kaydırıldı, ses butonuna 350ms throttle ve dokunsal geri bildirim (haptic) eklendi.
+  - **90 Saniye Global Reklam Kuralı:** Art arda reklam gösterimini engelleyen 90 saniyelik merkezi cooldown kuralı.
+  - **Çevrimdışı Fallback Paritesi:** Android `mobile_offline_fallback.html` mobil v3.4.2 ile eksiksiz eşitlendi.
+  - **R8 / ProGuard ve API 36:** Android 16 (API 36) hedeflemesi ve tam R8 kod optimizasyonu korundu.
+
 ### Sürüm v3.4.2 — PC Tek Pencereli Hızlı Kurulum Paneli & Sürüm Senkronizasyonu (2026-09-20)
 
 - **PC Tek Pencereli Bütünleşik Hızlı Kurulum Dashboard'u (`openPCQuickSetupMenu`):**
