@@ -13,8 +13,8 @@
 - **iOS Glow & Buzlu Cam (Frosted Glass) Efektleri:**
   - iPhone app WebView ortamında (`window.isAndroidWebView`) bayrağı sebebiyle kapalı kalan neon parlama efektleri `(!window.isAndroidWebView || IS_IOS_SHELL)` ile iOS native kabukta yeniden aktif hale getirildi.
   - Canvas galibiyet yazılarında neon gölge (`shadowBlur`), iç kabartma ve kazanan bildiriminde (`.banner.winner-glass-banner.padded`) `backdrop-filter: blur(16px)` buzlu cam efekti iPhone'da kusursuz akıcılıkla çalıştırıldı.
-- **90 Saniye Global Reklam Kuralı (Ad Spam Koruması):**
-  - Oyuncuların art arda reklama maruz kalmasını önlemek için reklam cooldown süresi 30 saniyeden **90 saniyeye** (1.5 dakika) yükseltildi.
+- **45 Saniye Global Reklam Kuralı (Ad Spam Koruması & Gelir Dengesi):**
+  - Reklam cooldown süresi hem oyuncu deneyimini korumak (art arda reklam spam'ini engellemek) hem de AdMob gösterim gelirini sağlıklı seviyede tutmak için **45 saniye** olarak dengelendi.
   - `AdManager.showInterstitial()` ana giriş kapısına doğrudan cooldown kontrolü entegre edildi. Maç bitişinde ana menüye dönüş ve menüden yeni oyuna başlama adımları merkezi kurala tabi kılınarak gereksiz reklam fırlatmaları engellendi.
 - **Sürüm & Çevrimdışı Eşitleme:**
   - `CFBundleShortVersionString`: **3.4.2**, `CFBundleVersion` / `CURRENT_PROJECT_VERSION`: **46**.
@@ -58,7 +58,7 @@ iOS v3.4.2 Yenilikleri:
 - **Öne Çıkan Geliştirmeler:**
   - **Dinamik "VS YAPAY ZEKA" (VS AI) Modu:** Tek kişilik oyun kurulumunda 21 dilde dinamik yapay zeka seçeneği.
   - **D-Pad Panel İçi Butonlar:** Pause ve Ses butonları 33px'e büyütüldü, aşağı kaydırıldı, ses butonuna 350ms throttle ve dokunsal geri bildirim (haptic) eklendi.
-  - **90 Saniye Global Reklam Kuralı:** Art arda reklam gösterimini engelleyen 90 saniyelik merkezi cooldown kuralı.
+  - **45 Saniye Global Reklam Kuralı:** Art arda reklam gösterimini engelleyen ve AdMob gelir dengesini koruyan 45 saniyelik merkezi cooldown kuralı.
   - **Çevrimdışı Fallback Paritesi:** Android `mobile_offline_fallback.html` mobil v3.4.2 ile eksiksiz eşitlendi.
   - **R8 / ProGuard ve API 36:** Android 16 (API 36) hedeflemesi ve tam R8 kod optimizasyonu korundu.
 

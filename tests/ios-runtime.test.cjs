@@ -397,7 +397,7 @@ test('PC v3.4.2 html implements unified openPCQuickSetupMenu and all scripts par
   }
 });
 
-test('v3.4.2 AdManager enforces 90s cooldown and centrally blocks rapid interstitials', () => {
+test('v3.4.2 AdManager enforces 45s cooldown and centrally blocks rapid interstitials', () => {
   const files = [
     'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.2.html',
     'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
@@ -406,7 +406,7 @@ test('v3.4.2 AdManager enforces 90s cooldown and centrally blocks rapid intersti
   ];
   for (const f of files) {
     const html = read(f);
-    assert.match(html, /cooldownMs:\s*90000/);
+    assert.match(html, /cooldownMs:\s*45000/);
     assert.match(html, /showInterstitial\s*\(\s*\{[\s\S]*?this\.isGlobalCooldownActive\(\)/);
   }
 });

@@ -159,10 +159,10 @@ Neler degismedi:
 
 ## Cooldown Mantigi
 
-- Interstitial reklamlar global 90 saniye (`cooldownMs: 90000`) bekleme kuralına tabidir
-- `showInterstitial()` merkezi kapısında `isGlobalCooldownActive()` denetimi zorunludur; süre dolmadan hiçbir geçiş reklamı gösterilemez
-- Rewarded continue kullanici talebi oldugu icin ayri ele alinir (oyuncunun can hakkı almasını engellemez)
-- Her basarili reklam gosteriminde `lastAdShownAt` guncellenir
+- Interstitial reklamlar global 45 saniye (`cooldownMs: 45000`) bekleme kuralına tabidir (oyuncu deneyimini korurken reklam gelirini maksimize eden optimum denge).
+- `showInterstitial()` merkezi kapısında `isGlobalCooldownActive()` denetimi zorunludur; süre dolmadan hiçbir geçiş reklamı gösterilemez (spam ve art arda gösterim önlenir).
+- Rewarded continue kullanici talebi oldugu icin ayri ele alinir (oyuncunun can hakkı almasını engellemez).
+- Her basarili reklam gosteriminde `lastAdShownAt` guncellenir.
 
 ---
 
@@ -177,7 +177,7 @@ Neler degismedi:
 | `v3.3.0` | RevenueCat entegrasyonu ile reklamsız premium sürüm seçeneği eklendi. |
 | `v3.3.1` | Premium akışı aynen korundu, yerel hatırlatıcı bildirimler entegre edildi. |
 | `v3.3.2` | Premium durumu (adsRemoved) ve yüksek skorlar Cloud Save ile yedeklenir. Premium reklam bypass akışı aynen korunur. |
-| `v3.4.2` | 90 saniyelik global ad cooldown (`cooldownMs: 90000`) kilitlendi; `showInterstitial` merkezi koruması ile ardı ardına reklam çıkması engellendi. |
+| `v3.4.2` | Global ad cooldown 45 saniyeye (`cooldownMs: 45000`) optimize edildi; `showInterstitial` merkezi koruması korunarak hem gelir kurtarıldı hem de ardı ardına reklam çıkması engellendi. |
 
 ---
 
