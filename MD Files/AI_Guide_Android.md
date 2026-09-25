@@ -6,11 +6,11 @@ Bu rehber, ilk Android promptunda istenen hedefleri ve bugun bu hedeflere gore f
 
 ## Referans Durum
 - Android shell kaynagi: `d:\#3 Vibecoding\AI Games\2 Player Snake\Ana Dosya\Android`
-- Guncel web kaynak referansi: `2 Player Snake Mobile v3.4.2 / PC v3.4.2`
-- Android cevrimdisi fallback: `mobile_offline_fallback.html` (v3.4.2 ile esitlendi - PC tek pencereli Hızlı Kurulum paneli paritesi ve mobil v3.4.2 senkronu)
-- Guncel kaynak `versionCode`: **70**
-- Guncel kaynak `versionName`: **`v3.4.2`**
-- Yayin/AAB durumu: versionCode 70 (v3.4.2) AAB derlendi ve imzalandı (`2PlayerSnake-v3.4.2-release.aab` ve `app/build/outputs/bundle/release/app-release.aab`).
+- Guncel web kaynak referansi: `2 Player Snake Mobile v3.4.3 / PC v3.4.3`
+- Android cevrimdisi fallback: `mobile_offline_fallback.html` (v3.4.3 ile esitlendi - Game Feel, 2 adımlı girdi kuyruğu, ekran sarsıntısı, hit-stop, AI flood-fill, AI sabit yem sesi, kademeli haptic, parçacık havuzu)
+- Guncel kaynak `versionCode`: **70** (Native shell son derleme; v3.4.3 web yayını için yeni AAB gerekmez, WordPress üzerinden dinamik yüklenir)
+- Guncel kaynak `versionName`: **`v3.4.2`** (Native shell etiketi)
+- Yayin/AAB durumu: versionCode 70 (v3.4.2) AAB derlendi ve imzalandı (`2PlayerSnake-v3.4.2-release.aab` ve `app/build/outputs/bundle/release/app-release.aab`). v3.4.3 uzaktan web yayınıyla anında aktifleşir.
 
 ## Son Android Shell Notu (versionCode 70 / v3.4.2)
 - **versionCode 70 (v3.4.2)**: 21 Dil ASO Desteği, Dinamik VS AI Modu, D-Pad Ergonomisi ve 90s Reklam Cooldown Kuralı.

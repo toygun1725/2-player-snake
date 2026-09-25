@@ -3,8 +3,15 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>2 Player Snake Mobile v3.4.2 - Play Online & Local</title>
-    <script>window.__twoPlayerSnakeUseNativeAssets = window.__twoPlayerSnakePlatform === 'ios' && typeof window.__twoPlayerSnakeAssetBaseUrl === 'string'; window.__twoPlayerSnakeOfflineMode = true; window.io = function () { throw new Error("Online multiplayer requires an internet connection."); };</script>
+    <title>2 Player Snake Mobile v3.4.3 - Play Online & Local</title>
+    <script>
+        // Only a native shell that advertises the bundled asset handler uses local URLs.
+        window.__twoPlayerSnakeUseNativeAssets = window.__twoPlayerSnakePlatform === 'ios' &&
+            typeof window.__twoPlayerSnakeAssetBaseUrl === 'string';
+        if (!window.__twoPlayerSnakeUseNativeAssets) {
+            document.write('<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"><\/script>');
+        }
+    </script>
     <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -18,9 +25,13 @@
     <meta name="apple-mobile-web-app-title" content="2 Player Snake">
     <meta name="application-name" content="2 Player Snake">
     <script>
-        document.write('<link rel="icon" href="' + (window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'offline_logo.png') + '">');
+        if (window.__twoPlayerSnakeUseNativeAssets) {
+            document.write('<link rel="icon" href="' + window.__twoPlayerSnakeAssetBaseUrl + 'logo.png">');
+        } else {
+            document.write("    <link rel=\"apple-touch-icon\" sizes=\"180x180\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"apple-touch-icon\" sizes=\"152x152\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"apple-touch-icon\" sizes=\"120x120\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"apple-touch-icon\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n    <link rel=\"icon\" sizes=\"192x192\" href=\"https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp\">\n");
+        }
     </script>
-    <!-- No web manifest fetch for a packaged file:// document. -->
+    <link rel="manifest" href="/manifest.json">
     <script>
     var _lastInnerHeight = 0;
     function checkViewportChange() {
@@ -72,9 +83,9 @@
         window.__h5GamesAdsReady = false;
         var adBreak = adConfig = function (o) { adsbygoogle.push(o); };
 
-        if (window.__twoPlayerSnakeOfflineMode === true || window.isAndroidWebView) {
+        if (window.isAndroidWebView) {
             document.documentElement.classList.add('android-webview');
-            console.log('Native offline mode detected. Google H5 Ads script load bypassed.');
+            console.log('Android WebView detected. Google H5 Ads script load bypassed.');
         } else {
             // Load Google H5 Ads script dynamically only on non-Android WebView devices
             var script = document.createElement('script');
@@ -99,10 +110,12 @@
     <script>
         if (window.__twoPlayerSnakeUseNativeAssets) {
             document.write('<style id="ios-bundled-fonts">' + window.__twoPlayerSnakeNativeAssetCss + '</style>');
+        } else {
+            document.write("    <!-- Import fonts -->\n    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n    <link href=\"https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=VT323&display=swap\"\n        rel=\"stylesheet\">\n    <!-- Font Awesome for icons -->\n    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css\"\n        integrity=\"sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==\"\n        crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />\n\n");
         }
     </script>
 
-    <!-- Version: v3.4.2 Mobile -->
+    <!-- Version: v3.4.3 Mobile -->
     <style>
         :root {
             --bg: #0b0f14;
@@ -3957,7 +3970,11 @@
     <!-- v2.93.0: Loading Splash Screen -->
     <div id="loading-splash">
         <div class="splash-logo-wrap">
-            <script>document.write('<img class="splash-logo" src="' + (window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'offline_logo.png') + '" alt="2 Player Snake">');</script>
+            <script>
+                document.write('<img class="splash-logo" src="' + (window.__twoPlayerSnakeUseNativeAssets
+                    ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png'
+                    : 'https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp') + '" alt="2 Player Snake" ' + "onerror=\"this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';\"" + '>');
+            </script>
         </div>
         <div class="splash-bar-wrap">
             <div class="splash-bar-fill" id="splashBarFill"></div>
@@ -4216,10 +4233,10 @@
     <script>
         (() => {
             /* ==============================
-              2 Player Snake - Beta v3.4.2 Mobile
+              2 Player Snake - Beta v3.4.3 Mobile
               ============================= */
 
-            const VERSION = 'v3.4.2';
+            const VERSION = 'v3.4.3';
             const IS_IOS_SHELL = window.__twoPlayerSnakePlatform === 'ios';
             const IS_APPLE_DEVICE = IS_IOS_SHELL ||
                 (typeof window !== 'undefined' && Boolean(window.isAppleDevice)) ||
@@ -4232,7 +4249,7 @@
                     document.documentElement.setAttribute('data-ios-device', 'true');
                 }
             } catch (e) {}
-            window.__twoPlayerSnakeRuntimeRevision = 36;
+            window.__twoPlayerSnakeRuntimeRevision = 37;
             // Bounded counters in the existing game loop; no additional animation timer.
             const iosPerf = IS_IOS_SHELL ? { enabled: true, startedAt: 0, frames: 0, frameMs: 0,
                 over50ms: 0, maxFrameMs: 0, aiCalls: 0, aiMs: 0, aiMaxMs: 0, bfsRuns: 0,
@@ -4316,14 +4333,16 @@
             let lastVibrateTime = 0;
             function hapticVibrate(duration) {
                 const now = performance.now();
+                const isPattern = Array.isArray(duration);
+                const mainDur = isPattern ? duration[0] : duration;
                 // Throttle short vibration calls to prevent main thread choke
-                if (window.isAndroidWebView && duration <= 20) {
+                if (window.isAndroidWebView && mainDur <= 20) {
                     if (now - lastVibrateTime < 60) return;
                 }
                 lastVibrateTime = now;
 
                 if (window.Android && typeof window.Android.triggerVibration === 'function') {
-                    window.Android.triggerVibration(duration.toString());
+                    window.Android.triggerVibration(mainDur.toString());
                 } else if (navigator.vibrate) {
                     navigator.vibrate(duration);
                 }
@@ -7109,8 +7128,20 @@
             }
             addEventListener('resize', resize, { passive: true }); resize();
 
-            /* === Sound === */
+            /* === Sound & Feel === */
             let audioCtx; let muted = localStorage.getItem('neoSnakeMutedMobile') === '1';
+            let reducedMotion = localStorage.getItem('neoSnakeReducedMotion') === '1';
+            const screenShake = {
+                trauma: 0,
+                decay: 3.5,
+                maxOffset: window.isAndroidWebView ? 4 : 7,
+                t: 0
+            };
+            function addTrauma(amount) {
+                if (typeof reducedMotion !== 'undefined' && reducedMotion) return;
+                screenShake.trauma = Math.min(1.0, screenShake.trauma + amount);
+            }
+            let hitStopUntil = 0;
             let settingsFromPause = false;
             let controlsFromPause = false;
             let controlsFromSettings = false;
@@ -7169,19 +7200,66 @@
                 } catch (e) { }
             }
             const SFX = {
-                eat() { if (isDemoMode) return; tone(720, 0.08, { type: 'square', gain: 0.05 }); },
-                diamond() { if (isDemoMode) return; tone(1200, 0.1, { type: 'triangle', gain: 0.07 }); setTimeout(() => tone(1600, 0.15, { type: 'sine', gain: 0.06 }), 80); },
-                heart() { if (isDemoMode) return; tone(640, 0.1, { type: 'square', gain: 0.08 }); setTimeout(() => tone(1240, 0.15, { type: 'sawtooth', gain: 0.08 }), 90); },
-                crash() { if (isDemoMode) return; tone(180, 0.20, { type: 'sawtooth', gain: 0.08, sweep: -0.35 }); canvasWrap.classList.add('shake'); setTimeout(() => canvasWrap.classList.remove('shake'), 200); },
-                drawCrash() { if (isDemoMode) return; tone(220, 0.25, { type: 'sawtooth', gain: 0.1, sweep: -0.5 }); tone(160, 0.25, { type: 'square', gain: 0.1, sweep: -0.5 }); canvasWrap.classList.add('shake'); setTimeout(() => canvasWrap.classList.remove('shake'), 200); },
+                eat(ownerKey = 'p1') {
+                    if (isDemoMode) return;
+                    const isAi = (ownerKey === 'p2' && gameMode === '1P' && typeof aiSnakeEnabled !== 'undefined' && aiSnakeEnabled);
+                    if (isAi) {
+                        tone(720, 0.08, { type: 'square', gain: 0.05 });
+                        return;
+                    }
+                    const combo = (typeof comboState !== 'undefined' && comboState[ownerKey]) ? comboState[ownerKey] : null;
+                    const comboStep = combo && combo.count > 1 ? Math.min((combo.count - 1) * 35, 210) : 0;
+                    const wobble = 1 + (Math.random() - 0.5) * 0.10;
+                    const freq = (720 + comboStep) * wobble;
+                    tone(freq, 0.08, { type: 'square', gain: 0.05 });
+                    hapticVibrate(20);
+                },
+                diamond() {
+                    if (isDemoMode) return;
+                    addTrauma(0.18);
+                    const wobble = 1 + (Math.random() - 0.5) * 0.08;
+                    tone(1200 * wobble, 0.1, { type: 'triangle', gain: 0.07 });
+                    setTimeout(() => tone(1600 * wobble, 0.15, { type: 'sine', gain: 0.06 }), 80);
+                    hapticVibrate(30);
+                },
+                heart() {
+                    if (isDemoMode) return;
+                    addTrauma(0.18);
+                    const wobble = 1 + (Math.random() - 0.5) * 0.08;
+                    tone(640 * wobble, 0.1, { type: 'square', gain: 0.08 });
+                    setTimeout(() => tone(1240 * wobble, 0.15, { type: 'sawtooth', gain: 0.08 }), 90);
+                    hapticVibrate(30);
+                },
+                crash() {
+                    if (isDemoMode) return;
+                    addTrauma(0.75);
+                    hapticVibrate(80);
+                    const wobble = 1 + (Math.random() - 0.5) * 0.06;
+                    tone(180 * wobble, 0.20, { type: 'sawtooth', gain: 0.08, sweep: -0.35 });
+                    if (typeof reducedMotion === 'undefined' || !reducedMotion) {
+                        canvasWrap.classList.add('shake');
+                        setTimeout(() => canvasWrap.classList.remove('shake'), 200);
+                    }
+                },
+                drawCrash() {
+                    if (isDemoMode) return;
+                    addTrauma(0.60);
+                    hapticVibrate(80);
+                    tone(220, 0.25, { type: 'sawtooth', gain: 0.1, sweep: -0.5 });
+                    tone(160, 0.25, { type: 'square', gain: 0.1, sweep: -0.5 });
+                    if (typeof reducedMotion === 'undefined' || !reducedMotion) {
+                        canvasWrap.classList.add('shake');
+                        setTimeout(() => canvasWrap.classList.remove('shake'), 200);
+                    }
+                },
                 start() { tone(420, 0.10, { type: 'sine', gain: 0.05 }); setTimeout(() => tone(640, 0.12, { type: 'sine', gain: 0.05 }), 120); setTimeout(() => tone(860, 0.14, { type: 'sine', gain: 0.05 }), 260); },
                 pause() { hapticVibrate(15); tone(360, 0.06, { type: 'square', gain: 0.04 }); },
                 unpause() { hapticVibrate(15); tone(460, 0.06, { type: 'square', gain: 0.04 }); },
                 menuClick() { hapticVibrate(15); tone(880, 0.05, { type: 'triangle', gain: 0.04 }); },
                 countdownTick() { tone(1200, 0.08, { type: 'sine', gain: 0.03 }); },
-                win() { hapticVibrate(50); tone(660, 0.14, { type: 'square', gain: 0.05 }); setTimeout(() => tone(880, 0.14, { type: 'square', gain: 0.05 }), 230); },
-                winRound() { hapticVibrate(50); tone(660, 0.14, { type: 'square', gain: 0.05 }); setTimeout(() => tone(880, 0.14, { type: 'square', gain: 0.05 }), 220); },
-                shrink() { if (isDemoMode) return; tone(600, 0.15, { type: 'sine', gain: 0.05, sweep: -0.3 }); }
+                win() { hapticVibrate([30, 20, 50]); tone(660, 0.14, { type: 'square', gain: 0.05 }); setTimeout(() => tone(880, 0.14, { type: 'square', gain: 0.05 }), 230); },
+                winRound() { hapticVibrate([30, 20, 50]); tone(660, 0.14, { type: 'square', gain: 0.05 }); setTimeout(() => tone(880, 0.14, { type: 'square', gain: 0.05 }), 220); },
+                shrink() { if (isDemoMode) return; addTrauma(0.25); tone(600, 0.15, { type: 'sine', gain: 0.05, sweep: -0.3 }); }
             };
 
 
@@ -9167,8 +9245,10 @@
 
                     nextDirKey = dirRotation[newIndex];
                     const d = dirMap[nextDirKey];
-
-                    if (!opposite(d, s.dir)) s.nextDir = d;
+                    if (d) {
+                        if (typeof queueSnakeDirection === 'function') queueSnakeDirection(s, d);
+                        else if (!opposite(d, s.dir)) s.nextDir = d;
+                    }
                 };
 
                 btn.addEventListener('touchstart', handlePress, { passive: false });
@@ -9464,9 +9544,23 @@
                 applyPlayerControlLayout('p2', p2ControlLayout);
             }
 
+            function queueSnakeDirection(s, targetDir) {
+                if (!s || !targetDir) return;
+                if (!s.inputQueue) s.inputQueue = [];
+                const referenceDir = s.inputQueue.length > 0 
+                    ? s.inputQueue[s.inputQueue.length - 1] 
+                    : s.dir;
+                if (!opposite(targetDir, referenceDir)) {
+                    if (s.inputQueue.length < 2) {
+                        s.inputQueue.push(targetDir);
+                        s.nextDir = s.inputQueue[0];
+                    }
+                }
+            }
+
             function handleDpadPress(player, dirKey) {
                 ensureAudio();
-                hapticVibrate(15);
+                hapticVibrate(10);
 
                 if (isOnlineMode) {
                     if (!snakes || !snakes[myRole] || inCountdown || intermission || paused) return;
@@ -9498,8 +9592,8 @@
                     targetDir = dirMapP2[dirKey];
                 }
 
-                if (targetDir && !opposite(targetDir, s.dir)) {
-                    s.nextDir = targetDir;
+                if (targetDir) {
+                    queueSnakeDirection(s, targetDir);
                 }
             }
 
@@ -9595,9 +9689,9 @@
                     if (!snake) return;
                     const dirRotation = ['up', 'right', 'down', 'left'];
                     const newDir = { up: {x:0,y:-1}, down: {x:0,y:1}, left: {x:-1,y:0}, right: {x:1,y:0} }[swipeDirKey];
-                    if (newDir && !opposite(newDir, snake.dir)) {
-                        snake.nextDir = newDir;
-                        hapticVibrate(15);
+                    if (newDir) {
+                        queueSnakeDirection(snake, newDir);
+                        hapticVibrate(10);
                     }
                 }, { passive: true });
             })();
@@ -11195,6 +11289,30 @@
                 };
             }
 
+            function getReducedEffectsLabel() {
+                const map = {
+                    tr: 'Hareketi / Efektleri Azalt',
+                    en: 'Reduce Screen Effects',
+                    de: 'Bildeffekte reduzieren',
+                    fr: 'Réduire les effets d\'écran',
+                    es: 'Reducir efectos de pantalla',
+                    it: 'Riduci effetti schermo',
+                    ru: 'Уменьшить спецэффекты',
+                    ja: '画面効果を減らす',
+                    ko: '화면 효과 줄이기',
+                    zh: '减少画面特效',
+                    pt: 'Reduzir efeitos visuais',
+                    nl: 'Schermeffecten verminderen',
+                    pl: 'Zmniejsz efekty ekranu',
+                    id: 'Kurangi efek layar',
+                    hi: 'स्क्रीन प्रभाव कम करें',
+                    vi: 'Giảm hiệu ứng màn hình',
+                    ar: 'تقليل تأثيرات الشاشة'
+                };
+                const lCode = (lang || 'en').toLowerCase().split('-')[0];
+                return map[lCode] || map.en;
+            }
+
             function openSettings() {
                 if (settingsFromPause) {
                     markMenuScreen(MENU_IDS.SETTINGS, true);
@@ -11208,6 +11326,7 @@
                 const soundLabel = `${t('sound')}: ${muted ? t('soundOff') : t('soundOn')}`;
                 const langLabel = `${t('language')}: ${t('languageName')}`;
                 const themeLabel = `${t('theme')}: ${getCurrentTheme()}`;
+                const reducedMotionText = `${getReducedEffectsLabel()}: ${reducedMotion ? (t('soundOn') || 'ON') : (t('soundOff') || 'OFF')}`;
                 showBanner(`<h1>${t('settings')}</h1>
       <div style="display:flex;flex-direction:column;gap:8px;align-items:center;margin-top:12px; width: 100%;">
         <button class="btn big btn-menu-row" id="toggleLang">
@@ -11229,6 +11348,11 @@
           <span class="btn-menu-icon"><i class="fa-solid fa-circle-half-stroke"></i></span>
           <span class="btn-menu-sep"></span>
           <span class="btn-menu-text">${themeLabel}</span>
+        </button>
+        <button class="btn big btn-menu-row" id="toggleReducedMotion">
+          <span class="btn-menu-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+          <span class="btn-menu-sep"></span>
+          <span class="btn-menu-text">${reducedMotionText}</span>
         </button>
         <button class="btn big btn-menu-row" id="menuInstagram">
           <span class="btn-menu-icon"><i class="fa-brands fa-instagram"></i></span>
@@ -11281,6 +11405,15 @@
                     toggleTheme();
                     openSettings();
                 };
+                const redMotBtn = document.getElementById('toggleReducedMotion');
+                if (redMotBtn) {
+                    redMotBtn.onclick = () => {
+                        SFX.menuClick();
+                        reducedMotion = !reducedMotion;
+                        localStorage.setItem('neoSnakeReducedMotion', reducedMotion ? '1' : '0');
+                        openSettings();
+                    };
+                }
                 const instBtn = document.getElementById('menuInstagram');
                 if (instBtn) {
                     instBtn.onclick = () => { SFX.menuClick(); window.open('https://www.instagram.com/2playersnake', '_blank'); };
@@ -11813,7 +11946,7 @@
                 for (let i = 0; i < len; i++) {
                     seg.push({ x: start.x - i * dir.x, y: start.y - i * dir.y });
                 }
-                return { segments: seg, prev: seg.map(s => ({ ...s })), dir: { ...dir }, nextDir: { ...dir }, grow: 0, powerEnd: 0, flashUntil: 0, flashColor: null, shakeUntil: 0, digestAnims: [], slowEnd: 0 };
+                return { segments: seg, prev: seg.map(s => ({ ...s })), dir: { ...dir }, nextDir: { ...dir }, inputQueue: [], grow: 0, powerEnd: 0, flashUntil: 0, flashColor: null, shakeUntil: 0, digestAnims: [], slowEnd: 0 };
             }
             function isPowered(s) { return s && performance.now() < s.powerEnd; }
 
@@ -11919,6 +12052,7 @@
                     prev: segments.map(seg => ({ ...seg })),
                     dir: { ...dir },
                     nextDir: { ...dir },
+                    inputQueue: [],
                     grow: 0,
                     powerEnd: 0,
                     flashUntil: 0,
@@ -11960,8 +12094,37 @@
             //   1. Path caching: reuse cached path while food is same & next step is clear
             //   2. Parent-pointer map: no [...curr.path, d] array copies (was O(n²) memory)
             //   3. Index-pointer queue: qHead++ instead of queue.shift() (was O(n) per dequeue)
-            //   4. Integer cell keys: ny*GRID_COLS+nx instead of string concat (less GC)
-            //   5. BFS node cap reduced 2000→600 (64×36 grid rarely needs more)
+            function floodFillCount(startX, startY, obstacles, wallMode, isSelf51, maxCount = 80) {
+                const visited = new Set();
+                const key0 = startY * GRID_COLS + startX;
+                if (obstacles.has(key0)) return 0;
+                visited.add(key0);
+                const queue = [{ x: startX, y: startY }];
+                let qHead = 0;
+                while (qHead < queue.length && qHead < maxCount) {
+                    const curr = queue[qHead++];
+                    for (const d of [dirMap.up, dirMap.down, dirMap.left, dirMap.right]) {
+                        let nx = curr.x + d.x;
+                        let ny = curr.y + d.y;
+                        if (isSelf51) {
+                            const w = selfArea51WrapForOwner({ x: nx, y: ny }, 'p2');
+                            nx = w.x; ny = w.y;
+                        } else if (wallMode === MOD_WALLS.SOLID) {
+                            if (nx < 0 || nx >= GRID_COLS || ny < 0 || ny >= GRID_ROWS) continue;
+                        } else {
+                            if (nx < 0) nx = GRID_COLS - 1; else if (nx >= GRID_COLS) nx = 0;
+                            if (ny < 0) ny = GRID_ROWS - 1; else if (ny >= GRID_ROWS) ny = 0;
+                        }
+                        const nKey = ny * GRID_COLS + nx;
+                        if (!visited.has(nKey) && !obstacles.has(nKey)) {
+                            visited.add(nKey);
+                            queue.push({ x: nx, y: ny });
+                        }
+                    }
+                }
+                return queue.length;
+            }
+
             function calculateAIMove(aiSnake, playerSnake, foods, wallMode) {
                 if (!aiSnake || aiSnake.segments.length === 0) return null;
                 const head = aiSnake.segments[0];
@@ -12106,7 +12269,9 @@
                     return currentDir;
                 }
 
-                // No path found — try any valid adjacent move to survive
+                // No path found — evaluate candidates with flood-fill to choose maximum safe territory
+                let bestDir = null;
+                let bestArea = -1;
                 for (const d of dirs) {
                     if (opposite(d, currentDir)) continue;
                     let nx = head.x + d.x;
@@ -12120,8 +12285,16 @@
                         if (nx < 0) nx = GRID_COLS - 1; else if (nx >= GRID_COLS) nx = 0;
                         if (ny < 0) ny = GRID_ROWS - 1; else if (ny >= GRID_ROWS) ny = 0;
                     }
-                    if (!obstacles.has(ny * GRID_COLS + nx)) return d;
+                    const nKey = ny * GRID_COLS + nx;
+                    if (!obstacles.has(nKey)) {
+                        const area = floodFillCount(nx, ny, obstacles, wallMode, isSelf51, 80);
+                        if (area > bestArea) {
+                            bestArea = area;
+                            bestDir = d;
+                        }
+                    }
                 }
+                if (bestDir) return bestDir;
 
                 return currentDir;
             }
@@ -12133,6 +12306,12 @@
 
                 // Clear any remaining pause bubbles from previous match/menus
                 document.querySelectorAll('.pause-bubbles').forEach(el => el.remove());
+                if (typeof snakes !== 'undefined' && snakes) {
+                    if (snakes.p1) snakes.p1.inputQueue = [];
+                    if (snakes.p2) snakes.p2.inputQueue = [];
+                }
+                hitStopUntil = 0;
+                if (typeof screenShake !== 'undefined') screenShake.trauma = 0;
                 
                 // Update visibility first so control bars appear, enabling accurate resize
                 updateUIVisibility();
@@ -12583,7 +12762,7 @@
                         // Self Area 51 mode handling
                         if (gameStyle === 'selfArea51') {
                             if (f.type === 'normal') {
-                                s.grow += 1; SFX.eat();
+                                s.grow += 1; SFX.eat(ownerKey);
                                 if (ownerKey === 'p1') stats.p1Food++; else stats.p2Food++;
                                 foods.splice(i, 1);
                                 spawnNormalForHalf(ownerKey);
@@ -12615,7 +12794,7 @@
                         }
 
                         if (f.type === 'normal') {
-                            s.grow += (gameStyle === 'normal') ? 2 : 1; SFX.eat();
+                            s.grow += (gameStyle === 'normal') ? 2 : 1; SFX.eat(ownerKey);
                             if (ownerKey === 'p1') stats.p1Food++; else stats.p2Food++;
                             normalFoodsEaten++;
                             if (shrinkOpponentBy(ownerKey, 1, isFirstAiFood)) {
@@ -12674,7 +12853,7 @@
                             updateFoodCounters();
                             return;
                         } else if (f.type === 'double') {
-                            s.grow += 1; SFX.eat();
+                            s.grow += 1; SFX.eat(ownerKey);
                             if (ownerKey === 'p1') stats.p1Food++; else stats.p2Food++;
                             normalFoodsEaten++;
                             if (shrinkOpponentBy(ownerKey, 1, isFirstAiFood)) {
@@ -12693,6 +12872,12 @@
             }
 
             function bodyAdvance(s, ownerKey) {
+                if (s.inputQueue && s.inputQueue.length > 0) {
+                    const queued = s.inputQueue.shift();
+                    if (!opposite(queued, s.dir)) {
+                        s.nextDir = queued;
+                    }
+                }
                 const head = s.segments[0];
                 if (!opposite(s.nextDir, s.dir)) s.dir = { ...s.nextDir };
                 const nextPos = { x: head.x + s.dir.x, y: head.y + s.dir.y };
@@ -12877,12 +13062,40 @@
                 deathAnim = { active: true, loser, winner, nextAt: performance.now(), stepMs: len > 0 ? 500 / len : 40 };
                 intermission = true;
                 if (!isOnlineMode) {
+                    if (!isDemoMode && (typeof reducedMotion === 'undefined' || !reducedMotion)) {
+                        hitStopUntil = performance.now() + 75;
+                        addTrauma(0.85);
+                    }
                     SFX.crash();
                 }
             }
             let winAnim = { active: false, winner: null, start: 0, duration: 2000, final: false, blinkPeriod: 200, color: '#fff', frameDt: 16.67, confettiDt: 16.67 };
 let confettiParticles = [];
 let foodBurstParticles = [];
+const FOOD_BURST_POOL_SIZE = 64;
+const foodBurstPool = [];
+for (let i = 0; i < FOOD_BURST_POOL_SIZE; i++) {
+    foodBurstPool.push({
+        active: false,
+        x: 0, y: 0,
+        vx: 0, vy: 0,
+        gravity: 0, drag: 0,
+        size: 0, color: '#ffffff',
+        bornAt: 0, lifeMs: 0
+    });
+}
+let fbPoolHead = 0;
+
+function spawnPooledParticle(x, y, vx, vy, gravity, drag, size, color, bornAt, lifeMs) {
+    const p = foodBurstPool[fbPoolHead];
+    p.active = true;
+    p.x = x; p.y = y;
+    p.vx = vx; p.vy = vy;
+    p.gravity = gravity; p.drag = drag;
+    p.size = size; p.color = color;
+    p.bornAt = bornAt; p.lifeMs = lifeMs;
+    fbPoolHead = (fbPoolHead + 1) % FOOD_BURST_POOL_SIZE;
+}
 let comboPopups = [];
 let gridRipples = [];
 const MOBILE_MAX_FOOD_BURST_PARTICLES = 56;
@@ -12893,6 +13106,7 @@ const comboState = {
 
 function resetArcadeFxState() {
     foodBurstParticles = [];
+    for (let i = 0; i < FOOD_BURST_POOL_SIZE; i++) foodBurstPool[i].active = false;
     comboPopups = [];
     gridRipples = [];
     comboState.p1.count = 0;
@@ -12913,7 +13127,7 @@ function getFoodBurstPalette(foodType, ownerKey) {
 
 function spawnFoodBurst(food, ownerKey, head) {
     if (!food || !head) return;
-    if (typeof gridRipples !== 'undefined') {
+    if (typeof gridRipples !== 'undefined' && (typeof reducedMotion === 'undefined' || !reducedMotion)) {
         let rippleColor;
         if (food.type === 'diamond') {
             rippleColor = '#ffd700';
@@ -12943,27 +13157,25 @@ function spawnFoodBurst(food, ownerKey, head) {
         heart: 10,
         green: 7
     };
-    const count = burstCountByType[food.type] || 9;
+    const baseCount = burstCountByType[food.type] || 9;
+    const count = (typeof reducedMotion !== 'undefined' && reducedMotion) ? Math.max(3, Math.floor(baseCount / 2)) : baseCount;
     const palette = getFoodBurstPalette(food.type, ownerKey);
     const bornAt = performance.now();
-    if (foodBurstParticles.length > MOBILE_MAX_FOOD_BURST_PARTICLES) {
-        foodBurstParticles.splice(0, foodBurstParticles.length - MOBILE_MAX_FOOD_BURST_PARTICLES);
-    }
     for (let i = 0; i < count; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = 0.8 + Math.random() * 1.6;
-        foodBurstParticles.push({
-            x: head.x + 0.5,
-            y: head.y + 0.5,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed - 0.25,
-            gravity: 0.045 + Math.random() * 0.02,
-            drag: 0.975 + Math.random() * 0.015,
-            size: 0.11 + Math.random() * 0.12,
-            color: palette[Math.floor(Math.random() * palette.length)],
+        spawnPooledParticle(
+            head.x + 0.5,
+            head.y + 0.5,
+            Math.cos(angle) * speed,
+            Math.sin(angle) * speed - 0.25,
+            0.045 + Math.random() * 0.02,
+            0.975 + Math.random() * 0.015,
+            0.11 + Math.random() * 0.12,
+            palette[Math.floor(Math.random() * palette.length)],
             bornAt,
-            lifeMs: 300 + Math.random() * 180
-        });
+            300 + Math.random() * 180
+        );
     }
 }
 
@@ -12984,6 +13196,7 @@ function registerComboEat(ownerKey, head) {
     state.count = (now - state.lastEatAt <= comboWindowMs) ? (state.count + 1) : 1;
     state.lastEatAt = now;
     if (state.count >= 2) {
+        if (state.count >= 3) hapticVibrate([15, 8, 15]);
         if (comboPopups.length > 8) comboPopups.splice(0, comboPopups.length - 8);
         comboPopups.push({
             text: `x${state.count}`,
@@ -13535,7 +13748,7 @@ function startWinAnim(winner, final = false) {
                 ctx.drawImage(gridCacheCanvas, 0, 0, canvas.width / dpr, canvas.height / dpr);
             }
             function drawGridRipples() {
-                if (gridRipples.length === 0) return;
+                if (gridRipples.length === 0 || (typeof reducedMotion !== 'undefined' && reducedMotion)) return;
                 const now = performance.now();
                 gridRipples = gridRipples.filter(r => now - r.startTime < r.duration);
                 ctx.save();
@@ -13752,16 +13965,17 @@ function startWinAnim(winner, final = false) {
             }
 
             function drawFoodBursts() {
-                if (!foodBurstParticles.length) return;
                 const now = performance.now();
-                const next = [];
                 ctx.save();
                 ctx.globalCompositeOperation = 'screen';
-                const drawStride = foodBurstParticles.length > 36 ? 2 : 1;
-                let drawIndex = 0;
-                for (const p of foodBurstParticles) {
+                for (let i = 0; i < FOOD_BURST_POOL_SIZE; i++) {
+                    const p = foodBurstPool[i];
+                    if (!p || !p.active) continue;
                     const age = now - p.bornAt;
-                    if (age >= p.lifeMs) continue;
+                    if (age >= p.lifeMs) {
+                        p.active = false;
+                        continue;
+                    }
                     const life = age / p.lifeMs;
                     p.vx *= p.drag;
                     p.vy = (p.vy + p.gravity) * p.drag;
@@ -13773,15 +13987,10 @@ function startWinAnim(winner, final = false) {
                     const size = (p.size * (1 - life * 0.35)) * Math.min(szX, szY);
                     const px = coords.x;
                     const py = coords.y;
-                    if (drawIndex % drawStride === 0) {
-                        ctx.fillStyle = hexToRgba(p.color, alpha * 0.85);
-                        ctx.fillRect(px - size / 2, py - size / 2, size, size);
-                    }
-                    drawIndex++;
-                    next.push(p);
+                    ctx.fillStyle = hexToRgba(p.color, alpha * 0.85);
+                    ctx.fillRect(px - size / 2, py - size / 2, size, size);
                 }
                 ctx.restore();
-                foodBurstParticles = next;
             }
 
             function drawComboPopups() {
@@ -13889,7 +14098,20 @@ function startWinAnim(winner, final = false) {
                     alpha1 = Math.max(0, Math.min(1, alpha1));
                     alpha2 = Math.max(0, Math.min(1, alpha2));
                 }
-                ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+                const shakeActive = (typeof screenShake !== 'undefined') && screenShake.trauma > 0;
+                let shakeX = 0, shakeY = 0;
+                if (shakeActive) {
+                    const shakePower = screenShake.trauma * screenShake.trauma;
+                    shakeX = Math.sin(screenShake.t * 37.0) * screenShake.maxOffset * shakePower;
+                    shakeY = Math.cos(screenShake.t * 43.0) * screenShake.maxOffset * shakePower;
+                }
+
+                ctx.save();
+                if (shakeActive) {
+                    ctx.translate(shakeX, shakeY);
+                }
+
+                ctx.clearRect(-16, -16, (canvas.width / dpr) + 32, (canvas.height / dpr) + 32);
                 drawGrid();
                 drawGridRipples();
                 drawAdventureOverlay();
@@ -13909,6 +14131,8 @@ function startWinAnim(winner, final = false) {
                 drawFoodBursts();
                 drawComboPopups();
                 drawInGameCountdown();
+
+                ctx.restore();
             }
 
             function drawSelfArea51Divider() {
@@ -14034,6 +14258,20 @@ function renderWinAnim() {
                 last = time;
                 recordIosFrame(time, delta);
                 if (delta > 60) delta = 60; // Lag veya menü geçişlerinde yılanın ışınlanmasını (jump) önler
+
+                if (typeof screenShake !== 'undefined' && screenShake.trauma > 0) {
+                    const dtSec = Math.min(0.06, delta / 1000);
+                    screenShake.trauma = Math.max(0, screenShake.trauma - screenShake.decay * dtSec);
+                    screenShake.t += dtSec * 30.0;
+                }
+                if (typeof hitStopUntil !== 'undefined' && hitStopUntil > 0) {
+                    if (performance.now() < hitStopUntil) {
+                        render(0, 0);
+                        requestAnimationFrame(step);
+                        return;
+                    }
+                    hitStopUntil = 0;
+                }
 
                 const isMenuDemoFreezeTarget = window.isAndroidWebView || IS_IOS_SHELL || (typeof IS_APPLE_DEVICE !== 'undefined' && IS_APPLE_DEVICE);
                 if (isMenuDemoFreezeTarget && isDemoMode && time < menuDemoFreezeUntil) {

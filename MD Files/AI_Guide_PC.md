@@ -3,11 +3,22 @@
 Bu belge, PC surumunde calisacak yapay zekalar icin guncel teknik referanstir. PC surumu de mobil gibi tek HTML dosyada yasamalidir; CSS, JS, i18n, canvas cizimi, reklam mantigi ve sentetik sesler ayni dosyada tutulur.
 
 ### Referans Surum
-- Aktif referans surum: `v3.4.2` (Final Sürüm)
-- Temel referans dosya: `2 Player Snake PC v3.4.2.html`
-- Kaynak/yayin durumu: v3.4.2 mobil ve PC kaynak dosyalari senkronize olarak olusturuldu. PC sürümündeki iki aşamalı kurulum menüsü mobildeki gibi tek bir şık ve bütünleşik Hızlı Kurulum (`openPCQuickSetupMenu`) paneline dönüştürüldü.
+- Aktif referans surum: `v3.4.3` (Final Sürüm)
+- Temel referans dosya: `2 Player Snake PC v3.4.3.html`
+- Kaynak/yayin durumu: v3.4.3 PC kaynak dosyasi olusturuldu. Mobil v3.4.3 ile tam senkronizasyon saglandi: 2 adımlı klavye girdi kuyruğu, decaying trauma ekran sarsıntısı, 75ms hit-stop, SFX ton çeşitliliği/kombo yükselmesi, AI çıkmaz sokak engelleme, AI sabit yem sesi, parçacık nesne havuzu ve erişilebilirlik ayarı entegre edildi.
 
-## Son Guncelleme (v3.4.2 - PC Tek Pencereli Hızlı Kurulum Dashboard'u & Mobil Paritesi)
+## Son Guncelleme (v3.4.3 - Game Feel, Girdi Kuyruğu, Akıllı AI Hayatta Kalma & Erişilebilirlik)
+- **v3.4.3**: PC Game Feel Entegrasyonu, 2 Adımlı Klavye Girdi Kuyruğu, Trauma Sarsıntısı, Hit-Stop, Dinamik SFX & AI Sabit Yem Sesi, AI Flood-Fill, Parçacık Havuzu ve Erişilebilirlik (2026-09-25).
+  - **2-Adımlı Klavye Girdi Kuyruğu (`queueSnakeDirection`):** Ok tuşları ve WASD için 2 derinlikli kuyruk eklendi; hızlı köşe ve U dönüşlerinde ikinci tuşun yutulması önlendi.
+  - **Decaying Trauma Ekran Sarsıntısı:** Canvas 2D katmanında `trauma²` üssel sönümlemeli (decay: 3.5, maxOffset: 8px) dinamik ekran sarsıntısı entegre edildi.
+  - **Hit-Stop (75ms Freeze Frame):** Ölüm ve çarpışma anlarında kare dondurularak darbenin fiziksel ağırlığı hissettirildi.
+  - **Dinamik SFX & AI Yem Sesi Ayrımı:** İnsan oyuncular için yem yedikçe yükselen (+210Hz) kombo tonu ve `±%5` pitch wobble; 1P modundaki AI yılan için ise oyuncu dikkatini dağıtmayan daima saf ve sabit `720Hz` ilk yem sesi tanımlandı.
+  - **AI Flood-Fill Hayatta Kalma (Dead-End Avoidance):** BFS hedef bulamadığında 80 hücrelik flood-fill alan analiziyle en geniş açık alana yönelme sağlandı.
+  - **Parçacık Nesne Havuzu (`foodBurstPool`):** 64 elemanlık sabit havuz mimarisi ile her karede nesne/dizi tahsisi engellendi, GC sıçramaları önlendi.
+  - **Erişilebilirlik (Reduced Motion):** Ayarlar menüsüne 21 dilde "Hareketi / Efektleri Azalt" seçeneği eklendi.
+  - **Surum Senkronu:** `2 Player Snake PC v3.4.3.html` oluşturuldu; `VERSION = 'v3.4.3'` güncellendi; 46/46 otomatik test doğrulandı.
+
+## Onceki Guncelleme (v3.4.2 - PC Tek Pencereli Hızlı Kurulum Dashboard'u & Mobil Paritesi)
 - **v3.4.2**: PC Tek Pencereli Bütünleşik Hızlı Kurulum Paneli (`openPCQuickSetupMenu`), 2 Aşamalı Menü Akışının Kaldırılması ve Mobil Paritesi.
   - **Tek Pencereli Dashboard Mimarisi (`openPCQuickSetupMenu`):**
     - Eski 2 aşamalı akış (`openPCSetupScreen1` mod seçimi ➔ `openPCSetupScreen2` seçenekler) kaldırılarak mobildeki gibi tek bir ekranda birleştirildi.

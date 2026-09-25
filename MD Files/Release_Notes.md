@@ -2,6 +2,57 @@
 
 ## iOS App Store & TestFlight Release Notes
 
+### Sürüm v3.4.3 — Game Feel, Girdi Tamponlama, Akıllı AI Hayatta Kalma & Erişilebilirlik (2026-09-25)
+
+- **Girdi Tamponlama (Input Buffering / Turn Queue):**
+  - Hızlı L-dönüşü ve U-dönüşü hamlelerinde yön komutlarının kaybolması engellendi.
+  - Her yılana 2 kademeli `inputQueue` mimarisi entegre edilerek, tick periyodu içinde verilen ardışık komutlar sıraya alındı ve köşe kaçırma problemi ortadan kaldırıldı.
+- **Canvas Tabanlı Travma Sarsıntısı (Decaying Trauma Shake):**
+  - CSS tabanlı `.shake` sınıfı yerine Canvas 2D katmanında `trauma²` üssel sönümlemeli yumuşak ekran sarsıntısı uygulandı.
+  - Çarpışma ve ölüm anında maksimum hissedilirlik sağlanırken, hafif etkileşimlerde sarsıntı ölçülü tutuldu.
+- **Hit-Stop (Mikro Zaman Durması):**
+  - Ölümcül çarpışma anında oyun mantığı 75ms boyunca durdurularak vuruşun ağırlığı ve dramatik etkisi fiziksel olarak hissettirildi.
+- **SFX Ton Çeşitliliği & Kombo Yükselişi:**
+  - Yem yeme seslerinde `±%5` rastgele ton oynaması (pitch wobble) ile "makineli tüfek" monotonluğu giderildi.
+  - Kombo serilerinde frekans kademe kademe yükselerek (+210Hz'e kadar) oyuncuya başarı hissi aşılandı.
+  - **AI Yılan Yem Sesi Ayrımı:** 1P modunda yapay zeka (AI) yılanının yem yeme sesleri kombo artışından ve ton sapmasından muaf tutularak daima standart, ilk orijinal 720Hz frekansında sabitlendi; böylece oyuncunun kendi kombo yükselişini net duyması sağlandı.
+- **AI Flood-Fill Hayatta Kalma Zekası (Dead-End Avoidance):**
+  - BFS yolu tıkandığında AI'ın rastgele ilk boş kareye yönelip kendini hapsetmesi önlendi; aday yönler 80 hücrelik flood-fill algoritmasıyla taranarak en geniş alana yönelmesi sağlandı.
+- **Kademeli Dokunsal Titreşim (Haptic Tiers):**
+  - D-Pad yön dönüşü (10ms hafif tık) → Normal yem (20ms) → Elmas/Kalp (30ms) → Kombo (çift vuruş `[15, 8, 15]`) → Çarpışma (80ms tok vuruş) → Zafer (`[30, 20, 50]`) şeklinde katmanlandırıldı.
+- **Erişilebilirlik (Reduced Motion / Screen Effects):**
+  - Ayarlar menüsüne 21 dilde "Hareketi / Efektleri Azalt" (Reduce Screen Effects) seçeneği eklendi.
+  - Aktif edildiğinde ekran sarsıntısı, ızgara dalgası, hit-stop dondurması ve parçacık yoğunluğu kısıtlanarak hassas oyuncuların konforu sağlandı.
+- **Parçacık Nesne Havuzu (Object Pool):**
+  - Yem patlama parçacıkları için 64 elemanlık sabit nesne havuzu (`foodBurstPool`) kuruldu; render esnasında her karede dizi tahsisi sıfırlanarak Garbage Collection mikro donmaları önlendi.
+- **Sürüm Senkronizasyonu & Testler:**
+  - Mobil v3.4.3, PC v3.4.3, iOS ve Android çevrimdışı fallback dosyaları senkronize edildi.
+  - `tests/ios-runtime.test.cjs` test paketinde 46/46 test (%100) başarıyla geçti.
+
+<en-US>
+What's New in v3.4.3:
+• Responsive Input Buffering: Rapid corner turns and U-turns now queue reliably without dropping inputs.
+• Dynamic Canvas Screen Shake: Physics-based trauma decay replaces CSS shake for punchy, organic impacts.
+• Impact Hit-Stop: Fatal collisions now trigger a brief 75ms freeze frame for heightened game feel.
+• Pitch Variety & Combo Escalation: Food audio tones vary dynamically with rising pitch during combos.
+• Smarter AI Survival: Flood-fill area evaluation prevents AI from trapping itself in dead-ends.
+• Tiered Haptic Feedback: Custom vibration patterns for turns, food, combos, crashes, and match victories.
+• Reduce Screen Effects: New accessibility toggle in Settings for sensitive players.
+• Performance Polish: Zero-allocation particle object pooling eliminates frame drops.
+</en-US>
+
+<tr-TR>
+v3.4.3 Yenilikleri:
+• Tepkisel Girdi Tamponlama: Hızlı köşe ve U dönüşlerinde komut kaçırma sorunu 2 adımlı kuyruk ile giderildi.
+• Dinamik Canvas Sarsıntısı: Çarpışmalarda fizik tabanlı yumuşak sönümlemeli ekran sarsıntısı.
+• Çarpışma Hit-Stop Etkisi: Ölüm anında 75ms mikro zaman durması ile çarpışmanın ağırlığı hissettirildi.
+• SFX Ton Çeşitliliği & Kombo Yükselişi: Yem yeme seslerinde ton çeşitliliği ve kombo sırasında yükselen frekans.
+• Akıllı AI Hayatta Kalma: Flood-fill alan analiziyle yapay zekanın kendini köşeye sıkıştırması önlendi.
+• Kademeli Titreşim (Haptic): Dönüş, yem, kombo, çarpışma ve galibiyet için özel titreşim desenleri.
+• Efektleri Azalt (Erişilebilirlik): Ayarlar menüsünde sarsıntı ve flaş efektlerini kapatan erişilebilirlik seçeneği.
+• Parçacık Nesne Havuzu: Sabit havuz mimarisi ile bellek optimizasyonu ve pürüzsüz 60 FPS akıcılık.
+</tr-TR>
+
 ### Sürüm v3.4.2 (Build 46) — App Store 21 Dil Desteği, UI Ergonomisi, iOS Neon Glow ve 90s Reklam Cooldown (2026-09-23)
 
 - **App Store 21 Dil Kaydı (Localization Fix):**

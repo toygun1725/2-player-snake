@@ -11,16 +11,28 @@ Bu belge, mobil surum uzerinde calisacak yapay zekalar icin guncel teknik refera
 > Web yayını henüz yapılmadı; Git push siteyi güncellemez.
 > Ayrıntılar: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
 
-- Aktif referans surum: `v3.4.2` (Final Sürüm)
-- Temel referans dosya: `2 Player Snake Mobile v3.4.2.html`
-- Kaynak/yayin durumu: v3.4.2 mobil kaynak dosyasi olusturuldu. PC sürümünün mobildeki gibi tek pencereli Hızlı Kurulum dashboard'una geçirilmesiyle birlikte tam sürüm senkronizasyonu sağlandı.
-- Android durumu: Android cevrimdisi fallback `mobile_offline_fallback.html` v3.4.2 ile esitlendi; bir sonraki build icin hazir.
-- iOS durumu: iOS `mobile_offline_fallback.html` v3.4.2 ile esitlendi; uzaktan `https://2playersnake.com` yayini v3.4.2 ile guncellendiginde webview uzerinden aninda aktiflesir.
+- Aktif referans surum: `v3.4.3` (Final Sürüm)
+- Temel referans dosya: `2 Player Snake Mobile v3.4.3.html`
+- Kaynak/yayin durumu: v3.4.3 mobil kaynak dosyasi olusturuldu. Oyun hissi (Game Feel), 2 adımlı girdi kuyruğu, decaying trauma ekran sarsıntısı, 75ms hit-stop, SFX frekans yükselmesi/ton çeşitliliği, AI çıkmaz sokak engelleme, AI sabit yem sesi ve parçacık havuzu entegre edildi.
+- Android durumu: Android cevrimdisi fallback `mobile_offline_fallback.html` v3.4.3 ile esitlendi; bir sonraki build icin hazir.
+- iOS durumu: iOS `mobile_offline_fallback.html` v3.4.3 ile esitlendi; uzaktan `https://2playersnake.com` yayini v3.4.3 ile guncellendiginde webview uzerinden aninda aktiflesir (yeni native builde gerek yoktur).
 - Dosya yapisi: her sey tek HTML dosyasindadir; CSS veya JS ayirma yapilmaz.
 - Tasarim dili: koyu cyberpunk zemin, neon pembe ve turkuaz glow, camimsi panel dili, mobil odakli dar yerlesim.
 - Ana menu logosu web uzerindeki guncel logo kaynagini kullanir; gerekirse yerel fallback ile calisir.
 
-## Son Guncelleme (v3.4.2 - PC Tek Pencereli Hızlı Kurulum Paritesi & Sürüm Senkronizasyonu)
+## Son Guncelleme (v3.4.3 - Game Feel, Girdi Tamponlama, Akıllı AI Hayatta Kalma & Erişilebilirlik)
+- **v3.4.3**: Game Feel ("Juice"), 2 Adımlı Girdi Kuyruğu, Decaying Trauma Screen Shake, Hit-Stop, Dinamik SFX & AI Sabit Yem Sesi, AI Flood-Fill, Kademeli Haptic Tiers, Erişilebilirlik ve Parçacık Nesne Havuzu (2026-09-25).
+  - **2-Adımlı Girdi Kuyruğu (`queueSnakeDirection`):** Hızlı L ve U dönüşlerinde komut yutulması 2 derinlikli kuyruk tamponu ile çözüldü.
+  - **Decaying Trauma Ekran Sarsıntısı:** Canvas 2D katmanında `trauma²` üssel sönümlemeli (decay: 3.5) dinamik ekran sarsıntısı eklendi.
+  - **Hit-Stop (75ms Freeze Frame):** Ölüm anında kare dondurularak çarpışmanın ağırlığı hissettirildi.
+  - **Dinamik SFX & AI Yem Sesi Ayrımı:** İnsan oyuncular için yem yedikçe yükselen (+210Hz) kombo tonu ve `±%5` pitch wobble; 1P modundaki AI yılan için ise oyuncu dikkatini dağıtmayan daima saf ve sabit `720Hz` ilk yem sesi tanımlandı.
+  - **AI Flood-Fill Hayatta Kalma (Dead-End Avoidance):** BFS hedef bulamadığında 80 hücrelik flood-fill alan analiziyle en geniş açık alana yönelme sağlandı.
+  - **Kademeli Haptic Tiers:** D-Pad (10ms), Normal Yem (20ms), Elmas/Kalp (30ms), Kombo (`[15, 8, 15]`), Çarpışma (80ms), Zafer (`[30, 20, 50]`) desenleri.
+  - **Erişilebilirlik (Reduced Motion):** Ayarlar menüsüne 21 dilde "Hareketi / Efektleri Azalt" seçeneği eklendi.
+  - **Parçacık Nesne Havuzu (`foodBurstPool`):** 64 elemanlık sabit havuz mimarisi ile her karede nesne/dizi tahsisi engellendi, GC sıçramaları önlendi.
+  - **Sürüm Senkronu:** Mobil v3.4.3, PC v3.4.3, iOS ve Android offline fallback dosyaları eşitlendi; 46/46 otomatik test doğrulandı.
+
+## Onceki Guncelleme (v3.4.2 - PC Tek Pencereli Hızlı Kurulum Paritesi & Sürüm Senkronizasyonu)
 - **v3.4.2**: PC Hızlı Kurulum Tek Pencereli Dashboard Dönüşümü & Mobil/Fallback Sürüm Senkronizasyonu.
   - **Sürüm Paritesi:** Mobil `2 Player Snake Mobile v3.4.2.html` ve PC `2 Player Snake PC v3.4.2.html` sürümleri tam senkron hale getirildi (`VERSION = 'v3.4.2'`).
   - **PC'de Mobil Benzeri Tek Ekran:** PC'deki 2 aşamalı eski kurulum kaldırıldı; mobildeki `openQuickSetupMenu` gibi tek bir ekranda tüm ayarları sunan `openPCQuickSetupMenu` oluşturuldu.

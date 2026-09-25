@@ -4,11 +4,13 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 
 ---
 
-## 1. Güncel HTML & Çevrimdışı Fallback Durumu (v3.4.2, 2026-09-23)
+## 1. Güncel HTML & Çevrimdışı Fallback Durumu (v3.4.3, 2026-09-25)
 
-- HTML Runtime & Web Referansı: `2 Player Snake Mobile v3.4.2.html` ve `2 Player Snake PC v3.4.2.html`.
-- iOS Çevrimdışı Fallback (`TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`): v3.4.2 ile eşitlendi.
-- Otomatik Testler: `node --test tests/ios-runtime.test.cjs` 43/43 test (%100) başarıyla geçti.
+- HTML Runtime & Web Referansı: `2 Player Snake Mobile v3.4.3.html` ve `2 Player Snake PC v3.4.3.html`.
+- iOS Çevrimdışı Fallback (`TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`): v3.4.3 ile eşitlendi.
+- Oyun Hissi & Altyapı: 2 adımlı girdi kuyruğu, decaying trauma ekran sarsıntısı, 75ms hit-stop, dinamik SFX / AI sabit yem sesi, AI flood-fill, kademeli haptic tiers, 21 dilde hareket azaltma erişilebilirliği ve parçacık havuzu entegre edildi.
+- Otomatik Testler: `node --test tests/ios-runtime.test.cjs` 46/46 test (%100) başarıyla geçti.
+- WordPress Yayını: v3.4.3 özellikleri remote webview üzerinden anında aktifleşir; yeni iOS native build almaya gerek yoktur.
 
 ## 1.1. Native Shell Durumu — Build 46 (v3.4.2, 2026-09-23)
 
