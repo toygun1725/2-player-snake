@@ -4433,10 +4433,21 @@
                 }
                 lastVibrateTime = now;
 
-                if (window.Android && typeof window.Android.triggerVibration === 'function') {
+                if (window.Android && typeof window.Android.hapticEvent === 'function') {
+                    window.Android.hapticEvent(null, mainDur.toString());
+                } else if (window.Android && typeof window.Android.triggerVibration === 'function') {
                     window.Android.triggerVibration(mainDur.toString());
                 } else if (navigator.vibrate) {
                     navigator.vibrate(duration);
+                }
+            }
+
+            function hapticTyped(eventType) {
+                if (window.Android && typeof window.Android.hapticEvent === 'function') {
+                    window.Android.hapticEvent(eventType, null);
+                } else {
+                    const durMap = { tick: 10, light: 18, medium: 30, heavy: 40, gameOver: 80, win: 50, beastFood: 60 };
+                    hapticVibrate(durMap[eventType] || 18);
                 }
             }
             /* v2.98.0 — Android tespiti ve Play Store oylama */
@@ -7352,9 +7363,31 @@
             window.resumeAudioContext = resumeAudioContext;
 
             // Global user gesture unlock - satisfies iOS WebKit gesture requirement
+            // _adJustFinished flag: iOS WebKit reports audioCtx.state='running' after an ad
+            // but audio is actually dead. On next touch we force-rebuild the AudioContext.
+            window._adJustFinished = false;
+            function forceRebuildAudio() {
+                if (muted) return;
+                try {
+                    if (audioCtx && audioCtx.state !== 'closed') {
+                        audioCtx.close().catch(() => {});
+                    }
+                } catch (e) {}
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    setupAudioStateMonitoring(audioCtx);
+                    audioCtx.resume().then(() => primeAudioContext(audioCtx)).catch(() => {});
+                } catch (e) {}
+            }
             const userAudioGestureEvents = ['touchstart', 'touchend', 'pointerdown', 'mousedown', 'keydown'];
             function handleUserAudioGesture() {
-                if (!muted && audioCtx && (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted')) {
+                if (muted) return;
+                if (window._adJustFinished) {
+                    window._adJustFinished = false;
+                    forceRebuildAudio();
+                    return;
+                }
+                if (audioCtx && (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted')) {
                     audioCtx.resume().then(() => primeAudioContext(audioCtx)).catch(() => {});
                 }
             }
@@ -7414,7 +7447,7 @@
                     const wobble = 1 + (Math.random() - 0.5) * 0.08;
                     tone(1200 * wobble, 0.1, { type: 'triangle', gain: 0.07 });
                     setTimeout(() => tone(1600 * wobble, 0.15, { type: 'sine', gain: 0.06 }), 80);
-                    hapticVibrate(30);
+                    hapticTyped('medium');
                 },
                 heart() {
                     if (isDemoMode) return;
@@ -7422,12 +7455,12 @@
                     const wobble = 1 + (Math.random() - 0.5) * 0.08;
                     tone(640 * wobble, 0.1, { type: 'square', gain: 0.08 });
                     setTimeout(() => tone(1240 * wobble, 0.15, { type: 'sawtooth', gain: 0.08 }), 90);
-                    hapticVibrate(30);
+                    hapticTyped('beastFood');
                 },
                 crash() {
                     if (isDemoMode) return;
                     addTrauma(0.75);
-                    hapticVibrate(80);
+                    hapticTyped('heavy');
                     const wobble = 1 + (Math.random() - 0.5) * 0.06;
                     tone(180 * wobble, 0.20, { type: 'sawtooth', gain: 0.08, sweep: -0.35 });
                     canvasWrap.classList.add('shake');
@@ -7436,19 +7469,19 @@
                 drawCrash() {
                     if (isDemoMode) return;
                     addTrauma(0.60);
-                    hapticVibrate(80);
+                    hapticTyped('heavy');
                     tone(220, 0.25, { type: 'sawtooth', gain: 0.1, sweep: -0.5 });
                     tone(160, 0.25, { type: 'square', gain: 0.1, sweep: -0.5 });
                     canvasWrap.classList.add('shake');
                     setTimeout(() => canvasWrap.classList.remove('shake'), 200);
                 },
                 start() { tone(420, 0.10, { type: 'sine', gain: 0.05 }); setTimeout(() => tone(640, 0.12, { type: 'sine', gain: 0.05 }), 120); setTimeout(() => tone(860, 0.14, { type: 'sine', gain: 0.05 }), 260); },
-                pause() { hapticVibrate(15); tone(360, 0.06, { type: 'square', gain: 0.04 }); },
-                unpause() { hapticVibrate(15); tone(460, 0.06, { type: 'square', gain: 0.04 }); },
-                menuClick() { hapticVibrate(15); tone(880, 0.05, { type: 'triangle', gain: 0.04 }); },
+                pause() { hapticTyped('tick'); tone(360, 0.06, { type: 'square', gain: 0.04 }); },
+                unpause() { hapticTyped('tick'); tone(460, 0.06, { type: 'square', gain: 0.04 }); },
+                menuClick() { hapticTyped('tick'); tone(880, 0.05, { type: 'triangle', gain: 0.04 }); },
                 countdownTick() { tone(1200, 0.08, { type: 'sine', gain: 0.03 }); },
-                win() { hapticVibrate([30, 20, 50]); tone(660, 0.14, { type: 'square', gain: 0.05 }); setTimeout(() => tone(880, 0.14, { type: 'square', gain: 0.05 }), 230); },
-                winRound() { hapticVibrate([30, 20, 50]); tone(660, 0.14, { type: 'square', gain: 0.05 }); setTimeout(() => tone(880, 0.14, { type: 'square', gain: 0.05 }), 220); },
+                win() { hapticTyped('win'); tone(660, 0.14, { type: 'square', gain: 0.05 }); setTimeout(() => tone(880, 0.14, { type: 'square', gain: 0.05 }), 230); },
+                winRound() { hapticTyped('win'); tone(660, 0.14, { type: 'square', gain: 0.05 }); setTimeout(() => tone(880, 0.14, { type: 'square', gain: 0.05 }), 220); },
                 shrink() { if (isDemoMode) return; addTrauma(0.25); tone(600, 0.15, { type: 'sine', gain: 0.05, sweep: -0.3 }); }
             };
 
@@ -7742,8 +7775,10 @@
                             afterAd: () => {
                                 if (adShown) this.recordAdShown(recordKind);
                                 syncAdSoundConfig();
+                                window._adJustFinished = true;
                             },
                             adBreakDone: () => {
+                                window._adJustFinished = true;
                                 finish();
                             }
                         });
@@ -7920,6 +7955,7 @@
                             beforeAd: () => { paused = true; intermission = true; syncAdSoundConfig('off'); },
                             afterAd: () => {
                                 syncAdSoundConfig();
+                                window._adJustFinished = true;
                             },
                             beforeReward: (showAdFn) => {
                                 rewardFlowAvailable = true;
@@ -7931,13 +7967,16 @@
                                 this.rewardedUsedThisMatch = true;
                                 this.recordAdShown('reward');
                                 this.closeRewardedOverlay();
+                                window._adJustFinished = true;
                                 this.restoreRewardSnapshot();
                             },
                             adDismissed: () => {
                                 rewardSettled = true;
+                                window._adJustFinished = true;
                                 failReward(t('rewardedDeclined'));
                             },
                             adBreakDone: () => {
+                                window._adJustFinished = true;
                                 if (!rewardFlowAvailable && !rewardSettled) {
                                     failReward(t('rewardedUnavailable'));
                                 } else if (!rewardSettled) {
@@ -10884,7 +10923,7 @@
                         SFX.winRound();
                     } else {
                         SFX.crash();
-                        hapticVibrate(150);
+                        hapticTyped('gameOver');
                     }
 
                     const showWinnerBanner = () => {
