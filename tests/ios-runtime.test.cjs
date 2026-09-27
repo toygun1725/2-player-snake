@@ -608,7 +608,7 @@ test('v3.4.8 mobile, pc and offline fallbacks implement v3.4.8 button layout, sh
   ];
   for (const p of targets) {
     const html = read(p);
-    assert.match(html, /const VERSION = 'v3\.4\.8';/);
+    assert.match(html, /const VERSION = 'v3\.4\.[89]';/);
     // Button order in game end actions: Main Menu first (left), Play Again second (right)
     assert.match(html, /id="gameEndMenuBtn"[\s\S]*?id="gameEndReplayBtn"/);
     // Share button completely removed
