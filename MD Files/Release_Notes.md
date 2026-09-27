@@ -1016,7 +1016,29 @@ Novinky vo v3.3.5:
 • Загальні покращення та виправлення помилок.
 </uk>
 
-> Durum (2026-07-22): Güncel mobil ve PC kaynak referansı `v3.3.4` (versionCode 67) AAB derlendi ve Play Store yüklemesine hazırlandı.
+> Durum (2026-09-27): Güncel mobil ve PC kaynak referansı `v3.4.9` (versionCode 71) AAB derlendi ve Play Store yüklemesine hazırlandı (`2PlayerSnake-v3.4.9-release.aab`).
+
+## Published Play Store Release Notes (v3.4.9 — versionCode 71)
+
+<tr-TR>
+v3.4.9 sürümündeki yenilikler!
+
+• Dokunsal Geri Bildirim (Haptics!): Artık her hamleyi avucunun içinde hisset! Normal yemlerde çıtır bir tık, elmaslarda tok bir vuruş, canavar modunda çift nabız ve çarpışmalarda sarsıcı arcade darbesi!
+
+• Yenilenmiş Çevrimdışı Mod: Metroda, uçakta, internetsiz her yerde kesintisiz ve akıcı 60 FPS arcade keyfi.
+
+• Hata düzeltmeleri ve optimizasyonlar.
+</tr-TR>
+
+<en-US>
+What's New in v3.4.9:
+
+• Next-Gen Haptic Feedback: Feel every move in the palm of your hand! Crisp clicks for normal food, heavy thuds for diamonds, double-pulse surges in beast mode, and powerful shockwaves on collisions!
+
+• Polished Offline Mode: Seamless, silky-smooth 60 FPS arcade gameplay anywhere—subway, flights, or off the grid.
+
+• Bug fixes and performance optimizations.
+</en-US>
 
 ## Published Play Store Release Notes (v3.3.4)
 
