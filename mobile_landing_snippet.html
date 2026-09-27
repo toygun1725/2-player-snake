@@ -1,0 +1,271 @@
+<!-- 2 Player Snake - Smart Mobile Landing Overlay (Official Badges + 21 Langs + Neon Cycle) -->
+<style>
+  #ps-mobile-gate {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background: rgba(5, 7, 15, 0.94);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    z-index: 9999999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  /* Masaüstündeki Renk Değiştiren Neon Işık Animasyonu (Pembe <-> Turkuaz) */
+  @keyframes psNeonCycle {
+    0% {
+      border-color: #ff4fbf;
+      box-shadow: 0 0 25px rgba(255, 79, 191, 0.4), 0 0 50px rgba(255, 79, 191, 0.2), inset 0 0 15px rgba(255, 79, 191, 0.08);
+    }
+    50% {
+      border-color: #35e6e6;
+      box-shadow: 0 0 25px rgba(53, 230, 230, 0.4), 0 0 50px rgba(53, 230, 230, 0.2), inset 0 0 15px rgba(53, 230, 230, 0.08);
+    }
+    100% {
+      border-color: #ff4fbf;
+      box-shadow: 0 0 25px rgba(255, 79, 191, 0.4), 0 0 50px rgba(255, 79, 191, 0.2), inset 0 0 15px rgba(255, 79, 191, 0.08);
+    }
+  }
+
+  .ps-gate-card {
+    background: linear-gradient(145deg, rgba(16, 20, 38, 0.96), rgba(8, 10, 20, 0.98));
+    border: 1.8px solid #ff4fbf;
+    border-radius: 28px;
+    animation: psGatePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), psNeonCycle 4.5s infinite ease-in-out;
+    width: 100%;
+    max-width: 350px;
+    padding: 26px 20px 22px;
+    box-sizing: border-box;
+    text-align: center;
+    color: #fff;
+    position: relative;
+  }
+
+  @keyframes psGatePop {
+    from { transform: scale(0.9) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  /* 135px Logo */
+  .ps-gate-logo {
+    width: 135px;
+    height: auto;
+    margin: 0 auto 10px;
+    display: block;
+    filter: drop-shadow(0 0 18px rgba(255, 79, 191, 0.7));
+  }
+
+  .ps-gate-subtitle {
+    font-size: 13px;
+    color: #cbd5e1;
+    margin: 0 0 16px;
+    line-height: 1.4;
+    font-weight: 500;
+  }
+
+  .ps-gate-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Resmi Mağaza Rozetleri Bağlantıları */
+  .ps-store-badge-wrap {
+    display: inline-block;
+    width: 100%;
+    max-width: 215px;
+    text-decoration: none !important;
+    position: relative;
+    transition: transform 0.15s ease;
+    border-radius: 12px;
+  }
+
+  .ps-store-badge-wrap:active {
+    transform: scale(0.96);
+  }
+
+  .ps-store-badge-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+  }
+
+  /* Öne Çıkarılan Mağaza Rozetine Neon Çerçeve ve Rozet */
+  .ps-badge-highlight {
+    border: 1.8px solid #00f0ff;
+    box-shadow: 0 0 18px rgba(0, 240, 255, 0.5);
+  }
+
+  .ps-badge-highlight::after {
+    content: attr(data-badge);
+    position: absolute;
+    top: -12px;
+    right: 0px;
+    background: linear-gradient(90deg, #ff007f, #ff4fbf);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 10px rgba(255, 0, 127, 0.7);
+    z-index: 10;
+  }
+
+  /* Web Play Butonu */
+  .ps-btn-web {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 215px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.07);
+    color: #e2e8f0 !important;
+    border: 1px dashed rgba(255, 255, 255, 0.35);
+    text-decoration: none !important;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    margin-top: 2px;
+  }
+
+  .ps-btn-web:hover, .ps-btn-web:active {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #ff4fbf;
+    color: #fff !important;
+    transform: scale(0.97);
+  }
+
+  .ps-gate-note {
+    font-size: 11.5px;
+    color: #94a3b8;
+    margin-top: 16px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+</style>
+
+<div id="ps-mobile-gate">
+  <div class="ps-gate-card">
+    <!-- 135px Logo (Metin başlık kaldırıldı) -->
+    <img src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake" class="ps-gate-logo">
+    
+    <p class="ps-gate-subtitle" id="ps-gate-sub">Select your platform to play:</p>
+
+    <div class="ps-gate-buttons" id="ps-badge-container">
+      <!-- iOS App Store Resmi Rozeti -->
+      <a href="https://apps.apple.com/app/id6811546748" target="_blank" rel="noopener" class="ps-store-badge-wrap" id="ps-btn-ios" data-badge="Recommended">
+        <img src="https://2playersnake.com/wp-content/uploads/2026/09/iOS_App_Store_badge_EN.svg_.webp" alt="Download on the App Store" class="ps-store-badge-img">
+      </a>
+
+      <!-- Google Play Resmi Rozeti -->
+      <a href="https://play.google.com/store/apps/details?id=com.twoplayersnake.app" target="_blank" rel="noopener" class="ps-store-badge-wrap" id="ps-btn-android" data-badge="Recommended">
+        <img src="https://2playersnake.com/wp-content/uploads/2026/04/Google_Play_Store_badge_EN.svg_.png" alt="Get it on Google Play" class="ps-store-badge-img">
+      </a>
+
+      <!-- Play in Browser -->
+      <a href="https://2playersnake.com/wp-content/uploads/game-mobile/index.html" class="ps-btn-web" id="ps-btn-play">
+        <span id="ps-txt-play">▶ Play in Browser (Free)</span>
+      </a>
+    </div>
+
+    <!-- Slogan Alt Notu -->
+    <div class="ps-gate-note" id="ps-txt-note">2 Players. One Screen. Epic Snake Battle</div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (window.innerWidth <= 820);
+  if (!isMobile) return;
+
+  var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var isAndroid = /Android/i.test(navigator.userAgent);
+
+  // 21 Dil Çeviri Kütüphanesi (Kusursuz & Doğal Yerelleştirme)
+  var T = {
+    en: { sub: 'Select your platform to play:', play: '▶ Play in Browser (Free)', slogan: '2 Players. One Screen. Epic Snake Battle', badge: 'Recommended' },
+    tr: { sub: 'Oynamak istediğiniz platformu seçin:', play: '▶ Tarayıcıda Hemen Oyna', slogan: '2 Oyuncu. Tek Ekran. Efsane Yılan Kapışması', badge: 'Önerilen' },
+    de: { sub: 'Wähle deine Plattform zum Spielen:', play: '▶ Im Browser spielen (Kostenlos)', slogan: '2 Spieler. Ein Bildschirm. Epischer Schlangenkampf', badge: 'Empfohlen' },
+    es: { sub: 'Elige tu plataforma para jugar:', play: '▶ Jugar en el navegador (Gratis)', slogan: '2 Jugadores. Una Pantalla. Épica Batalla Snake', badge: 'Recomendado' },
+    fr: { sub: 'Choisissez votre plateforme de jeu :', play: '▶ Jouer sur navigateur (Gratuit)', slogan: '2 Joueurs. Un Écran. Bataille Épique de Serpent', badge: 'Recommandé' },
+    it: { sub: 'Scegli la tua piattaforma di gioco:', play: '▶ Gioca nel browser (Gratis)', slogan: '2 Giocatori. Uno Schermo. Epica Battaglia Snake', badge: 'Consigliato' },
+    pt: { sub: 'Escolha sua plataforma para jogar:', play: '▶ Jogar no Navegador (Grátis)', slogan: '2 Jogadores. Uma Tela. Batalha Épica de Cobrinha', badge: 'Recomendado' },
+    ru: { sub: 'Выберите платформу для игры:', play: '▶ Играть в браузере (Бесплатно)', slogan: '2 Игрока. Один Экран. Эпическая Битва Змеек', badge: 'Рекомендуем' },
+    pl: { sub: 'Wybierz platformę do gry:', play: '▶ Graj w przeglądarce (Za darmo)', slogan: '2 Graczy. Jeden Ekran. Epicka Bitwa Węży', badge: 'Polecane' },
+    nl: { sub: 'Kies je platform om te spelen:', play: '▶ Speel in browser (Gratis)', slogan: '2 Spelers. Één Scherm. Epische Slangenstrijd', badge: 'Aanbevolen' },
+    ar: { sub: 'اختر المنصة التي تريد اللعب عليها:', play: '▶ العب في المتصفح (مجانًا)', slogan: 'لاعبان. شاشة واحدة. معركة ثعبان ملحمية', badge: 'موصى به' },
+    zh: { sub: '选择您要玩的平台：', play: '▶ 网页直接玩（免费）', slogan: '双人同屏，史诗级贪吃蛇大战', badge: '推荐' },
+    ja: { sub: 'プレイするプラットフォームを選択してください：', play: '▶ ブラウザですぐ遊ぶ（無料）', slogan: '2人対戦・1画面・白熱スネークバトル', badge: 'おすすめ' },
+    ko: { sub: '플레이할 플랫폼을 선택하세요:', play: '▶ 브라우저에서 바로 플레이 (무료)', slogan: '2인 플레이. 하나의 화면. 전설의 스네이크 배틀', badge: '추천' },
+    hi: { sub: 'खेलने के लिए अपना प्लेटफ़ॉर्म चुनें:', play: '▶ ब्राउज़र में खेलें (मुफ़्त)', slogan: '2 खिलाड़ी. एक स्क्रीन. महाकाव्य स्नेक मुकाबला', badge: 'अनुशंसित' },
+    id: { sub: 'Pilih platform untuk bermain:', play: '▶ Main di Browser (Gratis)', slogan: '2 Pemain. Satu Layar. Pertempuran Ular Epik', badge: 'Rekomendasi' },
+    vi: { sub: 'Chọn nền tảng bạn muốn chơi:', play: '▶ Chơi trên trình duyệt (Miễn phí)', slogan: '2 Người Chơi. Một Màn Hình. Đại Chiến Rắn Săn Mồi', badge: 'Được đề xuất' },
+    th: { sub: 'เลือกแพลตฟอร์มที่คุณต้องการเล่น:', play: '▶ เล่นบนเบราว์เซอร์ (ฟรี)', slogan: 'ผู้เล่น 2 คน บนหน้าจอเดียว ศึกงูสุดมันส์', badge: 'แนะนำ' },
+    tl: { sub: 'Piliin ang platform para maglaro:', play: '▶ Maglaro sa Browser (Libre)', slogan: '2 Manlalaro. Isang Screen. Epikong Labanan ng Ahas', badge: 'Inirerekomenda' },
+    el: { sub: 'Επιλέξτε την πλατφόρμα στην οποία θέλετε να παίξετε:', play: '▶ Παίξτε στο πρόγραμμα περιήγησης (Δωρεάν)', slogan: '2 Παίκτες. Μία Οθόνη. Επική Μάχη Φιδιών', badge: 'Προτείνεται' },
+    cs: { sub: 'Vyberte si platformu, na které chcete hrát:', play: '▶ Hrát v prohlížeči (Zdarma)', slogan: '2 Hráči. Jedna Obrazovka. Epická Hadí Bitva', badge: 'Doporučeno' }
+  };
+
+  // Cihaz dilini tespit et
+  var rawLang = (navigator.languages && navigator.languages[0]) || navigator.language || 'en';
+  rawLang = rawLang.toLowerCase();
+  var langCode = 'en';
+
+  if (rawLang.indexOf('pt') === 0) {
+    langCode = 'pt';
+  } else if (rawLang.indexOf('zh') === 0) {
+    langCode = 'zh';
+  } else {
+    var short = rawLang.split('-')[0];
+    if (T[short]) langCode = short;
+  }
+
+  var t = T[langCode] || T.en;
+
+  var gate = document.getElementById('ps-mobile-gate');
+  var btnIos = document.getElementById('ps-btn-ios');
+  var btnAndroid = document.getElementById('ps-btn-android');
+  var btnPlay = document.getElementById('ps-btn-play');
+  var container = document.getElementById('ps-badge-container');
+
+  // Çevirileri yerleştir
+  document.getElementById('ps-gate-sub').innerText = t.sub;
+  document.getElementById('ps-txt-play').innerText = t.play;
+  document.getElementById('ps-txt-note').innerText = t.slogan;
+  btnIos.setAttribute('data-badge', t.badge);
+  btnAndroid.setAttribute('data-badge', t.badge);
+
+  // İşletim sistemine göre öne çıkar ve sırala
+  if (isIOS) {
+    btnIos.classList.add('ps-badge-highlight');
+    container.insertBefore(btnIos, btnAndroid);
+  } else if (isAndroid) {
+    btnAndroid.classList.add('ps-badge-highlight');
+    container.insertBefore(btnAndroid, btnIos);
+  }
+
+  btnPlay.addEventListener('click', function(e) {
+    e.preventDefault();
+    window.location.href = 'https://2playersnake.com/wp-content/uploads/game-mobile/index.html?v=' + new Date().getTime();
+  });
+
+  gate.style.display = 'flex';
+})();
+</script>

@@ -6,11 +6,11 @@ Bu rehber, ilk Android promptunda istenen hedefleri ve bugun bu hedeflere gore f
 
 ## Referans Durum
 - Android shell kaynagi: `d:\#3 Vibecoding\AI Games\2 Player Snake\Ana Dosya\Android`
-- Guncel web kaynak referansi: `2 Player Snake Mobile v3.4.3 / PC v3.4.3`
-- Android cevrimdisi fallback: `mobile_offline_fallback.html` (v3.4.3 ile esitlendi - Game Feel, 2 adımlı girdi kuyruğu, ekran sarsıntısı, hit-stop, AI flood-fill, AI sabit yem sesi, kademeli haptic, parçacık havuzu)
-- Guncel kaynak `versionCode`: **70** (Native shell son derleme; v3.4.3 web yayını için yeni AAB gerekmez, WordPress üzerinden dinamik yüklenir)
+- Guncel web kaynak referansi: `2 Player Snake Mobile v3.4.8 / PC v3.4.8`
+- Android cevrimdisi fallback: `mobile_offline_fallback.html` (v3.4.8 ile esitlendi - Ergonomik oyun sonu buton düzeni: solda Ana Menü, sağda Tekrar Oyna, Paylaş butonu kaldırıldı; Online Çok Oyunculu Hız Kalibrasyonu `MOD_SPEED.NORMAL = 0.75`, 93.9ms adım süresi, insani seviye Dash 64.7ms, dengeli güçlendiriciler, lokma yutma squash & stretch, yaylanan kombo popupları, Tron zemin ışık izi ring buffer, serbest dokunmatik halka)
+- Guncel kaynak `versionCode`: **70** (Native shell son derleme; v3.4.8 web yayını için yeni AAB gerekmez, WordPress üzerinden dinamik yüklenir)
 - Guncel kaynak `versionName`: **`v3.4.2`** (Native shell etiketi)
-- Yayin/AAB durumu: versionCode 70 (v3.4.2) AAB derlendi ve imzalandı (`2PlayerSnake-v3.4.2-release.aab` ve `app/build/outputs/bundle/release/app-release.aab`). v3.4.3 uzaktan web yayınıyla anında aktifleşir.
+- Yayin/AAB durumu: versionCode 70 (v3.4.2) AAB derlendi ve imzalandı (`2PlayerSnake-v3.4.2-release.aab` ve `app/build/outputs/bundle/release/app-release.aab`). v3.4.8 uzaktan web yayınıyla anında aktifleşir.
 
 ## Son Android Shell Notu (versionCode 70 / v3.4.2)
 - **versionCode 70 (v3.4.2)**: 21 Dil ASO Desteği, Dinamik VS AI Modu, D-Pad Ergonomisi ve 90s Reklam Cooldown Kuralı.

@@ -316,6 +316,12 @@
         console.warn("iOS Bridge: adBreakDone callback error:", e);
       }
 
+      try {
+        if (typeof window.resumeAudioContext === "function") {
+          window.resumeAudioContext();
+        }
+      } catch (e) {}
+
       return;
     }
 
@@ -329,6 +335,11 @@
     } else if (typeof window.adBreakDone === "function") {
       window.adBreakDone();
     }
+    try {
+      if (typeof window.resumeAudioContext === "function") {
+        window.resumeAudioContext();
+      }
+    } catch (e) {}
   };
 
   // iOS layout and safe-area adjustments; original glass/blur effects are retained.

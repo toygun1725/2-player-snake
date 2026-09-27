@@ -26,7 +26,33 @@
     });
   </script>
 
-  <title>2 Player Snake | v3.4.3</title>
+  <title>2 Player Snake | v3.4.8</title>
+  <meta name="description" content="Play 2 Player Snake online – challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
+
+  <!-- Open Graph / Social Media / Google Search Thumbnail Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="2 Player Snake | v3.4.8 - Play Online & Local">
+  <meta property="og:description" content="Play 2 Player Snake online – challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
+  <meta property="og:url" content="https://2playersnake.com/wp-content/uploads/game/index.html">
+  <meta property="og:image" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
+  <meta property="og:image:secure_url" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="2 Player Snake Logo">
+
+  <!-- Google Search Snippet Thumbnail & Direct Favicons -->
+  <meta name="thumbnail" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
+  <link rel="image_src" href="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="2 Player Snake | v3.4.8 - Play Online & Local">
+  <meta name="twitter:description" content="Play 2 Player Snake online – challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
+  <meta name="twitter:image" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
+
   <!-- Import fonts: Orbitron for neon/matrix style, VT323 for digital timer -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,7 +63,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <!-- Version: v3.4.3 -->
+  <!-- Version: v3.4.5 -->
   <style>
     :root {
       --bg: #0b0f14;
@@ -3385,10 +3411,76 @@
       line-height: 1.5;
     }
 
-    .game-end-btn.secondary {
-      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
-      border-color: rgba(255,255,255,0.12);
+    .game-end-btn.primary {
+      background: linear-gradient(135deg, #00e5ff 0%, #35e6e6 100%);
+      color: #070b14;
+      font-weight: 800;
+      border: 1px solid rgba(255,255,255,0.85);
+      box-shadow: 0 4px 18px rgba(0,229,255,0.5), inset 0 1px 0 rgba(255,255,255,0.6);
     }
+
+    .game-end-btn.primary:hover {
+      background: linear-gradient(135deg, #35e6e6 0%, #ff4fbf 100%);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(53,230,230,0.6), 0 2px 8px rgba(255,79,191,0.4);
+      transform: translateY(-2px) scale(1.03);
+    }
+
+    .game-end-btn.secondary {
+      background: rgba(255,255,255,0.06) !important;
+      color: #b8c7e0 !important;
+      border: 1px solid rgba(255,255,255,0.18) !important;
+      box-shadow: none !important;
+    }
+
+    .game-end-btn.secondary:hover {
+      background: rgba(255,255,255,0.12) !important;
+      border-color: rgba(255,255,255,0.35) !important;
+      color: #ffffff !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25) !important;
+    }
+
+    .btn.primary-neon {
+      background: linear-gradient(135deg, #00e5ff 0%, #35e6e6 100%) !important;
+      color: #070b14 !important;
+      font-weight: 800 !important;
+      border: 1px solid rgba(255,255,255,0.85) !important;
+      box-shadow: 0 4px 18px rgba(0,229,255,0.5), inset 0 1px 0 rgba(255,255,255,0.6) !important;
+    }
+
+    .btn.primary-neon:hover {
+      background: linear-gradient(135deg, #35e6e6 0%, #ff4fbf 100%) !important;
+      color: #fff !important;
+      transform: translateY(-2px) scale(1.03) !important;
+      box-shadow: 0 8px 24px rgba(53,230,230,0.6), 0 2px 8px rgba(255,79,191,0.4) !important;
+    }
+
+    /* v3.4.5: Viral Share Loop & New Record Badge */
+    .game-end-badge.new-record-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 18px;
+      margin: 0 auto 12px auto;
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.22), rgba(255, 140, 0, 0.28));
+      border: 1px solid rgba(255, 215, 0, 0.65);
+      border-radius: 20px;
+      color: #ffd700;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      box-shadow: 0 0 16px rgba(255, 215, 0, 0.4), inset 0 0 8px rgba(255, 215, 0, 0.2);
+      animation: newRecordPulse 1.4s ease-in-out infinite alternate;
+    }
+    @keyframes newRecordPulse {
+      from { transform: scale(0.97); box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+      to { transform: scale(1.04); box-shadow: 0 0 20px rgba(255, 215, 0, 0.65); }
+    }
+
 
     .game-end-btn.danger {
       border-color: rgba(255, 107, 107, 0.35);
@@ -3455,6 +3547,33 @@
     [data-theme="light"] .game-end-btn:hover {
       background: linear-gradient(135deg, rgba(64,224,208,0.3), rgba(255,105,180,0.3));
       color: #000;
+    }
+
+    [data-theme="light"] .game-end-btn.primary,
+    [data-theme="light"] .btn.primary-neon {
+      background: linear-gradient(135deg, #00bcd4, #0097a7) !important;
+      color: #ffffff !important;
+      border-color: rgba(255,255,255,0.7) !important;
+      box-shadow: 0 4px 14px rgba(0,188,212,0.4) !important;
+    }
+    [data-theme="light"] .game-end-btn.primary:hover,
+    [data-theme="light"] .btn.primary-neon:hover {
+      background: linear-gradient(135deg, #0097a7, #ff4081) !important;
+      color: #ffffff !important;
+      box-shadow: 0 6px 18px rgba(0,188,212,0.5) !important;
+    }
+
+    [data-theme="light"] .game-end-btn.secondary {
+      background: rgba(0,0,0,0.04) !important;
+      border-color: rgba(148,163,184,0.3) !important;
+      color: #475569 !important;
+      box-shadow: none !important;
+    }
+    [data-theme="light"] .game-end-btn.secondary:hover {
+      background: rgba(0,0,0,0.08) !important;
+      border-color: rgba(148,163,184,0.5) !important;
+      color: #0f172a !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
     }
 
     [data-theme="light"] .rewarded-continue-desc {
@@ -3841,10 +3960,10 @@
   <script>
     (() => {
       /* ===========================
-        2 Player Snake - Beta v3.4.3
+        2 Player Snake - Beta v3.4.8
         =========================== */
 
-      const VERSION = 'v3.4.3';  /* === i18n === */
+      const VERSION = 'v3.4.8';  /* === i18n === */
       const VERSION_CHECK_INTERVAL_MS = 45000;
       let lastVersionCheckAt = 0;
       let versionCheckInFlight = false;
@@ -7212,7 +7331,7 @@
       };
       const EXTRA_STRINGS = {
         tr: {
-                    colorPick: 'Ad & Renk', namePlaceholder: 'Ad',
+          colorPick: 'Ad & Renk', namePlaceholder: 'Ad',
           continueWithAd: 'Devam Et (Reklam İzle)',
           rewardedContinueTitle: 'AI Snake Roundu Kazandı',
           rewardedContinueDesc: 'İstersen reklam izleyip oyuna yaklaşık 5 hamle öncesinden geri dönebilirsin. Yılanın 10 uzunlukla devam eder.',
@@ -7221,9 +7340,13 @@
           watchAdToContinue: 'Devam etmek için reklam izle',
           applyLoss: 'Sonucu Uygula',
           continueMatch: 'Maça Devam Et',
+          newRecord: 'YENİ KİŞİSEL REKOR!',
+          shareScore: 'Paylaş',
+          scoreCopied: 'Skor panoya kopyalandı!',
+          shareText: '🐍 2 Player Snake oyununda {score} puan yaptım! Sen de dene: https://2playersnake.com'
         },
         en: {
-                    colorPick: 'Name & Color', namePlaceholder: 'Name',
+          colorPick: 'Name & Color', namePlaceholder: 'Name',
           continueWithAd: 'Continue (Watch Ad)',
           rewardedContinueTitle: 'AI Snake Won The Round',
           rewardedContinueDesc: 'You can watch an ad to roll the match back by about 5 moves. Your snake returns with length 10.',
@@ -7232,6 +7355,10 @@
           watchAdToContinue: 'Watch an ad to continue',
           applyLoss: 'Apply Result',
           continueMatch: 'Continue Match',
+          newRecord: 'NEW PERSONAL RECORD!',
+          shareScore: 'Share',
+          scoreCopied: 'Score copied to clipboard!',
+          shareText: '🐍 I scored {score} in 2 Player Snake! Can you beat me? https://2playersnake.com'
         },
         fr: {
                     colorPick: 'Nom & Couleur', namePlaceholder: 'Nom',
@@ -8451,7 +8578,7 @@
         lastGames = { p1: games.p1, p2: games.p2 };
       }
 
-      const MOD_SPEED = { EASY: 0.75, NORMAL: 1.00, FAST: 1.35, EXTREME: 1.80 }; let currentSpeedMode = null;
+      const MOD_SPEED = { EASY: 0.60, NORMAL: 0.75, FAST: 0.95, EXTREME: 1.50 }; let currentSpeedMode = null;
       const MOD_WALLS = { NONE: 'no-walls', SOLID: 'walls' }; let currentWallMode = null;
 
       let gameMode = null; // '1P' or '2P'
@@ -11059,7 +11186,7 @@
           gameStyle = 'fastCompetitive';
           gameMode = '1P';
           aiSnakeEnabled = true;
-          currentSpeedMode = 'FAST';
+          currentSpeedMode = 'NORMAL';
           currentWallMode = 'NONE';
           
           if (socket) {
@@ -11284,6 +11411,7 @@
                                        eatenFood.type === 'green' ? '#39ff7a' : '#ffffff';
                   newS.digestAnims.push({ startTime: now, color: _digestColor });
                   registerComboEat(key, head);
+                  newS.gulpPop = { start: now, duration: 140 };
                 } else {
                   SFX.eat();
                   const fallbackFood = { x: head.x, y: head.y, type: 'normal' };
@@ -11292,6 +11420,7 @@
                   const _digestColor = playerColors[key] || '#ffffff';
                   newS.digestAnims.push({ startTime: now, color: _digestColor });
                   registerComboEat(key, head);
+                  newS.gulpPop = { start: now, duration: 140 };
                 }
               }
             }
@@ -11333,12 +11462,18 @@
             for (const key of ['p1', 'p2']) {
               if (snakes[key] && data.snakes[key]) {
                 data.snakes[key].digestAnims = (snakes[key].digestAnims || []).concat(data.snakes[key].digestAnims || []);
+                data.snakes[key].gulpPop = snakes[key].gulpPop || data.snakes[key].gulpPop || { start: 0, duration: 140 };
                 const oldHead = snakes[key].segments[0];
                 const newHead = data.snakes[key].segments[0];
                 if (oldHead && newHead && (oldHead.x !== newHead.x || oldHead.y !== newHead.y)) {
                   data.snakes[key].prev = snakes[key].segments.map(seg => ({ ...seg }));
                   if (key === 'p1') lastP1Update = now;
                   else lastP2Update = now;
+                  const oldTail = snakes[key].segments[snakes[key].segments.length - 1];
+                  const newTail = data.snakes[key].segments[data.snakes[key].segments.length - 1];
+                  if (oldTail && newTail && (oldTail.x !== newTail.x || oldTail.y !== newTail.y)) {
+                    if (typeof recordGridTrail === 'function') recordGridTrail(oldTail.x, oldTail.y, key);
+                  }
                 } else {
                   data.snakes[key].prev = snakes[key].prev || snakes[key].segments.map(seg => ({ ...seg }));
                 }
@@ -11933,7 +12068,30 @@
         }; wait();
       }
 
+      let lastGameNewRecord = false;
+
+      function showToast(msg) {
+        let toast = document.getElementById('neoSnakeToast');
+        if (!toast) {
+          toast = document.createElement('div');
+          toast.id = 'neoSnakeToast';
+          toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(18,22,38,0.95);color:#00e5ff;border:1px solid rgba(0,229,255,0.4);box-shadow:0 8px 32px rgba(0,0,0,0.6);padding:12px 24px;border-radius:24px;font-family:Orbitron,sans-serif;font-size:14px;letter-spacing:1px;z-index:999999;pointer-events:none;transition:opacity 0.3s ease, transform 0.3s ease;opacity:0;';
+          document.body.appendChild(toast);
+        }
+        toast.textContent = msg;
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+        clearTimeout(toast._timeout);
+        toast._timeout = setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(-50%) translateY(10px)';
+        }, 2400);
+      }
+
+
+
       function addHighScore(name, score) {
+        lastGameNewRecord = false;
         if (score <= 0) return;
         try {
           const scoresJSON = localStorage.getItem('neoSnakeHighscores');
@@ -11949,6 +12107,11 @@
               // If parsing fails, start with a fresh list
               scores = [];
             }
+          }
+
+          const prevTop = scores.length > 0 ? (scores[0].score || 0) : 0;
+          if (score > prevTop) {
+            lastGameNewRecord = true;
           }
 
           scores.push({ name, score });
@@ -12336,7 +12499,7 @@
         return cleaned;
       }
 
-      function createSnake(start, dir) { const seg = [start, { x: start.x - dir.x, y: start.y - dir.y }, { x: start.x - 2 * dir.x, y: start.y - 2 * dir.y }, { x: start.x - 3 * dir.x, y: start.y - 3 * dir.y }, { x: start.x - 4 * dir.x, y: start.y - 4 * dir.y }, { x: start.x - 5 * dir.x, y: start.y - 5 * dir.y }]; return { segments: seg, prev: seg.map(s => ({ ...s })), dir: { ...dir }, nextDir: { ...dir }, grow: 0, powerEnd: 0, flashUntil: 0, flashColor: null, shakeUntil: 0, digestAnims: [], slowEnd: 0, dashEndTime: 0, dashCooldown: 0 }; }
+      function createSnake(start, dir) { const seg = [start, { x: start.x - dir.x, y: start.y - dir.y }, { x: start.x - 2 * dir.x, y: start.y - 2 * dir.y }, { x: start.x - 3 * dir.x, y: start.y - 3 * dir.y }, { x: start.x - 4 * dir.x, y: start.y - 4 * dir.y }, { x: start.x - 5 * dir.x, y: start.y - 5 * dir.y }]; return { segments: seg, prev: seg.map(s => ({ ...s })), dir: { ...dir }, nextDir: { ...dir }, grow: 0, powerEnd: 0, flashUntil: 0, flashColor: null, shakeUntil: 0, digestAnims: [], slowEnd: 0, dashEndTime: 0, dashCooldown: 0, gulpPop: { start: 0, duration: 140 } }; }
       function isPowered(s) { return s && performance.now() < s.powerEnd; }
 
       function buildRespawnSegments(head, dir, len = 5) {
@@ -13001,6 +13164,7 @@
                   ? '#39ff7a'
                   : '#ffffff';
           s.digestAnims.push({ startTime: now, color: foodColor });
+          s.gulpPop = { start: now, duration: 140 };
           spawnFoodBurst(f, ownerKey, s.segments[0]);
           registerComboEat(ownerKey, s.segments[0]);
 
@@ -13165,7 +13329,14 @@
         }
 
         s.segments.unshift(nextHead);
-        if (s.grow > 0) s.grow--; else s.segments.pop();
+        if (s.grow > 0) {
+          s.grow--;
+        } else {
+          const vacated = s.segments.pop();
+          if (typeof recordGridTrail === 'function' && vacated) {
+            recordGridTrail(vacated.x, vacated.y, ownerKey);
+          }
+        }
         return true; // İlerleme başarılı
       }
 
@@ -13530,6 +13701,18 @@
       }
       let comboPopups = [];
       let gridRipples = [];
+      /* v3.4.5: Tron Grid Glow Trail (Ring Buffer) */
+      const GRID_TRAIL_CAPACITY = 48;
+      const gridTrail = [];
+      let gridTrailHead = 0;
+
+      function recordGridTrail(x, y, ownerKey) {
+        if (x === undefined || y === undefined) return;
+        const now = performance.now();
+        const color = playerColors[ownerKey] || '#ffffff';
+        gridTrail[gridTrailHead] = { x, y, color, bornAt: now };
+        gridTrailHead = (gridTrailHead + 1) % GRID_TRAIL_CAPACITY;
+      }
       const comboState = {
         p1: { count: 0, lastEatAt: 0 },
         p2: { count: 0, lastEatAt: 0 }
@@ -13540,6 +13723,8 @@
         for (let i = 0; i < FOOD_BURST_POOL_SIZE; i++) foodBurstPool[i].active = false;
         comboPopups = [];
         gridRipples = [];
+        gridTrail.length = 0;
+        gridTrailHead = 0;
         comboState.p1.count = 0;
         comboState.p1.lastEatAt = 0;
         comboState.p2.count = 0;
@@ -13633,8 +13818,9 @@
           y: gridY + 0.2,
           color: color || '#35e6e6',
           bornAt: now,
-          lifeMs: 720
-        });
+            lifeMs: 720,
+            rot: (Math.random() - 0.5) * 0.22
+          });
       }
 
       function registerComboEat(ownerKey, head) {
@@ -13691,6 +13877,7 @@
         ctx.restore();
       }
 
+      /* v3.4.5: Juicy Combo Popups with punchy elastic spring & rotation */
       function drawComboPopups() {
         if (!comboPopups.length) return;
         const now = performance.now();
@@ -13700,20 +13887,44 @@
         ctx.save();
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.font = '700 22px Orbitron, sans-serif';
+        ctx.font = '900 24px Orbitron, sans-serif';
         for (const popup of comboPopups) {
           const age = now - popup.bornAt;
           if (age >= popup.lifeMs) continue;
           const t = age / popup.lifeMs;
-          const alpha = 1 - t;
-          const rise = t * 28;
+          const alpha = Math.max(0, 1 - t * t);
+          const rise = Math.sin(t * Math.PI * 0.5) * 32;
+
+          let scale = 1.0;
+          if (t < 0.22) {
+            const enterT = t / 0.22;
+            scale = 1.0 + 0.55 * (1 - enterT);
+          } else if (t < 0.38) {
+            const midT = (t - 0.22) / 0.16;
+            scale = 1.0 - 0.08 * Math.sin(midT * Math.PI);
+          }
+
           const px = popup.x * cw;
           const py = popup.y * ch - rise;
+
+          ctx.save();
+          ctx.translate(px, py);
+          if (popup.rot) ctx.rotate(popup.rot);
+          ctx.scale(scale, scale);
           ctx.globalAlpha = alpha;
-          ctx.fillStyle = popup.color;
+
+          // Pass 1: Neon glow / backdrop
           ctx.shadowColor = popup.color;
-          ctx.shadowBlur = 10;
-          ctx.fillText(popup.text, px, py);
+          ctx.shadowBlur = 12 * dpr;
+          ctx.fillStyle = popup.color;
+          ctx.fillText(popup.text, 0, 0);
+
+          // Pass 2: White core
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(popup.text, 0, 0);
+          ctx.restore();
+
           next.push(popup);
         }
         ctx.restore();
@@ -13804,6 +14015,7 @@
         overlay.innerHTML = `
           <div class="game-end-card">
             <div class="game-end-trophy">🏆</div>
+            ${lastGameNewRecord ? `<div class="game-end-badge new-record-badge">🌟 ${t('newRecord') || 'YENİ REKOR!'}</div>` : ''}
             <div class="game-end-title">${titleHtml}</div>
             <hr class="game-end-divider" style="background: linear-gradient(90deg, transparent, ${winnerColor}, transparent);">
             <div class="game-end-stats">
@@ -13835,8 +14047,8 @@
               </div>`}
             </div>
             <div class="game-end-actions">
-              <button class="game-end-btn" id="gameEndReplayBtn">${t('playAgain')}</button>
-              <button class="game-end-btn" id="gameEndMenuBtn">${t('mainMenu')}</button>
+              <button class="game-end-btn secondary" id="gameEndMenuBtn">${t('mainMenu')}</button>
+              <button class="game-end-btn primary" id="gameEndReplayBtn">${t('playAgain')}</button>
             </div>
           </div>
         `;
@@ -14140,6 +14352,33 @@
         }
         ctx.restore();
       }
+
+      /* v3.4.5: Tron Grid Glow Trail rendering */
+      function drawGridGlowTrail() {
+        if (!gridTrail.length) return;
+        const now = performance.now();
+        const TRAIL_LIFE_MS = 400;
+        const w = canvas.clientWidth, h = canvas.clientHeight, cw = w / GRID_COLS, ch = h / GRID_ROWS;
+        ctx.save();
+        for (let i = 0; i < gridTrail.length; i++) {
+          const item = gridTrail[i];
+          if (!item) continue;
+          const age = now - item.bornAt;
+          if (age >= TRAIL_LIFE_MS) continue;
+          const t = age / TRAIL_LIFE_MS;
+          const alpha = 1 - t;
+          const sx = item.x * cw;
+          const sy = item.y * ch;
+          // Soft subtle neon cell fill
+          ctx.fillStyle = hexToRgba(item.color, alpha * 0.17);
+          ctx.fillRect(sx + 1.5, sy + 1.5, cw - 3, ch - 3);
+          // Gentle neon grid border
+          ctx.strokeStyle = hexToRgba(item.color, alpha * 0.40);
+          ctx.lineWidth = 1;
+          ctx.strokeRect(sx + 1.5, sy + 1.5, cw - 3, ch - 3);
+        }
+        ctx.restore();
+      }
       function drawSnakeBlocks(s, ownerKey, alphaProgress) {
         if (!s || !s.segments || !s.prev) return;
         const cw = canvas.clientWidth / GRID_COLS, ch = canvas.clientHeight / GRID_ROWS;
@@ -14257,18 +14496,50 @@
              ctx.fillStyle = 'rgba(255,255,255,0.16)';
              ctx.fillRect(px + inset, py + inset, innerSize, innerSize);
              ctx.restore();
-          } else {
-             // Normal snake body
-             ctx.fillStyle = bodyColor;
-             ctx.fillRect(left, top, size, size);
-             ctx.save();
-             ctx.globalCompositeOperation = 'lighter';
-             const ig = ctx.createRadialGradient(cx, cy, 1, cx, cy, size * 0.4);
-             ig.addColorStop(0, 'rgba(255,255,255,0.40)');
-             ig.addColorStop(1, 'rgba(255,255,255,0.04)');
-             ctx.fillStyle = ig; ctx.fillRect(left, top, size, size);
-             ctx.restore();
-          }
+                     } else {
+              // Normal snake body
+              const isHead = i === 0;
+              const isGulpActive = isHead && s.gulpPop && (now - s.gulpPop.start) < (s.gulpPop.duration || 140);
+              if (isGulpActive) {
+                const age = now - s.gulpPop.start;
+                const dur = s.gulpPop.duration || 140;
+                const wave = Math.sin((age / dur) * Math.PI);
+                let scaleX = 1.0, scaleY = 1.0;
+                const d = s.dir || { x: 1, y: 0 };
+                if (d.x !== 0) {
+                  scaleX = 1 + wave * 0.28;
+                  scaleY = Math.max(0.6, 1 - wave * 0.18);
+                } else if (d.y !== 0) {
+                  scaleX = Math.max(0.6, 1 - wave * 0.18);
+                  scaleY = 1 + wave * 0.28;
+                } else {
+                  scaleX = 1 + wave * 0.20;
+                  scaleY = 1 + wave * 0.20;
+                }
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.scale(scaleX, scaleY);
+                ctx.fillStyle = bodyColor;
+                ctx.fillRect(-half, -half, size, size);
+                ctx.globalCompositeOperation = 'lighter';
+                const ig = ctx.createRadialGradient(0, 0, 1, 0, 0, size * 0.4);
+                ig.addColorStop(0, 'rgba(255,255,255,0.40)');
+                ig.addColorStop(1, 'rgba(255,255,255,0.04)');
+                ctx.fillStyle = ig;
+                ctx.fillRect(-half, -half, size, size);
+                ctx.restore();
+              } else {
+                ctx.fillStyle = bodyColor;
+                ctx.fillRect(left, top, size, size);
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                const ig = ctx.createRadialGradient(cx, cy, 1, cx, cy, size * 0.4);
+                ig.addColorStop(0, 'rgba(255,255,255,0.40)');
+                ig.addColorStop(1, 'rgba(255,255,255,0.04)');
+                ctx.fillStyle = ig; ctx.fillRect(left, top, size, size);
+                ctx.restore();
+              }
+           }
         }
         ctx.restore();
       }
@@ -14398,6 +14669,7 @@
         ctx.clearRect(-16, -16, canvas.width + 32, canvas.height + 32);
         drawGrid();
         drawGridRipples();
+        drawGridGlowTrail();
         if (gameStyle === 'selfArea51') drawSelfArea51Divider();
         if (snakes) {
           drawFoods();
@@ -14732,11 +15004,11 @@
               let playerMovedThisStep = false;
               if (aiSnakeEnabled && s2) {
                 // v2.82: Rebalanced AI difficulty with 'Orta' (60%)
-                let speedFactor = 0.60; 
-                if (currentSpeedMode === 'EASY') speedFactor = 0.40;
-                else if (currentSpeedMode === 'NORMAL') speedFactor = 0.60;
-                else if (currentSpeedMode === 'FAST') speedFactor = 0.80;
-                else if (currentSpeedMode === 'EXTREME') speedFactor = 0.90;
+                let speedFactor = 0.60;
+        if (currentSpeedMode === 'EASY') speedFactor = 0.60;
+        else if (currentSpeedMode === 'NORMAL') speedFactor = 0.60;
+        else if (currentSpeedMode === 'FAST') speedFactor = 0.80;
+                else if (currentSpeedMode === 'EXTREME') speedFactor = 0.85;
 
                 // Fast Competitive: AI beast mode is capped at P1's actual current speed
                 const aiP2SpeedMult = (gameStyle === 'fastCompetitive' && isPowered(s2))

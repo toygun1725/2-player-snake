@@ -4,7 +4,18 @@ Bu belge, **fiziksel bir Mac bilgisayara ihtiyaç duymadan**, Windows bilgisayar
 
 ---
 
-## Güncel CI eki — Build 36 (2026-09-16)
+## Güncel Native Shell & CI/CD Durumu — Build 46 (v3.4.2) & Web Runtime v3.4.8 (2026-09-25)
+
+- **Son Native TestFlight Paketi:** **Build 46 (v3.4.2)**
+  - Tag: `ios-v3.4.2-b46`
+  - GitHub Actions: [Run #52 (ID: 35898272736)](https://github.com/toygun1725/2-player-snake/actions/runs/35898272736) - SUCCESS
+  - App Store Connect / TestFlight'a başarıyla yüklendi.
+- **Web Runtime & Canlı Sürüm (v3.4.8):**
+  - Uzaktan `https://2playersnake.com` yayını güncellendiğinde tüm v3.4.8 özellikleri (Ergonomik Oyun Sonu Buton Düzeni: Solda Ana Menü, Sağda Tekrar Oyna, Paylaş Butonunun Kaldırılması, Online Çok Oyunculu Hız Kalibrasyonu, 93.9 ms Baz Hız, İnsani Seviye Dash 64.7 ms, Dengeli Güçlendiriciler, Tron Zemin İzi, Lokma Yutma Squash & Stretch, Yaylanan Kombo Popupları) webview üzerinden anında aktifleşir; yeni bir native build gerektirmez.
+  - iOS çevrimdışı fallback (`TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`) v3.4.8 ile tam senkronizedir.
+- **Otomatik Testler:** `node --test tests/ios-runtime.test.cjs` 54/54 test (%100) başarıyla geçmektedir.
+
+## Önceki CI Eki — Build 36 & 37 (2026-09-16)
 
 Son paket **Build 37, TestFlight'a yüklendi**:
 [Run #38](https://github.com/toygun1725/2-player-snake/actions/runs/35062652055),

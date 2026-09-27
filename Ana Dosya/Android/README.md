@@ -86,12 +86,14 @@ Result:
 
 - Shortcut opens now target the real mobile game HTML directly.
 - Preset shortcut flows can reach the intended `Name & Color` screen without being stripped by an intermediate wrapper page.
-- The Android project is aligned for the package as `versionName v3.3.5` / `versionCode 69`.
+- The Android project is aligned for the package as `versionName v3.4.2` / `versionCode 70`.
+- Offline fallback (`mobile_offline_fallback.html`) is synchronized to `v3.4.8` (Ergonomic game end button layout: Main Menu left, Play Again right, Share button removed; Golden Ratio 93.9ms base speed, humane Dash 64.7ms, Tron glow trail, combo pops, squash & stretch).
 
-## Packaging note (v3.3.5 / Code 69)
+## Packaging note (v3.4.2 / Code 70 - Runtime v3.4.8)
 
 - Release bundle generation command:
   - `.\gradlew.bat bundleRelease`
 - Output paths:
   - `app/build/outputs/bundle/release/app-release.aab`
-  - `2PlayerSnake-v3.3.5-release.aab` (Signed Release AAB ready for Google Play Console)
+  - `2PlayerSnake-v3.4.2-release.aab` (Signed Release AAB ready for Google Play Console)
+- Note: Future web updates (such as v3.4.8) load dynamically from `https://2playersnake.com/wp-content/uploads/game-mobile/index.html` without requiring a new AAB release unless native bridge or manifests change.

@@ -28,10 +28,10 @@ const PERF_LOG_INTERVAL_MS = 60000;
 const PERF_PAYLOAD_SAMPLE_RATE = 20;
 
 const MOD_SPEED = {
-    EASY: 1.00,
-    NORMAL: 1.00,
-    FAST: 1.35,
-    EXTREME: 1.80
+    EASY: 0.60,
+    NORMAL: 0.75,
+    FAST: 0.95,
+    EXTREME: 1.50
 };
 
 // Rooms dictionary to hold active games
@@ -881,22 +881,18 @@ function gameTick60FPS(room, dt) {
         const s = room.snakes[p];
         if (!s || s.segments.length === 0) return;
 
-        // Calculate current effective speed
-        let speed = BASE_TPS;
-        if (room.mode === 'fastCompetitive') {
-            const mult = 0.85; // Normal speed is 0.85x (12.07 TPS)
-            speed = BASE_TPS * mult;
-        }
+        // Calculate current effective speed (Golden Ratio 93.9 ms / 10.65 TPS baseline across all modes)
+        let speed = BASE_TPS * MOD_SPEED.NORMAL;
 
-        // Apply speed boosts/slowdowns
+        // Apply speed boosts/slowdowns (calibrated to humane, controllable arcade levels)
         if (now < s.powerEnd) {
-            speed *= 1.45; // Beast mode speed boost
+            speed *= 1.25; // Beast mode speed boost (~75.1 ms)
         }
         if (now < s.dashEndTime) {
-            speed *= 2.5; // Fast Competitive dash boost
+            speed *= 1.45; // Fast Competitive dash boost (~64.7 ms, tactical surge without suicidal panic)
         }
         if (now < s.slowEnd) {
-            speed *= 0.5; // Sapphire slow effect
+            speed *= 0.65; // Sapphire slow effect (~144.5 ms)
         }
 
         s.acc += dt;

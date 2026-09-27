@@ -2,7 +2,216 @@
 
 ## iOS App Store & TestFlight Release Notes
 
-### Sürüm v3.4.3 — Game Feel, Girdi Tamponlama, Akıllı AI Hayatta Kalma & Erişilebilirlik (2026-09-25)
+### Sürüm v3.4.9 — Akıllı Cache-Busting, 0 KB Sürüm Kontrolü & İlk Açılış Hızlandırması (2026-09-27)
+
+- **Akıllı HEAD (ETag & Last-Modified) Sürüm Kontrol Motoru:**
+  - Hem PC hem Mobil oyundaki sürüm kontrol mekanizması (`checkForFreshVersion`) modernize edildi.
+  - Artık her kontrolde 728 KB / 823 KB boyutundaki dev HTML dosyasını baştan indirmek yerine, **0 KB veri transferiyle** ultra-hafif bir `HEAD` sorgusu atılır.
+  - Sunucunun döndürdüğü `ETag` ve `Last-Modified` (dosyanın sunucuya yüklenme tarihi) başlıkları izlenir.
+  - **Kritik Kazanım:** Geliştirici sürüm numarasını (`v3.4.9`) değiştirmeden dosya güncellese dahi, sunucudaki dosya yüklenme tarihi değiştiği anda sistem bunu salisesinde algılar ve yeni dosyayı anında devreye alır.
+- **Oyun Akışını Bölmeyen Güvenli Yenileme:**
+  - `canApplyVersionRefreshNow()` güvenlik kilidi sayesinde oyuncular maç ortasındayken, ödüllü devam ekranındayken veya reklam izlerken asla sayfa yenilenmez; maç bitip ana menüye dönüldüğünde akıcı şekilde yeni dosya devreye girer.
+- **Mobil Pil ve Kota Tasarrufu:**
+  - Mobil oyunda 2 saniyede bir çalışan aşırı agresif versiyon kontrol döngüsü (`VERSION_CHECK_INTERVAL_MS`), cihazın pilini ve hücresel kotasını korumak amacıyla 30 saniyeye çekildi. Sekme değiştirme (`visibilitychange`), ekrana geri dönme (`focus`, `pageshow`) ve maç sonu anlık tetikleyicileri korundu.
+- **Hostinger CDN & LiteSpeed Optimizasyonu:**
+  - Hostinger CDN'in oyun dosyasını "DYNAMIC" olarak işaretleyip ilk açılışta 5 saniye bekletmesine sebep olan eski `no-cache, must-revalidate` meta etiketleri optimize edildi.
+  - LiteSpeed Cache üzerinde Konuk Kipi (Guest Mode), Mobil Önbellek (Cache Mobile), Tarayıcı Önbelleği (Browser Cache) ve Crawler (Site Haritası Isıtıcısı) tam konfigüre edildi.
+- **iOS & Mobil WebKit Reklam Sonrası Ses Kurtarma Motoru (Resilient Web Audio Engine):**
+  - Tam ekran AdMob geçiş ve ödüllü reklam gösterimleri esnasında iOS WebKit'in ses oturumunu (`AVAudioSession`) kesintiye uğratıp `AudioContext`'i kalıcı olarak askıya (`suspended` / `interrupted`) alması sorunu kökten çözüldü.
+  - Reklam kapanış callback'leri (`afterAd`, `adBreakDone`, `onNativeAdDone`), yaşam döngüsü olayları (`visibilitychange`, `pageshow`, `focus`) ve Apple'ın gereksinim duyduğu kullanıcı etkileşimi yakalama dinleyicileri (`touchstart`, `pointerdown`, `keydown`) ile otomatik kurtarma motoru (`resumeAudioContext` & `primeAudioContext`) kuruldu.
+  - Reklam bittiğinde oyun sesleri salisesinde kesintisiz devam eder; donuk audio context'ler 1-örnekli mikro priming ile donanıma anında bağlanır.
+- **Çapraz Platform Senkronizasyonu & Testler:**
+  - PC v3.4.9 ve Mobil v3.4.9 kaynak dosyaları oluşturuldu; tüm dahili scriptler Node.js sözdizimi doğrulamasıyla test edildi (%100 hatasız).
+  - `tests/ios-runtime.test.cjs` test paketinde 56/56 test (%100) başarıyla geçti.
+
+<en-US>
+What's New in v3.4.9:
+• Smart Cache-Busting & Zero-Byte Version Checks: Upgraded version checking to lightweight HTTP HEAD queries (0 KB body payload) tracking ETag and Last-Modified timestamps.
+• Instant Hot-Updates: Even without incrementing the version string, uploading a modified file triggers seamless client updates.
+• Web Audio Recovery Engine: Resolved iOS WebKit audio suspension where game sounds cut out after full-screen AdMob interstitial and rewarded ads.
+• Gameplay Protected: Updates wait gracefully until the current match or ad break concludes.
+• Mobile Battery & Bandwidth Optimization: Balanced mobile background checks to 30s while maintaining instant tab-focus and post-match listeners.
+• Hostinger CDN & LiteSpeed Cache Acceleration: Eliminated blocking no-cache meta tags and tuned server-side edge caching for fast cold starts.
+• Full Cross-Platform Parity: PC v3.4.9 and Mobile v3.4.9 fully synced and syntax-verified.
+</en-US>
+
+<tr-TR>
+v3.4.9 Yenilikleri:
+• Akıllı Cache-Busting ve 0 KB Sürüm Kontrolü: Versiyon kontrol motoru, ETag ve Last-Modified başlıklarını izleyen hafif HEAD isteklerine dönüştürüldü (0 KB veri transferi).
+• Sürüm Numarasından Bağımsız Anında Güncelleme: Sürüm numarası artırılmasa dahi sunucuya yüklenen yeni dosya tüm cihazlar tarafından salisesinde algılanır.
+• Reklam Sonrası Ses Kurtarma Motoru: Tam ekran AdMob reklamlarından sonra iOS WebKit'te oyun seslerinin kesilmesi sorunu çözüldü.
+• Kesintisiz Oyun Keyfi: Güncellemeler maç ortasında değil, yalnızca ana menüde veya maç bitiminde devreye girer.
+• Mobil Pil & Kota Tasarrufu: Mobildeki 2 saniyelik agresif döngü 30 saniyeye dengelendi; sekme açılış ve maç sonu kontrolleri korundu.
+• CDN & LiteSpeed İlk Açılış Hızlandırması: CDN'i kilitleyen eski etiketler temizlendi; ilk ziyaret hızlandırıldı.
+• Tam Senkronizasyon: PC v3.4.9 ve Mobil v3.4.9 eksiksiz eşitlendi.
+</tr-TR>
+
+### Sürüm v3.4.8 — Oyun Sonu Buton Düzeni & Paylaş Butonunun Kaldırılması (2026-09-25)
+
+- **Oyun Sonu Buton Düzeninde Ergonomik Sıralama:**
+  - Oyun sonu istatistik penceresinde (`showGameEndStats`) butonlar sektör standardı UI ilkelerine göre yeniden dizildi:
+    - **Sol Buton:** İkincil / Çıkış aksiyonu olan **Ana Menü** (`#gameEndMenuBtn`).
+    - **Sağ Buton:** Birincil / Ana aksiyon çağrısı (CTA) olan **Tekrar Oyna** (`#gameEndReplayBtn`).
+  - Tek kişilik oyun bitiş ekranında (`render1PGameOver`) da buton sırası aynı standartla senkronize edildi.
+- **Paylaş (Share) Butonunun Tamamen Kaldırılması:**
+  - Oyun akışını bölen ve gereksiz kalabalık yaratan "Paylaş" butonu (`#gameEndShareBtn` ve `#shareScoreBtn`) DOM şablonlarından, olay dinleyicilerinden ve yardımcı fonksiyonlardan (`triggerShareScore`) tamamen temizlendi.
+  - İlgili `.game-end-btn.share-btn` ve `.btn.share-neon` CSS kuralları kaldırılarak kod tabanı sadeleştirildi.
+- **Ferah ve Odaklı Oyun Sonu Deneyimi:**
+  - Mobil ekranlarda 3 butonun sıkışması engellendi; 2 butonlu sade yapı yan yana ergonomik bir yerleşim sundu.
+- **Çapraz Platform Senkronizasyonu & Testler:**
+  - Mobil v3.4.8, PC v3.4.8, iOS ve Android offline fallback dosyaları tam senkronize edildi.
+  - `tests/ios-runtime.test.cjs` test paketinde 54/54 test (%100) başarıyla geçti.
+
+<en-US>
+What's New in v3.4.8:
+• Streamlined Game End Layout: Reordered action buttons with Main Menu on the left and Play Again on the right for intuitive navigation.
+• Removed Share Button: Completely eliminated the Share button and clutter from post-game screens for a cleaner, faster rematch flow.
+• Ergonomic Mobile & Desktop UI: Two balanced buttons side-by-side provide effortless post-game interaction.
+• Full Cross-Platform Parity: Mobil, PC, iOS Native Shell, and Android fallbacks updated with 100% test coverage.
+</en-US>
+
+<tr-TR>
+v3.4.8 Yenilikleri:
+• Ergonomik Oyun Sonu Buton Düzeni: Butonlar sektör standardına uygun olarak solda Ana Menü, sağda Tekrar Oyna şeklinde yeniden dizildi.
+• Paylaş Butonu Kaldırıldı: Oyun sonundaki gereksiz Paylaş butonu tüm sürümlerden tamamen temizlendi.
+• Ferah ve Hızlı Oyun Sonu Deneyimi: Sadeleştirilmiş iki butonlu yapı ile daha hızlı ve konforlu rövanş imkanı.
+• Tam Çapraz Platform Eşitlemesi: Mobil, PC, iOS ve Android fallbacks 54/54 test ile eksiksiz güncellendi.
+</tr-TR>
+
+### Sürüm v3.4.7 — Online Çok Oyunculu Hız Kalibrasyonu & İnsani Seviye Dengeleme (2026-09-25)
+
+- **Tüm Online Odalarda 93.9 ms Altın Oran Baz Hız:**
+  - Sunucudaki (`server.js`) tüm oyun modlarının (Rastgele Eşleşme, Özel Oda Normal, Macera, Self Area 51) temel hızı yerel oyunla birebir aynı olan Altın Oran standardına (`MOD_SPEED.NORMAL = 0.75` / 10.65 TPS / 93.9 ms) eşitlendi.
+  - Özel odalardaki eski 70.4 ms'lik (%33 aşırı hızlı) kontrolsüz hız ortadan kaldırılarak yerel oyunla sıfır algı şoku sağlandı.
+- **İnsani Seviye Dash (Hızlanma Butonu):**
+  - Hızlı Rekabetçi (Fast Competitive) modundaki Dash çarpanı `2.5x` (33.1 ms ölümcül hız) seviyesinden `1.45x` (**64.7 ms**) seviyesine çekildi.
+  - Yılan çeyrek saniyede kontrolsüzce duvara yapışmak yerine, taktiksel bir ivmeyle fırlar, yem kapar veya rakibi köşeye sıkıştırır; oyuncu yön kontrolünü kaybetmez.
+- **Dengeli Güçlendiriciler:**
+  - Kırmızı Yem (Beast Mode) çarpanı `1.45x`'ten `1.25x`'e (**75.1 ms**), Mavi Safir yavaşlatması `0.50x`'ten `0.65x`'e (**144.5 ms**) uyarlandı.
+- **Rastgele Eşleşmede Bot Fallback Hız Senkronu:**
+  - 10 saniyede gerçek rakip bulunamayıp botla oyna dendiğinde oyun `FAST` yerine `NORMAL` (93.9 ms) hızında ve dengeli yapay zekayla başlar.
+- **Çapraz Platform Senkronizasyonu & Testler:**
+  - `server.js`, Mobil v3.4.7, PC v3.4.7, iOS ve Android offline fallback dosyaları tam senkronize edildi; `tests/ios-runtime.test.cjs` 53/53 test (%100) başarıyla geçti.
+
+<en-US>
+What's New in v3.4.7:
+• Multiplayer Speed Calibration: Rebalanced all online modes (Random Matchmaking & Custom Rooms) to the 93.9ms Golden Ratio base speed.
+• Humane Dash Tuning: Tamed the competitive Dash boost from 33ms to a tactical, controllable 64.7ms surge.
+• Balanced Power-Ups: Tuned Beast Mode (75.1ms) and Sapphire slow effect (144.5ms) for fair online duels.
+• Fair Bot Fallback: Unmatched matchmaking now transitions smoothly into Normal speed against AI.
+• Full Cross-Platform Parity: Server and client runtimes completely aligned.
+</en-US>
+
+<tr-TR>
+v3.4.7 Yenilikleri:
+• Online Çok Oyunculu Hız Kalibrasyonu: Rastgele eşleşme ve özel odaların baz hızı yerelle eşitlenerek 93.9 ms Altın Oran seviyesine çekildi.
+• İnsani Seviye Dash: Hızlanma butonu 33 ms'lik intihar hızından 64.7 ms'lik taktiksel atak seviyesine dengelendi.
+• Dengeli Güçlendiriciler: Kırmızı Yem (75.1 ms) ve Safir yavaşlatması (144.5 ms) adil düellolar için optimize edildi.
+• Dengeli Yapay Zeka Geçişi: Eşleşme bulunamadığında bot karşılaşması Normal hızda başlar.
+• Tam Çapraz Platform Eşitlemesi: Sunucu ve istemci kodları %100 senkronize edildi.
+</tr-TR>
+
+### Sürüm v3.4.6 — Altın Oran Hız Kalibrasyonu & Çapraz Platform Hız Senkronizasyonu (2026-09-25)
+
+- **Altın Oran NORMAL Hız Kalibrasyonu (Refleks Dostu Akış):**
+  - Başlangıç hızı olan NORMAL hız çarpanı `0.75` olarak yeniden kalibre edildi (`MOD_SPEED.NORMAL = 0.75`).
+  - Oyuncu adım aralığı 93.9 ms (~10.6 kare/sn) seviyesine çekilerek oyuna başlar başlamaz yaşanan panik ve duvara çarpma stresi ortadan kaldırıldı; köşe dönüşlerinde ve manevralarda tatmin edici bir kontrol alanı sağlandı.
+- **PC ve Mobil Hız Uçurumunun Kapatılması:**
+  - PC sürümündeki eski aşırı hızlı `1.00` çarpanı (70ms adım süresi) Mobil ile eşitlenerek `0.75` yapıldı.
+  - PC ve Mobil oyuncuları artık tamamen aynı refleks hafızası ve akıcı hız standartlarıyla oynar.
+- **Yapay Zeka (AI) Hız ve Rekabet Dengesi:**
+  - NORMAL modda AI hızı oyuncunun hızının %60'ında tutularak 156.5 ms / adım (~6.4 kare/sn) olarak dengelendi; AI sahadan kopmadan rekabetçi kalır.
+  - KOLAY modda AI hızı emekleme seviyesinden (235ms) canlı bir başlangıç seviyesine (`195.6 ms`, %60) uyarlandı.
+- **Hız Kademeleri Hiyerarşisi:**
+  - KOLAY: `0.60` (117.4 ms) | NORMAL: `0.75` (93.9 ms) | HIZLI: `0.95` (74.1 ms) | EKSTREM: `1.50` (46.9 ms).
+- **Çapraz Platform Senkronizasyonu & Testler:**
+  - Mobil v3.4.6, PC v3.4.6, iOS offline fallback ve Android offline fallback tam senkronize edildi.
+  - `tests/ios-runtime.test.cjs` test paketinde 51/51 test (%100) başarıyla geçti.
+
+<en-US>
+What's New in v3.4.6:
+• Golden Ratio Speed Calibration: Rebalanced default NORMAL speed to 93.9ms per step for smooth, responsive control without early-game panic.
+• PC & Mobile Speed Parity: Eliminated PC speed discrepancy, aligning keyboard and touch gameplay to the same responsive tempo.
+• Dynamic AI Balancing: AI snake matches player speed curves with fair, engaging competition across Easy, Normal, and Fast modes.
+• Full Cross-Platform Sync: Web, PC, iOS Native Shell, and Android WebView completely aligned with 100% automated test coverage.
+</en-US>
+
+<tr-TR>
+v3.4.6 Yenilikleri:
+• Altın Oran Hız Dengelemesi: Varsayılan NORMAL hız 93.9ms adım süresine dengelenerek panik olmadan akıcı ve kontrollü manevra imkanı sağlandı.
+• PC ve Mobil Hız Eşitlemesi: PC'deki aşırı hızlı başlangıç mobil temposuyla eşitlendi; platformlar arası hız farkı giderildi.
+• Dengeli Yapay Zeka Hızları: Kolay ve Normal modlarda yapay zekanın oyuncuya ayak uyduran canlı ve adil takip hızı korundu.
+• Tam Çapraz Platform Uyumu: Mobil, PC, iOS ve Android sürümleri %100 test uyumuyla güncellendi.
+</tr-TR>
+
+### Sürüm v3.4.5 — Game Feel Juice, Tron Zemin İzi, Dokunmatik Geri Bildirim & Sosyal Paylaşım (2026-09-25)
+
+- **Yılan Başı "Lokma Yutma" Efekti (Squash & Stretch / Gulp Pop):**
+  - Yem yendiğinde baş bloğu hareket ekseninde 140ms boyunca organik bir yaylanmayla genleşip (`scale(1.25, 0.8)`) normale döner; yem yeme hissiyatı fiziksel bir tatmine kavuşur.
+- **Kombo Metinlerine Fiziksel Yaylanma (Juicy Combo Popups):**
+  - Kombo popup metinleri (x2, x3...) dinamik yaylanma animasyonu (spring bounce `1.55` -> `1.0`), hafif rastgele açısal eğim (`±6.3°`) ve çift katmanlı neon ışıma ile render edilir.
+- **Serbest Dokunmatik / Kaydırma Geri Bildirimi (Floating Touch Ring & Swipe Trail - Mobil):**
+  - Ekrana dokunulduğunda ve kaydırıldığında neon camgöbeği (cyan) halka ve yön oku belirir, 220ms içinde zarifçe söner; oyuncuya sezgisel görsel teyit sağlar.
+- **Zemin Canlılığı — Tron Işık İzi (Grid Cell Glow Trail):**
+  - Yılanın kuyruğunun terk ettiği zemin karelerinde 550ms süreli fütüristik neon dolgu ve ızgara çerçeve ışıması bırakılır. Yılan başının önünde hiçbir görsel kutu veya fazlalık oluşmaz; hareket yönünde temiz zemin, kuyruk arkasında akıcı neon iz deneyimi sağlanır. 48 elemanlı döngüsel bellek havuzu (ring buffer) ile sıfır GC yükü ve 60 FPS akıcılık.
+- **Kişisel Rekor Rozeti & Sosyal Paylaşım Döngüsü (Viral Share Loop & New Record):**
+  - 1P Solo modunda en yüksek skor geçildiğinde parlayan altın "🏆 YENİ KİŞİSEL REKOR!" rozeti belirir.
+  - Oyun sonu ekranlarına modern Web Share API destekli, panoya kopyalama ve toast bildirim fallback'li neon yeşil "Skoru Paylaş" (Share Score) butonu eklendi.
+- **Çapraz Platform Senkronizasyonu & Testler:**
+  - Mobil v3.4.5, PC v3.4.5, iOS offline fallback ve Android offline fallback tam senkronize edildi.
+  - `tests/ios-runtime.test.cjs` test paketinde 50/50 test (%100) başarıyla geçti.
+
+<en-US>
+What's New in v3.4.5:
+• Head "Gulp Pop" Effect: Satisfying squash & stretch bounce when eating food along the movement axis.
+• Juicy Combo Popups: High-impact spring bounce, subtle angular tilt, and dual-layer neon glow for combo counters.
+• Free Touch & Swipe Feedback: Sleek neon ring and directional arrow trail for intuitive mobile touch gestures.
+• Tron Grid Glow Trail: Fading futuristic neon trail where snake heads travel, rendered with zero performance overhead.
+• New High Score Badge & Viral Share: Glowing gold record achievement badge and one-tap social score sharing.
+• Full Cross-Platform Sync: Web, PC, iOS Native Shell, and Android WebView completely aligned with 100% test coverage.
+</en-US>
+
+<tr-TR>
+v3.4.5 Yenilikleri:
+• Lokma Yutma Efekti: Yem yendiğinde yılan başında hareket yönünde organik yaylanma ve genişleme efekti.
+• Yaylanan Kombo Metinleri: Kombo patlamalarında fiziksel yaylanma, hafif açısal eğim ve çift katmanlı neon ışıma.
+• Dokunmatik Geri Bildirim Halkası: Mobilde serbest dokunma ve kaydırma anında beliren şık neon halka ve yön oku.
+• Tron Zemin Işık İzi: Yılan başlarının geçtiği karelerde zemin seviyesinde zarif fütüristik neon ışık izi.
+• Yeni Rekor Rozeti & Kolay Paylaşım: Yeni kişisel rekorlarda altın ışıltılı rozet ve tek dokunuşla skor paylaşma imkanı.
+• Tam Çapraz Platform Uyumu: Mobil, PC, iOS ve Android sürümleri %100 test uyumuyla güncellendi.
+</tr-TR>
+
+### Sürüm v3.4.4 — UI Ergonomisi & Çapraz Platform Oyun Sonu Buton Hiyerarşisi (2026-09-25)
+
+- **Hızlı Kurulum Dokunma Alanı (44x44px Hit-Target):**
+  - Hızlı Kurulum (`openQuickSetupMenu`) menüsündeki 28px renk seçim dairelerine mobil erişilebilirlik standartlarına uygun `::before` pseudo-elementi ile 44x44px genişletilmiş dokunma alanı entegre edildi.
+  - Küçük ekranlarda ve hareket halindeyken yanlış dokunmalar tamamen önlendi; `touch-action: manipulation` ile çift tıklama gecikmesi sıfırlandı. Menü sadeliği ve temiz yerleşimi tam korundu.
+- **Çapraz Platform Oyun Sonu Buton Hiyerarşisi (Primary CTA & Secondary Ghost):**
+  - Hem Mobil hem PC sürümlerinde oyun sonu ve galibiyet modal ekranlarında (`showGameEndStats`, `render1PGameOver`) "Tekrar Oyna" (Play Again) butonu parlak neon gradient (`primary` / `primary-neon`) ile öne çıkarıldı.
+  - "Ana Menü" (Main Menu) butonu ise ikincil şeffaf (`secondary` ghost) stiline çekilerek hover/dokunma anında neon patlaması yapması önlendi; akıcı ve dingin bir UX dengesi kuruldu. Açık tema (Light theme) tam uyumu sağlandı.
+- **Mobil Kontrol Düzeni Sadeliği:**
+  - Hızlı Kurulum menüsü yalın ve odaklı tutuldu; D-Pad ve 2-Buton geçişi oyun içi Pause menüsündeki akıcı bubble geçiş butonu üzerinden kesintisiz çalışmaya devam eder.
+- **PC & Çevrimdışı Sürüm Senkronizasyonu:**
+  - Mobil v3.4.4, PC v3.4.4, iOS (`mobile_offline_fallback.html`) ve Android (`mobile_offline_fallback.html`) tam senkronize edildi.
+  - `tests/ios-runtime.test.cjs` test paketinde 48/48 test (%100) başarıyla geçti.
+
+<en-US>
+What's New in v3.4.4:
+• Ergonomic 44x44px Hit-Targets: Quick Setup color dots now feature expanded touch targets for effortless selection.
+• Enhanced Game-End CTA Hierarchy: "Play Again" shines as a vibrant neon primary button across Mobile and PC, while "Main Menu" remains an elegant secondary ghost button.
+• Streamlined Quick Setup: Clean, uncluttered pre-match menu flow preserved on mobile devices.
+• Cross-Platform Synchronization: Web, PC, iOS, and Android offline runtimes fully aligned with 100% automated test coverage.
+</en-US>
+
+<tr-TR>
+v3.4.4 Yenilikleri:
+• Ergonomik 44x44px Dokunma Alanı: Hızlı Kurulum renk seçim daireleri genişletilmiş dokunma alanı ile kolaylaştırıldı.
+• Oyun Sonu Buton Hiyerarşisi: Hem Mobil hem PC'de "Tekrar Oyna" butonu parlak neon birincil CTA, "Ana Menü" ise sakin ikincil ghost buton yapıldı.
+• Yalın Hızlı Kurulum Deneyimi: Mobilde sade ve odaklı menü düzeni korunarak gereksiz kart kalabalığı önlendi.
+• Çapraz Platform Senkronizasyonu: Web, PC, iOS ve Android offline sürümleri %100 test uyumuyla güncellendi.
+</tr-TR>
+
+### Sürüm v3.4.3 — Game Feel, Girdi Tamponlama, Akıllı AI Hayatta Kalma & Ses İyileştirmeleri (2026-09-25)
 
 - **Girdi Tamponlama (Input Buffering / Turn Queue):**
   - Hızlı L-dönüşü ve U-dönüşü hamlelerinde yön komutlarının kaybolması engellendi.
@@ -12,17 +221,14 @@
   - Çarpışma ve ölüm anında maksimum hissedilirlik sağlanırken, hafif etkileşimlerde sarsıntı ölçülü tutuldu.
 - **Hit-Stop (Mikro Zaman Durması):**
   - Ölümcül çarpışma anında oyun mantığı 75ms boyunca durdurularak vuruşun ağırlığı ve dramatik etkisi fiziksel olarak hissettirildi.
-- **SFX Ton Çeşitliliği & Kombo Yükselişi:**
-  - Yem yeme seslerinde `±%5` rastgele ton oynaması (pitch wobble) ile "makineli tüfek" monotonluğu giderildi.
-  - Kombo serilerinde frekans kademe kademe yükselerek (+210Hz'e kadar) oyuncuya başarı hissi aşılandı.
-  - **AI Yılan Yem Sesi Ayrımı:** 1P modunda yapay zeka (AI) yılanının yem yeme sesleri kombo artışından ve ton sapmasından muaf tutularak daima standart, ilk orijinal 720Hz frekansında sabitlendi; böylece oyuncunun kendi kombo yükselişini net duyması sağlandı.
+- **SFX Kombo Yükselişi & Sabit İlk Ses:**
+  - Yem yeme seslerinde temel frekans her iki yılan için de daima sabit ve temiz 720Hz olarak korundu.
+  - Oyuncu 1.5 saniye içinde art arda kombo yaptıkça (x2, x3...) frekans kademe kademe incelerek (+210Hz'e kadar) başarı hissi aşılandı; kombo bitiminde ses hemen standart 720Hz'e döner.
+  - **AI Yılan Yem Sesi Ayrımı:** 1P modunda yapay zeka (AI) yılanının yem yeme sesleri kombo artışından muaf tutularak daima standart, ilk orijinal 720Hz frekansında sabitlendi; böylece oyuncunun kendi kombo yükselişini net duyması sağlandı.
 - **AI Flood-Fill Hayatta Kalma Zekası (Dead-End Avoidance):**
   - BFS yolu tıkandığında AI'ın rastgele ilk boş kareye yönelip kendini hapsetmesi önlendi; aday yönler 80 hücrelik flood-fill algoritmasıyla taranarak en geniş alana yönelmesi sağlandı.
 - **Kademeli Dokunsal Titreşim (Haptic Tiers):**
   - D-Pad yön dönüşü (10ms hafif tık) → Normal yem (20ms) → Elmas/Kalp (30ms) → Kombo (çift vuruş `[15, 8, 15]`) → Çarpışma (80ms tok vuruş) → Zafer (`[30, 20, 50]`) şeklinde katmanlandırıldı.
-- **Erişilebilirlik (Reduced Motion / Screen Effects):**
-  - Ayarlar menüsüne 21 dilde "Hareketi / Efektleri Azalt" (Reduce Screen Effects) seçeneği eklendi.
-  - Aktif edildiğinde ekran sarsıntısı, ızgara dalgası, hit-stop dondurması ve parçacık yoğunluğu kısıtlanarak hassas oyuncuların konforu sağlandı.
 - **Parçacık Nesne Havuzu (Object Pool):**
   - Yem patlama parçacıkları için 64 elemanlık sabit nesne havuzu (`foodBurstPool`) kuruldu; render esnasında her karede dizi tahsisi sıfırlanarak Garbage Collection mikro donmaları önlendi.
 - **Sürüm Senkronizasyonu & Testler:**
@@ -34,10 +240,9 @@ What's New in v3.4.3:
 • Responsive Input Buffering: Rapid corner turns and U-turns now queue reliably without dropping inputs.
 • Dynamic Canvas Screen Shake: Physics-based trauma decay replaces CSS shake for punchy, organic impacts.
 • Impact Hit-Stop: Fatal collisions now trigger a brief 75ms freeze frame for heightened game feel.
-• Pitch Variety & Combo Escalation: Food audio tones vary dynamically with rising pitch during combos.
+• Dynamic Combo Escalation: Baseline eat audio tone stays clean and rises dynamically only during combos.
 • Smarter AI Survival: Flood-fill area evaluation prevents AI from trapping itself in dead-ends.
 • Tiered Haptic Feedback: Custom vibration patterns for turns, food, combos, crashes, and match victories.
-• Reduce Screen Effects: New accessibility toggle in Settings for sensitive players.
 • Performance Polish: Zero-allocation particle object pooling eliminates frame drops.
 </en-US>
 
@@ -46,10 +251,9 @@ v3.4.3 Yenilikleri:
 • Tepkisel Girdi Tamponlama: Hızlı köşe ve U dönüşlerinde komut kaçırma sorunu 2 adımlı kuyruk ile giderildi.
 • Dinamik Canvas Sarsıntısı: Çarpışmalarda fizik tabanlı yumuşak sönümlemeli ekran sarsıntısı.
 • Çarpışma Hit-Stop Etkisi: Ölüm anında 75ms mikro zaman durması ile çarpışmanın ağırlığı hissettirildi.
-• SFX Ton Çeşitliliği & Kombo Yükselişi: Yem yeme seslerinde ton çeşitliliği ve kombo sırasında yükselen frekans.
+• SFX Kombo Yükselişi: Sabit standart ilk yem sesi ve kombo serilerinde kademe kademe incelen frekans.
 • Akıllı AI Hayatta Kalma: Flood-fill alan analiziyle yapay zekanın kendini köşeye sıkıştırması önlendi.
 • Kademeli Titreşim (Haptic): Dönüş, yem, kombo, çarpışma ve galibiyet için özel titreşim desenleri.
-• Efektleri Azalt (Erişilebilirlik): Ayarlar menüsünde sarsıntı ve flaş efektlerini kapatan erişilebilirlik seçeneği.
 • Parçacık Nesne Havuzu: Sabit havuz mimarisi ile bellek optimizasyonu ve pürüzsüz 60 FPS akıcılık.
 </tr-TR>
 

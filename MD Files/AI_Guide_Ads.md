@@ -2,7 +2,7 @@
 
 Bu belge, oyundaki reklam akisinin guncel davranisini ozetler. Web tarafinda reklamlar Google AdSense H5 Games Ads ile, Android shell icinde ise native koordine edilen bir kopru ile calisir.
 
-Referans surum: `v3.3.2`
+Referans surum: `v3.4.8` (iOS Build 46 / Android Code 70 - Runtime v3.4.8)
 
 ## Güncel iOS eki — Build 36 (2026-09-16)
 
@@ -35,7 +35,7 @@ AdMob eslestirme notu (Android shell):
 - app-ads.txt URL: `https://2playersnake.com/app-ads.txt`
 - app-ads.txt satiri: `google.com, pub-4114535776207741, DIRECT, f08c47fec0942fa0`
 
-AdMob eslestirme notu (iOS shell - v3.3.5):
+AdMob eslestirme notu (iOS shell - v3.4.2 / Build 46, Runtime v3.4.6):
 - App ID: `ca-app-pub-4114535776207741~3769407896`
 - Interstitial ID: `ca-app-pub-4114535776207741/6012427858`
 - Rewarded ID: `ca-app-pub-4114535776207741/7193260548`
@@ -178,6 +178,9 @@ Neler degismedi:
 | `v3.3.1` | Premium akışı aynen korundu, yerel hatırlatıcı bildirimler entegre edildi. |
 | `v3.3.2` | Premium durumu (adsRemoved) ve yüksek skorlar Cloud Save ile yedeklenir. Premium reklam bypass akışı aynen korunur. |
 | `v3.4.2` | Global ad cooldown 45 saniyeye (`cooldownMs: 45000`) optimize edildi; `showInterstitial` merkezi koruması korunarak hem gelir kurtarıldı hem de ardı ardına reklam çıkması engellendi. |
+| `v3.4.6` | Altın Oran Hız Kalibrasyonu (`MOD_SPEED.NORMAL = 0.75`, `EASY = 0.60`, `FAST = 0.95`, `EXTREME = 1.50`) ve PC-Mobil hız eşitlemesi yapıldı. Reklam kapısı (45s cooldown, startAdChance, rewarded continue) ve RevenueCat bypass kuralları tam korundu. |
+| `v3.4.7` | Online Çok Oyunculu Hız Kalibrasyonu (server.js baz hız 93.9 ms, Dash 64.7 ms, bot fallback NORMAL) yapıldı. Reklam kapısı (45s cooldown, startAdChance, rewarded continue) ve RevenueCat bypass kuralları tam korundu. |
+| `v3.4.8` | Oyun sonu buton düzeni (solda Ana Menü, sağda Tekrar Oyna) güncellendi, Paylaş butonu kaldırıldı. Reklam kapısı (menu_after_stats, replay_after_stats interstitial, 45s cooldown, rewarded continue) ve RevenueCat bypass kuralları tam korundu. |
 
 ---
 

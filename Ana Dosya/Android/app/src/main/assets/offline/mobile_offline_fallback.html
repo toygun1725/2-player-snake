@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>2 Player Snake Mobile v3.4.3 - Play Online & Local</title>
+    <title>2 Player Snake Mobile v3.4.8 - Play Online & Local</title>
     <script>
         // Only a native shell that advertises the bundled asset handler uses local URLs.
         window.__twoPlayerSnakeUseNativeAssets = window.__twoPlayerSnakePlatform === 'ios' &&
@@ -115,7 +115,7 @@
         }
     </script>
 
-    <!-- Version: v3.4.3 Mobile -->
+    <!-- Version: v3.4.5 Mobile -->
     <style>
         :root {
             --bg: #0b0f14;
@@ -1860,6 +1860,70 @@
             box-shadow: none;
         }
 
+        .game-end-btn.primary {
+            background: linear-gradient(135deg, #00e5ff 0%, #35e6e6 100%);
+            color: #070b14;
+            font-weight: 800;
+            border: 1px solid rgba(255,255,255,0.85);
+            box-shadow: 0 4px 18px rgba(0,229,255,0.5), inset 0 1px 0 rgba(255,255,255,0.6);
+        }
+        .game-end-btn.primary:hover {
+            background: linear-gradient(135deg, #35e6e6 0%, #ff4fbf 100%);
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(53,230,230,0.6), 0 2px 8px rgba(255,79,191,0.4);
+            transform: translateY(-2px) scale(1.03);
+        }
+        .game-end-btn.secondary {
+            background: rgba(255,255,255,0.06);
+            color: #b8c7e0;
+            border: 1px solid rgba(255,255,255,0.18);
+        }
+        .game-end-btn.secondary:hover {
+            background: rgba(255,255,255,0.12) !important;
+            border-color: rgba(255,255,255,0.35) !important;
+            color: #ffffff !important;
+            transform: translateY(-2px) scale(1.01) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25) !important;
+        }
+        .btn.primary-neon {
+            background: linear-gradient(135deg, #00e5ff 0%, #35e6e6 100%) !important;
+            color: #070b14 !important;
+            font-weight: 800 !important;
+            border: 1px solid rgba(255,255,255,0.85) !important;
+            box-shadow: 0 4px 18px rgba(0,229,255,0.5), inset 0 1px 0 rgba(255,255,255,0.6) !important;
+        }
+        .btn.primary-neon:hover {
+            background: linear-gradient(135deg, #35e6e6 0%, #ff4fbf 100%) !important;
+            color: #fff !important;
+            transform: translateY(-2px) scale(1.03) !important;
+        }
+
+        /* v3.4.5: Viral Share Loop & New Record Badge */
+        .game-end-badge.new-record-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 6px 14px;
+            margin: 0 auto 10px auto;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.22), rgba(255, 140, 0, 0.28));
+            border: 1px solid rgba(255, 215, 0, 0.65);
+            border-radius: 20px;
+            color: #ffd700;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 0 16px rgba(255, 215, 0, 0.4), inset 0 0 8px rgba(255, 215, 0, 0.2);
+            animation: newRecordPulse 1.4s ease-in-out infinite alternate;
+        }
+        @keyframes newRecordPulse {
+            from { transform: scale(0.97); box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+            to { transform: scale(1.04); box-shadow: 0 0 20px rgba(255, 215, 0, 0.65); }
+        }
+
+
         .game-end-card.rewarded-continue-card {
             width: min(86vw, 340px);
             padding: 20px 18px;
@@ -2029,6 +2093,27 @@
             background: #ffffff;
             border: 1px solid rgba(148,163,184,0.5);
             color: #000;
+        }
+
+        [data-theme="light"] .game-end-btn.primary,
+        [data-theme="light"] .btn.primary-neon {
+            background: linear-gradient(135deg, #00bcd4, #0097a7) !important;
+            color: #ffffff !important;
+            border-color: rgba(255,255,255,0.7) !important;
+            box-shadow: 0 4px 14px rgba(0,188,212,0.4) !important;
+        }
+
+        [data-theme="light"] .game-end-btn.secondary {
+            background: rgba(0,0,0,0.04) !important;
+            border-color: rgba(148,163,184,0.3) !important;
+            color: #475569 !important;
+            box-shadow: none !important;
+        }
+        [data-theme="light"] .game-end-btn.secondary:hover {
+            background: rgba(0,0,0,0.08) !important;
+            border-color: rgba(148,163,184,0.5) !important;
+            color: #0f172a !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
         }
 
         [data-theme="light"] .rewarded-continue-note {
@@ -3003,10 +3088,17 @@
         }
         .qs-color-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; justify-items: center; }
         .qs-color-dot {
+          position: relative;
           width: 28px; height: 28px; border-radius: 50%;
           border: 2px solid transparent; cursor: pointer;
           transition: transform 0.14s, border-color 0.14s;
           padding: 0; outline: none;
+          touch-action: manipulation;
+        }
+        .qs-color-dot::before {
+          content: '';
+          position: absolute;
+          top: -8px; left: -8px; right: -8px; bottom: -8px;
         }
         .qs-color-dot.selected { border-color: #fff; transform: scale(1.22);
           box-shadow: 0 0 8px rgba(255,255,255,0.5); }
@@ -4233,10 +4325,10 @@
     <script>
         (() => {
             /* ==============================
-              2 Player Snake - Beta v3.4.3 Mobile
+              2 Player Snake - Beta v3.4.8 Mobile
               ============================= */
 
-            const VERSION = 'v3.4.3';
+            const VERSION = 'v3.4.8';
             const IS_IOS_SHELL = window.__twoPlayerSnakePlatform === 'ios';
             const IS_APPLE_DEVICE = IS_IOS_SHELL ||
                 (typeof window !== 'undefined' && Boolean(window.isAppleDevice)) ||
@@ -5800,7 +5892,11 @@
                     localMode: 'YEREL OYNA',
                     onlineMode: 'ÇEVRİMİÇİ OYNA',
                     achievements: 'Başarımlar',
-                    controls: 'Kontroller'
+                    controls: 'Kontroller',
+                    newRecord: 'YENİ KİŞİSEL REKOR!',
+                    shareScore: 'Paylaş',
+                    scoreCopied: 'Skor panoya kopyalandı!',
+                    shareText: '🐍 2 Player Snake oyununda {score} puan yaptım! Sen de dene: https://2playersnake.com'
                 },
                 en: {
                     colorPick: 'Name & Color', namePlaceholder: 'Name',
@@ -5812,7 +5908,11 @@
                     localMode: 'PLAY LOCAL',
                     onlineMode: 'PLAY ONLINE',
                     achievements: 'Achievements',
-                    controls: 'Controls'
+                    controls: 'Controls',
+                    newRecord: 'NEW PERSONAL RECORD!',
+                    shareScore: 'Share',
+                    scoreCopied: 'Score copied to clipboard!',
+                    shareText: '🐍 I scored {score} in 2 Player Snake! Can you beat me? https://2playersnake.com'
                 },
                 fr: {
                     colorPick: 'Nom & Couleur', namePlaceholder: 'Nom',
@@ -7130,7 +7230,6 @@
 
             /* === Sound & Feel === */
             let audioCtx; let muted = localStorage.getItem('neoSnakeMutedMobile') === '1';
-            let reducedMotion = localStorage.getItem('neoSnakeReducedMotion') === '1';
             const screenShake = {
                 trauma: 0,
                 decay: 3.5,
@@ -7138,7 +7237,6 @@
                 t: 0
             };
             function addTrauma(amount) {
-                if (typeof reducedMotion !== 'undefined' && reducedMotion) return;
                 screenShake.trauma = Math.min(1.0, screenShake.trauma + amount);
             }
             let hitStopUntil = 0;
@@ -7187,10 +7285,107 @@
                 }
             }
 
-            function ensureAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+            function primeAudioContext(ctx) {
+                if (!ctx || ctx.state !== 'running') return;
+                try {
+                    const buf = ctx.createBuffer(1, 1, 22050);
+                    const src = ctx.createBufferSource();
+                    src.buffer = buf;
+                    src.connect(ctx.destination);
+                    src.start(0);
+                } catch (e) {}
+            }
+
+            function setupAudioStateMonitoring(ctx) {
+                if (!ctx || ctx._hasStateListener) return;
+                ctx._hasStateListener = true;
+                try {
+                    ctx.addEventListener('statechange', () => {
+                        if (!muted && !document.hidden && (ctx.state === 'suspended' || ctx.state === 'interrupted')) {
+                            ctx.resume().then(() => primeAudioContext(ctx)).catch(() => {});
+                        }
+                    });
+                } catch (e) {}
+            }
+
+            function ensureAudio() {
+                if (!audioCtx || audioCtx.state === 'closed') {
+                    try {
+                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        setupAudioStateMonitoring(audioCtx);
+                    } catch (e) {}
+                }
+                if (audioCtx && (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted')) {
+                    audioCtx.resume().then(() => primeAudioContext(audioCtx)).catch(() => {});
+                }
+            }
+
+            function resumeAudioContext() {
+                if (muted) return;
+                try {
+                    if (!audioCtx || audioCtx.state === 'closed') {
+                        ensureAudio();
+                        return;
+                    }
+                    if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
+                        audioCtx.resume().then(() => {
+                            primeAudioContext(audioCtx);
+                        }).catch(() => {
+                            setTimeout(() => {
+                                if (audioCtx && (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted')) {
+                                    audioCtx.resume().then(() => primeAudioContext(audioCtx)).catch(() => {});
+                                }
+                            }, 120);
+                            setTimeout(() => {
+                                if (audioCtx && (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted')) {
+                                    audioCtx.resume().then(() => primeAudioContext(audioCtx)).catch(() => {});
+                                }
+                            }, 350);
+                        });
+                    } else if (audioCtx.state === 'running') {
+                        primeAudioContext(audioCtx);
+                    }
+                } catch (e) {
+                    console.warn('[WebAudio] resumeAudioContext error:', e);
+                }
+            }
+            window.resumeAudioContext = resumeAudioContext;
+
+            // Global user gesture unlock - satisfies iOS WebKit gesture requirement
+            const userAudioGestureEvents = ['touchstart', 'touchend', 'pointerdown', 'mousedown', 'keydown'];
+            function handleUserAudioGesture() {
+                if (!muted && audioCtx && (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted')) {
+                    audioCtx.resume().then(() => primeAudioContext(audioCtx)).catch(() => {});
+                }
+            }
+            userAudioGestureEvents.forEach(evt => {
+                window.addEventListener(evt, handleUserAudioGesture, { passive: true, capture: true });
+            });
+
+            // Lifecycle listeners for returning from full-screen ads / background
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    resumeAudioContext();
+                    setTimeout(resumeAudioContext, 200);
+                }
+            });
+            window.addEventListener('focus', () => {
+                resumeAudioContext();
+                setTimeout(resumeAudioContext, 200);
+            });
+            window.addEventListener('pageshow', () => {
+                resumeAudioContext();
+                setTimeout(resumeAudioContext, 200);
+            });
+
             function tone(freq, dur, { type = 'square', gain = 0.06, attack = 0.004, release = 0.06, sweep = 0 } = {}) {
                 if (muted) return; try {
-                    ensureAudio(); const now = audioCtx.currentTime;
+                    ensureAudio();
+                    if (!audioCtx) return;
+                    if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
+                        audioCtx.resume().catch(() => {});
+                    }
+                    const now = audioCtx.currentTime;
                     const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
                     o.type = type; o.frequency.value = freq;
                     if (sweep) { o.frequency.linearRampToValueAtTime(freq * (1 + sweep), now + dur); }
@@ -7209,8 +7404,7 @@
                     }
                     const combo = (typeof comboState !== 'undefined' && comboState[ownerKey]) ? comboState[ownerKey] : null;
                     const comboStep = combo && combo.count > 1 ? Math.min((combo.count - 1) * 35, 210) : 0;
-                    const wobble = 1 + (Math.random() - 0.5) * 0.10;
-                    const freq = (720 + comboStep) * wobble;
+                    const freq = 720 + comboStep;
                     tone(freq, 0.08, { type: 'square', gain: 0.05 });
                     hapticVibrate(20);
                 },
@@ -7236,10 +7430,8 @@
                     hapticVibrate(80);
                     const wobble = 1 + (Math.random() - 0.5) * 0.06;
                     tone(180 * wobble, 0.20, { type: 'sawtooth', gain: 0.08, sweep: -0.35 });
-                    if (typeof reducedMotion === 'undefined' || !reducedMotion) {
-                        canvasWrap.classList.add('shake');
-                        setTimeout(() => canvasWrap.classList.remove('shake'), 200);
-                    }
+                    canvasWrap.classList.add('shake');
+                    setTimeout(() => canvasWrap.classList.remove('shake'), 200);
                 },
                 drawCrash() {
                     if (isDemoMode) return;
@@ -7247,10 +7439,8 @@
                     hapticVibrate(80);
                     tone(220, 0.25, { type: 'sawtooth', gain: 0.1, sweep: -0.5 });
                     tone(160, 0.25, { type: 'square', gain: 0.1, sweep: -0.5 });
-                    if (typeof reducedMotion === 'undefined' || !reducedMotion) {
-                        canvasWrap.classList.add('shake');
-                        setTimeout(() => canvasWrap.classList.remove('shake'), 200);
-                    }
+                    canvasWrap.classList.add('shake');
+                    setTimeout(() => canvasWrap.classList.remove('shake'), 200);
                 },
                 start() { tone(420, 0.10, { type: 'sine', gain: 0.05 }); setTimeout(() => tone(640, 0.12, { type: 'sine', gain: 0.05 }), 120); setTimeout(() => tone(860, 0.14, { type: 'sine', gain: 0.05 }), 260); },
                 pause() { hapticVibrate(15); tone(360, 0.06, { type: 'square', gain: 0.04 }); },
@@ -7309,7 +7499,7 @@
             let paused = false, inCountdown = false, intermission = false, isDemoMode = false;
 
             let currentSpeedMode = null;
-            const MOD_SPEED = { EASY: 0.75, NORMAL: 0.85, FAST: 1.05, EXTREME: 1.80 };
+            const MOD_SPEED = { EASY: 0.60, NORMAL: 0.75, FAST: 0.95, EXTREME: 1.50 };
             let currentWallMode = null;
             const MOD_WALLS = { NONE: 'no-walls', SOLID: 'walls' };
 
@@ -9640,7 +9830,57 @@
             initControlsModal();
             initDpadButtons();
 
-            /* === Swipe Controls (1P & Online only) === */
+            /* === Swipe Controls (1P & Online only) + Touch Feedback === */
+            let touchGesture = { active: false, startX: 0, startY: 0, currentX: 0, currentY: 0, endTime: 0 };
+
+            function drawTouchGestureIndicator() {
+                if (!touchGesture.active && (!touchGesture.endTime || performance.now() - touchGesture.endTime > 220)) {
+                    return;
+                }
+                const now = performance.now();
+                let alpha = 0.40;
+                if (!touchGesture.active) {
+                    const fadeT = (now - touchGesture.endTime) / 220;
+                    alpha = Math.max(0, 0.40 * (1 - fadeT));
+                }
+                if (alpha <= 0.01) return;
+
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.strokeStyle = '#00f3ff';
+                ctx.fillStyle = '#00f3ff';
+                ctx.shadowColor = '#00f3ff';
+                ctx.shadowBlur = 8;
+                ctx.lineWidth = 2.5;
+
+                // Outer subtle pulse ring at start position
+                ctx.beginPath();
+                ctx.arc(touchGesture.startX, touchGesture.startY, 22, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Inner dot
+                ctx.beginPath();
+                ctx.arc(touchGesture.startX, touchGesture.startY, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // If dragged, draw drag vector
+                const dx = touchGesture.currentX - touchGesture.startX;
+                const dy = touchGesture.currentY - touchGesture.startY;
+                const dist = Math.hypot(dx, dy);
+                if (dist > 8) {
+                    ctx.beginPath();
+                    ctx.moveTo(touchGesture.startX, touchGesture.startY);
+                    ctx.lineTo(touchGesture.currentX, touchGesture.currentY);
+                    ctx.stroke();
+
+                    // Arrowhead / tip dot
+                    ctx.beginPath();
+                    ctx.arc(touchGesture.currentX, touchGesture.currentY, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+
             // v3.2.4: 4-direction swipe on canvas for single-player and online modes.
             // Disabled in '2P' local mode — two players share the screen, buttons are safer.
             (function initSwipeControls() {
@@ -9650,15 +9890,45 @@
                 const canvasEl = document.getElementById('game');
                 if (!canvasEl) return;
 
+                function getCanvasPoint(clientX, clientY) {
+                    const rect = canvasEl.getBoundingClientRect();
+                    const scaleX = (canvasEl.width / (dpr || 1)) / (rect.width || 1);
+                    const scaleY = (canvasEl.height / (dpr || 1)) / (rect.height || 1);
+                    return {
+                        x: (clientX - rect.left) * scaleX,
+                        y: (clientY - rect.top) * scaleY
+                    };
+                }
+
                 canvasEl.addEventListener('touchstart', function(e) {
                     if (!isSwipeControlEnabled) return; // v3.3.8: respect swipe toggle
                     if (gameMode === '2P') return; // disabled for local 2P
                     const t = e.touches[0];
                     swipeStartX = t.clientX;
                     swipeStartY = t.clientY;
+                    const pt = getCanvasPoint(t.clientX, t.clientY);
+                    touchGesture.active = true;
+                    touchGesture.startX = pt.x;
+                    touchGesture.startY = pt.y;
+                    touchGesture.currentX = pt.x;
+                    touchGesture.currentY = pt.y;
+                    touchGesture.endTime = 0;
+                }, { passive: true });
+
+                canvasEl.addEventListener('touchmove', function(e) {
+                    if (!touchGesture.active) return;
+                    const t = e.touches[0];
+                    if (!t) return;
+                    const pt = getCanvasPoint(t.clientX, t.clientY);
+                    touchGesture.currentX = pt.x;
+                    touchGesture.currentY = pt.y;
                 }, { passive: true });
 
                 canvasEl.addEventListener('touchend', function(e) {
+                    if (touchGesture.active) {
+                        touchGesture.active = false;
+                        touchGesture.endTime = performance.now();
+                    }
                     if (!isSwipeControlEnabled) return; // v3.3.8: respect swipe toggle
                     if (gameMode === '2P') return; // disabled for local 2P
                     if (!snakes || inCountdown || intermission || paused || !currentSpeedMode) return;
@@ -9692,6 +9962,13 @@
                     if (newDir) {
                         queueSnakeDirection(snake, newDir);
                         hapticVibrate(10);
+                    }
+                }, { passive: true });
+
+                canvasEl.addEventListener('touchcancel', function(e) {
+                    if (touchGesture.active) {
+                        touchGesture.active = false;
+                        touchGesture.endTime = performance.now();
                     }
                 }, { passive: true });
             })();
@@ -9772,7 +10049,7 @@
 
                 showBanner(`<div class="main-menu-shell">
       <div class="main-menu-logo-wrap">
-        <img class="main-menu-logo" src="${(window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'offline_logo.png')}" alt="2 Player Snake logo">
+        <img class="main-menu-logo" src="${(window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp')}" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';">
       </div>
       <div class="main-menu-actions">
         <div class="main-menu-btns">
@@ -10460,6 +10737,7 @@
                                     }
                                     spawnFoodBurst(eatenFood, key, head);
                                     registerComboEat(key, head);
+                                    newS.gulpPop = { start: performance.now(), duration: 140 };
                                     
                                     // Add digestAnim array to newS if not present
                                     if (!newS.digestAnims) newS.digestAnims = [];
@@ -10475,6 +10753,7 @@
                                     const fallbackFood = { x: head.x, y: head.y, type: 'normal' };
                                     spawnFoodBurst(fallbackFood, key, head);
                                     registerComboEat(key, head);
+                                    newS.gulpPop = { start: performance.now(), duration: 140 };
                                     
                                     if (!newS.digestAnims) newS.digestAnims = [];
                                     const _digestColor = playerColors[key] || '#ffffff';
@@ -10532,6 +10811,7 @@
                             if (snakes[key] && data.snakes[key]) {
                                 // Carry over client-side digestAnims and concatenate any new ones from the server packet processing above
                                 data.snakes[key].digestAnims = (snakes[key].digestAnims || []).concat(data.snakes[key].digestAnims || []);
+                                data.snakes[key].gulpPop = snakes[key].gulpPop || data.snakes[key].gulpPop || { start: 0, duration: 140 };
 
                                 const oldHead = snakes[key].segments[0];
                                 const newHead = data.snakes[key].segments[0];
@@ -10540,6 +10820,11 @@
                                     data.snakes[key].prev = snakes[key].segments.map(seg => ({ ...seg }));
                                     if (key === 'p1') lastP1Update = performance.now();
                                     else lastP2Update = performance.now();
+                                    const oldTail = snakes[key].segments[snakes[key].segments.length - 1];
+                                    const newTail = data.snakes[key].segments[data.snakes[key].segments.length - 1];
+                                    if (oldTail && newTail && (oldTail.x !== newTail.x || oldTail.y !== newTail.y)) {
+                                        if (typeof recordGridTrail === 'function') recordGridTrail(oldTail.x, oldTail.y, key);
+                                    }
                                 } else {
                                     // Head didn't move — keep existing prev and timestamp
                                     data.snakes[key].prev = snakes[key].prev || snakes[key].segments.map(seg => ({ ...seg }));
@@ -10818,7 +11103,7 @@
                 markMenuScreen(MENU_IDS.PLAY_SPLIT, true);
                 showBanner(`<div class="main-menu-shell">
       <div class="main-menu-logo-wrap">
-        <img class="main-menu-logo" src="${(window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'offline_logo.png')}" alt="2 Player Snake logo">
+        <img class="main-menu-logo" src="${(window.__twoPlayerSnakeUseNativeAssets ? window.__twoPlayerSnakeAssetBaseUrl + 'logo.png' : 'https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp')}" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';">
       </div>
       <div class="main-menu-actions">
         <div class="main-menu-btns">
@@ -11229,7 +11514,7 @@
                             gameStyle = 'fastCompetitive';
                             gameMode = '1P';
                             aiSnakeEnabled = true;
-                            currentSpeedMode = 'FAST';
+                            currentSpeedMode = 'NORMAL';
                             currentWallMode = MOD_WALLS.NONE;
                             if (socket) { socket.disconnect(); socket = null; }
                             hideBanner();
@@ -11289,30 +11574,6 @@
                 };
             }
 
-            function getReducedEffectsLabel() {
-                const map = {
-                    tr: 'Hareketi / Efektleri Azalt',
-                    en: 'Reduce Screen Effects',
-                    de: 'Bildeffekte reduzieren',
-                    fr: 'Réduire les effets d\'écran',
-                    es: 'Reducir efectos de pantalla',
-                    it: 'Riduci effetti schermo',
-                    ru: 'Уменьшить спецэффекты',
-                    ja: '画面効果を減らす',
-                    ko: '화면 효과 줄이기',
-                    zh: '减少画面特效',
-                    pt: 'Reduzir efeitos visuais',
-                    nl: 'Schermeffecten verminderen',
-                    pl: 'Zmniejsz efekty ekranu',
-                    id: 'Kurangi efek layar',
-                    hi: 'स्क्रीन प्रभाव कम करें',
-                    vi: 'Giảm hiệu ứng màn hình',
-                    ar: 'تقليل تأثيرات الشاشة'
-                };
-                const lCode = (lang || 'en').toLowerCase().split('-')[0];
-                return map[lCode] || map.en;
-            }
-
             function openSettings() {
                 if (settingsFromPause) {
                     markMenuScreen(MENU_IDS.SETTINGS, true);
@@ -11326,7 +11587,6 @@
                 const soundLabel = `${t('sound')}: ${muted ? t('soundOff') : t('soundOn')}`;
                 const langLabel = `${t('language')}: ${t('languageName')}`;
                 const themeLabel = `${t('theme')}: ${getCurrentTheme()}`;
-                const reducedMotionText = `${getReducedEffectsLabel()}: ${reducedMotion ? (t('soundOn') || 'ON') : (t('soundOff') || 'OFF')}`;
                 showBanner(`<h1>${t('settings')}</h1>
       <div style="display:flex;flex-direction:column;gap:8px;align-items:center;margin-top:12px; width: 100%;">
         <button class="btn big btn-menu-row" id="toggleLang">
@@ -11348,11 +11608,6 @@
           <span class="btn-menu-icon"><i class="fa-solid fa-circle-half-stroke"></i></span>
           <span class="btn-menu-sep"></span>
           <span class="btn-menu-text">${themeLabel}</span>
-        </button>
-        <button class="btn big btn-menu-row" id="toggleReducedMotion">
-          <span class="btn-menu-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
-          <span class="btn-menu-sep"></span>
-          <span class="btn-menu-text">${reducedMotionText}</span>
         </button>
         <button class="btn big btn-menu-row" id="menuInstagram">
           <span class="btn-menu-icon"><i class="fa-brands fa-instagram"></i></span>
@@ -11405,15 +11660,6 @@
                     toggleTheme();
                     openSettings();
                 };
-                const redMotBtn = document.getElementById('toggleReducedMotion');
-                if (redMotBtn) {
-                    redMotBtn.onclick = () => {
-                        SFX.menuClick();
-                        reducedMotion = !reducedMotion;
-                        localStorage.setItem('neoSnakeReducedMotion', reducedMotion ? '1' : '0');
-                        openSettings();
-                    };
-                }
                 const instBtn = document.getElementById('menuInstagram');
                 if (instBtn) {
                     instBtn.onclick = () => { SFX.menuClick(); window.open('https://www.instagram.com/2playersnake', '_blank'); };
@@ -11450,11 +11696,38 @@
                 document.getElementById('developersBack').onclick = () => { SFX.menuClick(); goBack(MENU_IDS.SETTINGS); };
             }
 
+            let lastGameNewRecord = false;
+
+            function showToast(msg) {
+                let toast = document.getElementById('neoSnakeToast');
+                if (!toast) {
+                    toast = document.createElement('div');
+                    toast.id = 'neoSnakeToast';
+                    toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(18,22,38,0.95);color:#00e5ff;border:1px solid rgba(0,229,255,0.4);box-shadow:0 8px 32px rgba(0,0,0,0.6);padding:10px 20px;border-radius:24px;font-family:Orbitron,sans-serif;font-size:13px;letter-spacing:1px;z-index:999999;pointer-events:none;transition:opacity 0.3s ease, transform 0.3s ease;opacity:0;';
+                    document.body.appendChild(toast);
+                }
+                toast.textContent = msg;
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(-50%) translateY(0)';
+                clearTimeout(toast._timeout);
+                toast._timeout = setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(-50%) translateY(10px)';
+                }, 2200);
+            }
+
+
+
             function addHighScore(name, score) {
+                lastGameNewRecord = false;
                 if (score <= 0) return;
                 try {
                     const scoresJSON = localStorage.getItem('neoSnakeHighscoresMobile');
                     let scores = scoresJSON ? JSON.parse(scoresJSON) : [];
+                    const prevTop = scores.length > 0 ? (scores[0].score || 0) : 0;
+                    if (score > prevTop) {
+                        lastGameNewRecord = true;
+                    }
                     scores.push({ name, score });
                     scores.sort((a, b) => b.score - a.score);
                     if (scores.length > 10) scores = scores.slice(0, 10);
@@ -11946,7 +12219,7 @@
                 for (let i = 0; i < len; i++) {
                     seg.push({ x: start.x - i * dir.x, y: start.y - i * dir.y });
                 }
-                return { segments: seg, prev: seg.map(s => ({ ...s })), dir: { ...dir }, nextDir: { ...dir }, inputQueue: [], grow: 0, powerEnd: 0, flashUntil: 0, flashColor: null, shakeUntil: 0, digestAnims: [], slowEnd: 0 };
+                return { segments: seg, prev: seg.map(s => ({ ...s })), dir: { ...dir }, nextDir: { ...dir }, inputQueue: [], grow: 0, powerEnd: 0, flashUntil: 0, flashColor: null, shakeUntil: 0, digestAnims: [], slowEnd: 0, gulpPop: { start: 0, duration: 140 } };
             }
             function isPowered(s) { return s && performance.now() < s.powerEnd; }
 
@@ -12756,6 +13029,7 @@
                             ? '#39ff7a'
                             : '#ffffff')));
                         s.digestAnims.push({ startTime: now, color: _digestColor });
+                        s.gulpPop = { start: now, duration: 140 };
                         spawnFoodBurst(f, ownerKey, s.segments[0]);
                         registerComboEat(ownerKey, s.segments[0]);
 
@@ -12920,7 +13194,14 @@
                     }
                 }
                 s.segments.unshift(nextHead);
-                if (s.grow > 0) s.grow--; else s.segments.pop();
+                if (s.grow > 0) {
+                    s.grow--;
+                } else {
+                    const vacated = s.segments.pop();
+                    if (typeof recordGridTrail === 'function' && vacated) {
+                        recordGridTrail(vacated.x, vacated.y, ownerKey);
+                    }
+                }
                 return true;
             }
 
@@ -13062,7 +13343,7 @@
                 deathAnim = { active: true, loser, winner, nextAt: performance.now(), stepMs: len > 0 ? 500 / len : 40 };
                 intermission = true;
                 if (!isOnlineMode) {
-                    if (!isDemoMode && (typeof reducedMotion === 'undefined' || !reducedMotion)) {
+                    if (!isDemoMode) {
                         hitStopUntil = performance.now() + 75;
                         addTrauma(0.85);
                     }
@@ -13098,6 +13379,19 @@ function spawnPooledParticle(x, y, vx, vy, gravity, drag, size, color, bornAt, l
 }
 let comboPopups = [];
 let gridRipples = [];
+/* v3.4.5: Tron Grid Glow Trail (Ring Buffer) */
+const GRID_TRAIL_CAPACITY = 48;
+const gridTrail = [];
+let gridTrailHead = 0;
+
+function recordGridTrail(x, y, ownerKey) {
+    if (x === undefined || y === undefined) return;
+    const now = performance.now();
+    const color = playerColors[ownerKey] || '#ffffff';
+    gridTrail[gridTrailHead] = { x, y, color, bornAt: now };
+    gridTrailHead = (gridTrailHead + 1) % GRID_TRAIL_CAPACITY;
+}
+
 const MOBILE_MAX_FOOD_BURST_PARTICLES = 56;
 const comboState = {
     p1: { count: 0, lastEatAt: 0 },
@@ -13109,6 +13403,8 @@ function resetArcadeFxState() {
     for (let i = 0; i < FOOD_BURST_POOL_SIZE; i++) foodBurstPool[i].active = false;
     comboPopups = [];
     gridRipples = [];
+    gridTrail.length = 0;
+    gridTrailHead = 0;
     comboState.p1.count = 0;
     comboState.p1.lastEatAt = 0;
     comboState.p2.count = 0;
@@ -13127,7 +13423,7 @@ function getFoodBurstPalette(foodType, ownerKey) {
 
 function spawnFoodBurst(food, ownerKey, head) {
     if (!food || !head) return;
-    if (typeof gridRipples !== 'undefined' && (typeof reducedMotion === 'undefined' || !reducedMotion)) {
+    if (typeof gridRipples !== 'undefined') {
         let rippleColor;
         if (food.type === 'diamond') {
             rippleColor = '#ffd700';
@@ -13158,7 +13454,7 @@ function spawnFoodBurst(food, ownerKey, head) {
         green: 7
     };
     const baseCount = burstCountByType[food.type] || 9;
-    const count = (typeof reducedMotion !== 'undefined' && reducedMotion) ? Math.max(3, Math.floor(baseCount / 2)) : baseCount;
+    const count = baseCount;
     const palette = getFoodBurstPalette(food.type, ownerKey);
     const bornAt = performance.now();
     for (let i = 0; i < count; i++) {
@@ -13204,7 +13500,8 @@ function registerComboEat(ownerKey, head) {
             y: head.y + 0.2,
             color: ownerKey === 'p1' ? (playerColors.p1 || '#ff4fbf') : (playerColors.p2 || '#35e6e6'),
             bornAt: now,
-            lifeMs: 720
+            lifeMs: 720,
+            rot: (Math.random() - 0.5) * 0.22
         });
     }
 }
@@ -13346,16 +13643,22 @@ function startWinAnim(winner, final = false) {
                 intermission = true;
                 paused = true;
                 const finalScore = stats.p1Food;
+                const recordBadgeHtml = lastGameNewRecord
+                    ? `<div class="game-end-badge new-record-badge" style="margin-bottom:8px;">🌟 ${t('newRecord')}</div>`
+                    : '';
                 showBanner(`<h1>${t('gameOver')}</h1>
+        ${recordBadgeHtml}
         <h2>${t('finalScore')}: <span style="color:var(--gold);">${finalScore}</span></h2>
-        <button class="btn big" id="playAgainBtn" style="margin-top:12px;">${t('playAgain')}</button>
-        <button class="btn" id="mainMenuBtn" style="margin-top:8px;">${t('mainMenu')}</button>`);
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:12px;">
+            <button class="btn" id="mainMenuBtn">${t('mainMenu')}</button>
+            <button class="btn big primary-neon" id="playAgainBtn">${t('playAgain')}</button>
+        </div>`);
+                document.getElementById('mainMenuBtn').onclick = () => { SFX.menuClick(); transitionToMenu(openMainMenu, 'back'); };
                 document.getElementById('playAgainBtn').onclick = () => {
                     SFX.menuClick();
                     AdManager.beginDirectRestartMatch();
                     softReset(true);
                 };
-                document.getElementById('mainMenuBtn').onclick = () => { SFX.menuClick(); transitionToMenu(openMainMenu, 'back'); };
             }
 
             function show1PGameOver() {
@@ -13439,6 +13742,7 @@ function startWinAnim(winner, final = false) {
                 overlay.innerHTML = `
       <div class="game-end-card">
         <div class="game-end-trophy">🏆</div>
+        ${lastGameNewRecord ? `<div class="game-end-badge new-record-badge">🌟 ${t('newRecord')}</div>` : ''}
         <div class="game-end-title">${titleHtml}</div>
         <hr class="game-end-divider" style="background: linear-gradient(90deg, transparent, ${winnerColor}, transparent);">
         <div class="game-end-stats">
@@ -13470,8 +13774,8 @@ function startWinAnim(winner, final = false) {
           </div>`}
         </div>
         <div class="game-end-actions">
-          <button class="game-end-btn" id="gameEndReplayBtn">${t('playAgain')}</button>
-          <button class="game-end-btn" id="gameEndMenuBtn">${t('mainMenu')}</button>
+          <button class="game-end-btn secondary" id="gameEndMenuBtn">${t('mainMenu')}</button>
+          <button class="game-end-btn primary" id="gameEndReplayBtn">${t('playAgain')}</button>
         </div>
       </div>
     `;
@@ -13748,7 +14052,7 @@ function startWinAnim(winner, final = false) {
                 ctx.drawImage(gridCacheCanvas, 0, 0, canvas.width / dpr, canvas.height / dpr);
             }
             function drawGridRipples() {
-                if (gridRipples.length === 0 || (typeof reducedMotion !== 'undefined' && reducedMotion)) return;
+                if (gridRipples.length === 0) return;
                 const now = performance.now();
                 gridRipples = gridRipples.filter(r => now - r.startTime < r.duration);
                 ctx.save();
@@ -13783,6 +14087,30 @@ function startWinAnim(winner, final = false) {
                             }
                         }
                     }
+                }
+                ctx.restore();
+            }
+            /* v3.4.5: Tron Grid Glow Trail rendering */
+            function drawGridGlowTrail() {
+                if (!gridTrail.length) return;
+                const now = performance.now();
+                const TRAIL_LIFE_MS = 400;
+                ctx.save();
+                for (let i = 0; i < gridTrail.length; i++) {
+                    const item = gridTrail[i];
+                    if (!item) continue;
+                    const age = now - item.bornAt;
+                    if (age >= TRAIL_LIFE_MS) continue;
+                    const t = age / TRAIL_LIFE_MS;
+                    const alpha = 1 - t;
+                    const coords = getCellCoords(item.x, item.y);
+                    // Soft subtle neon cell fill
+                    ctx.fillStyle = hexToRgba(item.color, alpha * 0.17);
+                    ctx.fillRect(coords.x + 1.5, coords.y + 1.5, coords.szX - 3, coords.szY - 3);
+                    // Gentle neon grid border
+                    ctx.strokeStyle = hexToRgba(item.color, alpha * 0.40);
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(coords.x + 1.5, coords.y + 1.5, coords.szX - 3, coords.szY - 3);
                 }
                 ctx.restore();
             }
@@ -13872,14 +14200,45 @@ function startWinAnim(winner, final = false) {
                         ctx.fillStyle = hexToRgba(color, 1.0);
                     }
 
-                    ctx.fillRect(px, py, pixelSize, pixelSize);
-
-                    if (isWinGlyph && (!window.isAndroidWebView || IS_IOS_SHELL)) {
-                        const inset = Math.max(0.8, pixelSize * 0.16);
-                        const innerSize = Math.max(1, pixelSize - inset * 2);
-                        ctx.shadowBlur = 0;
-                        ctx.fillStyle = 'rgba(255,255,255,0.16)';
-                        ctx.fillRect(px + inset, py + inset, innerSize, innerSize);
+                    // v3.4.5: Gulp Pop (Lokma Yutma) squash & stretch on head block
+                    const isGulpActive = isHead && s.gulpPop && (now - s.gulpPop.start) < (s.gulpPop.duration || 140);
+                    if (isGulpActive) {
+                        const age = now - s.gulpPop.start;
+                        const dur = s.gulpPop.duration || 140;
+                        const wave = Math.sin((age / dur) * Math.PI); // 0 -> 1 -> 0
+                        let scaleX = 1.0, scaleY = 1.0;
+                        const d = s.dir || { x: 1, y: 0 };
+                        if (d.x !== 0) {
+                            scaleX = 1 + wave * 0.28;
+                            scaleY = Math.max(0.6, 1 - wave * 0.18);
+                        } else if (d.y !== 0) {
+                            scaleX = Math.max(0.6, 1 - wave * 0.18);
+                            scaleY = 1 + wave * 0.28;
+                        } else {
+                            scaleX = 1 + wave * 0.20;
+                            scaleY = 1 + wave * 0.20;
+                        }
+                        const cx = px + pixelSize * 0.5;
+                        const cy = py + pixelSize * 0.5;
+                        ctx.translate(cx, cy);
+                        ctx.scale(scaleX, scaleY);
+                        ctx.fillRect(-pixelSize * 0.5, -pixelSize * 0.5, pixelSize, pixelSize);
+                        if (isWinGlyph && (!window.isAndroidWebView || IS_IOS_SHELL)) {
+                            const inset = Math.max(0.8, pixelSize * 0.16);
+                            const innerSize = Math.max(1, pixelSize - inset * 2);
+                            ctx.shadowBlur = 0;
+                            ctx.fillStyle = 'rgba(255,255,255,0.16)';
+                            ctx.fillRect(-innerSize * 0.5, -innerSize * 0.5, innerSize, innerSize);
+                        }
+                    } else {
+                        ctx.fillRect(px, py, pixelSize, pixelSize);
+                        if (isWinGlyph && (!window.isAndroidWebView || IS_IOS_SHELL)) {
+                            const inset = Math.max(0.8, pixelSize * 0.16);
+                            const innerSize = Math.max(1, pixelSize - inset * 2);
+                            ctx.shadowBlur = 0;
+                            ctx.fillStyle = 'rgba(255,255,255,0.16)';
+                            ctx.fillRect(px + inset, py + inset, innerSize, innerSize);
+                        }
                     }
                     ctx.restore();
 
@@ -13993,6 +14352,7 @@ function startWinAnim(winner, final = false) {
                 ctx.restore();
             }
 
+            /* v3.4.5: Juicy Combo Popups with punchy elastic spring & rotation */
             function drawComboPopups() {
                 if (!comboPopups.length) return;
                 const now = performance.now();
@@ -14000,19 +14360,46 @@ function startWinAnim(winner, final = false) {
                 ctx.save();
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.font = '700 22px Orbitron, sans-serif';
+                ctx.font = '900 24px Orbitron, sans-serif';
                 for (const popup of comboPopups) {
                     const age = now - popup.bornAt;
                     if (age >= popup.lifeMs) continue;
                     const t = age / popup.lifeMs;
-                    const alpha = 1 - t;
-                    const rise = t * 28;
+                    const alpha = Math.max(0, 1 - t * t);
+                    const rise = Math.sin(t * Math.PI * 0.5) * 32;
+
+                    // Elastic punch scale: start at 1.55, spring down to 1.0, subtle rebound
+                    let scale = 1.0;
+                    if (t < 0.22) {
+                        const enterT = t / 0.22;
+                        scale = 1.0 + 0.55 * (1 - enterT);
+                    } else if (t < 0.38) {
+                        const midT = (t - 0.22) / 0.16;
+                        scale = 1.0 - 0.08 * Math.sin(midT * Math.PI);
+                    }
+
                     const coords = getCellCoords(popup.x, popup.y);
                     const px = coords.x;
                     const py = coords.y - rise;
+
+                    ctx.save();
+                    ctx.translate(px, py);
+                    if (popup.rot) ctx.rotate(popup.rot);
+                    ctx.scale(scale, scale);
                     ctx.globalAlpha = alpha;
+
+                    // Pass 1: Neon glow / colored backdrop
+                    ctx.shadowColor = popup.color;
+                    ctx.shadowBlur = 10 * dpr;
                     ctx.fillStyle = popup.color;
-                    ctx.fillText(popup.text, px, py);
+                    ctx.fillText(popup.text, 0, 0);
+
+                    // Pass 2: Bright white core
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(popup.text, 0, 0);
+                    ctx.restore();
+
                     next.push(popup);
                 }
                 ctx.restore();
@@ -14114,6 +14501,7 @@ function startWinAnim(winner, final = false) {
                 ctx.clearRect(-16, -16, (canvas.width / dpr) + 32, (canvas.height / dpr) + 32);
                 drawGrid();
                 drawGridRipples();
+                drawGridGlowTrail();
                 drawAdventureOverlay();
                 if (gameStyle === 'selfArea51') drawSelfArea51Divider();
 
@@ -14130,6 +14518,7 @@ function startWinAnim(winner, final = false) {
                 drawFoods();
                 drawFoodBursts();
                 drawComboPopups();
+                drawTouchGestureIndicator();
                 drawInGameCountdown();
 
                 ctx.restore();
@@ -14415,11 +14804,11 @@ function renderWinAnim() {
                          
 
                         // v2.82: Rebalanced AI difficulty with 'Orta' (60%)
-                        let speedFactor = 0.60; 
-                        if (currentSpeedMode === 'EASY') speedFactor = 0.40;
+                        let speedFactor = 0.60;
+                        if (currentSpeedMode === 'EASY') speedFactor = 0.60;
                         else if (currentSpeedMode === 'NORMAL') speedFactor = 0.60;
                         else if (currentSpeedMode === 'FAST') speedFactor = 0.80;
-                        else if (currentSpeedMode === 'EXTREME') speedFactor = 0.90;
+                        else if (currentSpeedMode === 'EXTREME') speedFactor = 0.85;
 
                         const aiSpeedFactor = (gameMode === '1P' && aiSnakeEnabled) ? speedFactor : 1.0;
                         const aiDifficultyFactor = 1.0; // Retired in v2.60

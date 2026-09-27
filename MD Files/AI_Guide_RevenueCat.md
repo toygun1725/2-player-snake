@@ -2,6 +2,8 @@
 
 Bu belge, **2 Player Snake** oyununun premium (reklamsız sürüm) altyapısı, kullanılan API anahtarları, entegrasyon ayarları ve native/web köprüsü davranışları için teknik referanstır.
 
+> **Canlı Durum (v3.4.6 - 2026-09-25):** RevenueCat IAP entegrasyonu, Android (`versionCode 70`) ve iOS (`Build 46`) native kabuklarında ve `v3.4.6` web/çevrimdışı runtime'ında sorunsuz çalışmaya devam etmektedir. Reklamsız modda tüm geçiş reklamları bypass edilir ve ödüllü devam hakları anında verilir.
+
 ---
 
 ## 1. Genel Altyapı ve Konfigürasyon Bilgileri

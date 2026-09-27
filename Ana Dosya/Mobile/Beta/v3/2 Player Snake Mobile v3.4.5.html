@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>2 Player Snake Mobile v3.4.8 - Play Online & Local</title>
+    <title>2 Player Snake Mobile v3.4.5 - Play Online & Local</title>
     <script>
         // Only a native shell that advertises the bundled asset handler uses local URLs.
         window.__twoPlayerSnakeUseNativeAssets = window.__twoPlayerSnakePlatform === 'ios' &&
@@ -1922,7 +1922,22 @@
             from { transform: scale(0.97); box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
             to { transform: scale(1.04); box-shadow: 0 0 20px rgba(255, 215, 0, 0.65); }
         }
-
+        .game-end-btn.share-btn, .btn.share-neon {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            border: 1px solid rgba(255,255,255,0.7) !important;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255,255,255,0.4) !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .game-end-btn.share-btn:hover, .btn.share-neon:hover {
+            background: linear-gradient(135deg, #34d399 0%, #059669 100%) !important;
+            box-shadow: 0 8px 22px rgba(16, 185, 129, 0.6) !important;
+            transform: translateY(-2px) scale(1.03) !important;
+        }
 
         .game-end-card.rewarded-continue-card {
             width: min(86vw, 340px);
@@ -4325,10 +4340,10 @@
     <script>
         (() => {
             /* ==============================
-              2 Player Snake - Beta v3.4.8 Mobile
+              2 Player Snake - Beta v3.4.5 Mobile
               ============================= */
 
-            const VERSION = 'v3.4.8';
+            const VERSION = 'v3.4.5';
             const IS_IOS_SHELL = window.__twoPlayerSnakePlatform === 'ios';
             const IS_APPLE_DEVICE = IS_IOS_SHELL ||
                 (typeof window !== 'undefined' && Boolean(window.isAppleDevice)) ||
@@ -7285,107 +7300,10 @@
                 }
             }
 
-            function primeAudioContext(ctx) {
-                if (!ctx || ctx.state !== 'running') return;
-                try {
-                    const buf = ctx.createBuffer(1, 1, 22050);
-                    const src = ctx.createBufferSource();
-                    src.buffer = buf;
-                    src.connect(ctx.destination);
-                    src.start(0);
-                } catch (e) {}
-            }
-
-            function setupAudioStateMonitoring(ctx) {
-                if (!ctx || ctx._hasStateListener) return;
-                ctx._hasStateListener = true;
-                try {
-                    ctx.addEventListener('statechange', () => {
-                        if (!muted && !document.hidden && (ctx.state === 'suspended' || ctx.state === 'interrupted')) {
-                            ctx.resume().then(() => primeAudioContext(ctx)).catch(() => {});
-                        }
-                    });
-                } catch (e) {}
-            }
-
-            function ensureAudio() {
-                if (!audioCtx || audioCtx.state === 'closed') {
-                    try {
-                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                        setupAudioStateMonitoring(audioCtx);
-                    } catch (e) {}
-                }
-                if (audioCtx && (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted')) {
-                    audioCtx.resume().then(() => primeAudioContext(audioCtx)).catch(() => {});
-                }
-            }
-
-            function resumeAudioContext() {
-                if (muted) return;
-                try {
-                    if (!audioCtx || audioCtx.state === 'closed') {
-                        ensureAudio();
-                        return;
-                    }
-                    if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
-                        audioCtx.resume().then(() => {
-                            primeAudioContext(audioCtx);
-                        }).catch(() => {
-                            setTimeout(() => {
-                                if (audioCtx && (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted')) {
-                                    audioCtx.resume().then(() => primeAudioContext(audioCtx)).catch(() => {});
-                                }
-                            }, 120);
-                            setTimeout(() => {
-                                if (audioCtx && (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted')) {
-                                    audioCtx.resume().then(() => primeAudioContext(audioCtx)).catch(() => {});
-                                }
-                            }, 350);
-                        });
-                    } else if (audioCtx.state === 'running') {
-                        primeAudioContext(audioCtx);
-                    }
-                } catch (e) {
-                    console.warn('[WebAudio] resumeAudioContext error:', e);
-                }
-            }
-            window.resumeAudioContext = resumeAudioContext;
-
-            // Global user gesture unlock - satisfies iOS WebKit gesture requirement
-            const userAudioGestureEvents = ['touchstart', 'touchend', 'pointerdown', 'mousedown', 'keydown'];
-            function handleUserAudioGesture() {
-                if (!muted && audioCtx && (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted')) {
-                    audioCtx.resume().then(() => primeAudioContext(audioCtx)).catch(() => {});
-                }
-            }
-            userAudioGestureEvents.forEach(evt => {
-                window.addEventListener(evt, handleUserAudioGesture, { passive: true, capture: true });
-            });
-
-            // Lifecycle listeners for returning from full-screen ads / background
-            document.addEventListener('visibilitychange', () => {
-                if (!document.hidden) {
-                    resumeAudioContext();
-                    setTimeout(resumeAudioContext, 200);
-                }
-            });
-            window.addEventListener('focus', () => {
-                resumeAudioContext();
-                setTimeout(resumeAudioContext, 200);
-            });
-            window.addEventListener('pageshow', () => {
-                resumeAudioContext();
-                setTimeout(resumeAudioContext, 200);
-            });
-
+            function ensureAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
             function tone(freq, dur, { type = 'square', gain = 0.06, attack = 0.004, release = 0.06, sweep = 0 } = {}) {
                 if (muted) return; try {
-                    ensureAudio();
-                    if (!audioCtx) return;
-                    if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
-                        audioCtx.resume().catch(() => {});
-                    }
-                    const now = audioCtx.currentTime;
+                    ensureAudio(); const now = audioCtx.currentTime;
                     const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
                     o.type = type; o.frequency.value = freq;
                     if (sweep) { o.frequency.linearRampToValueAtTime(freq * (1 + sweep), now + dur); }
@@ -7499,7 +7417,7 @@
             let paused = false, inCountdown = false, intermission = false, isDemoMode = false;
 
             let currentSpeedMode = null;
-            const MOD_SPEED = { EASY: 0.60, NORMAL: 0.75, FAST: 0.95, EXTREME: 1.50 };
+            const MOD_SPEED = { EASY: 0.75, NORMAL: 0.85, FAST: 1.05, EXTREME: 1.80 };
             let currentWallMode = null;
             const MOD_WALLS = { NONE: 'no-walls', SOLID: 'walls' };
 
@@ -11514,7 +11432,7 @@
                             gameStyle = 'fastCompetitive';
                             gameMode = '1P';
                             aiSnakeEnabled = true;
-                            currentSpeedMode = 'NORMAL';
+                            currentSpeedMode = 'FAST';
                             currentWallMode = MOD_WALLS.NONE;
                             if (socket) { socket.disconnect(); socket = null; }
                             hideBanner();
@@ -11716,7 +11634,26 @@
                 }, 2200);
             }
 
-
+            function triggerShareScore(scoreToShare) {
+                const textToShare = t('shareText')
+                    ? t('shareText').replace('{score}', scoreToShare)
+                    : `🐍 2 Player Snake oyununda ${scoreToShare} puan yaptım! Sen de dene: https://2playersnake.com`;
+                if (navigator.share) {
+                    navigator.share({
+                        title: '2 Player Snake',
+                        text: textToShare,
+                        url: 'https://2playersnake.com'
+                    }).catch(() => {});
+                } else if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(textToShare).then(() => {
+                        showToast(t('scoreCopied') || 'Skor kopyalandı!');
+                    }).catch(() => {
+                        showToast(t('scoreCopied') || 'Skor kopyalandı!');
+                    });
+                } else {
+                    showToast(t('scoreCopied') || 'Skor kopyalandı!');
+                }
+            }
 
             function addHighScore(name, score) {
                 lastGameNewRecord = false;
@@ -13649,16 +13586,22 @@ function startWinAnim(winner, final = false) {
                 showBanner(`<h1>${t('gameOver')}</h1>
         ${recordBadgeHtml}
         <h2>${t('finalScore')}: <span style="color:var(--gold);">${finalScore}</span></h2>
-        <div style="display:flex; gap:10px; justify-content:center; margin-top:12px;">
-            <button class="btn" id="mainMenuBtn">${t('mainMenu')}</button>
-            <button class="btn big primary-neon" id="playAgainBtn">${t('playAgain')}</button>
-        </div>`);
-                document.getElementById('mainMenuBtn').onclick = () => { SFX.menuClick(); transitionToMenu(openMainMenu, 'back'); };
+        <button class="btn big primary-neon" id="playAgainBtn" style="margin-top:12px;">${t('playAgain')}</button>
+        <button class="btn share-neon" id="shareScoreBtn" style="margin-top:8px;"><i class="fa-solid fa-share-nodes"></i> ${t('shareScore')}</button>
+        <button class="btn" id="mainMenuBtn" style="margin-top:8px;">${t('mainMenu')}</button>`);
                 document.getElementById('playAgainBtn').onclick = () => {
                     SFX.menuClick();
                     AdManager.beginDirectRestartMatch();
                     softReset(true);
                 };
+                const shareBtn = document.getElementById('shareScoreBtn');
+                if (shareBtn) {
+                    shareBtn.onclick = () => {
+                        SFX.menuClick();
+                        triggerShareScore(finalScore);
+                    };
+                }
+                document.getElementById('mainMenuBtn').onclick = () => { SFX.menuClick(); transitionToMenu(openMainMenu, 'back'); };
             }
 
             function show1PGameOver() {
@@ -13774,8 +13717,9 @@ function startWinAnim(winner, final = false) {
           </div>`}
         </div>
         <div class="game-end-actions">
-          <button class="game-end-btn secondary" id="gameEndMenuBtn">${t('mainMenu')}</button>
           <button class="game-end-btn primary" id="gameEndReplayBtn">${t('playAgain')}</button>
+          <button class="game-end-btn share-btn" id="gameEndShareBtn"><i class="fa-solid fa-share-nodes"></i> ${t('shareScore')}</button>
+          <button class="game-end-btn secondary" id="gameEndMenuBtn">${t('mainMenu')}</button>
         </div>
       </div>
     `;
@@ -13784,7 +13728,15 @@ function startWinAnim(winner, final = false) {
                 // Add a small delay to ensure elements are rendered before attaching listeners
                 setTimeout(() => {
                     const replayBtn = document.getElementById('gameEndReplayBtn');
+                    const shareBtn = document.getElementById('gameEndShareBtn');
                     const menuBtn = document.getElementById('gameEndMenuBtn');
+                    if (shareBtn) {
+                        shareBtn.onclick = () => {
+                            SFX.menuClick();
+                            const scoreToShare = isSolo ? stats.p1Food : longestLen;
+                            triggerShareScore(scoreToShare);
+                        };
+                    }
                     if (menuBtn) {
                         menuBtn.onclick = () => {
                             SFX.menuClick();
@@ -14804,11 +14756,11 @@ function renderWinAnim() {
                          
 
                         // v2.82: Rebalanced AI difficulty with 'Orta' (60%)
-                        let speedFactor = 0.60;
-                        if (currentSpeedMode === 'EASY') speedFactor = 0.60;
+                        let speedFactor = 0.60; 
+                        if (currentSpeedMode === 'EASY') speedFactor = 0.40;
                         else if (currentSpeedMode === 'NORMAL') speedFactor = 0.60;
                         else if (currentSpeedMode === 'FAST') speedFactor = 0.80;
-                        else if (currentSpeedMode === 'EXTREME') speedFactor = 0.85;
+                        else if (currentSpeedMode === 'EXTREME') speedFactor = 0.90;
 
                         const aiSpeedFactor = (gameMode === '1P' && aiSnakeEnabled) ? speedFactor : 1.0;
                         const aiDifficultyFactor = 1.0; // Retired in v2.60

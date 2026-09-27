@@ -40,10 +40,16 @@ Yazılım geçmişi olmayan bir video yapımcısı ve bir avukatın, yapay zekay
 
 Tüm teknik kılavuzlar ve sürüm geçmişi [`MD Files/`](MD%20Files/) dizinindedir:
 - [Sürüm Notları (Release Notes)](MD%20Files/Release_Notes.md)
+- [Mobil Web Geliştirici Kılavuzu](MD%20Files/AI_Guide_Mobile.md)
+- [PC Web Geliştirici Kılavuzu](MD%20Files/AI_Guide_PC.md)
 - [iOS Geliştirici Kılavuzu](MD%20Files/AI_Guide_iOS.md)
 - [Android Geliştirici Kılavuzu](MD%20Files/AI_Guide_Android.md)
+- [iOS TestFlight & CI/CD Kılavuzu](MD%20Files/AI_Guide_iOS_TestFlight_CI_CD.md)
+- [RevenueCat & IAP Kılavuzu](MD%20Files/AI_Guide_RevenueCat.md)
 - [Reklam & Gelir Modeli Kılavuzu](MD%20Files/AI_Guide_Ads.md)
 - [App Store Açıklamaları (Tüm Diller)](MD%20Files/App_Store_Descriptions.md)
+
+> **Güncel Sürüm:** `v3.4.9` (Akıllı Cache-Busting, 0 KB Sürüm Kontrolü & İlk Açılış Hızlandırması, Ergonomik Oyun Sonu Buton Düzeni: Solda Ana Menü, Sağda Tekrar Oyna, Altın Oran 93.9ms Baz Hız, İnsani Dash 64.7ms, Tron Işık İzi, Squash & Stretch)
 
 ---
 © 2026 RomiToy Games. All rights reserved.

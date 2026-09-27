@@ -7130,7 +7130,6 @@
 
             /* === Sound & Feel === */
             let audioCtx; let muted = localStorage.getItem('neoSnakeMutedMobile') === '1';
-            let reducedMotion = localStorage.getItem('neoSnakeReducedMotion') === '1';
             const screenShake = {
                 trauma: 0,
                 decay: 3.5,
@@ -7138,7 +7137,6 @@
                 t: 0
             };
             function addTrauma(amount) {
-                if (typeof reducedMotion !== 'undefined' && reducedMotion) return;
                 screenShake.trauma = Math.min(1.0, screenShake.trauma + amount);
             }
             let hitStopUntil = 0;
@@ -7209,8 +7207,7 @@
                     }
                     const combo = (typeof comboState !== 'undefined' && comboState[ownerKey]) ? comboState[ownerKey] : null;
                     const comboStep = combo && combo.count > 1 ? Math.min((combo.count - 1) * 35, 210) : 0;
-                    const wobble = 1 + (Math.random() - 0.5) * 0.10;
-                    const freq = (720 + comboStep) * wobble;
+                    const freq = 720 + comboStep;
                     tone(freq, 0.08, { type: 'square', gain: 0.05 });
                     hapticVibrate(20);
                 },
@@ -7236,10 +7233,8 @@
                     hapticVibrate(80);
                     const wobble = 1 + (Math.random() - 0.5) * 0.06;
                     tone(180 * wobble, 0.20, { type: 'sawtooth', gain: 0.08, sweep: -0.35 });
-                    if (typeof reducedMotion === 'undefined' || !reducedMotion) {
-                        canvasWrap.classList.add('shake');
-                        setTimeout(() => canvasWrap.classList.remove('shake'), 200);
-                    }
+                    canvasWrap.classList.add('shake');
+                    setTimeout(() => canvasWrap.classList.remove('shake'), 200);
                 },
                 drawCrash() {
                     if (isDemoMode) return;
@@ -7247,10 +7242,8 @@
                     hapticVibrate(80);
                     tone(220, 0.25, { type: 'sawtooth', gain: 0.1, sweep: -0.5 });
                     tone(160, 0.25, { type: 'square', gain: 0.1, sweep: -0.5 });
-                    if (typeof reducedMotion === 'undefined' || !reducedMotion) {
-                        canvasWrap.classList.add('shake');
-                        setTimeout(() => canvasWrap.classList.remove('shake'), 200);
-                    }
+                    canvasWrap.classList.add('shake');
+                    setTimeout(() => canvasWrap.classList.remove('shake'), 200);
                 },
                 start() { tone(420, 0.10, { type: 'sine', gain: 0.05 }); setTimeout(() => tone(640, 0.12, { type: 'sine', gain: 0.05 }), 120); setTimeout(() => tone(860, 0.14, { type: 'sine', gain: 0.05 }), 260); },
                 pause() { hapticVibrate(15); tone(360, 0.06, { type: 'square', gain: 0.04 }); },
@@ -11289,30 +11282,6 @@
                 };
             }
 
-            function getReducedEffectsLabel() {
-                const map = {
-                    tr: 'Hareketi / Efektleri Azalt',
-                    en: 'Reduce Screen Effects',
-                    de: 'Bildeffekte reduzieren',
-                    fr: 'Réduire les effets d\'écran',
-                    es: 'Reducir efectos de pantalla',
-                    it: 'Riduci effetti schermo',
-                    ru: 'Уменьшить спецэффекты',
-                    ja: '画面効果を減らす',
-                    ko: '화면 효과 줄이기',
-                    zh: '减少画面特效',
-                    pt: 'Reduzir efeitos visuais',
-                    nl: 'Schermeffecten verminderen',
-                    pl: 'Zmniejsz efekty ekranu',
-                    id: 'Kurangi efek layar',
-                    hi: 'स्क्रीन प्रभाव कम करें',
-                    vi: 'Giảm hiệu ứng màn hình',
-                    ar: 'تقليل تأثيرات الشاشة'
-                };
-                const lCode = (lang || 'en').toLowerCase().split('-')[0];
-                return map[lCode] || map.en;
-            }
-
             function openSettings() {
                 if (settingsFromPause) {
                     markMenuScreen(MENU_IDS.SETTINGS, true);
@@ -11326,7 +11295,6 @@
                 const soundLabel = `${t('sound')}: ${muted ? t('soundOff') : t('soundOn')}`;
                 const langLabel = `${t('language')}: ${t('languageName')}`;
                 const themeLabel = `${t('theme')}: ${getCurrentTheme()}`;
-                const reducedMotionText = `${getReducedEffectsLabel()}: ${reducedMotion ? (t('soundOn') || 'ON') : (t('soundOff') || 'OFF')}`;
                 showBanner(`<h1>${t('settings')}</h1>
       <div style="display:flex;flex-direction:column;gap:8px;align-items:center;margin-top:12px; width: 100%;">
         <button class="btn big btn-menu-row" id="toggleLang">
@@ -11348,11 +11316,6 @@
           <span class="btn-menu-icon"><i class="fa-solid fa-circle-half-stroke"></i></span>
           <span class="btn-menu-sep"></span>
           <span class="btn-menu-text">${themeLabel}</span>
-        </button>
-        <button class="btn big btn-menu-row" id="toggleReducedMotion">
-          <span class="btn-menu-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
-          <span class="btn-menu-sep"></span>
-          <span class="btn-menu-text">${reducedMotionText}</span>
         </button>
         <button class="btn big btn-menu-row" id="menuInstagram">
           <span class="btn-menu-icon"><i class="fa-brands fa-instagram"></i></span>
@@ -11405,15 +11368,6 @@
                     toggleTheme();
                     openSettings();
                 };
-                const redMotBtn = document.getElementById('toggleReducedMotion');
-                if (redMotBtn) {
-                    redMotBtn.onclick = () => {
-                        SFX.menuClick();
-                        reducedMotion = !reducedMotion;
-                        localStorage.setItem('neoSnakeReducedMotion', reducedMotion ? '1' : '0');
-                        openSettings();
-                    };
-                }
                 const instBtn = document.getElementById('menuInstagram');
                 if (instBtn) {
                     instBtn.onclick = () => { SFX.menuClick(); window.open('https://www.instagram.com/2playersnake', '_blank'); };
@@ -13062,7 +13016,7 @@
                 deathAnim = { active: true, loser, winner, nextAt: performance.now(), stepMs: len > 0 ? 500 / len : 40 };
                 intermission = true;
                 if (!isOnlineMode) {
-                    if (!isDemoMode && (typeof reducedMotion === 'undefined' || !reducedMotion)) {
+                    if (!isDemoMode) {
                         hitStopUntil = performance.now() + 75;
                         addTrauma(0.85);
                     }
@@ -13127,7 +13081,7 @@ function getFoodBurstPalette(foodType, ownerKey) {
 
 function spawnFoodBurst(food, ownerKey, head) {
     if (!food || !head) return;
-    if (typeof gridRipples !== 'undefined' && (typeof reducedMotion === 'undefined' || !reducedMotion)) {
+    if (typeof gridRipples !== 'undefined') {
         let rippleColor;
         if (food.type === 'diamond') {
             rippleColor = '#ffd700';
@@ -13158,7 +13112,7 @@ function spawnFoodBurst(food, ownerKey, head) {
         green: 7
     };
     const baseCount = burstCountByType[food.type] || 9;
-    const count = (typeof reducedMotion !== 'undefined' && reducedMotion) ? Math.max(3, Math.floor(baseCount / 2)) : baseCount;
+    const count = baseCount;
     const palette = getFoodBurstPalette(food.type, ownerKey);
     const bornAt = performance.now();
     for (let i = 0; i < count; i++) {
@@ -13748,7 +13702,7 @@ function startWinAnim(winner, final = false) {
                 ctx.drawImage(gridCacheCanvas, 0, 0, canvas.width / dpr, canvas.height / dpr);
             }
             function drawGridRipples() {
-                if (gridRipples.length === 0 || (typeof reducedMotion !== 'undefined' && reducedMotion)) return;
+                if (gridRipples.length === 0) return;
                 const now = performance.now();
                 gridRipples = gridRipples.filter(r => now - r.startTime < r.duration);
                 ctx.save();

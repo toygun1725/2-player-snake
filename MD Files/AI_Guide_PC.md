@@ -3,19 +3,59 @@
 Bu belge, PC surumunde calisacak yapay zekalar icin guncel teknik referanstir. PC surumu de mobil gibi tek HTML dosyada yasamalidir; CSS, JS, i18n, canvas cizimi, reklam mantigi ve sentetik sesler ayni dosyada tutulur.
 
 ### Referans Surum
-- Aktif referans surum: `v3.4.3` (Final Sürüm)
-- Temel referans dosya: `2 Player Snake PC v3.4.3.html`
-- Kaynak/yayin durumu: v3.4.3 PC kaynak dosyasi olusturuldu. Mobil v3.4.3 ile tam senkronizasyon saglandi: 2 adımlı klavye girdi kuyruğu, decaying trauma ekran sarsıntısı, 75ms hit-stop, SFX ton çeşitliliği/kombo yükselmesi, AI çıkmaz sokak engelleme, AI sabit yem sesi, parçacık nesne havuzu ve erişilebilirlik ayarı entegre edildi.
+- Aktif referans surum: `v3.4.9` (Final Sürüm)
+- Temel referans dosya: `2 Player Snake PC v3.4.9.html`
+- Kaynak/yayin durumu: v3.4.9 PC kaynak dosyasi olusturuldu. Akıllı `HEAD` ETag & Last-Modified cache-busting sürüm kontrol motoru eklendi; geliştirici sürüm numarasını arttırmasa dahi dosya sunucuya yüklendiğinde tüm cihazlar değişikliği 0 KB yükle algılar. Kilitli `no-cache` meta etiketleri optimize edildi.
 
-## Son Guncelleme (v3.4.3 - Game Feel, Girdi Kuyruğu, Akıllı AI Hayatta Kalma & Erişilebilirlik)
-- **v3.4.3**: PC Game Feel Entegrasyonu, 2 Adımlı Klavye Girdi Kuyruğu, Trauma Sarsıntısı, Hit-Stop, Dinamik SFX & AI Sabit Yem Sesi, AI Flood-Fill, Parçacık Havuzu ve Erişilebilirlik (2026-09-25).
+## Son Guncelleme (v3.4.9 - Akıllı Cache-Busting, 0 KB Sürüm Kontrolü & İlk Açılış Hızlandırması)
+- **v3.4.9**: Akıllı HEAD ETag & Last-Modified Sürüm Kontrol Motoru, Sıfır Bayt Gövde Transferi, Sürüm Değişmeden Anında Güncelleme, Hostinger CDN ve LiteSpeed Entegrasyonu (2026-09-27).
+  - **Akıllı HEAD (ETag & Last-Modified) Kontrolü:** `checkForFreshVersion()` motoru `GET` yerine `HEAD` metodu kullanacak şekilde modernize edildi. Gövde indirilmez (0 KB). Sunucunun döndürdüğü `ETag` ve `Last-Modified` zaman damgası taranır; dosya yüklendiği an sürüm stringi aynı kalsa dahi güncelleme tetiklenir.
+  - **Güvenli Yenileme Koruması:** `canApplyVersionRefreshNow()` aktif oyun sırasında, ödüllü devam ekranında veya reklamdayken yenilemeyi engeller; oyuncu ana menüye döndüğünde kesintisiz geçiş yapılır.
+  - **Hostinger CDN Uyumu:** Dosya başındaki `no-cache, must-revalidate` meta etiketleri temizlendi, CDN'in ilk ziyarette 5 saniye bekleme sorunu giderildi.
+  - **Sürüm Senkronizasyonu & Testler:** PC v3.4.9 ve Mobil v3.4.9 tam eşitlendi; Node.js inline script sözdizimi testlerinden %100 başarıyla geçti.
+
+## Onceki Guncelleme (v3.4.8 - Oyun Sonu Buton Düzeni & Paylaş Butonunun Kaldırılması)
+- **v3.4.8**: Ergonomik Oyun Sonu Buton Düzeni, Solda Ana Menü, Sağda Tekrar Oyna, Paylaş Butonunun Kaldırılması (2026-09-25).
+  - **Ergonomik Buton Düzeni (`showGameEndStats`):** `.game-end-actions` içinde solda ikincil/çıkış aksiyonu (**Ana Menü** `#gameEndMenuBtn`), sağda ise ana aksiyon çağrısı (**Tekrar Oyna** `#gameEndReplayBtn`) yer alır.
+  - **Paylaş Butonunun Kaldırılması:** `#gameEndShareBtn` butonu, `triggerShareScore` yardımcı fonksiyonu ve `.game-end-btn.share-btn` / `.btn.share-neon` CSS kuralları silindi.
+  - **Sürüm Senkronizasyonu & Testler:** Mobil v3.4.8, PC v3.4.8, iOS ve Android offline fallback dosyaları senkronize edildi; `tests/ios-runtime.test.cjs` 54/54 test (%100) başarıyla geçti.
+
+## Onceki Guncelleme (v3.4.7 - Online Çok Oyunculu Hız Kalibrasyonu & İnsani Seviye Dengeleme)
+- **v3.4.7**: Online Çok Oyunculu Hız Kalibrasyonu, Sunucu `server.js` 93.9 ms Altın Oran Eşitlemesi, İnsani Seviye Dash (64.7 ms), Dengeli Güçlendiriciler ve PC Bot Hız Senkronu (2026-09-25).
+  - **Sunucu & Tüm Odalarda 93.9 ms Baz Hız:** Sunucu motorundaki tüm oyun modları (Rastgele Eşleşme, Özel Oda Normal, Macera, Self Area 51) `MOD_SPEED.NORMAL = 0.75` (93.9 ms / 10.65 TPS) ile yerel oyunla eşitlendi; eski 70.4 ms'lik aşırı hızlı sunucu temposu kaldırıldı.
+  - **İnsani Seviye Dash (64.7 ms):** Dash çarpanı `2.5x` (33.1 ms) yerine `1.45x` yapıldı; klavyede ani tuş kontrolünü kaybetmeden taktiksel hamle yapılması sağlandı.
+  - **Dengeli Güçlendiriciler & Bot Fallback:** Kırmızı Yem (75.1 ms), Safir (144.5 ms) dengelendi. Eşleşme bulunamayıp botla oyna dendiğinde oyun `currentSpeedMode = 'NORMAL'` (93.9 ms) ile başlar.
+  - **Sürüm Senkronizasyonu & Testler:** `server.js`, Mobil v3.4.7, PC v3.4.7, iOS ve Android offline fallback dosyaları senkronize edildi; `tests/ios-runtime.test.cjs` 53/53 test (%100) başarıyla geçti.
+
+## Onceki Guncelleme (v3.4.6 - Altın Oran Hız Kalibrasyonu & PC-Mobil Hız Eşitlemesi)
+- **v3.4.6**: PC Hızının Mobil ile Eşitlenmesi (`NORMAL: 0.75`), 93.9ms Adım Süresi, Dengeli AI Hızı, Sürüm Senkronizasyonu (2026-09-25).
+  - **PC Hız Uçurumunun Kapatılması:** PC'deki `NORMAL` çarpanı `1.00`'den `0.75`'e çekilerek adım süresi 70.4 ms'den 93.9 ms seviyesine dengelendi. Klavyede kontrol kaybı ve hızlı çarpışma sorunu çözüldü.
+  - **Dengeli Yapay Zeka Hızı:** NORMAL modda AI oyuncunun hızının %60'ında tutularak 156.5 ms / adım (~6.4 kare/sn) yapıldı. KOLAY modda AI hızı 235ms'den 195.6 ms seviyesine (%60) çekildi.
+  - **Sürüm Senkronizasyonu & Testler:** Mobil v3.4.6, PC v3.4.6, iOS ve Android çevrimdışı fallback dosyaları senkronize edildi; `tests/ios-runtime.test.cjs` 51/51 test (%100) başarıyla geçti.
+
+## Onceki Guncelleme (v3.4.5 - Game Feel Juice, Tron Zemin İzi & Sosyal Paylaşım)
+- **v3.4.5**: Yılan Başı Lokma Yutma (Squash & Stretch), Juicy Yaylanan Kombo Popupları, Tron Zemin Işık İzi (Ring Buffer), Kişisel Rekor Rozeti ve Skor Paylaşım Butonu (2026-09-25).
+  - **Yılan Başı "Lokma Yutma" Efekti (Squash & Stretch):** Yem yendiğinde yılan başı hareket ekseninde 140ms boyunca organik bir yaylanmayla genişleyip (`scale(1.25, 0.8)`) normale döner (`gulpPop`).
+  - **Kombo Metinlerine Fiziksel Yaylanma (Juicy Combo Popups):** Kombo popupları (x2, x3...) dinamik yaylanma animasyonu (spring bounce `1.55` -> `1.0`), hafif rastgele açısal eğim (`±6.3°`) ve çift katmanlı neon ışıma ile render edilir.
+  - **Zemin Canlılığı — Tron Işık İzi (Grid Cell Glow Trail):** Yılan başlarının geçtiği karelerde zemin seviyesinde 380ms süreli fütüristik neon ışık izi bırakılır. 48 elemanlı döngüsel bellek havuzu (ring buffer) ile sıfır GC yükü ve 60 FPS akıcılık.
+  - **Kişisel Rekor Rozeti & Sosyal Paylaşım Döngüsü (Viral Share Loop & New Record):** 1P Solo modunda en yüksek skor geçildiğinde parlayan altın "🏆 YENİ KİŞİSEL REKOR!" rozeti belirir. Oyun sonu ekranına modern Web Share API destekli, panoya kopyalama ve toast bildirim fallback'li neon yeşil "Skoru Paylaş" (Share Score) butonu eklendi.
+  - **Sürüm Senkronizasyonu & Testler:** Mobil v3.4.5, PC v3.4.5, iOS ve Android çevrimdışı fallback dosyaları senkronize edildi; `tests/ios-runtime.test.cjs` 50/50 test (%100) başarıyla geçti.
+
+## Onceki Guncelleme (v3.4.4 - Oyun Sonu Buton Hiyerarşisi & Sürüm Senkronizasyonu)
+- **v3.4.4**: Oyun Sonu Buton Hiyerarşisi (Primary CTA & Secondary Ghost), Hover İzolasyonu, Açık Tema Uyumu, Mobil Paritesi ve Sürüm Senkronizasyonu (2026-09-25).
+  - **Oyun Sonu Buton Hiyerarşisi (`showGameEndStats`):** "Tekrar Oyna" butonu parlak neon gradient (`.game-end-btn.primary`) ile öne çıkarıldı; "Ana Menü" butonu ikincil şeffaf (`.game-end-btn.secondary`) stiline dönüştürüldü.
+  - **Hover İzolasyonu:** `.game-end-btn.secondary:hover` stili izole edilerek hover anında neon parlaması engellendi; sakin ve zarif cam efekti korundu.
+  - **Açık Tema ve Neon Buton Sınıfı:** `[data-theme="light"] .game-end-btn.primary`, `[data-theme="light"] .game-end-btn.secondary` ve genel `.btn.primary-neon` sınıfları PC'ye entegre edildi.
+  - **Surum Senkronu:** `2 Player Snake PC v3.4.4.html` oluşturuldu; başlık, yorum satırları ve `VERSION = 'v3.4.4'` güncellendi; 48/48 otomatik test ile doğrulandı.
+
+## Onceki Guncelleme (v3.4.3 - Game Feel, Girdi Kuyruğu, Akıllı AI Hayatta Kalma & Ses İyileştirmeleri)
+- **v3.4.3**: PC Game Feel Entegrasyonu, 2 Adımlı Klavye Girdi Kuyruğu, Trauma Sarsıntısı, Hit-Stop, Dinamik SFX & AI Sabit Yem Sesi, AI Flood-Fill ve Parçacık Havuzu (2026-09-25).
   - **2-Adımlı Klavye Girdi Kuyruğu (`queueSnakeDirection`):** Ok tuşları ve WASD için 2 derinlikli kuyruk eklendi; hızlı köşe ve U dönüşlerinde ikinci tuşun yutulması önlendi.
   - **Decaying Trauma Ekran Sarsıntısı:** Canvas 2D katmanında `trauma²` üssel sönümlemeli (decay: 3.5, maxOffset: 8px) dinamik ekran sarsıntısı entegre edildi.
   - **Hit-Stop (75ms Freeze Frame):** Ölüm ve çarpışma anlarında kare dondurularak darbenin fiziksel ağırlığı hissettirildi.
-  - **Dinamik SFX & AI Yem Sesi Ayrımı:** İnsan oyuncular için yem yedikçe yükselen (+210Hz) kombo tonu ve `±%5` pitch wobble; 1P modundaki AI yılan için ise oyuncu dikkatini dağıtmayan daima saf ve sabit `720Hz` ilk yem sesi tanımlandı.
+  - **Dinamik SFX & AI Yem Sesi Ayrımı:** Temel yem sesi her iki yılan için daima sabit 720Hz'dir; insan oyuncu kombo serisi yakaladıkça (+210Hz'e kadar) kademe kademe incelir. 1P modundaki AI yılan ise oyuncunun dikkatini dağıtmamak için daima saf ve sabit 720Hz ilk yem sesini çalar.
   - **AI Flood-Fill Hayatta Kalma (Dead-End Avoidance):** BFS hedef bulamadığında 80 hücrelik flood-fill alan analiziyle en geniş açık alana yönelme sağlandı.
   - **Parçacık Nesne Havuzu (`foodBurstPool`):** 64 elemanlık sabit havuz mimarisi ile her karede nesne/dizi tahsisi engellendi, GC sıçramaları önlendi.
-  - **Erişilebilirlik (Reduced Motion):** Ayarlar menüsüne 21 dilde "Hareketi / Efektleri Azalt" seçeneği eklendi.
   - **Surum Senkronu:** `2 Player Snake PC v3.4.3.html` oluşturuldu; `VERSION = 'v3.4.3'` güncellendi; 46/46 otomatik test doğrulandı.
 
 ## Onceki Guncelleme (v3.4.2 - PC Tek Pencereli Hızlı Kurulum Dashboard'u & Mobil Paritesi)

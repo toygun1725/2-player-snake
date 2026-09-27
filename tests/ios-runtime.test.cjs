@@ -188,7 +188,7 @@ for (const file of files) {
 
 test('online/offline AI implementation stays identical', () => {
   const onlineOfflineFiles = [
-    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.3.html',
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.6.html',
     'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
     'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html'
   ];
@@ -379,11 +379,9 @@ test('v3.4.2 mobile implements v3.4.2 and parses cleanly', () => {
   }
 });
 
-test('v3.4.3 mobile and offline fallback implement v3.4.3 game feel updates and parse cleanly', () => {
+test('v3.4.3 mobile implements v3.4.3 game feel updates and parses cleanly', () => {
   const targets = [
-    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.3.html',
-    'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
-    'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html'
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.3.html'
   ];
   for (const p of targets) {
     const html = read(p);
@@ -392,7 +390,6 @@ test('v3.4.3 mobile and offline fallback implement v3.4.3 game feel updates and 
     assert.match(html, /function floodFillCount/);
     assert.match(html, /const screenShake =/);
     assert.match(html, /FOOD_BURST_POOL_SIZE = 64;/);
-    assert.match(html, /getReducedEffectsLabel/);
     assert.match(html, /gameStyle:\s*'fastCompetitive'/);
     assert.match(html, /wallMode:\s*MOD_WALLS\.NONE/);
     assert.match(html, /speedMode:\s*'NORMAL'/);
@@ -400,6 +397,92 @@ test('v3.4.3 mobile and offline fallback implement v3.4.3 game feel updates and 
     for (const s of scripts) {
       assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
     }
+  }
+});
+
+test('v3.4.4 mobile implements v3.4.4 UI updates and parses cleanly', () => {
+  const targets = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.4.html'
+  ];
+  for (const p of targets) {
+    const html = read(p);
+    assert.match(html, /const VERSION = 'v3\.4\.4';/);
+    assert.match(html, /\.qs-color-dot::before/);
+    assert.doesNotMatch(html, /qs-sec-controls/);
+    assert.match(html, /applyPlayerControlLayout/);
+    assert.match(html, /\.game-end-btn\.primary/);
+    assert.match(html, /\.game-end-btn\.secondary:hover/);
+    assert.match(html, /primary-neon/);
+    assert.match(html, /function queueSnakeDirection/);
+    assert.match(html, /function floodFillCount/);
+    assert.match(html, /const screenShake =/);
+    assert.match(html, /FOOD_BURST_POOL_SIZE = 64;/);
+    const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+    for (const s of scripts) {
+      assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+    }
+  }
+});
+
+test('v3.4.5 mobile and pc implement v3.4.5 features and parse cleanly', () => {
+  const targets = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.5.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.5.html'
+  ];
+  for (const p of targets) {
+    const html = read(p);
+    assert.match(html, /const VERSION = 'v3\.4\.5';/);
+    assert.match(html, /\.new-record-badge/);
+    assert.match(html, /\.share-btn/);
+    assert.match(html, /triggerShareScore/);
+    assert.match(html, /gulpPop/);
+    assert.match(html, /drawGridGlowTrail/);
+    assert.match(html, /recordGridTrail/);
+    const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+    for (const s of scripts) {
+      assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+    }
+  }
+});
+
+test('v3.4.6 mobile and pc implement v3.4.6 speed calibration and parse cleanly', () => {
+  const targets = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.6.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.6.html'
+  ];
+  for (const p of targets) {
+    const html = read(p);
+    assert.match(html, /const VERSION = 'v3\.4\.6';/);
+    assert.match(html, /EASY:\s*0\.60/);
+    assert.match(html, /NORMAL:\s*0\.75/);
+    assert.match(html, /FAST:\s*0\.95/);
+    assert.match(html, /EXTREME:\s*1\.50/);
+    assert.match(html, /\.new-record-badge/);
+    assert.match(html, /\.share-btn/);
+    assert.match(html, /triggerShareScore/);
+    assert.match(html, /gulpPop/);
+    assert.match(html, /drawGridGlowTrail/);
+    assert.match(html, /recordGridTrail/);
+    const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+    for (const s of scripts) {
+      assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+    }
+  }
+});
+
+test('v3.4.5 through v3.4.8 mobile and offline fallbacks implement touch gesture indicator', () => {
+  const targets = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.5.html',
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.6.html',
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.7.html',
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.8.html',
+    'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
+    'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html'
+  ];
+  for (const p of targets) {
+    const html = read(p);
+    assert.match(html, /drawTouchGestureIndicator/);
+    assert.match(html, /touchGesture/);
   }
 });
 
@@ -414,7 +497,6 @@ test('PC v3.4.3 html exists, scripts parse cleanly and VERSION is v3.4.3', () =>
   assert.match(html, /hitStopUntil = performance\.now\(\) \+ 75/);
   assert.match(html, /const FOOD_BURST_POOL_SIZE = 64;/);
   assert.match(html, /function floodFillCount/);
-  assert.match(html, /neoSnakeReducedMotion/);
   const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
   for (const s of scripts) {
     assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${pcPath}`);
@@ -454,10 +536,42 @@ test('v3.4.2 AdManager enforces 45s cooldown and centrally blocks rapid intersti
   }
 });
 
-test('v3.4.3 AI snake eat sound stays baseline 720Hz without combo escalation across all files', () => {
+test('PC v3.4.4 html exists, scripts parse cleanly and VERSION is v3.4.4', () => {
+  const pcPath = 'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.4.html';
+  const html = read(pcPath);
+  assert.match(html, /<title>2 Player Snake \| v3\.4\.4<\/title>/);
+  assert.match(html, /const VERSION = 'v3\.4\.4';/);
+  assert.match(html, /\.game-end-btn\.primary/);
+  assert.match(html, /\.game-end-btn\.secondary:hover/);
+  assert.match(html, /\.btn\.primary-neon/);
+  assert.match(html, /class="game-end-btn primary" id="gameEndReplayBtn"/);
+  assert.match(html, /class="game-end-btn secondary" id="gameEndMenuBtn"/);
+  assert.match(html, /function openPCQuickSetupMenu\(\)/);
+  assert.match(html, /function queueSnakeDirection/);
+  assert.match(html, /const screenShake =/);
+  assert.match(html, /hitStopUntil = performance\.now\(\) \+ 75/);
+  assert.match(html, /const FOOD_BURST_POOL_SIZE = 64;/);
+  assert.match(html, /function floodFillCount/);
+  const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+  for (const s of scripts) {
+    assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${pcPath}`);
+  }
+});
+
+test('v3.4.3 through v3.4.8 AI snake eat sound stays baseline 720Hz without combo escalation across all files', () => {
   const files = [
     'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.3.html',
     'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.3.html',
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.4.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.4.html',
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.5.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.5.html',
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.6.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.6.html',
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.7.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.7.html',
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.8.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.8.html',
     'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
     'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html'
   ];
@@ -465,10 +579,105 @@ test('v3.4.3 AI snake eat sound stays baseline 720Hz without combo escalation ac
     const html = read(f);
     assert.match(html, /isAi\s*=\s*\(ownerKey\s*===\s*'p2'\s*&&\s*gameMode\s*===\s*'1P'\s*&&\s*typeof\s*aiSnakeEnabled\s*!==\s*'undefined'\s*&&\s*aiSnakeEnabled\)/);
     assert.match(html, /if\s*\(isAi\)\s*\{\s*tone\(720,\s*0\.08/);
+    assert.match(html, /const freq = 720 \+ comboStep;/);
   }
+});
+
+test('v3.4.7 mobile and pc implement v3.4.7 and parse cleanly', () => {
+  const targets = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.7.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.7.html'
+  ];
+  for (const p of targets) {
+    const html = read(p);
+    assert.match(html, /const VERSION = 'v3\.4\.7';/);
+    assert.match(html, /currentSpeedMode = 'NORMAL';/);
+    const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+    for (const s of scripts) {
+      assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+    }
+  }
+});
+
+test('v3.4.8 mobile, pc and offline fallbacks implement v3.4.8 button layout, share removal, and parse cleanly', () => {
+  const targets = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.8.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.8.html',
+    'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
+    'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html'
+  ];
+  for (const p of targets) {
+    const html = read(p);
+    assert.match(html, /const VERSION = 'v3\.4\.8';/);
+    // Button order in game end actions: Main Menu first (left), Play Again second (right)
+    assert.match(html, /id="gameEndMenuBtn"[\s\S]*?id="gameEndReplayBtn"/);
+    // Share button completely removed
+    assert.doesNotMatch(html, /id="gameEndShareBtn"/);
+    assert.doesNotMatch(html, /id="shareScoreBtn"/);
+    assert.doesNotMatch(html, /triggerShareScore/);
+    assert.doesNotMatch(html, /\.share-btn/);
+    assert.doesNotMatch(html, /\.share-neon/);
+    // Script syntax verification
+    const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+    for (const s of scripts) {
+      assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+    }
+  }
+});
+
+test('server.js implements v3.4.7 Golden Ratio baseline and humane speed multipliers', () => {
+  const serverPath = 'Ana Dosya/Server/Mobile/server.js';
+  const code = read(serverPath);
+  assert.match(code, /NORMAL:\s*0\.75/);
+  assert.match(code, /let speed = BASE_TPS \* MOD_SPEED\.NORMAL;/);
+  assert.match(code, /speed \*= 1\.45;/);
+  assert.match(code, /speed \*= 1\.25;/);
+  assert.match(code, /speed \*= 0\.65;/);
 });
 
 
 
 
+
+
+test('v3.4.9 mobile and pc implement smart HEAD ETag/Last-Modified versioning and parse cleanly', () => {
+  const targets = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.9.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.9.html'
+  ];
+  for (const p of targets) {
+    const html = read(p);
+    assert.match(html, /const VERSION = 'v3\.4\.9';/);
+    assert.match(html, /method:\s*'HEAD'/);
+    assert.match(html, /remoteEtag/);
+    assert.match(html, /remoteLastModified/);
+    assert.match(html, /initialFileEtag/);
+    assert.match(html, /initialFileLastModified/);
+    const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+    for (const s of scripts) {
+      assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+    }
+  }
+});
+
+test('v3.4.9 mobile, pc and offline fallbacks implement resilient Web Audio recovery engine', () => {
+  const targets = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.9.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.4.9.html',
+    'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
+    'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html'
+  ];
+  for (const p of targets) {
+    const html = read(p);
+    assert.match(html, /function primeAudioContext/);
+    assert.match(html, /function setupAudioStateMonitoring/);
+    assert.match(html, /function resumeAudioContext/);
+    assert.match(html, /audioCtx\.state === 'suspended' \|\| audioCtx\.state === 'interrupted'/);
+    assert.match(html, /window\.addEventListener\(evt, handleUserAudioGesture/);
+    const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+    for (const s of scripts) {
+      assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+    }
+  }
+});
 

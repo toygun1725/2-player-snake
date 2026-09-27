@@ -40,6 +40,7 @@ class GameJavascriptBridge(
         "ACH_LIGHTNING_REFLEX" to "CgkInayM2KgMEAIQDg",
         "ACH_ADVENTURE_COMPLETE" to "CgkInayM2KgMEAIQCg"
     )
+
     private val vibrator: Vibrator? =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             context.getSystemService(VibratorManager::class.java)?.defaultVibrator
@@ -48,10 +49,117 @@ class GameJavascriptBridge(
             context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
         }
 
+    // ── Tier-Based Haptic Engine ────────────────────────────────────────────
+    // iOS HapticManager tier'larıyla eşdeğer:
+    //   tick < light < medium < heavy < waveform (gameOver/win/beastFood)
+    //
+    // API 29+: VibrationEffect.createPredefined() — telefon üreticisinin
+    //          optimize ettiği fiziksel haptik motorunu kullanır.
+    // API 26+: createOneShot(ms, amplitude) — güç kontrolü.
+    // API <26: createOneShot(ms, DEFAULT_AMPLITUDE) — eski fallback.
+
+    /** D-pad tuşu, menü tıklama, sayım ekranı — en hafif */
+    private fun hapticTick() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            vibrateEffect(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK))
+        } else {
+            vibrateOneShot(8L, 80)
+        }
+    }
+
+    /** Normal yem yeme — hafif click */
+    private fun hapticLight() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            vibrateEffect(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
+        } else {
+            vibrateOneShot(18L, 140)
+        }
+    }
+
+    /** Özel yem (diamond), güçlendirici — orta */
+    private fun hapticMedium() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            vibrateEffect(VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK))
+        } else {
+            vibrateOneShot(30L, 200)
+        }
+    }
+
+    /** Çarpışma — çift darbe (iOS .heavy impact karşılığı) */
+    private fun hapticHeavy() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            vibrateEffect(VibrationEffect.createPredefined(VibrationEffect.EFFECT_DOUBLE_CLICK))
+        } else {
+            vibrateOneShot(40L, 255)
+        }
+    }
+
+    /** Oyun sonu — çarpışmadan farklı, artan 3 darbeli ritim */
+    private fun hapticGameOver() {
+        val timings = longArrayOf(0L, 40L, 30L, 60L, 30L, 80L)
+        val amps    = intArrayOf(0,   200,  0,  220,  0,  255)
+        vibrateWaveform(timings, amps)
+    }
+
+    /** Oyun kazanıldı — yükselen 2 darbeli ritim */
+    private fun hapticWin() {
+        val timings = longArrayOf(0L, 30L, 20L, 50L)
+        val amps    = intArrayOf(0,   160,  0,  220)
+        vibrateWaveform(timings, amps)
+    }
+
+    /** Heart/beast yem — iOS .error notification karşılığı: güçlü ikili darbe */
+    private fun hapticBeastFood() {
+        val timings = longArrayOf(0L, 50L, 20L, 50L)
+        val amps    = intArrayOf(0,   255,  0,  200)
+        vibrateWaveform(timings, amps)
+    }
+
+    // ── Low-level vibrate helpers ───────────────────────────────────────────
+
+    private fun vibrateEffect(effect: VibrationEffect) {
+        if (!preferences.vibrationEnabled) return
+        val v = vibrator ?: return
+        if (!v.hasVibrator()) return
+        v.vibrate(effect)
+    }
+
+    private fun vibrateOneShot(ms: Long, amplitude: Int) {
+        if (!preferences.vibrationEnabled) return
+        val v = vibrator ?: return
+        if (!v.hasVibrator()) return
+        val amp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                      v.hasAmplitudeControl()) amplitude
+                  else VibrationEffect.DEFAULT_AMPLITUDE
+        v.vibrate(VibrationEffect.createOneShot(ms, amp))
+    }
+
+    private fun vibrateWaveform(timings: LongArray, amplitudes: IntArray) {
+        if (!preferences.vibrationEnabled) return
+        val v = vibrator ?: return
+        if (!v.hasVibrator()) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && v.hasAmplitudeControl()) {
+            v.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
+        } else {
+            // Amplitude kontrolü yoksa sadece timing pattern'i kullan
+            v.vibrate(VibrationEffect.createWaveform(timings, -1))
+        }
+    }
+
+    // ── JavascriptInterface Methods ─────────────────────────────────────────
+
     @JavascriptInterface
     fun onEatFood(payload: String?) {
         if (!isCallAllowed()) return
-        vibrate(18L)
+        // Yem tipine göre tier seç — iOS HapticManager case'leriyle eşdeğer
+        val foodType = runCatching {
+            JSONObject(payload ?: "{}").optString("type", "normal")
+        }.getOrDefault("normal")
+        when (foodType) {
+            "heart"   -> hapticBeastFood() // Beast mode — en güçlü
+            "diamond" -> hapticMedium()    // Özel yem — orta
+            else      -> hapticLight()     // Normal yem — hafif
+        }
         logEvent("eat_food", payload)
     }
 
@@ -64,14 +172,14 @@ class GameJavascriptBridge(
     @JavascriptInterface
     fun onCollision(payload: String?) {
         if (!isCallAllowed()) return
-        vibrate(40L)
+        hapticHeavy()
         logEvent("collision", payload)
     }
 
     @JavascriptInterface
     fun onGameOver(payload: String?) {
         if (!isCallAllowed()) return
-        vibrate(40L)
+        hapticGameOver() // çarpışmadan farklı, 3 darbeli ritim
         logEvent("game_over", payload)
     }
 
@@ -127,18 +235,17 @@ class GameJavascriptBridge(
         }
     }
 
-
     @JavascriptInterface
     fun emit(payload: String?) {
         if (!isCallAllowed() || payload.isNullOrBlank()) return
         runCatching {
             val event = JSONObject(payload)
             when (event.optString("name")) {
-                "eatFood" -> onEatFood(event.optJSONObject("payload")?.toString())
-                "gameStart" -> onGameStart(event.optJSONObject("payload")?.toString())
-                "collision" -> onCollision(event.optJSONObject("payload")?.toString())
-                "gameOver" -> onGameOver(event.optJSONObject("payload")?.toString())
-                "adBreak" -> adBreak(event.optJSONObject("payload")?.toString())
+                "eatFood"           -> onEatFood(event.optJSONObject("payload")?.toString())
+                "gameStart"         -> onGameStart(event.optJSONObject("payload")?.toString())
+                "collision"         -> onCollision(event.optJSONObject("payload")?.toString())
+                "gameOver"          -> onGameOver(event.optJSONObject("payload")?.toString())
+                "adBreak"           -> adBreak(event.optJSONObject("payload")?.toString())
                 "unlockAchievement" -> unlockAchievement(event.optJSONObject("payload")?.optString("key"))
             }
         }.onFailure {
@@ -146,11 +253,42 @@ class GameJavascriptBridge(
         }
     }
 
+    /**
+     * hapticEvent: Web HTML'den event türü ile çağrılır.
+     * iOS'taki onEatFood/triggerVibration ayrımını Android'de tek noktaya toplar.
+     * Yeni tip: "tick" | "light" | "medium" | "heavy" | "gameOver" | "win" | "beastFood"
+     * Bilinmeyen tip → durationMs süresine göre otomatik tier seçimi.
+     */
+    @JavascriptInterface
+    fun hapticEvent(eventType: String?, durationMs: String?) {
+        if (!isCallAllowed()) return
+        when (eventType) {
+            "tick"      -> hapticTick()
+            "light"     -> hapticLight()
+            "medium"    -> hapticMedium()
+            "heavy"     -> hapticHeavy()
+            "gameOver"  -> hapticGameOver()
+            "win"       -> hapticWin()
+            "beastFood" -> hapticBeastFood()
+            else -> {
+                // Bilinmeyen tip → süreye göre tier fallback
+                val ms = durationMs?.toLongOrNull() ?: 18L
+                when {
+                    ms <= 12 -> hapticTick()
+                    ms <= 25 -> hapticLight()
+                    ms <= 45 -> hapticMedium()
+                    ms <= 90 -> hapticHeavy()
+                    else     -> hapticGameOver()
+                }
+            }
+        }
+    }
+
     @JavascriptInterface
     fun triggerVibration(durationMs: String?) {
         if (!isCallAllowed() || durationMs.isNullOrBlank()) return
-        val duration = durationMs.toLongOrNull() ?: return
-        vibrate(duration)
+        // Süre bazlı tier seçimi için hapticEvent'e delege et
+        hapticEvent(null, durationMs)
     }
 
     @JavascriptInterface
@@ -245,13 +383,6 @@ class GameJavascriptBridge(
     }
 
     private fun isCallAllowed(): Boolean = isTrustedPage()
-
-    private fun vibrate(durationMs: Long) {
-        if (!preferences.vibrationEnabled) return
-        val target = vibrator ?: return
-        if (!target.hasVibrator()) return
-        target.vibrate(VibrationEffect.createOneShot(durationMs, VibrationEffect.DEFAULT_AMPLITUDE))
-    }
 
     private fun logEvent(name: String, payload: String?) {
         Log.d(TAG, "Bridge event: $name payload=$payload")

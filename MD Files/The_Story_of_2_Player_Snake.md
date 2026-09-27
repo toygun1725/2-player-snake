@@ -75,8 +75,11 @@ Oyuncu tek başına pratik yapmak istediğinde karşısına rastgele dönen apta
 ### 3. Evrensel Bağlantılar (Universal Links & WhatsApp Daveti)
 Oyuncuların arkadaşlarıyla oda kodu yazmadan hemen eşleşebilmesi için `https://2playersnake.com/invite?room=...` Universal Link altyapısı kuruldu. WhatsApp'tan linke tıklayan bir iPhone kullanıcısı Safari'yi ve açılış videolarını atlayarak doğrudan yerel uygulama içinde arkadaşının maç odasına bağlanır.
 
-### 4. 90 Saniye Global Reklam Kuralı (Anti-Spam)
-Büyük oyun stüdyolarının oyuncuyu reklam yağmuruna tuttuğu bir çağda, RomiToy tersini seçti. Maç bittiğinde ana menüye dönüp hemen yeni oyuna giren bir oyuncunun art arda reklama maruz kalmaması için 90 saniyelik küresel bekleme süresi (`cooldownMs: 90000`) ve merkezi gatekeeper mimarisi uygulandı.
+### 4. 45 Saniye Global Reklam Kuralı (Anti-Spam & Oyuncu Dostu Denge)
+Büyük oyun stüdyolarının oyuncuyu reklam yağmuruna tuttuğu bir çağda, RomiToy oyuncu deneyimini önceliklendiren bir denge kurdu. Maç bittiğinde ana menüye dönüp hemen yeni oyuna giren bir oyuncunun art arda reklama maruz kalmaması için 45 saniyelik küresel bekleme süresi (`cooldownMs: 45000`) ve merkezi gatekeeper mimarisi uygulandı.
+
+### 5. Altın Oran Hız Kalibrasyonu, İnsani Seviye Çok Oyunculu & Ergonomik Oyun Sonu Düzeni (Game Feel & UI Polish)
+Klasik yılan oyununun hız hissini mükemmelleştirmek amacıyla `v3.4.6` ve `v3.4.7` sürümlerinde "Altın Oran Hız Kalibrasyonu" (`NORMAL = 0.75`, 93.9 ms) geliştirildi. PC, Mobil ve Online sunucu hızları birebir eşitlendi; rastgele eşleşmedeki Dash çarpanı 33 ms'den 64.7 ms'ye dengelenerek kontrol edilebilir, insani bir arcade kapışması sağlandı. Lokma yutma esnemesi (squash & stretch), Tron neon ızgara ışık izi ve yaylanan kombo popuplarıyla saf arcade hazzı zirveye taşındı. `v3.4.8` sürümünde ise oyuncu geri bildirimleri doğrultusunda oyun sonu ekranı sadeleştirildi; solda Ana Menü ve sağda Tekrar Oyna olacak şekilde sektör standardı ergonomik düzen kuruldu, akışı bölen Paylaş butonu kaldırılarak rövanş temposu maksimum akıcılığa ulaştırıldı.
 
 ---
 

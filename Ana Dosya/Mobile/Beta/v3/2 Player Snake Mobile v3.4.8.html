@@ -17,6 +17,30 @@
     <meta http-equiv="Expires" content="0">
     <meta name="description" content="Play 2 Player Snake online – challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
 
+    <!-- Open Graph / Social Media / Google Search Thumbnail Meta Tags -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="2 Player Snake Mobile v3.4.8 - Play Online & Local">
+    <meta property="og:description" content="Play 2 Player Snake online – challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
+    <meta property="og:url" content="https://2playersnake.com/wp-content/uploads/game-mobile/index.html">
+    <meta property="og:image" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
+    <meta property="og:image:secure_url" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:alt" content="2 Player Snake Logo">
+
+    <!-- Google Search Snippet Thumbnail & Direct Favicons -->
+    <meta name="thumbnail" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
+    <link rel="image_src" href="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="2 Player Snake Mobile v3.4.8 - Play Online & Local">
+    <meta name="twitter:description" content="Play 2 Player Snake online – challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
+    <meta name="twitter:image" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
+
     <!-- iOS & Mobile Specific Meta Tags -->
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
@@ -7285,107 +7309,10 @@
                 }
             }
 
-            function primeAudioContext(ctx) {
-                if (!ctx || ctx.state !== 'running') return;
-                try {
-                    const buf = ctx.createBuffer(1, 1, 22050);
-                    const src = ctx.createBufferSource();
-                    src.buffer = buf;
-                    src.connect(ctx.destination);
-                    src.start(0);
-                } catch (e) {}
-            }
-
-            function setupAudioStateMonitoring(ctx) {
-                if (!ctx || ctx._hasStateListener) return;
-                ctx._hasStateListener = true;
-                try {
-                    ctx.addEventListener('statechange', () => {
-                        if (!muted && !document.hidden && (ctx.state === 'suspended' || ctx.state === 'interrupted')) {
-                            ctx.resume().then(() => primeAudioContext(ctx)).catch(() => {});
-                        }
-                    });
-                } catch (e) {}
-            }
-
-            function ensureAudio() {
-                if (!audioCtx || audioCtx.state === 'closed') {
-                    try {
-                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                        setupAudioStateMonitoring(audioCtx);
-                    } catch (e) {}
-                }
-                if (audioCtx && (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted')) {
-                    audioCtx.resume().then(() => primeAudioContext(audioCtx)).catch(() => {});
-                }
-            }
-
-            function resumeAudioContext() {
-                if (muted) return;
-                try {
-                    if (!audioCtx || audioCtx.state === 'closed') {
-                        ensureAudio();
-                        return;
-                    }
-                    if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
-                        audioCtx.resume().then(() => {
-                            primeAudioContext(audioCtx);
-                        }).catch(() => {
-                            setTimeout(() => {
-                                if (audioCtx && (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted')) {
-                                    audioCtx.resume().then(() => primeAudioContext(audioCtx)).catch(() => {});
-                                }
-                            }, 120);
-                            setTimeout(() => {
-                                if (audioCtx && (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted')) {
-                                    audioCtx.resume().then(() => primeAudioContext(audioCtx)).catch(() => {});
-                                }
-                            }, 350);
-                        });
-                    } else if (audioCtx.state === 'running') {
-                        primeAudioContext(audioCtx);
-                    }
-                } catch (e) {
-                    console.warn('[WebAudio] resumeAudioContext error:', e);
-                }
-            }
-            window.resumeAudioContext = resumeAudioContext;
-
-            // Global user gesture unlock - satisfies iOS WebKit gesture requirement
-            const userAudioGestureEvents = ['touchstart', 'touchend', 'pointerdown', 'mousedown', 'keydown'];
-            function handleUserAudioGesture() {
-                if (!muted && audioCtx && (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted')) {
-                    audioCtx.resume().then(() => primeAudioContext(audioCtx)).catch(() => {});
-                }
-            }
-            userAudioGestureEvents.forEach(evt => {
-                window.addEventListener(evt, handleUserAudioGesture, { passive: true, capture: true });
-            });
-
-            // Lifecycle listeners for returning from full-screen ads / background
-            document.addEventListener('visibilitychange', () => {
-                if (!document.hidden) {
-                    resumeAudioContext();
-                    setTimeout(resumeAudioContext, 200);
-                }
-            });
-            window.addEventListener('focus', () => {
-                resumeAudioContext();
-                setTimeout(resumeAudioContext, 200);
-            });
-            window.addEventListener('pageshow', () => {
-                resumeAudioContext();
-                setTimeout(resumeAudioContext, 200);
-            });
-
+            function ensureAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
             function tone(freq, dur, { type = 'square', gain = 0.06, attack = 0.004, release = 0.06, sweep = 0 } = {}) {
                 if (muted) return; try {
-                    ensureAudio();
-                    if (!audioCtx) return;
-                    if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
-                        audioCtx.resume().catch(() => {});
-                    }
-                    const now = audioCtx.currentTime;
+                    ensureAudio(); const now = audioCtx.currentTime;
                     const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
                     o.type = type; o.frequency.value = freq;
                     if (sweep) { o.frequency.linearRampToValueAtTime(freq * (1 + sweep), now + dur); }
