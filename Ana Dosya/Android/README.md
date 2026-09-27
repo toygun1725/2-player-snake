@@ -37,6 +37,8 @@ Native bridge object:
 - `window.Android.onCollision(payloadJson)`
 - `window.Android.onGameOver(payloadJson)`
 - `window.Android.emit(payloadJson)`
+- `window.Android.hapticEvent(eventType, durationMs)` (v3.4.9 Tier-based haptics: tick, light, medium, heavy, gameOver, win, beastFood)
+- `window.Android.triggerVibration(durationMs)`
 
 The app also injects a helper script that exposes:
 

@@ -6,13 +6,29 @@ Bu rehber, ilk Android promptunda istenen hedefleri ve bugun bu hedeflere gore f
 
 ## Referans Durum
 - Android shell kaynagi: `d:\#3 Vibecoding\AI Games\2 Player Snake\Ana Dosya\Android`
-- Guncel web kaynak referansi: `2 Player Snake Mobile v3.4.8 / PC v3.4.8`
-- Android cevrimdisi fallback: `mobile_offline_fallback.html` (v3.4.8 ile esitlendi - Ergonomik oyun sonu buton düzeni: solda Ana Menü, sağda Tekrar Oyna, Paylaş butonu kaldırıldı; Online Çok Oyunculu Hız Kalibrasyonu `MOD_SPEED.NORMAL = 0.75`, 93.9ms adım süresi, insani seviye Dash 64.7ms, dengeli güçlendiriciler, lokma yutma squash & stretch, yaylanan kombo popupları, Tron zemin ışık izi ring buffer, serbest dokunmatik halka)
-- Guncel kaynak `versionCode`: **70** (Native shell son derleme; v3.4.8 web yayını için yeni AAB gerekmez, WordPress üzerinden dinamik yüklenir)
-- Guncel kaynak `versionName`: **`v3.4.2`** (Native shell etiketi)
-- Yayin/AAB durumu: versionCode 70 (v3.4.2) AAB derlendi ve imzalandı (`2PlayerSnake-v3.4.2-release.aab` ve `app/build/outputs/bundle/release/app-release.aab`). v3.4.8 uzaktan web yayınıyla anında aktifleşir.
+- Guncel web kaynak referansi: `2 Player Snake Mobile v3.4.9 / PC v3.4.9`
+- Android cevrimdisi fallback: `mobile_offline_fallback.html` (v3.4.9 ile %100 eşitlendi — Tier-based haptic desteği, Web Audio reklam sonrası ses kurtarma motoru, 45s ad cooldown, ergonomik butonlar)
+- Guncel kaynak `versionCode`: **71** (Native shell son derleme; v3.4.9 tier-based haptic engine ve güncel offline fallback ile derlendi)
+- Guncel kaynak `versionName`: **`v3.4.9`** (Native shell etiketi)
+- Yayin/AAB durumu: versionCode 71 (v3.4.9) AAB derlendi ve imzalandı (`2PlayerSnake-v3.4.9-release.aab` ve `app/build/outputs/bundle/release/app-release.aab`). Play Store üretimine hazırlandı.
 
-## Son Android Shell Notu (versionCode 70 / v3.4.2)
+## Son Android Shell Notu (versionCode 71 / v3.4.9)
+- **versionCode 71 (v3.4.9)**: Katmanlı Dokunsal Geri Bildirim (Tier-Based Haptics), Web Audio Kurtarma Motoru ve v3.4.9 Çevrimdışı Eşitlemesi.
+  - **Katmanlı Haptik Motoru (`GameJavascriptBridge.kt`):** iOS Taptic Engine zenginliğini Android donanımına taşıyan modern haptik motoru kuruldu:
+    - `hapticTick()`: D-pad yön tuşları, menü tıklamaları ve sayaç için `EFFECT_TICK` (API 29+) / 8ms.
+    - `hapticLight()`: Normal yem yendiğinde `EFFECT_CLICK` (API 29+) / 18ms.
+    - `hapticMedium()`: Özel elmas yemi için `EFFECT_HEAVY_CLICK` (API 29+) / 30ms.
+    - `hapticHeavy()`: Çarpışmalarda `EFFECT_DOUBLE_CLICK` (API 29+) / 40ms.
+    - `hapticGameOver()`: Oyun bittiğinde çarpışmadan farklı, 3 darbeli artan dalga formu (`waveform`).
+    - `hapticWin()`: Zafer anında 2 darbeli yükselen ritmik dalga formu.
+    - `hapticBeastFood()`: Kalp (beast mode) yeminde güçlü ikili darbe.
+  - **Yeni `@JavascriptInterface fun hapticEvent(eventType: String?, durationMs: String?)`:** Web katmanından gelen semantik olay türlerini doğrudan Kotlin'deki doğru haptik katmanına yönlendirir; bilinmeyen durumlarda süre tabanlı güvenli fallback sağlar.
+  - **`onEatFood` Tür Ayrıştırma:** Gelen JSON yükü parse edilerek elmas, kalp veya normal yem tipine göre farklı haptik şiddeti atanır.
+  - **Web Audio Ses Kurtarma & Gömülü Fallback:** Reklam sonrası WebKit ses kesilmesini önleyen `forceRebuildAudio` ve `_adJustFinished` mimarisi Android çevrimdışı fallback'e (`mobile_offline_fallback.html`) eklendi ve dosya sürümü `v3.4.9` olarak güncellendi.
+  - `versionCode`: 70 → 71, `versionName`: v3.4.2 → v3.4.9.
+  - AAB: `2PlayerSnake-v3.4.9-release.aab` derlendi ve imzalandı.
+
+## Önceki Android Shell Notu (versionCode 70 / v3.4.2)
 - **versionCode 70 (v3.4.2)**: 21 Dil ASO Desteği, Dinamik VS AI Modu, D-Pad Ergonomisi ve 90s Reklam Cooldown Kuralı.
   - **Sürüm ve Runtime Senkronu:** Mobil v3.4.2 ile tam senkronizasyon sağlandı (`versionCode: 70`, `versionName: v3.4.2`).
   - **Dinamik "VS YAPAY ZEKA" (VS AI) Modu:** Tek kişilik oyun kurulumunda yapay zeka seçeneği 21 dilde dinamik olarak adlandırıldı.

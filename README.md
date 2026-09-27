@@ -20,7 +20,7 @@ Yazılım geçmişi olmayan bir video yapımcısı ve bir avukatın, yapay zekay
 - **Evrensel Davet Linkleri (Universal Links):** WhatsApp veya mesaj ile tek tıkla arkadaşının maç odasına bağlanma.
 - **Çoklu Oyun Modları:** Normal (Klasik), Fast Competitive (Hızlı Rekabetçi), Adventure (Macera), Self Area 51 (Bölünmüş Ekran).
 - **21 Dilde Küresel Yerelleştirme:** Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, İtalyanca, Rusça, Çince, Japonca, Korece ve daha fazlası.
-- **Akıllı ve Oyuncu Dostu:** 60 FPS Metal/Canvas optimizasyonu, dokunsal titreşim (haptics), 90 saniyelik anti-spam reklam bekleme süresi.
+- **Akıllı ve Oyuncu Dostu:** 60 FPS Metal/Canvas optimizasyonu, katmanlı dokunsal titreşim (haptics), 45 saniyelik optimize edilmiş reklam bekleme süresi ve kesintisiz ses motoru.
 
 ---
 
@@ -29,7 +29,7 @@ Yazılım geçmişi olmayan bir video yapımcısı ve bir avukatın, yapay zekay
 | Platform | Teknoloji / Altyapı |
 | :--- | :--- |
 | **Web (PC & Mobil)** | Vanilla JS, HTML5 Canvas, Socket.IO, CSS Glassmorphism |
-| **Android** | Native WebView Wrapper, Java, Google Play Games Services (15 Başarım) |
+| **Android** | Native WebView Wrapper, Kotlin & Java, Google Play Games Services (15 Başarım) |
 | **iOS** | Swift, WKWebView, Apple Game Center (15 Başarım), StoreKit / RevenueCat IAP |
 | **CI/CD & Dağıtım** | GitHub Actions (macOS Runner), Fastlane, TestFlight Automation |
 | **Sunucu** | Node.js, Socket.IO, Express, REST API |

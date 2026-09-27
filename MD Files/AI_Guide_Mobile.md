@@ -20,13 +20,23 @@ Bu belge, mobil surum uzerinde calisacak yapay zekalar icin guncel teknik refera
 - Tasarim dili: koyu cyberpunk zemin, neon pembe ve turkuaz glow, camimsi panel dili, mobil odakli dar yerlesim.
 - Ana menu logosu web uzerindeki guncel logo kaynagini kullanir; gerekirse yerel fallback ile calisir.
 
-## Son Guncelleme (v3.4.9 - Akıllı Cache-Busting, 0 KB Sürüm Kontrolü & İlk Açılış Hızlandırması)
-- **v3.4.9**: Akıllı HEAD ETag & Last-Modified Sürüm Kontrol Motoru, Sıfır Bayt Gövde Transferi, Sürüm Değişmeden Anında Güncelleme, 30s Mobil Dengeleme ve CDN Entegrasyonu (2026-09-27).
+## Son Guncelleme (v3.4.9 - Akıllı Cache-Busting, Web Audio Kurtarma, Katmanlı Haptikler & 45s Ad Cooldown)
+- **v3.4.9**: Akıllı HEAD ETag & Last-Modified Sürüm Kontrol Motoru, Sıfır Bayt Gövde Transferi, Web Audio Reklam Sonrası Ses Kurtarma Motoru, Katmanlı Haptikler ve 45s Ad Cooldown (2026-09-27).
+  - **iOS WebKit Reklam Sonrası Ses Kurtarma Motoru (`forceRebuildAudio` & `_adJustFinished`):**
+    - AdMob tam ekran (interstitial & rewarded) reklam gösterimlerinin ardından iOS WebKit'in `audioCtx.state`'i 'running' göstermesine rağmen ses çıkış motorunu kalıcı olarak kitlemesi/öldürmesi sorunu çözüldü.
+    - Tüm reklam kapanış olaylarında (`afterAd`, `adBreakDone`, `adViewed`, `adDismissed`) `window._adJustFinished = true` bayrağı kaldırılır.
+    - Kullanıcının reklam sonrası yaptığı ilk dokunuşta (`handleUserAudioGesture`), eski AudioContext kapatılır ve sıfırdan temiz bir `AudioContext` inşa edilerek mikro priming ile donanıma bağlanır.
+  - **Katmanlı Dokunsal Geri Bildirim (`hapticTyped` & Semantik SFX):**
+    - `hapticTyped(eventType)` yardımcı fonksiyonu eklendi.
+    - Android native köprüsündeki yeni `hapticEvent()` arayüzü ile entegre edildi; iOS ve mobil tarayıcılar için süre bazlı dinamik fallback sağlandı.
+    - Normal yem (`light`), elmas (`medium`), kalp/beast (`beastFood`), çarpışma (`heavy`), zafer (`win`), oyun sonu (`gameOver`) ve buton tıklamaları (`tick`) semantik olarak ayrıştırıldı.
+  - **Ad Cooldown 45 Saniye (`cooldownMs: 45000`):**
+    - AdMob gelir optimizasyonu için küresel reklam bekleme süresi 90 saniyeden 45 saniyeye dengelendi.
   - **Akıllı HEAD (ETag & Last-Modified) Kontrolü:** `checkForFreshVersion()` motoru `GET` yerine `HEAD` metodu kullanacak şekilde modernize edildi. Gövde indirilmez (0 KB). Sunucunun döndürdüğü `ETag` ve `Last-Modified` zaman damgası taranır; dosya yüklendiği an sürüm stringi aynı kalsa dahi güncelleme tetiklenir.
   - **Mobil Pil ve Kota Koruma:** 2 saniyede bir çalışan aşırı agresif döngü (`VERSION_CHECK_INTERVAL_MS`), cihazın pilini ve hücresel kotasını korumak amacıyla 30 saniyeye çekildi. Sekme değiştirme (`visibilitychange`), ekrana geri dönme (`focus`, `pageshow`) ve maç sonu anlık tetikleyicileri korundu.
   - **Güvenli Yenileme Koruması:** `canApplyVersionRefreshNow()` aktif oyun sırasında, ödüllü devam ekranında veya reklamdayken yenilemeyi engeller; oyuncu ana menüye döndüğünde kesintisiz geçiş yapılır.
   - **Hostinger CDN Uyumu:** Dosya başındaki `no-cache, must-revalidate` meta etiketleri temizlendi, CDN'in ilk ziyarette 5 saniye bekleme sorunu giderildi.
-  - **Sürüm Senkronizasyonu & Testler:** PC v3.4.9 ve Mobil v3.4.9 tam eşitlendi; Node.js inline script sözdizimi testlerinden %100 başarıyla geçti.
+  - **Sürüm Senkronizasyonu & Testler:** PC v3.4.9, Mobil v3.4.9, Android offline fallback ve iOS offline fallback tam eşitlendi; `tests/ios-runtime.test.cjs` 56/56 testten (%100) başarıyla geçti.
 
 ## Onceki Guncelleme (v3.4.8 - Oyun Sonu Buton Düzeni & Paylaş Butonunun Kaldırılması)
 - **v3.4.8**: Ergonomik Oyun Sonu Buton Düzeni, Solda Ana Menü, Sağda Tekrar Oyna, Paylaş Butonu ve Kodlarının Kaldırılması (2026-09-25).

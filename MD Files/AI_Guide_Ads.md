@@ -2,7 +2,18 @@
 
 Bu belge, oyundaki reklam akisinin guncel davranisini ozetler. Web tarafinda reklamlar Google AdSense H5 Games Ads ile, Android shell icinde ise native koordine edilen bir kopru ile calisir.
 
-Referans surum: `v3.4.8` (iOS Build 46 / Android Code 70 - Runtime v3.4.8)
+Referans surum: `v3.4.9` (iOS Build 46 / Android Code 71 - Runtime v3.4.9)
+
+## Güncel Reklam Notu — v3.4.9 (2026-09-27)
+
+- **45 Saniye Global Ad Cooldown (`cooldownMs: 45000`):**
+  - AdMob gelir optimizasyonu için küresel reklam bekleme süresi 90 saniyeden 45 saniyeye dengelendi. Bu değişiklik sonrasında reklam gösterim sıklığı ve AdMob geliri hissedilir şekilde arttı.
+- **Web Audio Reklam Sonrası Ses Kurtarma Motoru (`forceRebuildAudio` & `_adJustFinished`):**
+  - Tam ekran AdMob geçiş ve ödüllü reklam gösterimlerinin ardından iOS WebKit ve Android WebView'da ses oturumunun askıda kalması ve oyunun sessiz devam etmesi sorunu çözüldü.
+  - Reklam tamamlandığında (`afterAd`, `adBreakDone`, `onNativeAdDone`, `adViewed`, `adDismissed`) `window._adJustFinished = true` bayrağı aktifleşir.
+  - Kullanıcı oyuna döndükten sonraki ilk ekrana dokunuşunda (gesture call-stack içinde) eski `AudioContext` kapatılır, sıfırdan yeni bir context başlatılır ve 1-örnekli mikro priming ile ses donanımı canlandırılır.
+- **Tüm Dosyalarda Eşitlik:**
+  - `Mobile v3.4.9`, `PC v3.4.9`, `Android offline fallback` ve `iOS offline fallback` dosyalarının tamamında reklam akışı ve ses kurtarma motoru tam uyumlu olarak çalışmaktadır.
 
 ## Güncel iOS eki — Build 36 (2026-09-16)
 

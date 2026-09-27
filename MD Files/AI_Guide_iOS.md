@@ -4,13 +4,15 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 
 ---
 
-## 1. Güncel HTML & Çevrimdışı Fallback Durumu (v3.4.8, 2026-09-25)
+## 1. Güncel HTML & Çevrimdışı Fallback Durumu (v3.4.9, 2026-09-27)
 
-- HTML Runtime & Web Referansı: `2 Player Snake Mobile v3.4.8.html` ve `2 Player Snake PC v3.4.8.html`.
-- iOS Çevrimdışı Fallback (`TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`): v3.4.8 ile eşitlendi.
-- Oyun Sonu Buton Düzeni & Paylaş Butonunun Kaldırılması: Oyun sonu ekranında (`showGameEndStats`) butonlar solda Ana Menü, sağda Tekrar Oyna olacak şekilde düzenlendi; Paylaş butonu kaldırıldı.
-- Otomatik Testler: `node --test tests/ios-runtime.test.cjs` 54/54 test (%100) başarıyla geçti.
-- WordPress Yayını: v3.4.8 özellikleri remote webview üzerinden anında aktifleşir; yeni iOS native build almaya gerek yoktur.
+- HTML Runtime & Web Referansı: `2 Player Snake Mobile v3.4.9.html` ve `2 Player Snake PC v3.4.9.html`.
+- iOS Çevrimdışı Fallback (`TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`): v3.4.9 ile %100 eşitlendi (Web Audio ses kurtarma motoru, semantik haptikler, 45s ad cooldown).
+- Web Audio Reklam Sonrası Ses Kurtarma Motoru: iOS WebKit'in reklam bitiminde `audioCtx.state`'i 'running' göstermesine rağmen donanım ses çıkışını dondurması sorunu, reklam bitişinde `_adJustFinished` bayrağı ve ilk kullanıcı etkileşiminde `forceRebuildAudio()` çağrısıyla giderildi.
+- Katmanlı Dokunsal Geri Bildirim: `hapticTyped` semantik tipleriyle iOS Taptic Engine ve Android sistemleriyle tam uyum sağlandı.
+- Ad Cooldown Optimizasyonu: AdMob gelirlerinin toparlanması amacıyla global reklam bekleme süresi 45 saniyeye (`cooldownMs: 45000`) indirildi.
+- Otomatik Testler: `node tests/ios-runtime.test.cjs` 56/56 test (%100) başarıyla geçti.
+- WordPress Yayını: Canlı sunucuya (`2playersnake.com`) v3.4.9 dosyaları yüklendiğinde iOS uygulaması Build 46 ve TestFlight kullanıcıları hibrit mimari sayesinde yeni native build gerekmeden anında güncellenir.
 
 ## 1.1. Native Shell Durumu — Build 46 (v3.4.2, 2026-09-23)
 
