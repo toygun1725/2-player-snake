@@ -1016,7 +1016,7 @@ Novinky vo v3.3.5:
 • Загальні покращення та виправлення помилок.
 </uk>
 
-> Durum (2026-09-27): Güncel mobil ve PC kaynak referansı `v3.4.9` (versionCode 71) AAB derlendi ve Play Store yüklemesine hazırlandı (`2PlayerSnake-v3.4.9-release.aab`).
+> Durum (2026-09-27): Güncel mobil ve PC kaynak referansı `v3.4.9` (versionCode 71) AAB derlendi, imzalandı ve Google Play Console Üretim kanalına yüklendi (`2PlayerSnake-v3.4.9-release.aab` - In Review).
 
 ## Published Play Store Release Notes (v3.4.9 — versionCode 71)
 

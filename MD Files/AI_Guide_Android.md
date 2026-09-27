@@ -10,7 +10,7 @@ Bu rehber, ilk Android promptunda istenen hedefleri ve bugun bu hedeflere gore f
 - Android cevrimdisi fallback: `mobile_offline_fallback.html` (v3.4.9 ile %100 eşitlendi — Tier-based haptic desteği, Web Audio reklam sonrası ses kurtarma motoru, 45s ad cooldown, ergonomik butonlar)
 - Guncel kaynak `versionCode`: **71** (Native shell son derleme; v3.4.9 tier-based haptic engine ve güncel offline fallback ile derlendi)
 - Guncel kaynak `versionName`: **`v3.4.9`** (Native shell etiketi)
-- Yayin/AAB durumu: versionCode 71 (v3.4.9) AAB derlendi ve imzalandı (`2PlayerSnake-v3.4.9-release.aab` ve `app/build/outputs/bundle/release/app-release.aab`). Play Store üretimine hazırlandı.
+- Yayin/AAB durumu: versionCode 71 (v3.4.9) AAB derlendi, imzalandı ve Google Play Console üzerinden Üretim (Production) kanalına yüklendi; Google incelemesinde (In Review).
 
 ## Son Android Shell Notu (versionCode 71 / v3.4.9)
 - **versionCode 71 (v3.4.9)**: Katmanlı Dokunsal Geri Bildirim (Tier-Based Haptics), Web Audio Kurtarma Motoru ve v3.4.9 Çevrimdışı Eşitlemesi.
