@@ -22,6 +22,8 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 
     // MARK: - Uygulama Açılışı Yönetimi
     func handleAppLaunch() {
+        clearBadgeAndDeliveredNotifications()
+
         let count = defaults.integer(forKey: keyLaunchCount) + 1
         defaults.set(count, forKey: keyLaunchCount)
         defaults.set(Date().timeIntervalSince1970, forKey: keyLastPlayedAt)
@@ -123,12 +125,30 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
+    // MARK: - Rozet ve Teslim Edilmiş Bildirimleri Temizleme
+    func clearBadgeAndDeliveredNotifications() {
+        let center = UNUserNotificationCenter.current()
+        center.removeAllDeliveredNotifications()
+
+        if #available(iOS 17.0, *) {
+            center.setBadgeCount(0) { error in
+                if let error = error {
+                    NSLog("[NotificationManager] Error resetting badge count: %@", error.localizedDescription)
+                }
+            }
+        } else {
+            DispatchQueue.main.async {
+                UIApplication.shared.applicationIconBadgeNumber = 0
+            }
+        }
+    }
+
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
-        UIApplication.shared.applicationIconBadgeNumber = 0
+        clearBadgeAndDeliveredNotifications()
         completionHandler()
     }
 }

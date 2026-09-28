@@ -51,6 +51,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func sceneDidBecomeActive(_ scene: UIScene) {
         NotificationCenter.default.post(name: NSNotification.Name("AppDidBecomeActive"), object: nil)
+        NotificationManager.shared.clearBadgeAndDeliveredNotifications()
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
