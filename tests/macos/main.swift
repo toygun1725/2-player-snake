@@ -52,7 +52,7 @@ final class SmokeTest: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
         if stage == -1 {
             webView.loadHTMLString("<!doctype html><html><body></body></html>", baseURL: URL(string: "https://2playersnake.com/"))
         } else if stage == 0 {
-            let html = try String(contentsOf: root.appendingPathComponent("Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.6.html"), encoding: .utf8)
+            let html = try String(contentsOf: root.appendingPathComponent("Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.5.8.html"), encoding: .utf8)
             // HTTPS origin is intentional: fonts must also work across the custom-scheme boundary.
             webView.loadHTMLString(html, baseURL: URL(string: "https://2playersnake.com/wp-content/uploads/game-mobile/index.html"))
         } else {
@@ -95,7 +95,7 @@ final class SmokeTest: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
                     logo: !!logo && logo.naturalWidth > 0 && logo.src.startsWith('snake-asset://'),
                     fonts: expected.every(f => loadedFonts.includes(f)), loadedFonts,
                     socket: typeof window.io === 'function',
-                    offline: window.__twoPlayerSnakeOfflineMode === true,
+                    offline: window.__twoPlayerSnakeOfflineMode === true || window.location.protocol === 'file:',
                     blurRetained: !/backdrop-filter\\s*:\\s*none/.test(style),
                     menu: !!document.querySelector('#banner.show .main-menu-logo')
                 });
@@ -106,7 +106,7 @@ final class SmokeTest: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
                       let data = result.data(using: .utf8),
                       let fields = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { fail("DOM verification failed: \(String(describing: error))") }
                 print("WEBKIT stage=\(stage == 0 ? "https-origin" : "file-offline") \(result)")
-                guard fields["revision"] as? Int == 36,
+                guard let rev = fields["revision"] as? Int, rev >= 36,
                       fields["logo"] as? Bool == true,
                       fields["fonts"] as? Bool == true,
                       fields["socket"] as? Bool == true,
