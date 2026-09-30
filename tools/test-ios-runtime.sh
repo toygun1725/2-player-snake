@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-node --test tests/ios-runtime.test.cjs
+node --test tests/ios-runtime.test.cjs tests/online-layout.test.cjs tests/ui-lifecycle.test.cjs tests/localization.test.cjs
 smoke_dir="$(mktemp -d -t snake-webkit)"
 xcrun swiftc -DDEBUG -swift-version 5 -framework AppKit -framework WebKit \
   "Ana Dosya/iOS/TwoPlayerSnake/BundleAssetHandler.swift" tests/macos/main.swift \

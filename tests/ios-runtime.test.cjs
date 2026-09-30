@@ -188,7 +188,7 @@ for (const file of files) {
 
 test('online/offline AI implementation stays identical', () => {
   const onlineOfflineFiles = [
-    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.4.6.html',
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.5.8.html',
     'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
     'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html'
   ];
@@ -608,7 +608,7 @@ test('v3.4.8 mobile, pc and offline fallbacks implement v3.4.8 button layout, sh
   ];
   for (const p of targets) {
     const html = read(p);
-    assert.match(html, /const VERSION = 'v3\.4\.[89]';/);
+    assert.match(html, /const VERSION = 'v3\.(?:4\.[89]|5\.[0-9]+)';/);
     // Button order in game end actions: Main Menu first (left), Play Again second (right)
     assert.match(html, /id="gameEndMenuBtn"[\s\S]*?id="gameEndReplayBtn"/);
     // Share button completely removed
@@ -680,4 +680,148 @@ test('v3.4.9 mobile, pc and offline fallbacks implement resilient Web Audio reco
     }
   }
 });
+
+test('v3.5.3 mobile and pc implement ad revenue optimization with cold-start protection', () => {
+  const targets = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.5.3.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.5.3.html'
+  ];
+  for (const p of targets) {
+    const html = read(p);
+    assert.match(html, /const VERSION = 'v3\.5\.3';/);
+    assert.match(html, /cooldownMs:\s*45000/);
+    assert.match(html, /if\s*\(this\.sessionStartedMatchCount\s*<=\s*1\)\s*\{\s*startFn\(\);\s*return;\s*\}/);
+    assert.doesNotMatch(html, /Math\.random\(\)\s*>=\s*0\.50/);
+    assert.match(html, /roundCount\s*>\s*0\s*&&\s*roundCount\s*%\s*2\s*===\s*0/);
+    assert.doesNotMatch(html, /pause_exit_home/);
+    const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+    for (const s of scripts) {
+      assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+    }
+  }
+});
+
+test('v3.5.4 mobile and pc implement ad monetization overhaul (30s cooldown, odd rounds, solo rewarded)', () => {
+  const targets = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.5.4.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.5.4.html'
+  ];
+  for (const p of targets) {
+    const html = read(p);
+    assert.match(html, /const VERSION = 'v3\.5\.4';/);
+    assert.match(html, /cooldownMs:\s*30000/);
+    assert.match(html, /roundCount\s*>\s*0\s*&&\s*roundCount\s*%\s*2\s*!==\s*0/);
+    assert.match(html, /maybeInterceptSoloLoss/);
+    assert.doesNotMatch(html, /menu_after_stats/);
+    assert.doesNotMatch(html, /replay_after_stats/);
+    const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+    for (const s of scripts) {
+      assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+    }
+  }
+});
+
+test('v3.5.5 mobile and pc implement rewarded beast mode start and 3-2-1 resume countdown', () => {
+  const targets = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.5.5.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.5.5.html'
+  ];
+  for (const p of targets) {
+    const html = read(p);
+    assert.match(html, /const VERSION = 'v3\.5\.5';/);
+    assert.match(html, /requestRewardedBeastStart/);
+    assert.match(html, /startRewardedResumeCountdown/);
+    assert.match(html, /BEAST_MODE_DURATION_MS\s*=\s*8000/);
+    assert.match(html, /startWithBeast/);
+    const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+    for (const s of scripts) {
+      assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+    }
+  }
+});
+
+test('v3.5.6 mobile and pc implement player-only beast mode start without food burst', () => {
+  const targets = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.5.6.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.5.6.html'
+  ];
+  for (const p of targets) {
+    const html = read(p);
+    assert.match(html, /const VERSION = 'v3\.5\.6';/);
+    assert.match(html, /requestRewardedBeastStart/);
+    assert.match(html, /startRewardedResumeCountdown/);
+    assert.match(html, /BEAST_MODE_DURATION_MS\s*=\s*8000/);
+    assert.match(html, /startWithBeast/);
+    const beastStartBlock = (html.match(/if\s*\(startWithBeast\s*&&\s*snakes\s*&&\s*snakes\.p1\)\s*\{([\s\S]*?)\}/) || [])[1] || '';
+    assert.ok(beastStartBlock.includes('BEAST_MODE_DURATION_MS'));
+    assert.ok(beastStartBlock.includes('SFX.heart()'));
+    assert.ok(!beastStartBlock.includes('spawnRubyBurstFoods'), `spawnRubyBurstFoods found in startWithBeast block in ${p}`);
+    assert.ok(!beastStartBlock.includes('redBulkEndTime'), `redBulkEndTime found in startWithBeast block in ${p}`);
+    const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+    for (const s of scripts) {
+      assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+    }
+  }
+});
+
+test('v3.5.7 mobile and pc implement cross-play matchmaking and pc vertical arena', () => {
+  const targets = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.5.7.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.5.7.html'
+  ];
+  for (const p of targets) {
+    const html = read(p);
+    assert.match(html, /const VERSION = 'v3\.5\.7';/);
+    const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+    for (const s of scripts) {
+      assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+    }
+  }
+
+  // PC vertical arena assertions
+  const pcHtml = read('Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.5.7.html');
+  assert.match(pcHtml, /#stage\.vertical-arena #canvasWrap/);
+  assert.match(pcHtml, /st\.classList\.toggle\('vertical-arena',\s*isVerticalArena\)/);
+  assert.match(pcHtml, /cwEl\.style\.aspectRatio\s*=\s*`\$\{GRID_COLS\} \/ \$\{GRID_ROWS\}`/);
+  assert.match(pcHtml, /socket\.emit\('joinMatchmaking',\s*\{[^}]*requestedRows:\s*42[^}]*\}\)/);
+
+  // Server cross-play logic assertions
+  const serverJs = read('Ana Dosya/Server/Mobile/server.js');
+  assert.match(serverJs, /let matchmakingQueue = \[\];/);
+  assert.match(serverJs, /const isCrossplay = \(p1Data\.platform !== p2Data\.platform\);/);
+  assert.match(serverJs, /const roomCols = hasMobile \? 24 : 64;/);
+  assert.match(serverJs, /room\.platform = isCrossplay \? 'crossplay' : 'mobile';/);
+  assert.doesNotThrow(() => new vm.Script(serverJs), 'Syntax error in server.js');
+});
+
+test('v3.5.8 mobile, pc, fallbacks implement forfeit ad monetization and matchmaking restart', () => {
+  const targets = [
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.5.8.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.5.8.html',
+    'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
+    'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html'
+  ];
+  for (const p of targets) {
+    const html = read(p);
+    assert.match(html, /const VERSION = 'v3\.5\.8';/);
+    assert.match(html, /data\.reason === 'forfeit'/);
+    assert.match(html, /AdManager\.maybeShowGameOverAd/);
+    assert.match(html, /showGameEndStats\([^,]+,\s*\{[^}]*isForfeit:\s*isForfeit/);
+    assert.match(html, /startMatchmaking\(\)/);
+    const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map(m => m[1]);
+    for (const s of scripts) {
+      assert.doesNotThrow(() => new vm.Script(s), `Syntax error in ${p}`);
+    }
+  }
+});
+
+test('android_bridge_bootstrap.js implements start ad handling and 8.5s safetyTimer matching iOS', () => {
+  const bridgeJs = read('Ana Dosya/Android/app/src/main/assets/js/android_bridge_bootstrap.js');
+  assert.match(bridgeJs, /o\.type === 'start' \|\| o\.type === 'next'/);
+  assert.match(bridgeJs, /var safetyTimer = setTimeout\(function \(\) \{/);
+  assert.match(bridgeJs, /8500\);/);
+  assert.match(bridgeJs, /clearTimeout\(callbacks\.safetyTimer\);/);
+  assert.doesNotThrow(() => new vm.Script(bridgeJs), 'Syntax error in android_bridge_bootstrap.js');
+});
+
 

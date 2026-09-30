@@ -1,19 +1,70 @@
 # 2 Player Snake - iOS & TestFlight GitHub CI/CD Kurulum Rehberi (Mac Olmadan)
 
+## Güncel Native Shell & TestFlight — v3.5.8 Build 47 (2026-09-30)
+
+- **Son Native TestFlight Paketi:** **Build 47 (v3.5.8)**
+  - Tag: `ios-v3.5.8-b47`
+  - GitHub Actions: `.github/workflows/ios-testflight.yml`
+  - Pazarlama Sürümü: `3.5.8`, Build Numarası: `47`
+- **Kritik Hata Düzeltmesi (Bildirim Rozeti Temizleme):**
+  - iOS ana ekran uygulama ikonundaki kırmızı bildirim rozetinin (`badge count`) oyuna girip çıkılmasına rağmen silinmeme sorunu çözüldü.
+  - `NotificationManager.clearBadgeAndDeliveredNotifications()` metodu eklendi:
+    - Uygulama ilk açıldığında (`handleAppLaunch()`),
+    - Arka plandan öne geçtiğinde (`SceneDelegate.sceneDidBecomeActive(_:)`),
+    - Bildirime dokunulduğunda (`userNotificationCenter(_:didReceive:)`)
+    otomatik tetiklenerek teslim edilmiş bildirimler temizlenir (`removeAllDeliveredNotifications()`) ve rozet sayısı iOS 17+ `setBadgeCount(0)` ve geriye dönük `applicationIconBadgeNumber = 0` ile sıfırlanır.
+- **Paket İçi Çevrimdışı Fallback & Web Kaynağı:**
+  - Depodaki iOS çevrimdışı fallback (`TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`) `Mobile v3.5.8` ile bayt bayt eşitlendi.
+- **Otomatik Test Durumu:** 130/130 geçti (`tests/ios-runtime.test.cjs`, `tests/online-layout.test.cjs`, `tests/ui-lifecycle.test.cjs`, `tests/localization.test.cjs`).
+
+## Önceki kaynak — v3.5.2 (2026-09-28)
+
+- Canlı yayın durumu (2026-09-28): kullanıcı v3.5.2’yi WordPress’e yüklediğini ve canlı olduğunu bildirdi. Bu kayıt kullanıcı bildirimine dayanır; bağımsız canlı URL kontrolü yapılmadı. Önceki yerel doğrulama 118/118 otomatik test ve 546/546 tarayıcı ekran kontrolüdür. Fiziksel Samsung A71 / iPhone 14 Pro Max son kabulü bekliyor. Ayrıntılar: [v3.5.2 doğrulama kaydı](v3.5.2_Localization_Verification.md#wordpress-yüklemesi-ve-son-cihaz-kabulü).
+- Mobile/PC v3.5.2, online metinlerin ve online akışta kullanılan ortak menü/sonuç metinlerinin 21 dildeki eksiklerini tamamlar. Önceki HTML sürümleri korunur.
+- Duraklatma açıklaması sunucuyla eşittir: maç başına oyuncu başına 2 hak, her duraklatma en fazla 15 saniye. Metin şablonları {count}/{seconds} parametrelerini kullanır; kural değerleri testte sunucuyla karşılaştırılır.
+- Mobil bağlantı kaybı/yeniden bağlantı ve hata mesajları yerelleştirildi. Bilinen sunucu hataları çeviri anahtarına, bilinmeyen hatalar yerelleştirilmiş genel mesaja dönüşür. Hata onayı için Devam Et yerine Tamam kullanılır.
+- Mobil Kontroller kapatma, dönüş, D-pad yön ve ses erişilebilirlik etiketleri 21 dilde güncellenir. Uzun bağlantı başlıkları panel içinde satıra bölünür.
+- Android/iOS offline HTML kaynakları Mobile v3.5.2 ile bayt bayt aynıdır. Native sürümler, sunucu ve Socket.IO protokolü değişmedi. v3.5.2 WordPress yayını kullanıcı tarafından tamamlandı; yeni native paket dağıtılmadı.
+- Doğrulama: node --test tests/ios-runtime.test.cjs tests/online-layout.test.cjs tests/ui-lifecycle.test.cjs tests/localization.test.cjs — 118/118 geçti. Ayrıntılar ve cihaz sınırları: MD Files/v3.5.2_Localization_Verification.md.
+- Yerel dil kabul aracı: node tools/localization-preview.cjs → http://127.0.0.1:8766. Test kancaları yalnız bu loopback önizlemesine eklenir; yayımlanacak HTML içinde bulunmaz.
+
+
+## Önceki kaynak — v3.5.1 (2026-09-27)
+
+- Mobile ve PC v3.5.1 HTML kaynakları oluşturuldu; v3.5.0 korunuyor. Android/iOS offline HTML dosyaları Mobile v3.5.1 ile bayt bayt aynı.
+- Mobil online D-pad minimum yüksekliği görünür panel içeriğinden ölçülür; kontrol değişiminde yükseklik animasyonu taşmaya yol açmaz. Saha kalan alana sığar; maçın ortak matrisi değişmez.
+- Mobil online pause ekranında iki oyuncuda da Kontroller ve Ayrıl vardır; Devam Et yalnız duraklatanda görünür. Kontroller kendi cihazının iki düğme/D-pad ve kaydırma tercihini değiştirir. 15 saniye ve oyuncu başına iki pause kuralı aynıdır.
+- Kontrol seçici online pause bağlamını saklar; süre dolması/devam/ayrılma/bağlantı kopmasında kapanır. Yerel pause menüsüne dönmez. Mevcut 21 dildeki controls metinleri kullanılır.
+- Mobile/PC maç, round ve banner geçerlilik sayaçları eski zamanlayıcı, socket ve reklam dönüşlerinin yeni menüyü değiştirmesini önler. Gizli banner inert olur; geçiş kopyalarında yinelenen id bulunmaz.
+- Test komutu: `node --test tests/ios-runtime.test.cjs tests/online-layout.test.cjs tests/ui-lifecycle.test.cjs` — **70/70 geçti**. Tarayıcı kabul aracı: `node tools/online-layout-preview.cjs` → `http://127.0.0.1:8765`.
+- Ayrıntılı kabul ve fiziksel cihaz sınırları: MD Files/v3.5.1_UI_Verification.md.
+- Sunucu/protokol, Android Code 71 / v3.4.9 ve iOS Build 46 / 3.4.2 değişmedi. WordPress, mağaza, native build veya Git yayını yapılmadı. Önceki sürüm notları aşağıda tarihsel kayıt olarak korunur.
+
+
+## Önceki web/fallback kaynağı — v3.5.0 (2026-09-27)
+
+- Online saha güvenli alana tamamen sığar; ilk round'daki HUD ölçüm hatası giderildi. Kare hücreler ve maç boyunca sabit ortak matris korunur.
+- Depodaki çevrimdışı HTML mobil v3.5.0 ile tam eşitlendi. Kurulu uygulamanın paket içi dosyası ancak ileride yeni native build dağıtılırsa değişir.
+- iOS native Build 46 / marketing version 3.4.2 değişmedi. Yeni AAB/IPA, TestFlight, mağaza gönderimi veya canlı web yüklemesi yapılmadı.
+- Web HTML'i ayrıca yayımlandığında mevcut native kabuklar çevrimiçi oyunu alabilir. Sunucu güncellemesi gerekmiyor.
+- JS doğrulaması: 62/62 geçti. CI komutu yeni online geometri testlerini de içerir. Bu Windows oturumunda macOS WebKit/cihaz testi çalıştırılmadı.
+- Önceki sürüm/build kayıtları aşağıda tarihçe olarak korunmuştur.
+
+
 Bu belge, **fiziksel bir Mac bilgisayara ihtiyaç duymadan**, Windows bilgisayarınızdan GitHub ve Apple Developer altyapısını kullanarak **2 Player Snake** uygulamasını iOS için derleme, imzalama ve doğrudan **TestFlight** / **App Store**'a gönderme sürecinin eksiksiz teknik kılavuzudur.
 
 ---
 
-## Güncel Native Shell & CI/CD Durumu — Build 46 (v3.4.2) & Web Runtime v3.4.8 (2026-09-25)
+## Güncel Native Shell & CI/CD Durumu — Build 46 (v3.4.2); Yerel Paket Kaynağı v3.5.2 (2026-09-28)
 
 - **Son Native TestFlight Paketi:** **Build 46 (v3.4.2)**
   - Tag: `ios-v3.4.2-b46`
   - GitHub Actions: [Run #52 (ID: 35898272736)](https://github.com/toygun1725/2-player-snake/actions/runs/35898272736) - SUCCESS
   - App Store Connect / TestFlight'a başarıyla yüklendi.
-- **Web Runtime & Canlı Sürüm (v3.4.8):**
-  - Uzaktan `https://2playersnake.com` yayını güncellendiğinde tüm v3.4.8 özellikleri (Ergonomik Oyun Sonu Buton Düzeni: Solda Ana Menü, Sağda Tekrar Oyna, Paylaş Butonunun Kaldırılması, Online Çok Oyunculu Hız Kalibrasyonu, 93.9 ms Baz Hız, İnsani Seviye Dash 64.7 ms, Dengeli Güçlendiriciler, Tron Zemin İzi, Lokma Yutma Squash & Stretch, Yaylanan Kombo Popupları) webview üzerinden anında aktifleşir; yeni bir native build gerektirmez.
-  - iOS çevrimdışı fallback (`TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`) v3.4.8 ile tam senkronizedir.
-- **Otomatik Testler:** `node --test tests/ios-runtime.test.cjs` 54/54 test (%100) başarıyla geçmektedir.
+- **Canlı Web Runtime ve güncel yerel kaynak (v3.5.2; kullanıcı bildirimi, 2026-09-28):**
+  - Kullanıcı v3.5.2 WordPress yüklemesini tamamladığını ve oyunun canlı olduğunu bildirdi. Yeni HTML mevcut native kabuk tarafından çevrimiçi alınabilir; yeni native build gerektirmez. Bağımsız canlı URL ve fiziksel cihaz kabulü bu kayıtta tamamlanmış sayılmaz.
+  - Depodaki iOS çevrimdışı fallback (`TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`) artık Mobile v3.5.2 ile bayt bayt eşittir; bu kaynak Build 46/TestFlight paketine yeniden dağıtılmadı.
+- **Yerel doğrulama:** 118/118 otomatik test ve 546/546 tarayıcı ekran kontrolü geçti. Komut: `node --test tests/ios-runtime.test.cjs tests/online-layout.test.cjs tests/ui-lifecycle.test.cjs tests/localization.test.cjs`. macOS CI bu oturumda çalıştırılmadı.
 
 ## Önceki CI Eki — Build 36 & 37 (2026-09-16)
 

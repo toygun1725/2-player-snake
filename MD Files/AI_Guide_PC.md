@@ -1,13 +1,115 @@
 # 2 Player Snake - PC Surumu Yapay Zeka Rehberi
 
+## Güncel kaynak — v3.5.8 (2026-09-30)
+
+- **Çevrimiçi Hükmen Galibiyet (Forfeit) Reklam Monetization & Eşleşme Akışı:**
+  - Çevrimiçi maçlarda rakip bağlantıyı kesip 15 saniye içinde dönmediğinde sunucu `gameOver (reason: 'forfeit')` gönderir.
+  - Önceki sürümlerde reklam atlanıp doğrudan istatistik ekranı açılıyordu; v3.5.8 ile zafer kutlamasının hemen ardından ve istatistik ekranından önce `AdManager.maybeShowGameOverAd` geçiş reklamı tetiklenir.
+  - İstatistik ekranındaki "Tekrar Oyna" butonu, oyuncuyu çevrimdışı oyuna düşürmek yerine doğrudan yeni bir çevrimiçi eşleşme aramaya (`startMatchmaking()`) yönlendirir.
+  - "Ana Menü" butonu ise oyuncuyu çevrimiçi menüye (`openOnlineMenu()`) döndürür.
+  - İstatistik kartına `🏳️ Rakip odadan ayrıldı.` rozeti eklendi.
+- **Otomatik testler: 130/130 başarılı.** `2 Player Snake PC v3.5.8.html` hazırlandı.
+
+## Önceki kaynak — v3.5.7 (2026-09-30)
+
+- **Çevrimiçi Cross-Play Rastgele Eşleşme & Dikey Arcade Arenası (Vertical Arena):**
+  - Çevrimiçi rastgele eşleşme (Random Matchmaking) havuzu PC ve Mobil için birleştirildi.
+  - PC oyuncusu bir mobil oyuncuyla eşleştiğinde (veya odada mobil oyuncu bulunduğunda), oyun alanı dikey mobil matrisine (`24 sütun x 36-42 satır`) geçer.
+  - PC istemcisi `#stage.vertical-arena` ve `canvasWrap` `aspect-ratio: GRID_COLS / GRID_ROWS` ile ekran ortasında dikey bir arcade kabin görünümüne bürünür. Hücreler tam kare oranını (`cw === ch`) korur.
+  - Klavye yön kontrolleri (WASD / Ok Tuşları) ve dash (Space) dikey arenada kusursuz hassasiyetle çalışır.
+  - İki PC oyuncusu eşleştiğinde klasik 16:9 geniş ekran PC matrisi (`64x36`) çalışır (Akıllı Hibrit).
+  - Özel odalarda (Custom Rooms) da PC-Mobil arası oda koduyla katılım (Cross-Play) serbest bırakıldı.
+  - Çevrimiçi maç bittiğinde veya menüye dönüldüğünde PC ekranı otomatik olarak standart geniş ekran 64x36 moduna geri döner.
+- **Otomatik testler: 128/128 başarılı.** `2 Player Snake PC v3.5.7.html` hazırlandı.
+
+## Önceki kaynak — v3.5.6 (2026-09-30)
+
+- **Beast Başlangıç Dengelemesi (Yem Patlamasız / Sadece Yılan Buff'ı):**
+  - v3.5.5'te eklenen "BEAST MODUYLA BAŞLA" ödüllü özelliği başlangıçta `spawnRubyBurstFoods()` çağırıyordu; bu durum 1P vs AI modunda AI'ın başlangıçta etrafa saçılan yemleri süpürerek haksız büyümesine yol açıyordu.
+  - v3.5.6'da başlangıç geri sayımı bitimindeki `countdown` bloğundan `spawnRubyBurstFoods()` ve `redBulkEndTime` çağrısı kaldırıldı.
+  - Beast etkisi yalnızca oyuncunun yılanına verilir: 8 saniye boyunca 1.45x hız çarpanı, dokunulmazlık/faz geçişi, RGB aura efekti ve kalp SFX (`SFX.heart()`). Matriste ekstra yem saçılmaz, standart başlangıç yem düzeni korunur.
+  - Oyun içi doğal yakut kalp yeme mekaniğindeki `spawnRubyBurstFoods()` patlaması korunur.
+  - Süre bittiğinde `beastOwner` durumu oyun döngüsünde güvenli şekilde temizlenir.
+- **Otomatik testler: 125/125 başarılı.** `2 Player Snake PC v3.5.6.html` hazırlandı.
+
+## Önceki kaynak — v3.5.5 (2026-09-30)
+
+- **1P Modlarında Ödüllü Video ile Beast Modunda Başlama:**
+  - PC Quick Setup ekranında 1 Kişilik modlarda (1P Solo, 1P vs AI, Macera, Self Area 51) "BAŞLA" butonunun altına Kırmızı-Turuncu gradyanlı "BEAST MODUYLA BAŞLA (Reklam / VIP)" butonu (`#pqs-start-beast`) eklendi.
+  - 2P seçildiğinde buton otomatik gizlenir.
+  - Reklam tamamlandığında 3-2-1 geri sayımının bitmesiyle yılan 8 saniye boyunca Beast Modu (hız, dokunulmazlık, ruby burst yemler, kalp efekti) ile başlar.
+- **Ödüllü Canlanmada 3-2-1 Geri Sayım Koruması (`startRewardedResumeCountdown`):**
+  - Maç içinde ödüllü reklamla canlanıldığında (`restoreRewardSnapshot`) oyun aniden başlamaz; 3-2-1 geri sayımı oynatılır. Geri sayım süresi oyun içi sürelerden düşülmez.
+- **Otomatik testler: 123/123 başarılı.** `2 Player Snake PC v3.5.5.html` hazırlandı.
+
+## Önceki kaynak — v3.5.4 (2026-09-30)
+
+- **Reklam Gelir Optimizasyonu & Sürüm Senkronu:**
+  - Küresel reklam bekleme süresi 45 saniyeden 30 saniyeye (`cooldownMs: 30000`) indirildi.
+  - Ödüllü reklamlar (Rewarded Video) küresel bekleme süresinden (global cooldown) tamamen muaf tutuldu.
+  - Solo (Klasik 1P) moduna ödüllü devam desteği (`maybeInterceptSoloLoss`) eklendi; oyuncu yandığında 5 saniyelik geri sayımla canlanma teklif edilir (maçta 1 kez, 5 hamle geriden).
+  - Maç sonu istatistik penceresi (`showGameEndStats`) açılmadan hemen önce `maybeShowGameOverAd` (`match_end`) ile geçiş reklamı gösterilir.
+  - İstatistik ekranındaki "Ana Menü" ve "Tekrar Oyna" butonlarındaki reklamlar kaldırıldı; butonlar anında tepki verir.
+  - Round arası reklamlar 1-3-5 tek sayılı roundlara (`roundCount > 0 && roundCount % 2 !== 0`) çekildi.
+  - Otomatik testler: 121/121 başarılı. `2 Player Snake PC v3.5.4.html` hazırlandı.
+
+## Önceki kaynak — v3.5.3 (2026-09-28)
+
+- **Reklam Gelir Optimizasyonu & Sürüm Senkronu:**
+  - `maybeShowStartAdThenStart()` içindeki %50 atlama kaldırıldı, ilk maç cold-start koruması eklendi (`sessionStartedMatchCount <= 1`).
+  - 45 saniye küresel cooldown korundu; round arası reklam kuralı her 2 round'da bir (`roundCount % 2 === 0`) olarak eşitlendi.
+  - PC v3.5.3 ve Mobile v3.5.3 AdManager mantığı tam eşitlendi.
+  - Otomatik testler: 120/120 başarılı. WordPress yüklemesi için `PC v3.5.3` hazırlandı.
+
+## Önceki kaynak — v3.5.2 (2026-09-28)
+
+- Canlı yayın durumu (2026-09-28): kullanıcı v3.5.2’yi WordPress’e yüklediğini ve canlı olduğunu bildirdi. Bu kayıt kullanıcı bildirimine dayanır; bağımsız canlı URL kontrolü yapılmadı. Önceki yerel doğrulama 118/118 otomatik test ve 546/546 tarayıcı ekran kontrolüdür. Fiziksel Samsung A71 / iPhone 14 Pro Max son kabulü bekliyor. Ayrıntılar: [v3.5.2 doğrulama kaydı](v3.5.2_Localization_Verification.md#wordpress-yüklemesi-ve-son-cihaz-kabulü).
+- Mobile/PC v3.5.2, online metinlerin ve online akışta kullanılan ortak menü/sonuç metinlerinin 21 dildeki eksiklerini tamamlar. Önceki HTML sürümleri korunur.
+- Duraklatma açıklaması sunucuyla eşittir: maç başına oyuncu başına 2 hak, her duraklatma en fazla 15 saniye. Metin şablonları {count}/{seconds} parametrelerini kullanır; kural değerleri testte sunucuyla karşılaştırılır.
+- Mobil bağlantı kaybı/yeniden bağlantı ve hata mesajları yerelleştirildi. Bilinen sunucu hataları çeviri anahtarına, bilinmeyen hatalar yerelleştirilmiş genel mesaja dönüşür. Hata onayı için Devam Et yerine Tamam kullanılır.
+- Mobil Kontroller kapatma, dönüş, D-pad yön ve ses erişilebilirlik etiketleri 21 dilde güncellenir. Uzun bağlantı başlıkları panel içinde satıra bölünür.
+- Android/iOS offline HTML kaynakları Mobile v3.5.2 ile bayt bayt aynıdır. Native sürümler, sunucu ve Socket.IO protokolü değişmedi. v3.5.2 WordPress yayını kullanıcı tarafından tamamlandı; yeni native paket dağıtılmadı.
+- Doğrulama: node --test tests/ios-runtime.test.cjs tests/online-layout.test.cjs tests/ui-lifecycle.test.cjs tests/localization.test.cjs — 118/118 geçti. Ayrıntılar ve cihaz sınırları: MD Files/v3.5.2_Localization_Verification.md.
+- Yerel dil kabul aracı: node tools/localization-preview.cjs → http://127.0.0.1:8766. Test kancaları yalnız bu loopback önizlemesine eklenir; yayımlanacak HTML içinde bulunmaz.
+
+
+## Önceki kaynak — v3.5.1 (2026-09-27)
+
+- Mobile ve PC v3.5.1 HTML kaynakları oluşturuldu; v3.5.0 korunuyor. Android/iOS offline HTML dosyaları Mobile v3.5.1 ile bayt bayt aynı.
+- Mobil online D-pad minimum yüksekliği görünür panel içeriğinden ölçülür; kontrol değişiminde yükseklik animasyonu taşmaya yol açmaz. Saha kalan alana sığar; maçın ortak matrisi değişmez.
+- Mobil online pause ekranında iki oyuncuda da Kontroller ve Ayrıl vardır; Devam Et yalnız duraklatanda görünür. Kontroller kendi cihazının iki düğme/D-pad ve kaydırma tercihini değiştirir. 15 saniye ve oyuncu başına iki pause kuralı aynıdır.
+- Kontrol seçici online pause bağlamını saklar; süre dolması/devam/ayrılma/bağlantı kopmasında kapanır. Yerel pause menüsüne dönmez. Mevcut 21 dildeki controls metinleri kullanılır.
+- Mobile/PC maç, round ve banner geçerlilik sayaçları eski zamanlayıcı, socket ve reklam dönüşlerinin yeni menüyü değiştirmesini önler. Gizli banner inert olur; geçiş kopyalarında yinelenen id bulunmaz.
+- Test komutu: `node --test tests/ios-runtime.test.cjs tests/online-layout.test.cjs tests/ui-lifecycle.test.cjs` — **70/70 geçti**. PC'de mobil kontrol seçici yoktur; PC değişikliği menü/banner yaşam döngüsü korumalarıyla sınırlıdır.
+- Ayrıntılı kabul ve fiziksel cihaz sınırları: MD Files/v3.5.1_UI_Verification.md.
+- Sunucu/protokol, Android Code 71 / v3.4.9 ve iOS Build 46 / 3.4.2 değişmedi. WordPress, mağaza, native build veya Git yayını yapılmadı. Önceki sürüm notları aşağıda tarihsel kayıt olarak korunur.
+
+
+## Önceki web kaynağı — v3.5.0 (2026-09-27)
+
+- PC v3.5.0 dosyası sürüm eşitliği için oluşturuldu; v3.4.9'a göre yalnız sürüm metinleri değişti.
+- Mobil online saha sığdırması PC'nin oynanışına taşınmadı. Canlı web yayını yapılmadı.
+- Mobil ve iki fallback dosyası için yeni geometrik testler eklendi. Toplam 62 otomatik test geçti.
+- Aşağıdaki v3.4.9 açıklamaları önceki sürümün kaydıdır.
+
+
 Bu belge, PC surumunde calisacak yapay zekalar icin guncel teknik referanstir. PC surumu de mobil gibi tek HTML dosyada yasamalidir; CSS, JS, i18n, canvas cizimi, reklam mantigi ve sentetik sesler ayni dosyada tutulur.
 
 ### Referans Surum
-- Aktif referans surum: `v3.4.9` (Final Sürüm)
-- Temel referans dosya: `2 Player Snake PC v3.4.9.html`
-- Kaynak/yayin durumu: v3.4.9 PC kaynak dosyasi olusturuldu. Akıllı `HEAD` ETag & Last-Modified cache-busting sürüm kontrol motoru eklendi; geliştirici sürüm numarasını arttırmasa dahi dosya sunucuya yüklendiğinde tüm cihazlar değişikliği 0 KB yükle algılar. Kilitli `no-cache` meta etiketleri optimize edildi.
+- Aktif referans surum: `v3.5.4` (yerel kaynak)
+- Temel referans dosya: `2 Player Snake PC v3.5.4.html`
+- Kaynak/yayin durumu: PC v3.5.4 yerel olarak tamamlandı ve doğrulandı. 30s cooldown, Solo 1P ödüllü devam ve maç sonu akış optimizasyonları devrede; 121/121 otomatik test geçti.
 
-## Son Guncelleme (v3.4.9 - Akıllı Cache-Busting, 0 KB Sürüm Kontrolü & İlk Açılış Hızlandırması)
+## Son Guncelleme (v3.5.4 - Reklam Gelir Optimizasyonu, 30s Cooldown, 1P Ödüllü Canlanma & Maç Sonu Akışı)
+- **v3.5.4**: Küresel Reklam Cooldown 30s (`cooldownMs: 30000`), Ödüllü Reklam Global Cooldown Muafiyeti, Solo (1P) Moduna Ödüllü Canlanma, Maç Sonu İstatistik Öncesi Geçiş Reklamı, Butonlardan Reklamların Kaldırılması ve Round Arası 1-3-5 Kuralı (2026-09-30).
+  - **30 Saniye Küresel Cooldown:** Reklam bekleme süresi 45s'den 30s'ye dengelenerek reklam gösterim fırsatları artırıldı.
+  - **Ödüllü Reklam Cooldown Muafiyeti:** `canOfferRewardedContinue()` içindeki cooldown engeli kaldırıldı; oyuncu istediğinde reklam izleyip devam edebilir.
+  - **Solo 1P Ödüllü Canlanma:** Klasik 1P modunda yanan oyuncuya 5 saniyelik canlanma fırsatı verilir; kabul edilirse 5 adım geriden ve 3 saniye dokunulmazlıkla oyuna devam eder.
+  - **Maç Sonu Akışı & Butonlar:** Maç bittiğinde istatistik ekranı açılmadan hemen önce `maybeShowGameOverAd` (`match_end`) gösterilir. İstatistik penceresindeki "Ana Menü" ve "Tekrar Oyna" butonlarındaki reklamlar kaldırılarak gecikmesiz buton tepkisi sağlandı.
+  - **Round Arası Reklamlar (1-3-5):** Tek sayılı round sonlarında (`roundCount > 0 && roundCount % 2 !== 0`) 30s cooldown uygunsa reklam gösterilir.
+  - **Sürüm Senkronizasyonu & Testler:** PC v3.5.4 ve Mobil v3.5.4 tam eşitlendi; `tests/ios-runtime.test.cjs`, `online-layout`, `ui-lifecycle`, `localization` testlerinden **121/121 başarıyla geçti**.
+
+## Onceki Guncelleme (v3.4.9 - Akıllı Cache-Busting, 0 KB Sürüm Kontrolü & İlk Açılış Hızlandırması)
 - **v3.4.9**: Akıllı HEAD ETag & Last-Modified Sürüm Kontrol Motoru, Sıfır Bayt Gövde Transferi, Sürüm Değişmeden Anında Güncelleme, Hostinger CDN ve LiteSpeed Entegrasyonu (2026-09-27).
   - **Akıllı HEAD (ETag & Last-Modified) Kontrolü:** `checkForFreshVersion()` motoru `GET` yerine `HEAD` metodu kullanacak şekilde modernize edildi. Gövde indirilmez (0 KB). Sunucunun döndürdüğü `ETag` ve `Last-Modified` zaman damgası taranır; dosya yüklendiği an sürüm stringi aynı kalsa dahi güncelleme tetiklenir.
   - **Güvenli Yenileme Koruması:** `canApplyVersionRefreshNow()` aktif oyun sırasında, ödüllü devam ekranında veya reklamdayken yenilemeyi engeller; oyuncu ana menüye döndüğünde kesintisiz geçiş yapılır.

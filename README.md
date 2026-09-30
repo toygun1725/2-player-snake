@@ -20,7 +20,7 @@ Yazılım geçmişi olmayan bir video yapımcısı ve bir avukatın, yapay zekay
 - **Evrensel Davet Linkleri (Universal Links):** WhatsApp veya mesaj ile tek tıkla arkadaşının maç odasına bağlanma.
 - **Çoklu Oyun Modları:** Normal (Klasik), Fast Competitive (Hızlı Rekabetçi), Adventure (Macera), Self Area 51 (Bölünmüş Ekran).
 - **21 Dilde Küresel Yerelleştirme:** Türkçe, İngilizce, Almanca, Fransızca, İspanyolca, İtalyanca, Rusça, Çince, Japonca, Korece ve daha fazlası.
-- **Akıllı ve Oyuncu Dostu:** 60 FPS Metal/Canvas optimizasyonu, katmanlı dokunsal titreşim (haptics), 45 saniyelik optimize edilmiş reklam bekleme süresi ve kesintisiz ses motoru.
+- **Akıllı ve Oyuncu Dostu:** 60 FPS Metal/Canvas optimizasyonu, katmanlı dokunsal titreşim (haptics), 30 saniyelik optimize edilmiş reklam bekleme süresi ve kesintisiz ses motoru.
 
 ---
 
@@ -49,7 +49,7 @@ Tüm teknik kılavuzlar ve sürüm geçmişi [`MD Files/`](MD%20Files/) dizinind
 - [Reklam & Gelir Modeli Kılavuzu](MD%20Files/AI_Guide_Ads.md)
 - [App Store Açıklamaları (Tüm Diller)](MD%20Files/App_Store_Descriptions.md)
 
-> **Güncel Sürüm:** `v3.4.9` (Akıllı Cache-Busting, 0 KB Sürüm Kontrolü & İlk Açılış Hızlandırması, Ergonomik Oyun Sonu Buton Düzeni: Solda Ana Menü, Sağda Tekrar Oyna, Altın Oran 93.9ms Baz Hız, İnsani Dash 64.7ms, Tron Işık İzi, Squash & Stretch)
+> **Güncel kaynak sürümü:** `v3.5.8` — Çevrimiçi maçlarda rakip ayrıldığında (forfeit) geçiş reklamı (interstitial) monetization entegrasyonu, istatistik ekranı sonrası "Tekrar Oyna" butonunun doğrudan yeni eşleşme başlatması ve 130/130 otomatik test geçti.
 
 ---
 © 2026 RomiToy Games. All rights reserved.

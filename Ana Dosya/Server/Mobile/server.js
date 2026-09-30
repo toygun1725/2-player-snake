@@ -36,8 +36,8 @@ const MOD_SPEED = {
 
 // Rooms dictionary to hold active games
 const rooms = {};
-// Matchmaking queue
-let matchmakingQueue = { mobile: [], pc: [] };
+// Matchmaking queue (Unified Cross-Play)
+let matchmakingQueue = [];
 const REMATCH_WAIT_SECONDS = 30;
 const POST_GAME_ROOM_TTL_MS = 5 * 60 * 1000;
 const perfStats = {
@@ -273,7 +273,7 @@ function findFreeCell(room) {
 function selfArea51HalfBounds(room, ownerKey) {
     const cols = room.gridCols || GRID_COLS;
     const rows = room.gridRows || GRID_ROWS;
-    if (room.platform === 'pc') {
+    if (room.platform === 'pc' && room.gridCols !== 24) {
         const half = Math.floor(cols / 2);
         if (ownerKey === 'p1') return { xMin: 0, xMax: half - 1 };
         return { xMin: half, xMax: cols - 1 };
@@ -289,7 +289,7 @@ function selfArea51WrapForOwner(room, c, ownerKey) {
     const rows = room.gridRows || GRID_ROWS;
     let x = c.x, y = c.y;
 
-    if (room.platform === 'pc') {
+    if (room.platform === 'pc' && room.gridCols !== 24) {
         const { xMin, xMax } = selfArea51HalfBounds(room, ownerKey);
         if (x < xMin) x = xMax;
         else if (x > xMax) x = xMin;
@@ -317,7 +317,7 @@ function findFreeCellForHalf(room, ownerKey) {
     const rows = room.gridRows || GRID_ROWS;
     const freeCells = [];
 
-    if (room.platform === 'pc') {
+    if (room.platform === 'pc' && room.gridCols !== 24) {
         const { xMin, xMax } = selfArea51HalfBounds(room, ownerKey);
         for (let x = xMin; x <= xMax; x++) {
             for (let y = 0; y < rows; y++) {
@@ -674,7 +674,7 @@ function initGameInRoom(room) {
         const cx = Math.floor(cols / 2);
         const halfRows = Math.floor(rows / 2);
         
-        if (room.platform === 'pc') {
+        if (room.platform === 'pc' && room.gridCols !== 24) {
             const halfW = Math.floor(cols / 2);
             const p1CenterX = Math.floor(halfW / 2);
             const p2CenterX = halfW + Math.floor(halfW / 2);
@@ -1323,8 +1323,7 @@ function autoResumeRoom(room) {
 
 function handleDisconnect(socket) {
     // 1. Check if user was in matchmaking
-    matchmakingQueue.mobile = matchmakingQueue.mobile.filter(s => s.id !== socket.id);
-    matchmakingQueue.pc = matchmakingQueue.pc.filter(s => s.id !== socket.id);
+    matchmakingQueue = matchmakingQueue.filter(s => s.id !== socket.id);
 
     // 2. Check if user was in a live game room
     for (const roomId in rooms) {
@@ -1398,7 +1397,7 @@ io.on('connection', (socket) => {
             platform: platform,
             gridCols: platform === 'pc' ? 64 : 24,
             gridRows: data.requestedRows || 36,
-            p1: { id: socket.id, name: p1Name, requestedRows: data.requestedRows, sessionToken },
+            p1: { id: socket.id, name: p1Name, platform: platform, requestedRows: data.requestedRows, sessionToken },
             p2: null,
             mode: data.mode || 'normal',
             state: 'lobby',
@@ -1411,16 +1410,12 @@ io.on('connection', (socket) => {
         socket.emit('roomCreated', { roomId, mode: data.mode, sessionToken });
     });
 
-    // Custom Room: Join
+    // Custom Room: Join (Cross-Play Supported)
     socket.on('joinRoom', (data) => {
         const platform = data.platform || 'mobile';
         const room = rooms[data.roomId];
         if (!room) {
             socket.emit('errorMsg', { message: 'Oda bulunamadı!' });
-            return;
-        }
-        if (room.platform !== platform) {
-            socket.emit('errorMsg', { message: 'Bu oda başka bir platformda (PC/Mobil) kurulmuş!' });
             return;
         }
         if (room.p2) {
@@ -1430,7 +1425,11 @@ io.on('connection', (socket) => {
 
         const p2Name = normalizePlayerName(data.name, 'P2');
         const sessionToken = Math.random().toString(36).substring(2, 10);
-        room.p2 = { id: socket.id, name: p2Name, requestedRows: data.requestedRows, sessionToken };
+        room.p2 = { id: socket.id, name: p2Name, platform: platform, requestedRows: data.requestedRows, sessionToken };
+
+        const p1Platform = (room.p1 && room.p1.platform) || room.platform;
+        const isCrossplay = (p1Platform !== platform);
+        const hasMobile = (p1Platform === 'mobile' || platform === 'mobile');
 
         // Negotiate gridRows based on both players' requestedRows
         let negotiatedRows = 36;
@@ -1440,51 +1439,67 @@ io.on('connection', (socket) => {
         if (room.p2 && room.p2.requestedRows) {
             negotiatedRows = Math.min(negotiatedRows, room.p2.requestedRows);
         }
-        room.gridRows = negotiatedRows;
+
+        if (hasMobile) {
+            room.gridCols = 24;
+            room.gridRows = negotiatedRows;
+            room.platform = isCrossplay ? 'crossplay' : 'mobile';
+        } else {
+            room.gridCols = 64;
+            room.gridRows = 36;
+            room.platform = 'pc';
+        }
 
         socket.join(room.id);
-        socket.emit('roomJoined', { roomId: room.id, mode: room.mode, partnerName: room.p1.name, sessionToken });
-        io.to(room.id).emit('partnerJoined', { partnerName: room.p2.name });
+        socket.emit('roomJoined', { roomId: room.id, mode: room.mode, partnerName: room.p1.name, sessionToken, gridCols: room.gridCols, gridRows: room.gridRows, platform: room.platform });
+        io.to(room.id).emit('partnerJoined', { partnerName: room.p2.name, platform: room.platform, gridCols: room.gridCols, gridRows: room.gridRows });
 
-        // Automatically initialize game once partner enters custom lobi
+        // Automatically initialize game once partner enters custom lobby
         initGameInRoom(room);
     });
 
-    // Matchmaking Request
+    // Matchmaking Request (Unified Cross-Play Queue)
     socket.on('joinMatchmaking', (data) => {
         const platform = data.platform || 'mobile';
-        // Prevent double entries across all queues
-        matchmakingQueue.mobile = matchmakingQueue.mobile.filter(s => s.id !== socket.id);
-        matchmakingQueue.pc = matchmakingQueue.pc.filter(s => s.id !== socket.id);
+        // Prevent double entries across queue
+        matchmakingQueue = matchmakingQueue.filter(s => s.id !== socket.id);
 
         const cleanName = normalizePlayerName(data.name);
-        matchmakingQueue[platform].push({ id: socket.id, socket, name: cleanName, requestedRows: data.requestedRows });
+        matchmakingQueue.push({ id: socket.id, socket, name: cleanName, platform, requestedRows: data.requestedRows });
 
-        if (matchmakingQueue[platform].length >= 2) {
-            const p1Data = matchmakingQueue[platform].shift();
-            const p2Data = matchmakingQueue[platform].shift();
+        if (matchmakingQueue.length >= 2) {
+            const p1Data = matchmakingQueue.shift();
+            const p2Data = matchmakingQueue.shift();
 
             const p1Name = p1Data.name ? p1Data.name : 'P1';
             const p2Name = p2Data.name ? p2Data.name : 'P2';
 
+            const isCrossplay = (p1Data.platform !== p2Data.platform);
+            const hasMobile = (p1Data.platform === 'mobile' || p2Data.platform === 'mobile');
+
             let negotiatedRows = 36;
-            if (p1Data.requestedRows) {
+            if (p1Data.requestedRows && p2Data.requestedRows) {
+                negotiatedRows = Math.min(p1Data.requestedRows, p2Data.requestedRows);
+            } else if (p1Data.requestedRows) {
                 negotiatedRows = p1Data.requestedRows;
+            } else if (p2Data.requestedRows) {
+                negotiatedRows = p2Data.requestedRows;
             }
-            if (p2Data.requestedRows) {
-                negotiatedRows = Math.min(negotiatedRows, p2Data.requestedRows);
-            }
+
+            const roomPlatform = isCrossplay ? 'crossplay' : (hasMobile ? 'mobile' : 'pc');
+            const roomCols = hasMobile ? 24 : 64;
+            const roomRows = hasMobile ? negotiatedRows : 36;
 
             const p1SessionToken = Math.random().toString(36).substring(2, 10);
             const p2SessionToken = Math.random().toString(36).substring(2, 10);
             const roomId = generateRoomId();
             rooms[roomId] = {
                 id: roomId,
-                platform: platform,
-                gridCols: platform === 'pc' ? 64 : 24,
-                gridRows: negotiatedRows,
-                p1: { id: p1Data.id, name: p1Name, requestedRows: p1Data.requestedRows, sessionToken: p1SessionToken },
-                p2: { id: p2Data.id, name: p2Name, requestedRows: p2Data.requestedRows, sessionToken: p2SessionToken },
+                platform: roomPlatform,
+                gridCols: roomCols,
+                gridRows: roomRows,
+                p1: { id: p1Data.id, name: p1Name, platform: p1Data.platform, requestedRows: p1Data.requestedRows, sessionToken: p1SessionToken },
+                p2: { id: p2Data.id, name: p2Name, platform: p2Data.platform, requestedRows: p2Data.requestedRows, sessionToken: p2SessionToken },
                 mode: 'fastCompetitive', // Random matchmaking is locked to Fast Competitive
                 state: 'lobby',
                 scores: { p1: 0, p2: 0 },
@@ -1496,8 +1511,8 @@ io.on('connection', (socket) => {
             p1Data.socket.join(roomId);
             p2Data.socket.join(roomId);
 
-            p1Data.socket.emit('matchFound', { roomId, role: 'p1', partnerName: p2Name, sessionToken: p1SessionToken });
-            p2Data.socket.emit('matchFound', { roomId, role: 'p2', partnerName: p1Name, sessionToken: p2SessionToken });
+            p1Data.socket.emit('matchFound', { roomId, role: 'p1', partnerName: p2Name, sessionToken: p1SessionToken, gridCols: roomCols, gridRows: roomRows, platform: roomPlatform });
+            p2Data.socket.emit('matchFound', { roomId, role: 'p2', partnerName: p1Name, sessionToken: p2SessionToken, gridCols: roomCols, gridRows: roomRows, platform: roomPlatform });
 
             // Initialize game
             initGameInRoom(rooms[roomId]);
@@ -1506,8 +1521,7 @@ io.on('connection', (socket) => {
 
     // Cancel Matchmaking
     socket.on('leaveMatchmaking', () => {
-        matchmakingQueue.mobile = matchmakingQueue.mobile.filter(s => s.id !== socket.id);
-        matchmakingQueue.pc = matchmakingQueue.pc.filter(s => s.id !== socket.id);
+        matchmakingQueue = matchmakingQueue.filter(s => s.id !== socket.id);
     });
 
     socket.on('leaveRoom', (data) => {

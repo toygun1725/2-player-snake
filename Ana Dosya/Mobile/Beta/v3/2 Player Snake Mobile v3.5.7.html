@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>2 Player Snake Mobile v3.5.8 - Play Online & Local</title>
+    <title>2 Player Snake Mobile v3.5.7 - Play Online & Local</title>
     <script>
         // Only a native shell that advertises the bundled asset handler uses local URLs.
         window.__twoPlayerSnakeUseNativeAssets = window.__twoPlayerSnakePlatform === 'ios' &&
@@ -17,7 +17,7 @@
 
     <!-- Open Graph / Social Media / Google Search Thumbnail Meta Tags -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="2 Player Snake Mobile v3.5.8 - Play Online & Local">
+    <meta property="og:title" content="2 Player Snake Mobile v3.5.7 - Play Online & Local">
     <meta property="og:description" content="Play 2 Player Snake online – challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
     <meta property="og:url" content="https://2playersnake.com/wp-content/uploads/game-mobile/index.html">
     <meta property="og:image" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
@@ -35,7 +35,7 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="2 Player Snake Mobile v3.5.8 - Play Online & Local">
+    <meta name="twitter:title" content="2 Player Snake Mobile v3.5.7 - Play Online & Local">
     <meta name="twitter:description" content="Play 2 Player Snake online – challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
     <meta name="twitter:image" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
 
@@ -137,7 +137,7 @@
         }
     </script>
 
-    <!-- Version: v3.5.8 Mobile -->
+    <!-- Version: v3.5.7 Mobile -->
     <style>
         :root {
             --bg: #0b0f14;
@@ -4396,10 +4396,10 @@
     <script>
         (() => {
             /* ==============================
-              2 Player Snake - Beta v3.5.8 Mobile
+              2 Player Snake - Beta v3.5.7 Mobile
               ============================= */
 
-            const VERSION = 'v3.5.8';
+            const VERSION = 'v3.5.7';
             const IS_IOS_SHELL = window.__twoPlayerSnakePlatform === 'ios';
             const IS_APPLE_DEVICE = IS_IOS_SHELL ||
                 (typeof window !== 'undefined' && Boolean(window.isAppleDevice)) ||
@@ -13086,29 +13086,16 @@
                 });
 
                 onCurrentSocket('gameOver', async (data) => {
-                    dismissOnlineControls(); 
-                    onlinePauseState = null;
-                    const isForfeit = data.reason === 'forfeit';
-                    const finalWinner = data.winner;
-                    const savedRole = myRole;
-
-                    // Reset match timers and room reference while retaining socket connectivity
-                    onlineRoomId = null;
-                    onlineMatchIndex = 0;
-                    inCountdown = false;
-                    clearInterval(onlineRematchInterval);
-                    clearTimeout(connectionTimeoutTimer);
-
-                    if (finalWinner) {
-                        if (isForfeit && finalWinner === savedRole) {
-                            SFX.win();
-                            startConfetti(playerColors[savedRole] || '#ffffff');
-                        }
-                        AdManager.maybeShowGameOverAd(guardGameCallback(() => {
-                            showGameEndStats(finalWinner, { isForfeit: isForfeit, wasOnline: true, savedRole: savedRole });
-                        }));
+                    dismissOnlineControls(); onlinePauseState = null;
+                    cleanupOnlineGame();
+                    if (socket) {
+                        const retiringSocket = socket;
+                        socket = null;
+                        retiringSocket.disconnect();
+                    }
+                    if (data.winner) {
+                        showGameEndStats(data.winner);
                     } else {
-                        cleanupOnlineGame();
                         if (!await waitForGameFlow(showOnlineAlert(data.reason === 'timeout' ? t('onlineGameTimeoutEnd') : t('onlineGameEnded')))) return;
                         transitionToMenu(openMainMenu, 'back');
                     }
@@ -15806,7 +15793,7 @@ function startWinAnim(winner, final = false) {
                 startWinAnim('p1', true);
             }
 
-            function showGameEndStats(winner, options = {}) {
+            function showGameEndStats(winner) {
                 const existing = document.querySelector('.game-end-overlay');
                 if (existing) existing.remove();
                 paused = true;
@@ -15814,8 +15801,6 @@ function startWinAnim(winner, final = false) {
 
                 const isSolo = (gameMode === '1P' && !aiSnakeEnabled);
                 const isSelf51 = (gameStyle === 'selfArea51');
-                const wasOnline = Boolean(options.wasOnline || isOnlineMode);
-                const isForfeit = Boolean(options.isForfeit);
                 const winnerKey = isSolo ? 'p1' : winner;
                 const loser = winnerKey === 'p1' ? 'p2' : 'p1';
                 const winnerColor = playerColors[winnerKey] || (winnerKey === 'p1' ? '#00e5ff' : '#ff4fbf');
@@ -15848,7 +15833,7 @@ function startWinAnim(winner, final = false) {
                     : t('wonTheMatch').replace('{name}', `<span lang="en" style="color:${winnerColor}; text-shadow: 0 0 10px ${winnerColor};">${safeWinnerName}</span>`);
 
                 // Achievement Tracker: Match End Result Hooks
-                const localRole = options.savedRole || (isOnlineMode ? myRole : 'p1');
+                const localRole = isOnlineMode ? myRole : 'p1';
                 if (winnerKey === localRole && !isSolo) {
                     // ZERO_ERROR: Win match 5-0 (matches to 5 rounds)
                     if (winnerRounds >= 5 && loserRounds === 0) {
@@ -15882,7 +15867,6 @@ function startWinAnim(winner, final = false) {
       <div class="game-end-card">
         <div class="game-end-trophy">🏆</div>
         ${lastGameNewRecord ? `<div class="game-end-badge new-record-badge">🌟 ${t('newRecord')}</div>` : ''}
-        ${isForfeit ? `<div class="game-end-badge" style="margin-bottom:8px; background: rgba(255, 79, 191, 0.2); border: 1px solid var(--p1); color: #fff;">🏳️ ${t('onlinePartnerLeft')}</div>` : ''}
         <div class="game-end-title">${titleHtml}</div>
         <hr class="game-end-divider" style="background: linear-gradient(90deg, transparent, ${winnerColor}, transparent);">
         <div class="game-end-stats">
@@ -15930,13 +15914,8 @@ function startWinAnim(winner, final = false) {
                             SFX.menuClick();
                             overlay.remove();
                             stopConfetti();
-                            if (wasOnline) {
-                                if (isForfeit) {
-                                    cleanupOnlineGame();
-                                    transitionToMenu(openOnlineMenu, 'back');
-                                } else {
-                                    leaveOnlineAfterStats();
-                                }
+                            if (isOnlineMode) {
+                                leaveOnlineAfterStats();
                             } else {
                                 transitionToMenu(openMainMenu, 'back');
                             }
@@ -15945,17 +15924,12 @@ function startWinAnim(winner, final = false) {
                     if (replayBtn) {
                         replayBtn.onclick = () => {
                             SFX.menuClick();
+                            if (isOnlineMode && socket && onlineRoomId) {
+                                socket.emit('rematchIntent', { roomId: onlineRoomId });
+                            }
                             overlay.remove();
                             stopConfetti();
-                            if (wasOnline && isForfeit) {
-                                if (socket && socket.connected) {
-                                    isOnlineMode = true;
-                                    startMatchmaking();
-                                } else {
-                                    startOnlineServerConnection();
-                                }
-                            } else if (isOnlineMode && socket && onlineRoomId) {
-                                socket.emit('rematchIntent', { roomId: onlineRoomId });
+                            if (isOnlineMode) {
                                 socket.emit('rematchReady', { roomId: onlineRoomId });
                             } else {
                                 AdManager.beginDirectRestartMatch();

@@ -1,0 +1,152 @@
+<!doctype html><meta charset="utf-8"><title>v3.5.2 Online Layout Regression</title>
+<style>
+body { background:#080e18;color:#d7f9ff;font:14px system-ui;margin:20px; }
+button { padding:10px 16px;margin:0 8px 12px 0;cursor:pointer; }
+.devices { display:flex;gap:20px;align-items:flex-start; }
+iframe { display:block;border:1px solid #2e6770;background:#080e18; }
+pre { white-space:pre-wrap; } h2 { font-size:16px; }
+</style>
+<h1>v3.5.2 — Ortak saha testi</h1>
+<p>Chromium düzen testi. iPhone güvenli alanı ve native CSS simüle edilir; fiziksel cihaz testi değildir.</p>
+<button id="run">Testleri çalıştır</button><button id="edges">En üst ve en alt satırı göster</button><button id="sample">D-pad görsel kabul örneği</button>
+<pre id="result">Hazır</pre>
+<div class="devices"><section><h2>Samsung oranı · 412 × 915</h2><iframe id="android" width="412" height="915"></iframe></section>
+<section><h2>iPhone oranı · 430 × 932 · güvenli alan 59 / 34</h2><iframe id="iphone" width="430" height="932"></iframe></section></div>
+<script>
+const output = document.getElementById('result');
+const frames = [document.getElementById('android'), document.getElementById('iphone')];
+const delay = ms => new Promise(r => setTimeout(r, ms));
+const api = i => frames[i].contentWindow.layoutTest;
+async function until(fn, timeout = 15000) { const end = Date.now() + timeout; while (Date.now() < end) { if (fn()) return; await delay(30); } throw Error('Timed out'); }
+function check(value, message) { if (!value) throw Error(message); }
+function fits(s) {
+ check(s.online && s.area, 'Online layout missing');
+ check(Math.abs(s.board.cellX - s.board.cellY) < 0.001, 'Cells not square');
+ check(s.board.left >= s.area.x - 0.01 && s.board.top >= s.area.y - 0.01, 'Top/left clipped');
+ check(s.board.right <= s.area.x + s.area.width + 0.01 && s.board.bottom <= s.area.y + s.area.height + 0.01, 'Bottom/right clipped');
+ check(s.stage.y + s.board.bottom <= s.controls.top + 0.5, 'Board overlaps controls');
+ if (s.layout === 'dpad') for (const item of s.hudItems) {
+  check(item.top >= s.controls.top - 0.5 && item.bottom <= s.controls.bottom + 0.5,
+    'HUD clipped: ' + item.id + ' ' + JSON.stringify({item,controls:s.controls}));
+  if (item.id.includes('dpad-btn')) check(item.height >= 43.5, 'D-pad touch target too short');
+  check(item.top >= item.container.top - .5 && item.bottom <= item.container.bottom + .5 &&
+    item.left >= item.container.left - .5 && item.right <= item.container.right + .5, 'Panel child overflow: ' + JSON.stringify(item));
+ }
+}
+async function load() {
+ frames[0].height = '915'; frames[1].height = '932';
+ frames[0].src = '/game?device=android'; frames[1].src = '/game?device=iphone';
+ await until(() => frames.every(f => f.contentWindow.layoutTest));
+ await delay(700);
+}
+document.getElementById('run').onclick = async () => {
+ output.textContent = 'Çalışıyor…';
+ const results = [];
+ try {
+  for (const kind of ['matchmaking', 'private']) for (const layout of ['two-btn', 'dpad']) for (const host of [0, 1]) {
+   await load();
+   frames.forEach((_, i) => { api(i).setLayout(layout); check(api(i).measureRestore().same, 'Measurement changes menu DOM'); });
+   if (kind === 'private') {
+    api(host).start('create'); await until(() => api(host).snapshot().room); api(1 - host).start('join', api(host).snapshot().room);
+   } else { api(host).start('matchmaking'); await delay(100); api(1 - host).start('matchmaking'); }
+   await until(() => frames.every((_, i) => api(i).firstFrame));
+   const first = frames.map((_, i) => api(i).firstFrame);
+   first.forEach(fits); check(first[0].rows === first[1].rows, 'Players disagree on rows');
+   await delay(700);
+   frames.forEach((_, i) => {
+    const s = api(i).snapshot(); fits(s);
+    check(Math.abs(s.stage.height - first[i].stage.height) < 0.1, 'First round measured during panel transition');
+   });
+   await until(() => frames.every((_, i) => api(i).pauses >= 1));
+   const p1 = first[0].role === 'p1' ? 0 : 1;
+   for (const i of [0, 1]) {
+    const before = api(i).pauseUI();
+    check(before.exit && before.controls, 'Both players need exit and controls');
+    check(before.resume === (i === p1), 'Only pauser may resume');
+    api(i).openControls();
+    check(api(i).pauseUI().active && api(i).pauseUI().tabs === 'none' && api(i).pauseUI().swipe !== 'none', 'Online controls must be local only');
+    api(i).chooseControls(layout === 'dpad' ? 'two-btn' : 'dpad');
+    await delay(100); fits(api(i).snapshot());
+    check(api(i).snapshot().rows === first[i].rows, 'Controls changed matrix');
+    api(i).chooseControls(layout); await delay(100);
+    api(i).closeControls();
+    check(api(i).pauseUI().time <= before.time, 'Controls reset pause timer');
+    api(i).openControls();
+   }
+   api(p1).resume(); await until(() => frames.every((_, i) => api(i).resuming));
+   check(frames.every((_, i) => !api(i).pauseUI().active), 'Resume must dismiss both control modals');
+   frames.forEach((_, i) => fits(api(i).snapshot()));
+   await until(() => frames.every((_, i) => api(i).pauses >= 2));
+   // Resize, control changes and safe-area mutation must not renegotiate the world.
+   frames[1].height = '740'; await delay(100);
+   api(1).setLayout(layout === 'dpad' ? 'two-btn' : 'dpad'); await delay(100);
+   frames[1].contentDocument.documentElement.style.setProperty('--safe-area-top', '70px'); await delay(100);
+   fits(api(1).snapshot()); check(api(1).snapshot().rows === first[1].rows, 'Resize changed grid');
+   frames[1].style.display = 'none'; await delay(50); frames[1].style.display = ''; await delay(100);
+   fits(api(1).snapshot());
+   api(1).openControls(); api(1).reconnect(); await until(() => api(1).reconnected); fits(api(1).snapshot());
+   check(!api(1).pauseUI().active, 'Disconnect must dismiss controls');
+   await fetch('/next-round?room=' + encodeURIComponent(first[0].room), { method: 'POST' }); await delay(200);
+   frames.forEach((_, i) => { const s = api(i).snapshot(); fits(s); check(s.rows === first[i].rows, 'Next round changed grid'); });
+   results.push(kind + ' / ' + layout + ' / ' + (host ? 'iPhone' : 'Samsung') + ' first: PASS (' + first[0].cols + '×' + first[0].rows + ')');
+   output.textContent = results.join('\n');
+  }
+  // Exit from both server roles while the other player is editing controls.
+  for (const leaver of [0, 1]) {
+   await load();
+   api(0).start('matchmaking'); await delay(100); api(1).start('matchmaking');
+   await until(() => frames.every((_, i) => api(i).pauses >= 1));
+   api(1 - leaver).openControls(); api(leaver).leave();
+   await delay(1200);
+   const menu = api(leaver).pauseUI();
+   check(menu.main && !menu.online && !menu.inert && Number(menu.opacity) > .99, 'Exit lost main menu');
+   check(!api(1 - leaver).pauseUI().active, 'Forfeit must close opponent controls');
+   for (let navigation = 0; navigation < 3; navigation++) {
+    api(leaver).menuForward(); await delay(20); api(leaver).menuBack(); await delay(20);
+   }
+   await delay(800);
+   const afterNavigation = api(leaver).pauseUI();
+   check(afterNavigation.main && !afterNavigation.inert && Number(afterNavigation.opacity) > .99, 'Rapid navigation lost menu');
+   results.push('Exit role ' + (leaver ? 'p2' : 'p1') + ': PASS');
+   output.textContent = results.join('\n');
+  }
+  await load(); api(0).start('matchmaking'); await delay(100); api(1).start('matchmaking');
+  await until(() => frames.every((_, i) => api(i).pauses >= 1));
+  frames[0].height = '480'; frames[1].height = '500'; await delay(150);
+  frames.forEach((_, i) => {
+   const p = api(i).pauseUI();
+   check(p.bannerBounds.top >= p.stageBounds.top && p.bannerBounds.bottom <= p.stageBounds.bottom, 'Short screen clips pause menu');
+  });
+  frames.forEach((_, i) => api(i).openControls());
+  await delay(300);
+  frames.forEach((_, i) => {
+   const p = api(i).pauseUI();
+   check(p.modalBounds.top >= (i ? 59 : 0) && p.modalBounds.bottom <= p.viewportHeight - (i ? 34 : 0), 'Short screen clips control selector');
+  });
+  await until(() => frames.every((_, i) => api(i).resuming), 20000);
+  check(frames.every((_, i) => !api(i).pauseUI().active), 'Pause expiry must dismiss controls');
+  results.push('Short-screen pause/controls + 15-second automatic resume: PASS');
+  output.textContent = results.join('\n');
+  frames[1].height = '932'; await delay(100);
+  output.textContent += '\nALL PASS — both roles, first frame, settled layout, pause/resume, resize, controls, insets, hide/show, reconnect, next round';
+ } catch (error) { output.textContent = results.join('\n') + '\nFAIL: ' + error.stack; }
+};
+document.getElementById('edges').onclick = () => { frames.forEach((_, i) => api(i).edges()); };
+document.getElementById('sample').onclick = async () => {
+ try {
+  await load(); frames.forEach((_, i) => api(i).setLayout('dpad'));
+  api(0).start('matchmaking'); await delay(100); api(1).start('matchmaking');
+  await until(() => frames.every((_, i) => api(i).pauses >= 1));
+  for (const text of ['UZUN OYUNCU', 'WWWWWWWWWWWW', 'LANGER NAME', 'ДЛИННОЕ ИМЯ', 'اسم اللاعب']) {
+   frames.forEach((_, i) => api(i).samplePanels(text)); await delay(100);
+   frames.forEach((_, i) => fits(api(i).snapshot()));
+  }
+  frames.forEach((_, i) => api(i).samplePanels(i ? 'iPhone P2' : 'Android P1'));
+  await delay(100);
+  frames.forEach((_, i) => { fits(api(i).snapshot()); api(i).edges(); });
+  output.textContent += '\nLong/multilingual names + 3-digit length: PASS\n' + frames.map((_, i) => {
+   const s = api(i).snapshot(); return frames[i].id + ': panel=' + s.controls.height + 'px; grid=' + s.cols + '×' + s.rows;
+  }).join('\n');
+ } catch(error) { output.textContent += '\nFAIL sample: ' + error.stack; }
+};
+</script>

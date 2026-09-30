@@ -2,7 +2,92 @@
 
 Bu belge, oyundaki reklam akisinin guncel davranisini ozetler. Web tarafinda reklamlar Google AdSense H5 Games Ads ile, Android shell icinde ise native koordine edilen bir kopru ile calisir.
 
-Referans surum: `v3.4.9` (iOS Build 46 / Android Code 71 - Runtime v3.4.9)
+Referans yerel web kaynağı: `v3.5.8` (native sürümler: iOS Build 46 / Android Code 71)
+
+## Çevrimiçi Hükmen Galibiyet (Forfeit) Reklam Entegrasyonu — v3.5.8 (2026-09-30)
+
+- **Hükmen Galibiyette Geçiş Reklamı (Interstitial Monetization):**
+  - Çevrimiçi maçlarda rakip ayrıldığında (15s grace period bittiğinde) `gameOver (reason: 'forfeit')` tetiklenir.
+  - Önceki sürümlerde istatistik ekranı doğrudan açıldığı için bu kritik zafer anında reklam çalışmıyordu ve gelir kaybı oluşuyordu.
+  - `v3.5.8` ile hükmen galibiyet kesinleştiğinde zafer kutlamasının ardından istatistik ekranı açılmadan hemen önce `AdManager.maybeShowGameOverAd` geçiş reklamı tetiklenir.
+  - İstatistik ekranındaki "Tekrar Oyna" butonu, oyuncuyu çevrimdışı moda düşürmek yerine doğrudan yeni bir çevrimiçi eşleşme aramaya (`startMatchmaking()`) yönlendirir.
+  - Otomatik test sonucu: **130/130 başarılı**.
+
+## Güncel Beast Başlangıç Dengeleme İyileştirmesi — v3.5.6 (2026-09-30)
+
+- **Oyuncu Odaklı Beast Başlangıcı (Yem Patlamasız / Ruby Burst Yok):**
+  - v3.5.5'te eklenen "BEAST MODUYLA BAŞLA" ödüllü video özelliği, başlangıçta `spawnRubyBurstFoods()` çağırarak sahaya 12 normal yem + 1 safir yem saçıyordu.
+  - Özellikle `1P vs AI` modunda bu durum, AI yılanının başlangıçta etraftaki yemleri anında yutarak orantısız büyümesine ve reklam izleyen oyuncuya karşı haksız avantaj kazanmasına yol açıyordu.
+  - **v3.5.6 Çözümü:**
+    - Geri sayım bitimindeki `countdown` bloğundan `spawnRubyBurstFoods()` ve `redBulkEndTime` kaldırıldı.
+    - Beast etkisi **yalnızca Player 1 yılanına** verilir: 8 saniye (`BEAST_MODE_DURATION_MS = 8000`) boyunca 1.45x hız, engellerden ve gövdelerden geçebilme dokunulmazlığı, RGB aura ve kalp SFX (`SFX.heart()`).
+    - Matriste fazladan yem oluşmaz, standart başlangıç yem düzeni korunur. AI yılanının avantaj sağlaması engellendi.
+    - Oyun esnasında yakut kalp yemi doğal olarak yendiğinde `spawnRubyBurstFoods()` eskisi gibi normal çalışmaya devam eder.
+    - Süre bitiminde `beastOwner` ve güç durumu PC/Mobile döngülerinde temizlenir.
+- **Tüm Dosyalarda Eşitlik:**
+  - `Mobile v3.5.6`, `PC v3.5.6`, `Android offline fallback` ve `iOS offline fallback` dosyaları bayt bayt eşitlendi. Otomatik test sonucu: **125/125 başarılı**.
+
+## Önceki Ödüllü Başlangıç ve Canlanma Koruması — v3.5.5 (2026-09-30)
+
+- **1 Kişilik Modlarda "BEAST MODUYLA BAŞLA" Ödüllü Video Butonu:**
+  - Quick Setup (Hızlı Kurulum) menüsünde, 1 Kişilik modlarda (1P Klasik Solo, 1P vs AI, Macera, Self Area 51) standart "BAŞLA" butonunun hemen altına yerleştirildi.
+  - **Tasarım:** Kırmızı-Turuncu gradyan (`linear-gradient(135deg, #ff1744 0%, #ff5722 50%, #ff9100 100%)`), video kamera ikonu (`<i class="fa-solid fa-video"></i>`), üstte "BEAST MODUYLA BAŞLA", altta "(Reklam)" veya VIP kullanıcılar için "(VIP / Ücretsiz)" alt başlığı.
+  - **Dinamik Görünürlük:** 2P seçildiğinde buton otomatik olarak gizlenir (`display: none`), 1P'ye dönüldüğünde tekrar görünür.
+  - **8 Saniyelik Beast Başlangıcı:** Reklam tamamlandığında (veya VIP ise doğrudan) maç başlar. Başlangıçtaki 3-2-1 geri sayımı bittiği anda oyuncunun yılanı tam **8 saniye** (`BEAST_MODE_DURATION_MS = 8000;`) boyunca Beast Modu (hız artışı, RGB aura efekti, dokunulmazlık, ruby burst yem saçılımı, kalp SFX) kazanır. Yalnızca 1. round başında devreye girer.
+- **Ödüllü Canlanma 3-2-1 Geri Sayım Koruması (`startRewardedResumeCountdown`):**
+  - Maç içinde ödüllü reklam izlenerek canlanıldığında (`restoreRewardSnapshot`), oyunun eskisi gibi aniden başlayarak ani çarpışmalara ve kaza ölümlerine yol açması engellendi.
+  - Reklam penceresi kapatıldıktan sonra oyun başlamadan önce ekranda **3-2-1 ve BAŞLA** geri sayımı oynatılır.
+  - Geri sayım boyunca geçen milisaniyeler aktif round süresine (`roundTimerEnd`), güçlendirme sürelerine (`bulkFoodEndTime`, `redBulkEndTime`, `slowEnd`, `flashColorEnd`, `sapphireTeleportEnd`) ve yem/yılan zaman damgalarına eklenerek haksız süre kaybı önlenir.
+- **21 Dilde Tam Yerelleştirme:**
+  - `startWithBeast`, `startWithBeastAd`, `startWithBeastVip` anahtarları 21 dilde (tr, en, de, fr, es, it, zh, hi, pl, pt-BR, ar, ru, id, ja, ko, vi, th, tl, nl, el, cs) eksiksiz çevrildi.
+- **Tüm Dosyalarda Eşitlik:**
+  - `Mobile v3.5.5`, `PC v3.5.5`, `Android offline fallback` ve `iOS offline fallback` dosyaları bayt bayt eşitlendi. Otomatik test sonucu: **123/123 başarılı**.
+
+## Önceki Reklam ve Gelir Optimizasyonu Notu — v3.5.4 (2026-09-30)
+
+- **30 Saniye Küresel Cooldown (`cooldownMs: 30000`):**
+  - Reklam arası minimum küresel bekleme süresi 45 saniyeden 30 saniyeye indirildi. Böylece oyuncuyu boğmadan daha dinamik ve gelir dostu bir gösterim frekansı elde edildi.
+- **Ödüllü Reklam (Rewarded Video) Global Cooldown Engelinden Muaf:**
+  - `canOfferRewardedContinue()` içindeki `!this.isGlobalCooldownActive()` kısıtlaması kaldırıldı. Oyuncu kendi isteğiyle ödüllü video izlemek istediğinde (opt-in) küresel bekleme süresine takılmaz. Reklam izlendiğinde `recordAdShown('reward')` ile son reklam zamanı güncellenir ve hemen ardından geçiş reklamı çıkması önlenir.
+- **Solo (Klasik 1P) Moduna Ödüllü Canlanma Desteği:**
+  - Önceden sadece `1P vs AI` modunda olan ödüllü devam özelliği, Klasik Solo 1P moduna da entegre edildi (`maybeInterceptSoloLoss`). Oyuncu yandığında 5 saniyelik geri sayımla canlanma popup'ı açılır. Reklam izlendiğinde 5 adım geriden ve 3 saniyelik koruma süresiyle oyuna kaldığı skordan devam eder (maç başına 1 kez).
+- **Maç Sonu Reklam Akışı & Buton Temizliği:**
+  - Kupa ve maç sonu istatistikleri açılmadan hemen önce `maybeShowGameOverAd` (`match_end`) ile geçiş reklamı devreye girer. İstatistik ekranındaki "Ana Menü" ve "Tekrar Oyna" butonlarındaki araya giren reklamlar (`menu_after_stats`, `replay_after_stats`) tamamen kaldırıldı; oyuncu butonlara bastığında beklemeden, anında tepki alır.
+- **Round Arası Reklamlar Tek Sayılı Roundlarda (1-3-5...):**
+  - Kural `roundCount > 0 && roundCount % 2 !== 0 && !this.isGlobalCooldownActive()` olarak güncellendi. Oyun 5 galibiyette (`GAMES_TO_ROUND = 5`) bittiği için ilk maçta 1. round biter bitmez ilk reklam gösterilir; ardından 3. ve 5. round sonlarında 30s cooldown dolmuşsa gösterilir. 5. roundda maç biterse maç sonu reklamı çalışır ve aradaki süre 30s'den fazla olduğu için çakışma yaşanmaz.
+- **Tüm Dosyalarda Eşitlik:**
+  - `Mobile v3.5.4`, `PC v3.5.4`, `Android offline fallback` ve `iOS offline fallback` dosyaları bayt bayt eşitlendi. Otomatik test sonucu: **121/121 başarılı**.
+
+## Önceki Reklam Notu — v3.5.3 (2026-09-28)
+
+- **Maç Başı Reklam Optimizasyonu (%50 Yapay Atlama Kaldırıldı):**
+  - `maybeShowStartAdThenStart()` içindeki yapay `Math.random() >= 0.50` filtresi kaldırıldı. Artık 45 saniyelik küresel cooldown dolmuşsa maç başı geçiş reklamı gösterim fırsatı boşa harcanmaz.
+  - **Cold-Start Koruması:** Oyuncunun oyunu ilk açtığı anda hemen reklamla karşılaşmaması için ilk maç reklamsız başlar (`sessionStartedMatchCount <= 1`). 2. maçtan itibaren cooldown uygun olduğunda reklam gösterilir.
+- **Round Arası Reklam Sıklığı (Her 2 Round'da Bir):**
+  - Round arası geçiş reklamı kuralı `roundCount > 0 && roundCount % 2 === 0 && !this.isGlobalCooldownActive()` olarak güncellendi. Snake'te 5 galibiyetlik maçlarda oyuncunun 3 round beklemeden erken çıkması halinde oluşan 0 reklam riski önlendi. 2. ve 4. round sonlarında 45s cooldown uygunsa geçiş reklamı gösterilir.
+- **Pause Menüsü Geçiş Reklamı Kaldırıldı:**
+  - Pause menüsünden Ana Menü'ye dönüşte bulunan %30'luk rastgele geçiş reklamı (`pause_exit_home`) tamamen kaldırıldı. Oyuncunun acil duraklatma ve menüye dönüş deneyimi reklamsız ve sürtünmesiz hale getirildi.
+- **45 Saniye Global Ad Cooldown Korundu:**
+  - `cooldownMs: 45000` kuralı hem maç başı, hem round arası hem de oyun sonu reklamları için geçerliliğini sürdürür, art arda spam reklam oluşmasını engeller.
+- **Android Native Köprüsü Emniyeti ve 'start' Reklam Desteği (`android_bridge_bootstrap.js`):**
+  - Android köprüsündeki `adsbygoogle.push` filtresine eksik olan `'start'` ad tipi eklendi (`start || next || reward || browse`). Böylece maç başı reklamları Android WebView'da sessizce kaybolmaz.
+  - iOS köprüsünde bulunan **8.5 saniyelik JS emniyet zamanlayıcısı (`safetyTimer`)** Android köprüsüne entegre edildi. Native AdMob yanıt vermese veya takılsa bile oyun 8.5s sonra otomatik başlatılır ve `AdManager.adInProgress` kilitli kalmaz.
+- **Tüm Dosyalarda Eşitlik:**
+  - `Mobile v3.5.3`, `PC v3.5.3`, `Android offline fallback` ve `iOS offline fallback` dosyaları bayt bayt eşitlendi. Otomatik test sonucu: **120/120 başarılı**.
+
+## Önceki çeviri notu — v3.5.2 (2026-09-28)
+
+- v3.5.2 WordPress’te canlıdır (2026-09-28 kullanıcı bildirimi). 546 ekranlık yerel dil kabulü reklam bekleme metnini kapsar; canlı reklam SDK kabulü anlamına gelmez. Yükleme sonrası cihaz kontrolleri [doğrulama kaydında](v3.5.2_Localization_Verification.md#wordpress-yüklemesi-ve-son-cihaz-kabulü) listelenir.
+- Rakibin reklamını bitirmesini bekleme metni Mobile/PC üzerinde 21 dilde tamamlandı. Önceden yalnız Türkçe ve İngilizce karşılığı bulunuyordu.
+- Reklam gösterimi, sıklığı, native köprüler ve gelir yapılandırması değişmedi. Yerel kabul aracı canlı reklam çağrısı yapmaz.
+- Ayrıntılar: v3.5.2_Localization_Verification.md. Önceki callback korumaları ve bunların regresyon testleri korunur.
+
+## Önceki web yaşam döngüsü notu — v3.5.1 (2026-09-27)
+
+- Reklam sıklığı, reklam türleri, premium davranışı ve native reklam köprüleri değiştirilmedi.
+- Reklam tamamlanma callback'leri oluşturuldukları maç/round akışına bağlandı. Oyuncu bu sırada ana menüye döner veya yeni maç başlatırsa eski callback yeni ekranı, banner'ı ya da oyun durumunu değiştiremez.
+- Mobile ve PC yaşam döngüsü regresyonları `tests/ui-lifecycle.test.cjs` içinde doğrulanır. Toplam otomatik sonuç **70/70 başarılıdır**.
+- Native paket numaraları değişmedi; canlı reklam ortamı, AAB/IPA ve mağaza dağıtımı bu çalışmada test edilmedi.
 
 ## Güncel Reklam Notu — v3.4.9 (2026-09-27)
 
@@ -109,8 +194,8 @@ Temel kontrol alanlari:
 ### 2. Between Rounds
 
 - Tetikleyici: `maybeShowBetweenRoundsAd()`
-- Kosul: Genelde `roundCount % 3 === 0` oldugunda ve cooldown uygun oldugunda
-- Amac: Round aralarinda interstitial gostermek
+- Kosul: `roundCount > 0 && roundCount % 2 !== 0 && !this.isGlobalCooldownActive()` (Tek sayılı roundlar: 1, 3, 5...)
+- Amac: Round aralarinda interstitial gostermek. Snake maçları 5 galibiyette (`GAMES_TO_ROUND = 5`) bittiği için ilk maçta 1. round biter bitmez ilk reklam gösterilir; ardından 3. ve 5. round sonlarında 30s cooldown uygunsa gösterilir.
 
 `v2.94.2` itibariyle:
 - Mobil browser tarafinda `between_rounds` reklami bilerek `sound: 'off'` ile istenir
@@ -119,8 +204,9 @@ Temel kontrol alanlari:
 ### 3. Match End / Game Over
 
 - Tetikleyici: `maybeShowGameOverAd()`
-- Amac: Belirli mac tamamlama dongulerinde reklam gostermek
-- Koruma: Rewarded continue beklemedeyse veya bu macta start reklami oynadiysa bu akis atlanabilir
+- Amac: Maç bittiğinde, kupa ve oyun sonu istatistik penceresi (`showGameEndStats`) açılmadan hemen önce geçiş reklamı (`match_end`) oynatılır.
+- İstatistik Ekranı Butonları: "Ana Menü" ve "Tekrar Oyna" butonlarındaki araya giren reklamlar (`menu_after_stats`, `replay_after_stats`) v3.5.4 ile tamamen kaldırılmıştır; butonlar oyuncuya beklemesiz, anında tepki verir.
+- Koruma: Rewarded continue beklemedeyse bu akis atlanabilir.
 
 Bu turda ses stratejisi degismemistir.
 
@@ -135,8 +221,9 @@ Bu turda ses stratejisi degismemistir.
 ### 5. Rewarded Continue
 
 - Tetikleyici: `requestRewardedContinue()`
-- Kullanildigi yer: Ozellikle `1P vs AI` kayip akisi
-- Amac: Kullanici reklam izleyerek devam hakki alir
+- Kullanildigi yer: `1P vs AI` ve `1P Klasik Solo` kayip akislari (`maybeInterceptSoloLoss` ve `maybeInterceptLoss`)
+- Amac: Kullanici ödüllü video reklam izleyerek 5 adım geriden ve 3 saniye dokunulmazlıkla oyuna kaldığı yerden devam eder (maç başına 1 kez)
+- Muafiyet: Ödüllü reklamlar küresel 30 saniye cooldown sınırından tamamen muaftır (`canOfferRewardedContinue` cooldown kontrol etmez). Reklam izlendiğinde `recordAdShown('reward')` ile son reklam zamanı güncellenir ve hemen ardından geçiş reklamı çıkması önlenir.
 - Snapshot sistemi ile oyun durumu geri yuklenir
 
 `v2.94.2` notu:
@@ -170,9 +257,9 @@ Neler degismedi:
 
 ## Cooldown Mantigi
 
-- Interstitial reklamlar global 45 saniye (`cooldownMs: 45000`) bekleme kuralına tabidir (oyuncu deneyimini korurken reklam gelirini maksimize eden optimum denge).
+- Interstitial reklamlar global 30 saniye (`cooldownMs: 30000`) bekleme kuralına tabidir (oyuncu deneyimini korurken reklam gelirini maksimize eden güncel optimum denge).
 - `showInterstitial()` merkezi kapısında `isGlobalCooldownActive()` denetimi zorunludur; süre dolmadan hiçbir geçiş reklamı gösterilemez (spam ve art arda gösterim önlenir).
-- Rewarded continue kullanici talebi oldugu icin ayri ele alinir (oyuncunun can hakkı almasını engellemez).
+- Rewarded continue kullanici talebi (opt-in) oldugu icin global cooldown'dan tamamen muaftır (oyuncunun can hakkı almasını engellemez).
 - Her basarili reklam gosteriminde `lastAdShownAt` guncellenir.
 
 ---
@@ -192,6 +279,8 @@ Neler degismedi:
 | `v3.4.6` | Altın Oran Hız Kalibrasyonu (`MOD_SPEED.NORMAL = 0.75`, `EASY = 0.60`, `FAST = 0.95`, `EXTREME = 1.50`) ve PC-Mobil hız eşitlemesi yapıldı. Reklam kapısı (45s cooldown, startAdChance, rewarded continue) ve RevenueCat bypass kuralları tam korundu. |
 | `v3.4.7` | Online Çok Oyunculu Hız Kalibrasyonu (server.js baz hız 93.9 ms, Dash 64.7 ms, bot fallback NORMAL) yapıldı. Reklam kapısı (45s cooldown, startAdChance, rewarded continue) ve RevenueCat bypass kuralları tam korundu. |
 | `v3.4.8` | Oyun sonu buton düzeni (solda Ana Menü, sağda Tekrar Oyna) güncellendi, Paylaş butonu kaldırıldı. Reklam kapısı (menu_after_stats, replay_after_stats interstitial, 45s cooldown, rewarded continue) ve RevenueCat bypass kuralları tam korundu. |
+| `v3.5.3` | Maç başı %50 yapay atlama kaldırıldı, cold-start koruması eklendi. Round arası reklamlar her 2 round'da bir (`roundCount % 2 === 0`) gösterilecek şekilde ayarlandı. Pause menüsünden Ana Menü'ye dönüşteki reklam kaldırıldı. Android köprüsüne `'start'` ad tipi ve 8.5s güvenlik zamanlayıcısı eklendi. |
+| `v3.5.4` | Küresel reklam bekleme süresi 30 saniyeye indirildi (`cooldownMs: 30000`). Ödüllü reklam global cooldown'dan tamamen muaf tutuldu. Solo (1P Klasik) moda ödüllü canlanma entegre edildi. Maç sonu istatistik penceresi öncesine `match_end` reklamı eklendi; butonlardan araya giren reklamlar kaldırıldı. Round arası reklamlar 1-3-5 tek sayılı roundlara çekildi. |
 
 ---
 

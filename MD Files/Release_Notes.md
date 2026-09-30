@@ -1,5 +1,306 @@
 # 2 Player Snake - Sürüm Notları (Release Notes)
 
+## v3.5.8 — Çevrimiçi Hükmen Galibiyet (Forfeit) Reklam Monetization & Eşleşme Akışı Düzeltmesi (2026-09-30)
+
+- **Çevrimiçi Hükmen Galibiyette Geçiş Reklamı (Interstitial Monetization):**
+  - Çevrimiçi maçlarda rakip bağlantıyı kopardığında veya oyundan çıktığında, 15 saniyelik geri sayım sonunda sunucu maçı hükmen galibiyet (`gameOver`, `reason: 'forfeit'`) ile sonlandırır.
+  - Önceki sürümlerde `gameOver` doğrudan istatistik ekranını açıp reklam döngüsünü atladığı için sıfır gelir oluşuyordu.
+  - v3.5.8 ile hükmen galibiyet kesinleştiğinde, zafer sesi (`SFX.win()`) ve konfeti kutlaması verilir, ardından maç sonu istatistik ekranı açılmadan hemen önce `AdManager.maybeShowGameOverAd` geçiş reklamı tetiklenir.
+- **Hükmen Galibiyet Sonrası "Tekrar Oyna" Butonunun Yeni Eşleşme Başlatması:**
+  - Önceki sürümlerde rakip çıktığında oturum temizliği nedeniyle "Tekrar Oyna" butonu oyuncuyu yanlışlıkla yerel/çevrimdışı tek kişilik oyuna düşürüyordu.
+  - v3.5.8 ile `showGameEndStats` ekranına `wasOnline` ve `isForfeit` parametreleri entegre edildi.
+  - Rakibin ayrıldığı maçlarda "Tekrar Oyna" butonuna tıklandığında oyuncu doğrudan yeni bir çevrimiçi rakip aramaya (`startMatchmaking()`) yönlendirilir.
+  - "Ana Menü" butonu ise oyuncuyu pratik olarak çevrimiçi menüye (`openOnlineMenu()`) döndürür.
+  - İstatistik kartına `🏳️ Rakip odadan ayrıldı.` rozeti eklendi.
+- **iOS Native Build 47 (v3.5.8) — Bildirim Rozeti & İkon Uyarısı Temizleme:**
+  - iOS ana ekran uygulama ikonu üzerinde asılı kalan kırmızı bildirim sayısı/rozet (badge) sorunu kökten çözüldü.
+  - Uygulama ilk açıldığında (`handleAppLaunch()`), arka plandan öne geçtiğinde (`sceneDidBecomeActive(_:)`) ve bildirime dokunulduğunda (`userNotificationCenter(_:didReceive:)`) `NotificationManager.shared.clearBadgeAndDeliveredNotifications()` çağrılarak hem teslim edilen bildirim listesi temizlenir (`removeAllDeliveredNotifications()`) hem de rozet sayısı iOS 17+ `setBadgeCount(0)` ve geriye dönük `applicationIconBadgeNumber = 0` ile sıfırlanır.
+  - Xcode projesi ve Fastlane hattı `MARKETING_VERSION = 3.5.8` ve `CURRENT_PROJECT_VERSION = 47` olarak paketlendi; TestFlight ve App Store dağıtımına hazırlandı.
+- **Tüm Dosyalarda Eşitlik & Test Doğrulaması:**
+  - `Mobile v3.5.8`, `PC v3.5.8`, `Android offline fallback` ve `iOS offline fallback` bayt bayt eşitlendi ve SHA256 ile doğrulandı.
+  - Otomatik test sonucu: **130/130 başarılı**.
+
+## v3.5.7 — Çevrimiçi Cross-Play Rastgele Eşleşme, PC Dikey Arcade Arenası & Sürüm Senkronu (2026-09-30)
+
+- **PC & Mobil Çevrimiçi Cross-Play Rastgele Eşleşme (Unified Matchmaking):**
+  - Çevrimiçi rastgele eşleşme (Random Matchmaking) kuyruğu birleştirildi. PC ve Mobil oyuncular artık ortak havuzda anında birbirleriyle eşleşebilir; lobi bekleme süreleri minimuma indirildi.
+  - **Akıllı Hibrit Matris (Seçenek A):**
+    - PC ve Mobil eşleştiğinde (veya odada en az bir mobil oyuncu olduğunda), maç matrisi mobil dikey standardını (`24 sütun x 36-42 satır`) baz alır (`room.platform = 'crossplay'`).
+    - İki PC oyuncusu denk geldiğinde ise klasik 16:9 geniş ekran PC matrisi (`64x36`) çalışır (`room.platform = 'pc'`).
+  - **PC Dikey Arcade Arenası (Vertical Arena):**
+    - PC istemcisi çapraz platform veya mobil matrisli bir odaya bağlandığında, `#stage.vertical-arena` ve `canvasWrap` `aspect-ratio: GRID_COLS / GRID_ROWS` CSS kilitlenmesiyle ekranın tam ortasında şık neon gölgeli dikey bir arcade kabini görünümüne bürünür.
+    - Hücreler deformasyona uğramadan tam kare oranını (`cw === ch`) korur; yemler, yılanlar, hızlar ve efektler her iki ekranda mikrosaniye ve piksel hassasiyetiyle örtüşür.
+    - Klavye ok tuşları ve WASD ile dikey kontrolde hiçbir gecikme veya dezavantaj yaşanmaz.
+    - Çevrimiçi maç bittiğinde veya menüye dönüldüğünde PC ekranı otomatik olarak standart geniş ekran 64x36 moduna geri döner.
+  - **Özel Odalarda (Custom Rooms) Cross-Play Desteği:**
+    - Özel oda katılımında (`joinRoom`) platform engeli kaldırılarak PC ve Mobil oyuncuların oda koduyla birbirine katılmasına izin verildi. Mobil oyuncunun olduğu her özel oda da dikey matrise adapte olur.
+- **Tüm Dosyalarda Eşitlik & Test Doğrulaması:**
+  - `Mobile v3.5.7`, `PC v3.5.7`, `Android offline fallback`, `iOS offline fallback` ve `server.js` bayt bayt eşitlendi ve doğrulandı.
+  - Otomatik test sonucu: **128/128 başarılı**.
+
+## v3.5.6 — Beast Başlangıç Dengelemesi (Yem Patlamasız / Sadece Yılan Buff'ı) & Sürüm Senkronu (2026-09-30)
+
+- **Oyuncu Odaklı Beast Başlangıç Dengelemesi:**
+  - v3.5.5'te eklenen ödüllü video ile Beast Modunda başlama özelliği, başlangıçta `spawnRubyBurstFoods()` fonksiyonunu çağırarak oyun alanına 12 normal yem ve 1 safir yem saçıyordu.
+  - Özellikle `1P vs AI` modunda başlangıçta sahaya saçılan bu yemlerin yapay zeka (AI) yılanı tarafından saniyeler içinde toplanarak orantısız büyümesine ve reklam izleyen oyuncuya karşı haksız bir avantaj elde etmesine yol açtığı tespit edildi.
+  - v3.5.6 ile geri sayım tamamlanma kancasında (`countdown`) yer alan `spawnRubyBurstFoods()` ve `redBulkEndTime` çağrıları kaldırıldı.
+  - Beast modu etkisi **yalnızca 1. Oyuncunun (P1) yılanına** uygulanır: 8 saniye (`BEAST_MODE_DURATION_MS = 8000;`) boyunca 1.45x hız artışı, kendi gövdesinden ve rakip gövdeden geçebilme dokunulmazlığı (faz / intangibility), RGB aura efekti ve başlangıç kalp sesi (`SFX.heart()`).
+  - Haritada başlangıçta ekstra yem saçılmaz; normal oyun başı yem düzeni korunur. AI yılanının başlangıçta haksız yem süpürmesi engellenmiştir.
+  - Maç esnasında oyun alanında doğal olarak beliren yakut kalp yemi (`rubyFood`) yendiğinde `spawnRubyBurstFoods()` patlaması eskisi gibi tam fonksiyonel çalışmaya devam eder.
+  - Süre dolduğunda `beastOwner` ve güç durumu hem Mobile hem PC döngülerinde güvenli biçimde temizlenir.
+- **Tüm Dosyalarda Eşitlik & Test Doğrulaması:**
+  - `Mobile v3.5.6`, `PC v3.5.6`, `Android offline fallback` ve `iOS offline fallback` dosyaları bayt bayt eşitlendi.
+  - Otomatik test sonucu: **125/125 başarılı**.
+
+## v3.5.5 — Ödüllü Video ile Beast Modunda Başlama, 3-2-1 Canlanma Koruması & Sürüm Senkronu (2026-09-30)
+
+- **1 Kişilik Modlarda "BEAST MODUYLA BAŞLA" Ödüllü Video Butonu:**
+  - Quick Setup (Hızlı Kurulum) ekranında, 1 Kişilik modlarda (1P Solo, 1P vs AI, Macera, Self Area 51) "BAŞLA" butonunun hemen altına yerleştirildi.
+  - Kırmızı-turuncu gradyanlı buton, kamera ikonu ve 2 satırlı metin ("BEAST MODUYLA BAŞLA" / "(Reklam)" veya VIP kullanıcılar için "(VIP / Ücretsiz)").
+  - 2P modu seçildiğinde otomatik gizlenir (`display: none`), 1P modunda tekrar görünür.
+  - Ödüllü video izlendiğinde (veya VIP kullanıcılarda doğrudan) oyun başlar; 3-2-1 geri sayımı tamamlandığı anda oyuncu tam **8 saniye** (`BEAST_MODE_DURATION_MS = 8000;`) boyunca Beast Modu (hızlanma, RGB ışık aurası, dokunulmazlık, ruby burst yemler ve kalp sesi) ile maça başlar (yalnızca 1. round için geçerlidir).
+- **Ödüllü Canlanmada 3-2-1 Geri Sayım Koruması (`startRewardedResumeCountdown`):**
+  - Maç içinde ödüllü reklam izlenerek canlanıldığında (`restoreRewardSnapshot`), oyunun aniden başlayıp oyuncunun reflex göstermeden kaza yapması engellendi.
+  - Reklam kapandıktan sonra 3-2-1 ve BAŞLA geri sayımı devreye girer. Geri sayım boyunca geçen milisaniyeler round süresine ve aktif güçlendirmelere eklenerek zaman kaybı telafi edilir.
+- **21 Dilde Tam Destek:**
+  - `startWithBeast`, `startWithBeastAd`, `startWithBeastVip` çevirileri 21 dilde (tr, en, de, fr, es, it, zh, hi, pl, pt-BR, ar, ru, id, ja, ko, vi, th, tl, nl, el, cs) eksiksiz uygulandı.
+- **Tüm Dosyalarda Eşitlik & Test Doğrulaması:**
+  - `Mobile v3.5.5`, `PC v3.5.5`, `Android offline fallback` ve `iOS offline fallback` dosyaları bayt bayt eşitlendi.
+  - Otomatik test sonucu: **123/123 başarılı**.
+
+## v3.5.4 — Reklam Gelir Optimizasyonu, 30s Cooldown, Solo 1P Ödüllü Canlanma & Akıcı Maç Sonu (2026-09-30)
+
+- **30 Saniye Küresel Reklam Cooldown (`cooldownMs: 30000`):**
+  - Reklam arası küresel bekleme süresi 45 saniyeden 30 saniyeye indirilerek gelir artışı hedeflendi.
+- **Ödüllü Reklam (Rewarded Video) Cooldown Muafiyeti:**
+  - `canOfferRewardedContinue()` içindeki küresel cooldown engeli kaldırıldı. Kullanıcı dilediğinde ödüllü video izleyerek devam hakkı kazanabilir. Reklam sonrasında `recordAdShown('reward')` ile yeni reklam zamanı mühürlenerek hemen ardından geçiş reklamı açılması önlenir.
+- **Solo (1P Klasik) Moduna Ödüllü Canlanma Entegrasyonu:**
+  - Önceden sadece 1P vs AI moduna özel olan ödüllü devam özelliği, Klasik Tek Kişilik (1P) moda da getirildi (`maybeInterceptSoloLoss`). Oyuncu yandığında 5 saniyelik geri sayımla canlanma teklif edilir; kabul ederse 5 adım geriden ve 3 saniye dokunulmazlıkla oyununa devam eder (maç başına 1 kez).
+- **Maç Sonu Reklam Akışı & Buton Temizliği:**
+  - Maç bittiğinde zafer/kupa ve oyun sonu istatistik penceresi (`showGameEndStats`) açılmadan önce `maybeShowGameOverAd` (`match_end`) ile geçiş reklamı gösterilir.
+  - İstatistik penceresindeki "Ana Menü" ve "Tekrar Oyna" butonlarındaki araya giren reklamlar (`menu_after_stats`, `replay_after_stats`) tamamen kaldırılarak butonlar anında ve beklemesiz tepki verir hale getirildi.
+- **Round Arası Reklamlar Tek Sayılı Roundlarda (1-3-5...):**
+  - Kural `roundCount > 0 && roundCount % 2 !== 0 && !this.isGlobalCooldownActive()` olarak güncellendi. Snake maçları 5 galibiyette (`GAMES_TO_ROUND = 5`) bittiği için ilk maçta 1. round biter bitmez oyuncuya ilk reklam gösterilir; ardından 3. ve 5. round sonlarında 30s cooldown elverdiğince gösterilir.
+- **Tüm Dosyalarda Eşitlik & Test Doğrulaması:**
+  - `Mobile v3.5.4`, `PC v3.5.4`, `Android offline fallback` ve `iOS offline fallback` dosyaları bayt bayt eşitlendi.
+  - Otomatik test sonucu: **121/121 başarılı**.
+
+## v3.5.3 — Reklam Gelir Optimizasyonu ve Android Köprüsü İyileştirmesi (2026-09-28)
+
+- **Maç Başı Reklam Optimizasyonu:** `maybeShowStartAdThenStart()` içindeki yapay %50 atlama filtresi kaldırıldı. İlk maç cold-start koruması ile reklamsız başlar; 2. maçtan itibaren 45s küresel cooldown uygun olduğunda geçiş reklamı gösterilir.
+- **Round Arası Reklam Sıklığı (Her 2 Round'da Bir):** Round arası geçiş reklamı kuralı `roundCount % 2 === 0` olarak ayarlandı. 5 galibiyetlik maçlarda oyuncunun erken çıkması durumundaki 0 reklam riski önlendi. 45 saniyelik küresel bekleme süresi (`cooldownMs: 45000`) korunarak spam engellendi.
+- **Pause Menüsü Reklamı Kaldırıldı:** Pause balon menüsünden Ana Menü'ye dönüşteki %30'luk rastgele geçiş reklamı (`pause_exit_home`) tamamen temizlendi.
+- **Android Native Köprüsü Emniyeti (`android_bridge_bootstrap.js`):**
+  - `adsbygoogle.push` filtresine eksik olan `'start'` tipi eklendi.
+  - 8.5 saniyelik JS emniyet zamanlayıcısı (`safetyTimer`) entegre edildi. Reklam yanıtı gecikse bile oyun akışı kilitlenmez ve `AdManager.adInProgress` serbest kalır.
+- **Tüm Dosyalarda Eşitlik:** Mobile v3.5.3, PC v3.5.3, Android ve iOS offline fallback dosyaları bayt bayt eşitlendi. Test sonucu: **120/120 başarılı**.
+
+## v3.5.2 — Online çeviri tamamlama ve doğru pause açıklaması (2026-09-28)
+
+**Yayın durumu:** v3.5.2 WordPress’te canlı; kullanıcı yüklemenin tamamlandığını 2026-09-28 tarihinde bildirdi. Yerel doğrulama: 118/118 otomatik test ve 546/546 tarayıcı ekran kontrolü. Bağımsız canlı URL kontrolü yapılmadı; fiziksel cihaz son kabulü bekliyor.
+
+- Mobil Türkçe pause kuralının İngilizceye düşmesi giderildi; Mobile/PC online metinleri mevcut 21 dilde tamamlandı.
+- Eski 3 kez / 90 saniye ve tur başına 1 hak açıklamaları kaldırıldı. Doğru metin: maç başına oyuncu başına 2 hak, her duraklatma en fazla 15 saniye.
+- Mobil sunucu hataları, yeniden bağlantı ve bağlantı kaybı sayacı yerelleştirildi. Bilinmeyen hata metni kullanıcıya ham sunucu metni veya çeviri anahtarı olarak gösterilmez.
+- Reklam bekleme, tekrar maç ve online akışta kullanılan ortak menü/sonuç metinlerinin eksikleri tamamlandı. Hata penceresi onayında Tamam kullanılır.
+- Mobil kontrol seçicisi, D-pad yön ve ses erişilebilirlik etiketleri seçili dilde gösterilir. Uzun Almanca bağlantı başlığı panel içinde satıra bölünür.
+- Mobile/PC v3.5.2 kaynakları oluşturuldu; eski sürümler korundu. Android/iOS fallback dosyaları Mobile v3.5.2 ile eşitlendi; CI/test hedefleri güncellendi.
+- Otomatik doğrulama: 118/118 geçti. Ayrıntılı tarayıcı kabulü ve cihaz sınırları: v3.5.2_Localization_Verification.md.
+- Yerel kaynak değişikliği: sunucu, Socket.IO protokolü ve native paket numaraları değişmedi. WordPress yayını kullanıcı tarafından tamamlandı. Yeni native paket veya mağaza dağıtımı yapılmadı.
+
+## v3.5.1 — D-pad, menü görünürlüğü ve online duraklatma (2026-09-27)
+
+Yerel kaynak sürümü; canlı web/mağaza dağıtımı yapılmadı. Native sürümler ve sunucu değişmedi.
+
+- Online mobil panel içeriğe göre yukarı genişler; kare hücreler ve ortak matris korunur.
+- Her iki mobil oyuncuda Kontroller/Ayrıl, yalnız duraklatanda Devam Et görünür. Kontrol tercihi cihazda saklanır; pause süresi uzamaz.
+- Mobile/PC eski maç ve banner işlemleri yeni menülere müdahale edemez; gizli düğmeler etkileşimsizdir.
+- Kabul sonuçları ve fiziksel cihazda açık kontroller: v3.5.1_UI_Verification.md.
+- Otomatik doğrulama sonucu: **70/70 başarılı**. Rastgele/özel oda, iki kontrol düzeni, iki cihaz oranı, iki rolden ayrılma ve 15 saniyelik otomatik devam tarayıcıda geçti.
+
+### Mağaza metni taslakları — 21 dil (henüz yayımlanmadı)
+
+<tr-TR>
+Online D-pad yerleşimi iyileştirildi. Duraklatma sırasında iki oyuncu da kontrollerini değiştirebilir veya ayrılabilir. Eski maç işlemlerinin menü görünürlüğünü bozması düzeltildi.
+</tr-TR>
+
+<en-US>
+Improved online D-pad layout. Both players can change their controls or leave while paused. Fixed stale match callbacks interfering with menu visibility.
+</en-US>
+
+<de-DE>
+Das Online-Steuerkreuz passt besser auf den Bildschirm. Beide Spieler können während der Pause ihre Steuerung ändern oder das Spiel verlassen. Veraltete Spielaktionen beeinträchtigen die Menüs nicht mehr.
+</de-DE>
+
+<fr-FR>
+Disposition de la croix directionnelle en ligne améliorée. Les deux joueurs peuvent modifier leurs commandes ou quitter pendant la pause. Correction des anciennes actions de partie qui masquaient les menus.
+</fr-FR>
+
+<es-ES>
+Mejorada la distribución de la cruceta en línea. Ambos jugadores pueden cambiar sus controles o salir durante la pausa. Corregidas las acciones pendientes de partidas que ocultaban los menús.
+</es-ES>
+
+<it-IT>
+Migliorata la disposizione del pad direzionale online. Entrambi i giocatori possono cambiare i comandi o uscire durante la pausa. Corrette le azioni residue delle partite che nascondevano i menu.
+</it-IT>
+
+<hi-IN>
+ऑनलाइन डी-पैड का लेआउट बेहतर किया गया। विराम के दौरान दोनों खिलाड़ी अपने नियंत्रण बदल सकते हैं या बाहर निकल सकते हैं। पुराने मैच की लंबित क्रियाओं से मेनू छिपने की समस्या ठीक की गई।
+</hi-IN>
+
+<pl-PL>
+Poprawiono układ pada kierunkowego online. Podczas pauzy obaj gracze mogą zmieniać sterowanie lub wyjść z gry. Naprawiono ukrywanie menu przez opóźnione działania poprzedniego meczu.
+</pl-PL>
+
+<pt-BR>
+Melhorado o layout do direcional online. Ambos os jogadores podem mudar seus controles ou sair durante a pausa. Corrigidas ações pendentes de partidas que ocultavam os menus.
+</pt-BR>
+
+<ar>
+تم تحسين تخطيط أزرار الاتجاهات في اللعب عبر الإنترنت. يستطيع كلا اللاعبين تغيير التحكم أو المغادرة أثناء الإيقاف المؤقت. تم إصلاح إخفاء القوائم بسبب عمليات متأخرة من المباراة السابقة.
+</ar>
+
+<ru-RU>
+Улучшено расположение крестовины в сетевой игре. Во время паузы оба игрока могут менять управление или выходить. Исправлено скрытие меню из-за отложенных действий прошлого матча.
+</ru-RU>
+
+<id>
+Tata letak D-pad online ditingkatkan. Kedua pemain dapat mengubah kontrol atau keluar saat dijeda. Memperbaiki tindakan tertunda dari pertandingan lama yang menyembunyikan menu.
+</id>
+
+<ja-JP>
+オンライン対戦の方向パッド配置を改善しました。一時停止中は両プレイヤーが操作方法を変更したり退出したりできます。以前の対戦の遅延処理でメニューが消える問題を修正しました。
+</ja-JP>
+
+<ko-KR>
+온라인 방향 패드 배치를 개선했습니다. 일시 정지 중 두 플레이어 모두 조작 방식을 바꾸거나 나갈 수 있습니다. 이전 경기의 지연 처리로 메뉴가 사라지는 문제를 수정했습니다.
+</ko-KR>
+
+<vi>
+Cải thiện bố cục phím điều hướng trực tuyến. Cả hai người chơi có thể đổi cách điều khiển hoặc rời trận khi tạm dừng. Sửa lỗi thao tác chậm từ trận cũ làm ẩn menu.
+</vi>
+
+<th>
+ปรับปรุงตำแหน่งปุ่มทิศทางในเกมออนไลน์ ผู้เล่นทั้งสองเปลี่ยนการควบคุมหรือออกจากเกมระหว่างหยุดชั่วคราวได้ แก้ไขการทำงานค้างจากแมตช์เดิมที่ทำให้เมนูหายไป
+</th>
+
+<fil-PH>
+Pinahusay ang ayos ng online D-pad. Maaaring baguhin ng parehong manlalaro ang kanilang kontrol o umalis habang naka-pause. Inayos ang mga naantalang aksiyon ng lumang laban na nagtatago sa menu.
+</fil-PH>
+
+<nl-NL>
+De indeling van de online D-pad is verbeterd. Beide spelers kunnen tijdens de pauze hun besturing wijzigen of vertrekken. Vertraagde acties uit eerdere wedstrijden verstoren de menuweergave niet meer.
+</nl-NL>
+
+<el-GR>
+Βελτιώθηκε η διάταξη του σταυρού κατεύθυνσης online. Στην παύση και οι δύο παίκτες μπορούν να αλλάξουν χειρισμό ή να αποχωρήσουν. Διορθώθηκαν καθυστερημένες ενέργειες αγώνα που έκρυβαν τα μενού.
+</el-GR>
+
+<cs-CZ>
+Vylepšeno rozložení směrového ovladače online. Během pauzy mohou oba hráči změnit ovládání nebo odejít. Opraveno skrývání menu zpožděnými akcemi předchozího zápasu.
+</cs-CZ>
+
+<zh-CN>
+优化了在线对战的方向键布局。暂停时双方玩家都可以更改自己的控制方式或退出。修复了旧对局的延迟操作导致菜单消失的问题。
+</zh-CN>
+
+
+## v3.5.0 — Online ortak saha görünürlüğü (2026-09-27)
+
+Yerel kaynak sürümü; canlı web veya mağaza dağıtımı yapılmadı. Native Android Code 71 ve iOS Build 46 değişmedi.
+
+- İlk round ölçümü, gerçek kontrol paneli yüksekliği ve güvenli alan kesişimi düzeltildi.
+- Kare hücrelerle tam sığdırma, sabit ortak matris, boyut değişimlerinde yeniden ölçekleme ve grid önbelleği düzeltmesi eklendi.
+- PC yalnız sürüm eşitliği için güncellendi; iki mobil fallback yeni kaynakla eşitlendi.
+- 62/62 otomatik test geçti. Fiziksel A71/iPhone 14 Pro Max ve macOS WebKit doğrulaması bekleniyor.
+
+### Mağaza metni taslakları — 21 dil (henüz yayımlanmadı)
+
+<en-US>
+Online matches now fit the entire shared board on different screens, starting with the first round. Controls and safe areas are measured correctly; snakes remain visible at the edges.
+</en-US>
+
+<tr-TR>
+Online maçlarda ortak saha ilk round’dan itibaren farklı ekranlara tamamen sığar. Kontrol paneli ve güvenli alanlar doğru ölçülür; kenarlardaki yılanlar görünür kalır.
+</tr-TR>
+
+<fr-FR>
+Le terrain partagé des matchs en ligne s’adapte entièrement aux différents écrans dès la première manche. Les commandes et les zones de sécurité sont prises en compte pour garder les serpents visibles aux bords.
+</fr-FR>
+
+<it-IT>
+Il campo condiviso delle partite online si adatta interamente a schermi diversi fin dal primo round. I comandi e le aree sicure vengono misurati correttamente, mantenendo visibili i serpenti ai bordi.
+</it-IT>
+
+<es-ES>
+El tablero compartido de las partidas online se adapta por completo a distintas pantallas desde la primera ronda. Los controles y las áreas seguras se miden correctamente para mantener visibles las serpientes en los bordes.
+</es-ES>
+
+<de-DE>
+Das gemeinsame Spielfeld passt bei Online-Partien ab der ersten Runde vollständig auf unterschiedliche Bildschirme. Steuerung und sichere Bildschirmbereiche werden berücksichtigt, damit Schlangen am Rand sichtbar bleiben.
+</de-DE>
+
+<zh-CN>
+在线对战从第一回合起即可在不同屏幕上完整显示同一棋盘。正确计算控制面板和安全区域，确保边缘的蛇身始终可见。
+</zh-CN>
+
+<hi-IN>
+ऑनलाइन मैचों में साझा बोर्ड पहले राउंड से ही अलग-अलग स्क्रीन पर पूरा दिखाई देता है। नियंत्रण पैनल और सुरक्षित क्षेत्र सही ढंग से मापे जाते हैं, ताकि किनारों पर साँप दिखाई देते रहें।
+</hi-IN>
+
+<pl-PL>
+W meczach online cała wspólna plansza mieści się na różnych ekranach już od pierwszej rundy. Poprawny pomiar panelu sterowania i bezpiecznych obszarów zapewnia widoczność węży przy krawędziach.
+</pl-PL>
+
+<pt-BR>
+Nas partidas online, todo o tabuleiro compartilhado se adapta a diferentes telas desde a primeira rodada. Os controles e as áreas seguras são medidos corretamente para manter as cobras visíveis nas bordas.
+</pt-BR>
+
+<ar>
+تظهر ساحة اللعب المشتركة كاملة على مختلف الشاشات منذ الجولة الأولى في المباريات عبر الإنترنت. تُحسب مساحة أزرار التحكم والمناطق الآمنة بدقة لتبقى الثعابين ظاهرة عند الحواف.
+</ar>
+
+<ru-RU>
+В онлайн-матчах общее поле полностью помещается на разных экранах с первого раунда. Панель управления и безопасные области учитываются корректно, поэтому змеи остаются видимыми у краёв.
+</ru-RU>
+
+<id>
+Dalam pertandingan online, seluruh papan bersama kini pas di berbagai layar sejak ronde pertama. Kontrol dan area aman diukur dengan benar agar ular tetap terlihat di tepi.
+</id>
+
+<ja-JP>
+オンライン対戦の共通盤面が、最初のラウンドから異なる画面サイズに収まるようになりました。操作パネルとセーフエリアを正しく計測し、端にいるヘビも見えるようにしました。
+</ja-JP>
+
+<ko-KR>
+온라인 경기의 공통 보드가 첫 라운드부터 다양한 화면에 완전히 표시됩니다. 조작 패널과 안전 영역을 정확히 계산해 가장자리의 뱀도 보이도록 개선했습니다.
+</ko-KR>
+
+<vi>
+Trong trận đấu trực tuyến, toàn bộ bàn chơi chung vừa với các màn hình khác nhau ngay từ vòng đầu. Bảng điều khiển và vùng an toàn được đo chính xác để rắn vẫn hiển thị ở các mép.
+</vi>
+
+<th>
+กระดานร่วมในเกมออนไลน์แสดงได้ครบถ้วนบนหน้าจอขนาดต่าง ๆ ตั้งแต่รอบแรก คำนวณพื้นที่ปุ่มควบคุมและพื้นที่ปลอดภัยอย่างถูกต้อง เพื่อให้งูที่ขอบจอยังคงมองเห็นได้
+</th>
+
+<fil-PH>
+Sa mga online na laban, kasya na ang buong pinagsasaluhang board sa iba’t ibang screen mula sa unang round. Tamang sinusukat ang mga kontrol at ligtas na lugar upang manatiling kita ang mga ahas sa mga gilid.
+</fil-PH>
+
+<nl-NL>
+Het gedeelde speelveld past bij online wedstrijden vanaf de eerste ronde volledig op verschillende schermen. De bediening en veilige schermgebieden worden correct gemeten, zodat slangen aan de randen zichtbaar blijven.
+</nl-NL>
+
+<el-GR>
+Στους online αγώνες, ολόκληρο το κοινό ταμπλό χωρά σε διαφορετικές οθόνες από τον πρώτο γύρο. Τα χειριστήρια και οι ασφαλείς περιοχές υπολογίζονται σωστά, ώστε τα φίδια να παραμένουν ορατά στις άκρες.
+</el-GR>
+
+<cs-CZ>
+V online zápasech se celá společná plocha vejde na různé obrazovky už od prvního kola. Ovládací panel a bezpečné oblasti se měří správně, takže hadi zůstávají viditelní i na okrajích.
+</cs-CZ>
+
+
 ## iOS App Store & TestFlight Release Notes
 
 ### Sürüm v3.4.9 — Akıllı Cache-Busting, 0 KB Sürüm Kontrolü & İlk Açılış Hızlandırması (2026-09-27)

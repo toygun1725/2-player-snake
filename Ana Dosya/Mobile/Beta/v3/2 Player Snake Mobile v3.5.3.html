@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>2 Player Snake Mobile v3.5.8 - Play Online & Local</title>
+    <title>2 Player Snake Mobile v3.5.3 - Play Online & Local</title>
     <script>
         // Only a native shell that advertises the bundled asset handler uses local URLs.
         window.__twoPlayerSnakeUseNativeAssets = window.__twoPlayerSnakePlatform === 'ios' &&
@@ -17,7 +17,7 @@
 
     <!-- Open Graph / Social Media / Google Search Thumbnail Meta Tags -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="2 Player Snake Mobile v3.5.8 - Play Online & Local">
+    <meta property="og:title" content="2 Player Snake Mobile v3.5.3 - Play Online & Local">
     <meta property="og:description" content="Play 2 Player Snake online – challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
     <meta property="og:url" content="https://2playersnake.com/wp-content/uploads/game-mobile/index.html">
     <meta property="og:image" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
@@ -35,7 +35,7 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="2 Player Snake Mobile v3.5.8 - Play Online & Local">
+    <meta name="twitter:title" content="2 Player Snake Mobile v3.5.3 - Play Online & Local">
     <meta name="twitter:description" content="Play 2 Player Snake online – challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
     <meta name="twitter:image" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
 
@@ -137,7 +137,7 @@
         }
     </script>
 
-    <!-- Version: v3.5.8 Mobile -->
+    <!-- Version: v3.5.3 Mobile -->
     <style>
         :root {
             --bg: #0b0f14;
@@ -3123,27 +3123,6 @@
           transition: opacity 0.2s, transform 0.15s;
         }
         .qs-start-btn:active { transform: scale(0.97); }
-        .qs-start-beast-btn {
-          width: 100%; padding: 10px 14px; border-radius: 10px;
-          background: linear-gradient(135deg, #ff1744 0%, #ff5722 50%, #ff9100 100%);
-          border: 1.5px solid rgba(255, 145, 0, 0.55); color: #fff;
-          cursor: pointer; font-family: 'Orbitron', sans-serif;
-          margin-top: 6px; box-shadow: 0 4px 18px rgba(255, 23, 68, 0.42), 0 0 12px rgba(255, 87, 34, 0.35);
-          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-          transition: transform 0.15s, filter 0.15s;
-        }
-        .qs-start-beast-btn:active { transform: scale(0.97); filter: brightness(1.15); }
-        .qs-beast-title {
-          font-size: 16px; font-weight: 900; letter-spacing: 1.2px;
-          display: flex; align-items: center; justify-content: center; gap: 8px; text-shadow: 0 1px 5px rgba(0,0,0,0.7);
-        }
-        .qs-beast-title i {
-          font-size: 15px;
-        }
-        .qs-beast-sub {
-          font-size: 12px; font-weight: 700; color: #fff3e0;
-          letter-spacing: 0.8px; font-family: system-ui, sans-serif; text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-        }
         .qs-back-link {
           display: block; text-align: center; margin-top: 8px; font-size: 13px;
           color: rgba(255,255,255,0.42); cursor: pointer; padding: 6px 0;
@@ -4396,10 +4375,10 @@
     <script>
         (() => {
             /* ==============================
-              2 Player Snake - Beta v3.5.8 Mobile
+              2 Player Snake - Beta v3.5.3 Mobile
               ============================= */
 
-            const VERSION = 'v3.5.8';
+            const VERSION = 'v3.5.3';
             const IS_IOS_SHELL = window.__twoPlayerSnakePlatform === 'ios';
             const IS_APPLE_DEVICE = IS_IOS_SHELL ||
                 (typeof window !== 'undefined' && Boolean(window.isAppleDevice)) ||
@@ -6452,36 +6431,6 @@
             Object.keys(VS_AI_STRINGS).forEach(locale => {
                 EXTRA_STRINGS[locale] = { ...(EXTRA_STRINGS[locale] || {}), ...VS_AI_STRINGS[locale] };
             });
-
-            const BEAST_MODE_STRINGS = {
-                "tr": { "startWithBeast": "BEAST MODUYLA BAŞLA", "startWithBeastAd": "(Reklam)", "startWithBeastVip": "(VIP / Ücretsiz)" },
-                "en": { "startWithBeast": "START IN BEAST MODE", "startWithBeastAd": "(Ad)", "startWithBeastVip": "(VIP / Free)" },
-                "de": { "startWithBeast": "IN BEAST-MODUS STARTEN", "startWithBeastAd": "(Werbung)", "startWithBeastVip": "(VIP / Gratis)" },
-                "fr": { "startWithBeast": "LANCER EN MODE BEAST", "startWithBeastAd": "(Pub)", "startWithBeastVip": "(VIP / Gratuit)" },
-                "es": { "startWithBeast": "EMPEZAR EN MODO BEAST", "startWithBeastAd": "(Anuncio)", "startWithBeastVip": "(VIP / Gratis)" },
-                "it": { "startWithBeast": "INIZIA IN MODALITÀ BEAST", "startWithBeastAd": "(Pubblicità)", "startWithBeastVip": "(VIP / Gratis)" },
-                "zh": { "startWithBeast": "以野兽模式开始", "startWithBeastAd": "(广告)", "startWithBeastVip": "(VIP / 免费)" },
-                "hi": { "startWithBeast": "बीस्ट मोड में शुरू करें", "startWithBeastAd": "(विज्ञापन)", "startWithBeastVip": "(वीआईपी / मुफ्त)" },
-                "pl": { "startWithBeast": "START W TRYBIE BESTII", "startWithBeastAd": "(Reklama)", "startWithBeastVip": "(VIP / Za darmo)" },
-                "pt-BR": { "startWithBeast": "INICIAR EM MODO BEAST", "startWithBeastAd": "(Anúncio)", "startWithBeastVip": "(VIP / Grátis)" },
-                "ar": { "startWithBeast": "ابدأ بوضع الوحش", "startWithBeastAd": "(إعلان)", "startWithBeastVip": "(VIP / مجاني)" },
-                "ru": { "startWithBeast": "НАЧАТЬ В РЕЖИМЕ ЗВЕРЯ", "startWithBeastAd": "(Реклама)", "startWithBeastVip": "(VIP / Бесплатно)" },
-                "id": { "startWithBeast": "MULAI MODE BEAST", "startWithBeastAd": "(Iklan)", "startWithBeastVip": "(VIP / Gratis)" },
-                "ja": { "startWithBeast": "ビーストモードで開始", "startWithBeastAd": "(広告)", "startWithBeastVip": "(VIP / 無料)" },
-                "ko": { "startWithBeast": "비스트 모드로 시작", "startWithBeastAd": "(광고)", "startWithBeastVip": "(VIP / 무료)" },
-                "vi": { "startWithBeast": "BẮT ĐẦU CHẾ ĐỘ BEAST", "startWithBeastAd": "(Quảng cáo)", "startWithBeastVip": "(VIP / Miễn phí)" },
-                "th": { "startWithBeast": "เริ่มด้วยโหมดบีสต์", "startWithBeastAd": "(โฆษณา)", "startWithBeastVip": "(VIP / ฟรี)" },
-                "tl": { "startWithBeast": "SIMULAN SA BEAST MODE", "startWithBeastAd": "(Ad)", "startWithBeastVip": "(VIP / Libre)" },
-                "nl": { "startWithBeast": "START IN BEAST-MODUS", "startWithBeastAd": "(Advertentie)", "startWithBeastVip": "(VIP / Gratis)" },
-                "el": { "startWithBeast": "ΕΚΚΙΝΗΣΗ ΣΕ BEAST MODE", "startWithBeastAd": "(Διαφήμιση)", "startWithBeastVip": "(VIP / Δωρεάν)" },
-                "cs": { "startWithBeast": "SPUSTIT V REŽIMU BEAST", "startWithBeastAd": "(Reklama)", "startWithBeastVip": "(VIP / Zdarma)" }
-            };
-            Object.keys(BEAST_MODE_STRINGS).forEach(locale => {
-                EXTRA_STRINGS[locale] = { ...(EXTRA_STRINGS[locale] || {}), ...BEAST_MODE_STRINGS[locale] };
-            });
-            if (EXTRA_STRINGS['ptbr']) {
-                EXTRA_STRINGS['ptbr'] = { ...EXTRA_STRINGS['ptbr'], ...BEAST_MODE_STRINGS['pt-BR'] };
-            }
 
             const MOBILE_V254_OVERRIDES = {
                 tr: {
@@ -9378,7 +9327,6 @@
             let currentMenuScreen = null;
             let menuHistory = [];
             let snakes = null, foods = [], stats = { p1Food: 0, p2Food: 0 }, gameMode = null, games = { p1: 0, p2: 0 };
-            let startWithBeast = false;
             let lastStableLengthP1 = 0, frozenPanelLengthP1 = null;
             let matchStartTime = 0, matchTotalFoodP1 = 0, matchTotalFoodP2 = 0, longestSnakeP1 = 0, longestSnakeP2 = 0;
             let last = 0, acc1 = 0, acc2 = 0;
@@ -9489,7 +9437,7 @@
             }
 
             const AdManager = {
-                cooldownMs: 30000,
+                cooldownMs: 45000,
                 startAdChance: 0.30,
                 snapshotDepth: 5,
                 lastAdShownAt: 0,
@@ -9553,80 +9501,6 @@
                         !this.adInProgress &&
                         !this.isGlobalCooldownActive() &&
                         !this.mandatoryAdShownThisMatch;
-                },
-
-                requestRewardedBeastStart(onSuccess, onFail) {
-                    if (window.adsRemoved) {
-                        this.beginMatchCycle();
-                        if (onSuccess) onSuccess();
-                        return;
-                    }
-                    if (!this.isSdkReady() || this.adInProgress) {
-                        if (onFail) onFail(t('rewardedUnavailable'));
-                        return;
-                    }
-                    this.adInProgress = true;
-                    let rewardFlowAvailable = false;
-                    let rewardSettled = false;
-
-                    const fail = (msg) => {
-                        this.adInProgress = false;
-                        if (onFail) onFail(msg);
-                    };
-
-                    try {
-                        adBreak({
-                            type: 'reward',
-                            name: 'beast_start',
-                            beforeAd: () => {
-                                paused = true;
-                                intermission = true;
-                                syncAdSoundConfig('off');
-                            },
-                            afterAd: () => {
-                                syncAdSoundConfig();
-                                window._adJustFinished = true;
-                                resumeAudioContext();
-                            },
-                            beforeReward: (showAdFn) => {
-                                rewardFlowAvailable = true;
-                                showAdFn();
-                            },
-                            adViewed: () => {
-                                rewardSettled = true;
-                                this.adInProgress = false;
-                                this.recordAdShown('reward');
-                                this.beginMatchCycle();
-                                window._adJustFinished = true;
-                                resumeAudioContext();
-                                setTimeout(resumeAudioContext, 150);
-                                if (onSuccess) onSuccess();
-                            },
-                            adDismissed: () => {
-                                rewardSettled = true;
-                                this.adInProgress = false;
-                                window._adJustFinished = true;
-                                resumeAudioContext();
-                                fail(t('rewardedDeclined'));
-                            },
-                            adBreakDone: () => {
-                                window._adJustFinished = true;
-                                resumeAudioContext();
-                                setTimeout(resumeAudioContext, 150);
-                                setTimeout(resumeAudioContext, 400);
-                                if (!rewardFlowAvailable && !rewardSettled) {
-                                    fail(t('rewardedUnavailable'));
-                                } else if (!rewardSettled) {
-                                    this.adInProgress = false;
-                                }
-                            }
-                        });
-                    } catch (err) {
-                        console.warn('Rewarded beast ad failed:', err);
-                        this.adInProgress = false;
-                        resumeAudioContext();
-                        fail(t('rewardedUnavailable'));
-                    }
                 },
 
                 maybeShowStartAdThenStart(startFn) {
@@ -9722,7 +9596,13 @@
                 },
 
                 maybeShowGameOverAd(onDone) {
-                    if (!this.isSdkReady() || this.adInProgress || this.isGlobalCooldownActive()) {
+                    const shouldTry =
+                        !this.rewardedPendingLoss &&
+                        !this.startAdShownThisMatch &&
+                        (this.sessionCompletedMatchCount % 2 === 0) &&
+                        this.canShowMandatoryAd();
+
+                    if (!shouldTry) {
                         if (onDone) onDone();
                         return;
                     }
@@ -9731,7 +9611,6 @@
                         type: 'next',
                         name: 'match_end',
                         recordKind: 'gameover',
-                        soundMode: 'off',
                         onDone
                     });
                 },
@@ -9739,7 +9618,7 @@
                 maybeShowBetweenRoundsAd(onDone) {
                     const shouldTry =
                         roundCount > 0 &&
-                        roundCount % 2 !== 0 &&
+                        roundCount % 2 === 0 &&
                         this.isSdkReady() &&
                         !this.adInProgress &&
                         !this.isGlobalCooldownActive();
@@ -9760,20 +9639,18 @@
 
                 snapshotCounter: 0,
                 captureRewardSnapshot() {
-                    if (gameMode !== '1P' || !snakes || !snakes.p1 || this.rewardedUsedThisMatch) return;
+                    if (!(gameMode === '1P' && aiSnakeEnabled) || !snakes || !snakes.p1 || !snakes.p2 || this.rewardedUsedThisMatch) return;
 
                     this.snapshotCounter++;
                     if (this.snapshotCounter < 8) return;
                     this.snapshotCounter = 0;
 
-                    if (gameMode !== '1P' || !snakes || !snakes.p1 || this.rewardedUsedThisMatch) return;
+                    // Old return check to satisfy regex replacement:
+                    if (!(gameMode === '1P' && aiSnakeEnabled) || !snakes || !snakes.p1 || !snakes.p2 || this.rewardedUsedThisMatch) return;
 
                     const snapshot = cloneForGameState({
                         capturedAt: performance.now(),
-                        snakes: {
-                            p1: snakes.p1,
-                            p2: snakes.p2 || null
-                        },
+                        snakes,
                         foods,
                         stats,
                         games,
@@ -9803,29 +9680,20 @@
 
                 canOfferRewardedContinue() {
                     return gameMode === '1P' &&
+                        aiSnakeEnabled &&
                         !this.rewardedUsedThisMatch &&
                         !this.adInProgress &&
+                        !this.isGlobalCooldownActive() &&
                         this.isSdkReady() &&
                         this.rewardSnapshots.length > 0;
                 },
 
                 maybeInterceptAiLoss(result) {
-                    return this.maybeInterceptLoss(result, false);
-                },
-
-                maybeInterceptSoloLoss() {
-                    return this.maybeInterceptLoss('p1_self', true);
-                },
-
-                maybeInterceptLoss(result, isSolo = false) {
-                    if (isSolo) {
-                        if (gameMode !== '1P' || aiSnakeEnabled) return false;
-                    } else {
-                        if (!(gameMode === '1P' && aiSnakeEnabled && result === 'p2')) return false;
-                    }
+                    if (!(gameMode === '1P' && aiSnakeEnabled && result === 'p2')) return false;
+                    // v5: Do not show the overlay if an ad cannot be shown anyway
                     if (!this.canOfferRewardedContinue()) return false;
                     
-                    this.rewardedPendingLoss = { result, isSolo };
+                    this.rewardedPendingLoss = { result };
                     this.showRewardedContinueOverlay();
                     return true;
                 },
@@ -9834,12 +9702,11 @@
                     this.closeRewardedOverlay();
 
                     const canContinue = this.canOfferRewardedContinue();
-                    const isSolo = (gameMode === '1P' && !aiSnakeEnabled);
                     const overlay = document.createElement('div');
                     overlay.className = 'game-end-overlay rewarded-continue-overlay';
                     overlay.innerHTML = `
                         <div class="game-end-card rewarded-continue-card">
-                            <div class="game-end-trophy">${isSolo ? '❤️' : '🤖'}</div>
+                            <div class="game-end-trophy">🤖</div>
                             <div class="game-end-title">${window.adsRemoved ? t('continueForFree') : t('watchAdToContinue')}</div>
                             <div class="game-end-actions">
                                 <button class="game-end-btn" id="rewardedContinueBtn" ${canContinue ? '' : 'disabled'}>${t('yes')}</button>
@@ -9944,13 +9811,8 @@
 
                     const complete = () => {
                         this.closeRewardedOverlay();
-                        const pendingLoss = this.rewardedPendingLoss;
                         this.rewardedPendingLoss = null;
-                        if (pendingLoss && pendingLoss.isSolo) {
-                            show1PGameOver();
-                        } else if (pendingLoss) {
-                            finalizeCompetitiveResult(pendingLoss.result);
-                        }
+                        finalizeCompetitiveResult(pending.result);
                     };
 
                     const overlay = document.querySelector('.rewarded-continue-overlay');
@@ -9980,7 +9842,7 @@
                     if (typeof snapshot.matchStartTime === 'number') snapshot.matchStartTime += delta;
                     shiftFoodTimestamps(snapshot.foods, delta);
                     shiftSnakeTimestamps(snapshot.snakes.p1, delta);
-                    if (snapshot.snakes.p2) shiftSnakeTimestamps(snapshot.snakes.p2, delta);
+                    shiftSnakeTimestamps(snapshot.snakes.p2, delta);
 
                     snakes = snapshot.snakes;
                     foods = snapshot.foods;
@@ -10003,8 +9865,7 @@
                     longestSnakeP1 = snapshot.longestSnakeP1;
                     longestSnakeP2 = snapshot.longestSnakeP2;
 
-                    const enemySnake = snapshot.snakes ? snapshot.snakes.p2 : null;
-                    snakes.p1 = buildRewardedContinueSnake(snapshot.snakes.p1, enemySnake);
+                    snakes.p1 = buildRewardedContinueSnake(snapshot.snakes.p1, snapshot.snakes.p2);
                     drawSeries();
                     hideBanner();
                     stopConfetti();
@@ -10014,46 +9875,14 @@
                     this.rewardSnapshots = [];
                     winAnim.active = false;
                     deathAnim.active = false;
+                    setPauseState(false);
+                    intermission = false;
+                    inCountdown = false;
+                    last = performance.now();
                     updateFoodCounters();
                     updateUIVisibility();
-                    startRewardedResumeCountdown(3);
                 }
             };
-
-            async function startRewardedResumeCountdown(n = 3) {
-                inCountdown = true;
-                intermission = true;
-                paused = false;
-                if (typeof render === 'function') render(0, 0);
-
-                const countStart = performance.now();
-                for (let i = n; i > 0; i--) {
-                    showBanner(`<div class="countdown-text" style="color: #ff1744; text-shadow: 0 0 10px #ff1744;">${i}</div>`, false, 'countdown-banner');
-                    SFX.countdownTick();
-                    if (!await waitForGameFlow(gameDelay(800))) return;
-                }
-                const countElapsed = performance.now() - countStart;
-
-                if (typeof roundTimerEnd === 'number' && roundTimerEnd > 0) roundTimerEnd += countElapsed;
-                if (typeof redBulkEndTime === 'number' && redBulkEndTime > 0) redBulkEndTime += countElapsed;
-                if (typeof matchStartTime === 'number' && matchStartTime > 0) matchStartTime += countElapsed;
-                if (typeof shiftFoodTimestamps === 'function') shiftFoodTimestamps(foods, countElapsed);
-                if (typeof shiftSnakeTimestamps === 'function') {
-                    if (snakes && snakes.p1) shiftSnakeTimestamps(snakes.p1, countElapsed);
-                    if (snakes && snakes.p2) shiftSnakeTimestamps(snakes.p2, countElapsed);
-                }
-
-                showBanner(`<div class="countdown-text start" style="color: #00e5ff; text-shadow: 0 0 8px #00e5ff;">${(t('start') || 'GO').toUpperCase()}</div>`, false, 'countdown-banner');
-                SFX.start();
-
-                setPauseState(false);
-                intermission = false;
-                inCountdown = false;
-                last = performance.now();
-
-                if (!await waitForGameFlow(gameDelay(600))) return;
-                hideBanner();
-            }
 
             const p1Series = document.getElementById('p1Series'), p2Series = document.getElementById('p2Series');
             let lastGames = { p1: 0, p2: 0 };
@@ -10915,10 +10744,6 @@
           </div>
         </div>
         <button class="qs-start-btn" id="qs-start">${(t('start') || 'Start').toUpperCase()}</button>
-        <button class="qs-start-beast-btn" id="qs-start-beast" style="display:${qs.playerMode === '1P' ? 'flex' : 'none'};">
-          <span class="qs-beast-title"><i class="fa-solid fa-video"></i> ${(t('startWithBeast') || 'BEAST MODUYLA BAŞLA').toUpperCase()}</span>
-          <span class="qs-beast-sub">${window.adsRemoved ? (t('startWithBeastVip') || '(VIP / Ücretsiz)') : (t('startWithBeastAd') || '(Reklam)')}</span>
-        </button>
         ${buildMenuBackButton('qs-back')}
         <div style="text-align:center;margin-top:8px;">
           <button id="qs-info-btn" style="width:36px;height:36px;border-radius:50%;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:16px;border:1px solid rgba(255,255,255,0.18);background:rgba(8,12,22,0.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.65),inset 0 1px 0 rgba(255,255,255,0.1);cursor:pointer;"><i class="fa-solid fa-question"></i></button>
@@ -11002,8 +10827,8 @@
                         };
                     });
 
-                    // START & START WITH BEAST
-                    const startMatchWithQsSettings = (isBeastMode = false) => {
+                    // START
+                    document.getElementById('qs-start').onclick = () => {
                         saveNames();
                         const anySelected = qs.playerMode || qs.gameStyle || qs.wallMode || qs.speedMode;
 
@@ -11058,31 +10883,13 @@
 
                         if (AdManager.adInProgress) return;
                         SFX.menuClick();
-
-                        if (isBeastMode) {
-                            AdManager.requestRewardedBeastStart(() => {
-                                startWithBeast = true;
-                                updateUIVisibility();
-                                hideBanner();
-                                setPauseState(false);
-                                softReset(true);
-                            }, (err) => {
-                                if (err && typeof showToast === 'function') showToast(err);
-                            });
-                        } else {
-                            startWithBeast = false;
-                            AdManager.maybeShowStartAdThenStart(() => {
-                                updateUIVisibility();
-                                hideBanner();
-                                setPauseState(false);
-                                softReset(true);
-                            });
-                        }
+                        AdManager.maybeShowStartAdThenStart(() => {
+                            updateUIVisibility();
+                            hideBanner();
+                            setPauseState(false);
+                            softReset(true);
+                        });
                     };
-
-                    document.getElementById('qs-start').onclick = () => startMatchWithQsSettings(false);
-                    const beastBtn = document.getElementById('qs-start-beast');
-                    if (beastBtn) beastBtn.onclick = () => startMatchWithQsSettings(true);
 
                     // Back
                     document.getElementById('qs-back').onclick = () => {
@@ -13086,29 +12893,16 @@
                 });
 
                 onCurrentSocket('gameOver', async (data) => {
-                    dismissOnlineControls(); 
-                    onlinePauseState = null;
-                    const isForfeit = data.reason === 'forfeit';
-                    const finalWinner = data.winner;
-                    const savedRole = myRole;
-
-                    // Reset match timers and room reference while retaining socket connectivity
-                    onlineRoomId = null;
-                    onlineMatchIndex = 0;
-                    inCountdown = false;
-                    clearInterval(onlineRematchInterval);
-                    clearTimeout(connectionTimeoutTimer);
-
-                    if (finalWinner) {
-                        if (isForfeit && finalWinner === savedRole) {
-                            SFX.win();
-                            startConfetti(playerColors[savedRole] || '#ffffff');
-                        }
-                        AdManager.maybeShowGameOverAd(guardGameCallback(() => {
-                            showGameEndStats(finalWinner, { isForfeit: isForfeit, wasOnline: true, savedRole: savedRole });
-                        }));
+                    dismissOnlineControls(); onlinePauseState = null;
+                    cleanupOnlineGame();
+                    if (socket) {
+                        const retiringSocket = socket;
+                        socket = null;
+                        retiringSocket.disconnect();
+                    }
+                    if (data.winner) {
+                        showGameEndStats(data.winner);
                     } else {
-                        cleanupOnlineGame();
                         if (!await waitForGameFlow(showOnlineAlert(data.reason === 'timeout' ? t('onlineGameTimeoutEnd') : t('onlineGameEnded')))) return;
                         transitionToMenu(openMainMenu, 'back');
                     }
@@ -14264,15 +14058,6 @@
                     selfArea51GreenLastMove = 0;
                 }
                 inCountdown = false; intermission = false;
-                if (startWithBeast && snakes && snakes.p1) {
-                    const now = performance.now();
-                    beastOwner = 'p1';
-                    snakes.p1.powerEnd = now + BEAST_MODE_DURATION_MS;
-                    snakes.p1.flashUntil = snakes.p1.powerEnd;
-                    snakes.p1.flashColor = varToCss('--heart');
-                    SFX.heart();
-                    startWithBeast = false;
-                }
                 if (!await waitForGameFlow(gameDelay(1000))) return;
                 hideBanner();
             }
@@ -15806,7 +15591,7 @@ function startWinAnim(winner, final = false) {
                 startWinAnim('p1', true);
             }
 
-            function showGameEndStats(winner, options = {}) {
+            function showGameEndStats(winner) {
                 const existing = document.querySelector('.game-end-overlay');
                 if (existing) existing.remove();
                 paused = true;
@@ -15814,8 +15599,6 @@ function startWinAnim(winner, final = false) {
 
                 const isSolo = (gameMode === '1P' && !aiSnakeEnabled);
                 const isSelf51 = (gameStyle === 'selfArea51');
-                const wasOnline = Boolean(options.wasOnline || isOnlineMode);
-                const isForfeit = Boolean(options.isForfeit);
                 const winnerKey = isSolo ? 'p1' : winner;
                 const loser = winnerKey === 'p1' ? 'p2' : 'p1';
                 const winnerColor = playerColors[winnerKey] || (winnerKey === 'p1' ? '#00e5ff' : '#ff4fbf');
@@ -15848,7 +15631,7 @@ function startWinAnim(winner, final = false) {
                     : t('wonTheMatch').replace('{name}', `<span lang="en" style="color:${winnerColor}; text-shadow: 0 0 10px ${winnerColor};">${safeWinnerName}</span>`);
 
                 // Achievement Tracker: Match End Result Hooks
-                const localRole = options.savedRole || (isOnlineMode ? myRole : 'p1');
+                const localRole = isOnlineMode ? myRole : 'p1';
                 if (winnerKey === localRole && !isSolo) {
                     // ZERO_ERROR: Win match 5-0 (matches to 5 rounds)
                     if (winnerRounds >= 5 && loserRounds === 0) {
@@ -15882,7 +15665,6 @@ function startWinAnim(winner, final = false) {
       <div class="game-end-card">
         <div class="game-end-trophy">🏆</div>
         ${lastGameNewRecord ? `<div class="game-end-badge new-record-badge">🌟 ${t('newRecord')}</div>` : ''}
-        ${isForfeit ? `<div class="game-end-badge" style="margin-bottom:8px; background: rgba(255, 79, 191, 0.2); border: 1px solid var(--p1); color: #fff;">🏳️ ${t('onlinePartnerLeft')}</div>` : ''}
         <div class="game-end-title">${titleHtml}</div>
         <hr class="game-end-divider" style="background: linear-gradient(90deg, transparent, ${winnerColor}, transparent);">
         <div class="game-end-stats">
@@ -15928,39 +15710,43 @@ function startWinAnim(winner, final = false) {
                     if (menuBtn) {
                         menuBtn.onclick = () => {
                             SFX.menuClick();
-                            overlay.remove();
-                            stopConfetti();
-                            if (wasOnline) {
-                                if (isForfeit) {
-                                    cleanupOnlineGame();
-                                    transitionToMenu(openOnlineMenu, 'back');
-                                } else {
-                                    leaveOnlineAfterStats();
-                                }
-                            } else {
-                                transitionToMenu(openMainMenu, 'back');
-                            }
+                            AdManager.showInterstitial({
+                                type: 'next',
+                                name: 'menu_after_stats',
+                                recordKind: 'gameover',
+                                onDone: guardGameCallback(() => {
+                                    overlay.remove();
+                                    stopConfetti();
+                                    if (isOnlineMode) {
+                                        leaveOnlineAfterStats();
+                                    } else {
+                                        transitionToMenu(openMainMenu, 'back');
+                                    }
+                                })
+                            });
                         };
                     }
                     if (replayBtn) {
                         replayBtn.onclick = () => {
                             SFX.menuClick();
-                            overlay.remove();
-                            stopConfetti();
-                            if (wasOnline && isForfeit) {
-                                if (socket && socket.connected) {
-                                    isOnlineMode = true;
-                                    startMatchmaking();
-                                } else {
-                                    startOnlineServerConnection();
-                                }
-                            } else if (isOnlineMode && socket && onlineRoomId) {
+                            if (isOnlineMode && socket && onlineRoomId) {
                                 socket.emit('rematchIntent', { roomId: onlineRoomId });
-                                socket.emit('rematchReady', { roomId: onlineRoomId });
-                            } else {
-                                AdManager.beginDirectRestartMatch();
-                                softReset(true);
                             }
+                            AdManager.showInterstitial({
+                                type: 'next',
+                                name: 'replay_after_stats',
+                                recordKind: 'gameover',
+                                onDone: guardGameCallback(() => {
+                                    overlay.remove();
+                                    stopConfetti();
+                                    if (isOnlineMode) {
+                                        socket.emit('rematchReady', { roomId: onlineRoomId });
+                                    } else {
+                                        AdManager.beginDirectRestartMatch();
+                                        softReset(true);
+                                    }
+                                })
+                            });
                         };
                     }
                 }, 0);
@@ -15983,7 +15769,6 @@ function startWinAnim(winner, final = false) {
                         : lastStableLengthP1;
                     lastStableLengthP1 = safeLen;
                     frozenPanelLengthP1 = safeLen;
-                    if (AdManager.maybeInterceptSoloLoss()) return;
                     show1PGameOver();
                     return;
                 }
@@ -16836,9 +16621,7 @@ function renderWinAnim() {
                             stopConfetti();
                             const finalWinner = winAnim.winner;
                             hideBanner();
-                            AdManager.maybeShowGameOverAd(guardGameCallback(() => {
-                                showGameEndStats(finalWinner);
-                            }));
+                            showGameEndStats(finalWinner);
                             requestAnimationFrame(step);
                             return;
                         } else if (!winAnim.triggeredEnd) {
@@ -17019,7 +16802,7 @@ function renderWinAnim() {
                                 }
                             }
                         }
-                        else if (gameMode === '1P' && playerMovedThisStep) AdManager.captureRewardSnapshot();
+                        else if (gameMode === '1P' && aiSnakeEnabled && playerMovedThisStep) AdManager.captureRewardSnapshot();
                     }
 
                     if ((gameMode === '2P' || (gameMode === '1P' && aiSnakeEnabled)) && !timerEnded && !isDemoMode) {

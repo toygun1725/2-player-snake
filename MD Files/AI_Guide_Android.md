@@ -1,13 +1,56 @@
 # 2 Player Snake - Android Surumu Yapay Zeka Rehberi
 
+## Güncel kaynak — v3.5.3 (2026-09-28)
+
+- **Reklam Gelir Optimizasyonu & Android Bridge Emniyeti:**
+  - `android_bridge_bootstrap.js` içinde `adsbygoogle.push` filtresine eksik olan `'start'` ad türü eklendi (`start || next || reward || browse`).
+  - iOS ile tam eşit 8.5 saniyelik JS emniyet zamanlayıcısı (`safetyTimer`) entegre edildi. Reklam yanıtı gecikse veya takılsa bile oyun 8.5s sonra otomatik devam eder, `AdManager.adInProgress` kilitlenmesi önlenir.
+  - Maç başı reklamlarındaki %50 yapay atlama kaldırıldı, ilk maç cold-start koruması sağlandı. Round arası reklamlar her 2 round'da bir (`roundCount % 2 === 0`) tetiklenecek şekilde ayarlandı, pause menüsü reklamı kaldırıldı ve 45s global cooldown korundu.
+  - Android offline fallback (`mobile_offline_fallback.html`), `Mobile v3.5.3` ile bayt bayt eşitlendi.
+  - Otomatik testler: 120/120 başarılı. Native versionCode (71) ve versionName (v3.4.9) henüz artırılmadı; bir sonraki Android derlemesine dahil edilecek.
+
+## Önceki kaynak — v3.5.2 (2026-09-28)
+
+- Canlı yayın durumu (2026-09-28): kullanıcı v3.5.2’yi WordPress’e yüklediğini ve canlı olduğunu bildirdi. Bu kayıt kullanıcı bildirimine dayanır; bağımsız canlı URL kontrolü yapılmadı. Önceki yerel doğrulama 118/118 otomatik test ve 546/546 tarayıcı ekran kontrolüdür. Fiziksel Samsung A71 / iPhone 14 Pro Max son kabulü bekliyor. Ayrıntılar: [v3.5.2 doğrulama kaydı](v3.5.2_Localization_Verification.md#wordpress-yüklemesi-ve-son-cihaz-kabulü).
+- Mobile/PC v3.5.2, online metinlerin ve online akışta kullanılan ortak menü/sonuç metinlerinin 21 dildeki eksiklerini tamamlar. Önceki HTML sürümleri korunur.
+- Duraklatma açıklaması sunucuyla eşittir: maç başına oyuncu başına 2 hak, her duraklatma en fazla 15 saniye. Metin şablonları {count}/{seconds} parametrelerini kullanır; kural değerleri testte sunucuyla karşılaştırılır.
+- Mobil bağlantı kaybı/yeniden bağlantı ve hata mesajları yerelleştirildi. Bilinen sunucu hataları çeviri anahtarına, bilinmeyen hatalar yerelleştirilmiş genel mesaja dönüşür. Hata onayı için Devam Et yerine Tamam kullanılır.
+- Mobil Kontroller kapatma, dönüş, D-pad yön ve ses erişilebilirlik etiketleri 21 dilde güncellenir. Uzun bağlantı başlıkları panel içinde satıra bölünür.
+- Android/iOS offline HTML kaynakları Mobile v3.5.2 ile bayt bayt aynıdır. Native sürümler, sunucu ve Socket.IO protokolü değişmedi. v3.5.2 WordPress yayını kullanıcı tarafından tamamlandı; yeni native paket dağıtılmadı.
+- Doğrulama: node --test tests/ios-runtime.test.cjs tests/online-layout.test.cjs tests/ui-lifecycle.test.cjs tests/localization.test.cjs — 118/118 geçti. Ayrıntılar ve cihaz sınırları: MD Files/v3.5.2_Localization_Verification.md.
+- Yerel dil kabul aracı: node tools/localization-preview.cjs → http://127.0.0.1:8766. Test kancaları yalnız bu loopback önizlemesine eklenir; yayımlanacak HTML içinde bulunmaz.
+
+
+## Önceki kaynak — v3.5.1 (2026-09-27)
+
+- Mobile ve PC v3.5.1 HTML kaynakları oluşturuldu; v3.5.0 korunuyor. Android/iOS offline HTML dosyaları Mobile v3.5.1 ile bayt bayt aynı.
+- Mobil online D-pad minimum yüksekliği görünür panel içeriğinden ölçülür; kontrol değişiminde yükseklik animasyonu taşmaya yol açmaz. Saha kalan alana sığar; maçın ortak matrisi değişmez.
+- Mobil online pause ekranında iki oyuncuda da Kontroller ve Ayrıl vardır; Devam Et yalnız duraklatanda görünür. Kontroller kendi cihazının iki düğme/D-pad ve kaydırma tercihini değiştirir. 15 saniye ve oyuncu başına iki pause kuralı aynıdır.
+- Kontrol seçici online pause bağlamını saklar; süre dolması/devam/ayrılma/bağlantı kopmasında kapanır. Yerel pause menüsüne dönmez. Mevcut 21 dildeki controls metinleri kullanılır.
+- Mobile/PC maç, round ve banner geçerlilik sayaçları eski zamanlayıcı, socket ve reklam dönüşlerinin yeni menüyü değiştirmesini önler. Gizli banner inert olur; geçiş kopyalarında yinelenen id bulunmaz.
+- Test komutu: `node --test tests/ios-runtime.test.cjs tests/online-layout.test.cjs tests/ui-lifecycle.test.cjs` — **70/70 geçti**. Tarayıcı kabul aracı: `node tools/online-layout-preview.cjs` → `http://127.0.0.1:8765`.
+- Ayrıntılı kabul ve fiziksel cihaz sınırları: MD Files/v3.5.1_UI_Verification.md.
+- Sunucu/protokol, Android Code 71 / v3.4.9 ve iOS Build 46 / 3.4.2 değişmedi. WordPress, mağaza, native build veya Git yayını yapılmadı. Önceki sürüm notları aşağıda tarihsel kayıt olarak korunur.
+
+
+## Önceki web/fallback kaynağı — v3.5.0 (2026-09-27)
+
+- Online saha güvenli alana tamamen sığar; ilk round'daki HUD ölçüm hatası giderildi. Kare hücreler ve maç boyunca sabit ortak matris korunur.
+- Depodaki çevrimdışı HTML mobil v3.5.0 ile tam eşitlendi. Kurulu uygulamanın paket içi dosyası ancak ileride yeni native build dağıtılırsa değişir.
+- Android native versionCode 71 / versionName v3.4.9 değişmedi. Yeni AAB/IPA, TestFlight, mağaza gönderimi veya canlı web yüklemesi yapılmadı.
+- Web HTML'i ayrıca yayımlandığında mevcut native kabuklar çevrimiçi oyunu alabilir. Sunucu güncellemesi gerekmiyor.
+- JS doğrulaması: 62/62 geçti. CI komutu yeni online geometri testlerini de içerir. Bu Windows oturumunda macOS WebKit/cihaz testi çalıştırılmadı.
+- Önceki sürüm/build kayıtları aşağıda tarihçe olarak korunmuştur.
+
+
 Bu belge, `2 Player Snake` projesinin Android hibrit uygulama katmani icin teknik referanstir. Amac sadece bir WebView sarmali yapmak degil; Google Play tarafinda "dusuk degerli salt WebView uygulama" riskini azaltan, native hissi olan, Kotlin tabanli bir Android shell surdurmektir.
 
 Bu rehber, ilk Android promptunda istenen hedefleri ve bugun bu hedeflere gore fiilen yaptigimiz tum isleri toplar.
 
 ## Referans Durum
 - Android shell kaynagi: `d:\#3 Vibecoding\AI Games\2 Player Snake\Ana Dosya\Android`
-- Guncel web kaynak referansi: `2 Player Snake Mobile v3.4.9 / PC v3.4.9`
-- Android cevrimdisi fallback: `mobile_offline_fallback.html` (v3.4.9 ile %100 eşitlendi — Tier-based haptic desteği, Web Audio reklam sonrası ses kurtarma motoru, 45s ad cooldown, ergonomik butonlar)
+- Guncel yerel web kaynak referansi: `2 Player Snake Mobile v3.5.2 / PC v3.5.2`
+- Android cevrimdisi fallback: `mobile_offline_fallback.html` (Mobile v3.5.2 ile bayt bayt eşit; yeni native paket henüz üretilmedi)
 - Guncel kaynak `versionCode`: **71** (Native shell son derleme; v3.4.9 tier-based haptic engine ve güncel offline fallback ile derlendi)
 - Guncel kaynak `versionName`: **`v3.4.9`** (Native shell etiketi)
 - Yayin/AAB durumu: versionCode 71 (v3.4.9) AAB derlendi, imzalandı ve Google Play Console üzerinden Üretim (Production) kanalına yüklendi; Google incelemesinde (In Review).

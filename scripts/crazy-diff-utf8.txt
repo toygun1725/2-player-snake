@@ -1,0 +1,530 @@
+﻿diff --git "a/Ana Dosya\\PC\\Beta\\v3\\2 Player Snake PC v3.5.3.html" "b/Ana Dosya\\CrazyGames\\index.html"
+index 931118e..32b023c 100644
+--- "a/Ana Dosya\\PC\\Beta\\v3\\2 Player Snake PC v3.5.3.html"	
++++ "b/Ana Dosya\\CrazyGames\\index.html"	
+@@ -6,25 +6,81 @@
+   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+   <!-- Version & Cache Management: Handled via dynamic ETag / Last-Modified HEAD checks -->
+-  <!-- Google AdSense for Games (H5 Games Ads) -->
+-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4114535776207741"
+-    crossorigin="anonymous" data-ad-frequency-hint="30s"></script>
++  <!-- CrazyGames SDK v3 & Sandboxed Iframe Resilience -->
++  <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
+   <script>
+-    window.adsbygoogle = window.adsbygoogle || [];
+-    window.__h5GamesAdsReady = false;
+-    var adBreak = adConfig = function (o) { adsbygoogle.push(o); }
+-    // Initialize H5 Games Ads
+-    adConfig({
+-      preloadAdBreaks: 'on',
+-      sound: 'on',
+-      onReady: () => {
+-        window.__h5GamesAdsReady = true;
+-        console.log('AdSense H5 Games Ads ready.');
++    // 1. Safe localStorage wrapper to prevent iframe SecurityError in restrictive sandboxes
++    (function() {
++      var isAvailable = false;
++      try {
++        var testKey = '__cg_test__';
++        window.localStorage.setItem(testKey, '1');
++        window.localStorage.removeItem(testKey);
++        isAvailable = true;
++      } catch (e) {
++        isAvailable = false;
++      }
++      if (!isAvailable) {
++        var memoryStorage = {};
++        var mockStorage = {
++          getItem: function(k) { return Object.prototype.hasOwnProperty.call(memoryStorage, k) ? memoryStorage[k] : null; },
++          setItem: function(k, v) { memoryStorage[k] = String(v); },
++          removeItem: function(k) { delete memoryStorage[k]; },
++          clear: function() { Object.keys(memoryStorage).forEach(function(k) { delete memoryStorage[k]; }); }
++        };
++        try {
++          Object.defineProperty(window, 'localStorage', { value: mockStorage, configurable: true, writable: true });
++        } catch (e) {}
+       }
++    })();
++
++    // 2. Ensure iframe grabs keyboard focus immediately upon interaction
++    window.addEventListener('pointerdown', function() {
++      try { window.focus(); } catch (e) {}
++    }, { passive: true });
++
++    // 3. CrazyGames SDK v3 Initialization and Adblock detection
++    window.__crazyGamesReady = false;
++    window.__crazyGamesInitPromise = null;
++    window.__crazyGamesAdblockActive = false;
++
++    async function initCrazyGames() {
++      if (!window.CrazyGames || !window.CrazyGames.SDK) {
++        console.warn('CrazyGames SDK not found.');
++        return false;
++      }
++      if (window.__crazyGamesInitPromise) return window.__crazyGamesInitPromise;
++      window.__crazyGamesInitPromise = window.CrazyGames.SDK.init()
++        .then(async () => {
++          window.__crazyGamesReady = true;
++          console.log('CrazyGames SDK v3 initialized successfully.');
++          try {
++            if (window.CrazyGames.SDK.ad && typeof window.CrazyGames.SDK.ad.hasAdblock === 'function') {
++              window.__crazyGamesAdblockActive = await window.CrazyGames.SDK.ad.hasAdblock();
++            }
++          } catch (e) {
++            window.__crazyGamesAdblockActive = false;
++          }
++          return true;
++        })
++        .catch((err) => {
++          console.warn('CrazyGames SDK init failed:', err);
++          return false;
++        });
++      return window.__crazyGamesInitPromise;
++    }
++
++    if (document.readyState === 'loading') {
++      document.addEventListener('DOMContentLoaded', () => { initCrazyGames(); });
++    } else {
++      initCrazyGames();
++    }
++    window.addEventListener('load', () => {
++      if (!window.__crazyGamesReady) initCrazyGames();
+     });
+   </script>
+ 
+-  <title>2 Player Snake | v3.5.3</title>
++  <title>2 Player Snake</title>
+   <meta name="description" content="Play 2 Player Snake online ÔÇô challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
+ 
+   <!-- Open Graph / Social Media / Google Search Thumbnail Meta Tags -->
+@@ -3811,7 +3867,7 @@
+     <!-- v2.93.0: Loading Splash Screen -->
+     <div id="loading-splash">
+         <div class="splash-logo-wrap">
+-            <img class="splash-logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake" onerror="this.onerror=null;this.src='../../../../G%C3%B6rsel/2%20Player%20Snake%20Logo%20v3%20no%20bg.png';">
++            <img class="splash-logo" src="logo.webp" alt="2 Player Snake" onerror="this.onerror=null;this.src='https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp';">
+         </div>
+         <div class="splash-bar-wrap">
+             <div class="splash-bar-fill" id="splashBarFill"></div>
+@@ -9993,7 +10049,7 @@
+       });
+ 
+       function tone(freq, dur, { type = 'square', gain = 0.06, attack = 0.004, release = 0.06, sweep = 0, force = false } = {}) {
+-        if (muted) return; if (!force && typeof isDemoMode !== 'undefined' && isDemoMode) return; try {
++        if (muted || (typeof adAudioMuted !== 'undefined' && adAudioMuted)) return; if (!force && typeof isDemoMode !== 'undefined' && isDemoMode) return; try {
+           ensureAudio();
+           if (!audioCtx) return;
+           if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
+@@ -10459,15 +10515,48 @@
+         return false;
+       }
+ 
+-      function syncAdSoundConfig() {
+-        if (typeof adConfig !== 'function') return;
++      function crazyGamesGameplayStart() {
+         try {
+-          adConfig({ sound: muted ? 'off' : 'on' });
++          if (window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.game) {
++            window.CrazyGames.SDK.game.gameplayStart();
++          }
+         } catch (err) {
+-          console.warn('Ad sound sync failed:', err);
++          console.warn('CrazyGames gameplayStart error:', err);
+         }
+       }
+ 
++      function crazyGamesGameplayStop() {
++        try {
++          if (window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.game) {
++            window.CrazyGames.SDK.game.gameplayStop();
++          }
++        } catch (err) {
++          console.warn('CrazyGames gameplayStop error:', err);
++        }
++      }
++
++      let adAudioMuted = false;
++      function muteGameAudioForAd() {
++        adAudioMuted = true;
++        try {
++          if (audioCtx && audioCtx.state === 'running') {
++            audioCtx.suspend().catch(() => {});
++          }
++        } catch (e) {}
++      }
++
++      function unmuteGameAudioAfterAd() {
++        adAudioMuted = false;
++        window._adJustFinished = true;
++        resumeAudioContext();
++        setTimeout(resumeAudioContext, 150);
++        setTimeout(resumeAudioContext, 400);
++      }
++
++      function syncAdSoundConfig() {
++        // No-op for CrazyGames: audio muting is managed via muteGameAudioForAd / unmuteGameAudioAfterAd
++      }
++
+       const AdManager = {
+         cooldownMs: 45000,
+         startAdChance: 0.30,
+@@ -10485,7 +10574,7 @@
+         pendingRoundAd: false,
+ 
+         isSdkReady() {
+-          return !!window.__h5GamesAdsReady && typeof adBreak === 'function';
++          return !!(window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.ad);
+         },
+ 
+         isGlobalCooldownActive() {
+@@ -10555,50 +10644,63 @@
+           this.beginMatchCycle();
+         },
+ 
+-        showInterstitial({ type, name, recordKind, onDone }) {
++        async showInterstitial({ type, name, recordKind, onDone }) {
+           if (!this.isSdkReady() || this.adInProgress || this.isGlobalCooldownActive()) {
+             if (onDone) onDone();
+             return;
+           }
+ 
++          if (window.__crazyGamesInitPromise) {
++            try { await window.__crazyGamesInitPromise; } catch (e) {}
++          }
++
+           this.adInProgress = true;
+           let adShown = false;
+           let finished = false;
++          let safetyTimer = null;
+ 
+           const finish = () => {
+             if (finished) return;
+             finished = true;
++            if (safetyTimer) { clearTimeout(safetyTimer); safetyTimer = null; }
+             this.adInProgress = false;
++            unmuteGameAudioAfterAd();
+             if (onDone) onDone();
+           };
+ 
++          // 8.5s fallback safety timer in case SDK or network hangs
++          safetyTimer = setTimeout(() => {
++            if (!adShown && !finished) {
++              console.warn('CrazyGames midgame ad request timeout.');
++              finish();
++            }
++          }, 8500);
++
++          crazyGamesGameplayStop();
++          muteGameAudioForAd();
++
++          const callbacks = {
++            adStarted: () => {
++              adShown = true;
++              paused = true;
++              intermission = true;
++              muteGameAudioForAd();
++              if (safetyTimer) { clearTimeout(safetyTimer); safetyTimer = null; }
++            },
++            adFinished: () => {
++              if (adShown) this.recordAdShown(recordKind);
++              finish();
++            },
++            adError: (error) => {
++              console.warn('CrazyGames midgame ad error:', error);
++              finish();
++            }
++          };
++
+           try {
+-            adBreak({
+-              type,
+-              name,
+-              beforeAd: () => {
+-                adShown = true;
+-                paused = true;
+-                intermission = true;
+-                syncAdSoundConfig();
+-              },
+-              afterAd: () => {
+-                if (adShown) this.recordAdShown(recordKind);
+-                syncAdSoundConfig();
+-                window._adJustFinished = true;
+-                resumeAudioContext();
+-              },
+-              adBreakDone: () => {
+-                window._adJustFinished = true;
+-                resumeAudioContext();
+-                setTimeout(resumeAudioContext, 150);
+-                setTimeout(resumeAudioContext, 400);
+-                finish();
+-              }
+-            });
++            window.CrazyGames.SDK.ad.requestAd("midgame", callbacks);
+           } catch (err) {
+-            console.warn('Interstitial ad failed:', err);
+-            resumeAudioContext();
++            console.warn('CrazyGames requestAd exception:', err);
+             finish();
+           }
+         },
+@@ -10700,12 +10802,14 @@
+         },
+ 
+         canOfferRewardedContinue() {
++          const adblockActive = !!window.__crazyGamesAdblockActive;
+           return gameMode === '1P' &&
+             aiSnakeEnabled &&
+             !this.rewardedUsedThisMatch &&
+             !this.adInProgress &&
+             !this.isGlobalCooldownActive() &&
+             this.isSdkReady() &&
++            !adblockActive &&
+             this.rewardSnapshots.length > 0;
+         },
+ 
+@@ -10764,64 +10868,64 @@
+           if (overlay) overlay.remove();
+         },
+ 
+-        requestRewardedContinue() {
++        async requestRewardedContinue() {
+           if (!this.canOfferRewardedContinue()) return;
+ 
++          if (window.__crazyGamesInitPromise) {
++            try { await window.__crazyGamesInitPromise; } catch (e) {}
++          }
++
+           this.adInProgress = true;
+-          let rewardFlowAvailable = false;
+           let rewardSettled = false;
++          let safetyTimer = null;
+ 
+           const failReward = (message) => {
++            if (rewardSettled) return;
++            rewardSettled = true;
++            if (safetyTimer) { clearTimeout(safetyTimer); safetyTimer = null; }
+             this.adInProgress = false;
++            unmuteGameAudioAfterAd();
+             this.finalizePendingLoss(message);
+           };
+ 
++          // 8.5s fallback safety timer
++          safetyTimer = setTimeout(() => {
++            if (!rewardSettled) {
++              console.warn('CrazyGames rewarded ad request timeout.');
++              failReward(t('rewardedUnavailable'));
++            }
++          }, 8500);
++
++          crazyGamesGameplayStop();
++          muteGameAudioForAd();
++
++          const callbacks = {
++            adStarted: () => {
++              paused = true;
++              intermission = true;
++              muteGameAudioForAd();
++              if (safetyTimer) { clearTimeout(safetyTimer); safetyTimer = null; }
++            },
++            adFinished: () => {
++              rewardSettled = true;
++              if (safetyTimer) { clearTimeout(safetyTimer); safetyTimer = null; }
++              this.adInProgress = false;
++              this.rewardedUsedThisMatch = true;
++              this.recordAdShown('reward');
++              this.closeRewardedOverlay();
++              unmuteGameAudioAfterAd();
++              this.restoreRewardSnapshot();
++            },
++            adError: (error) => {
++              console.warn('CrazyGames rewarded ad error:', error);
++              failReward(t('rewardedUnavailable'));
++            }
++          };
++
+           try {
+-            adBreak({
+-              type: 'reward',
+-              name: 'ai_continue',
+-              beforeAd: () => { paused = true; intermission = true; syncAdSoundConfig('off'); },
+-              afterAd: () => {
+-                syncAdSoundConfig();
+-                window._adJustFinished = true;
+-                resumeAudioContext();
+-              },
+-              beforeReward: (showAdFn) => {
+-                rewardFlowAvailable = true;
+-                showAdFn();
+-              },
+-              adViewed: () => {
+-                rewardSettled = true;
+-                this.adInProgress = false;
+-                this.rewardedUsedThisMatch = true;
+-                this.recordAdShown('reward');
+-                this.closeRewardedOverlay();
+-                window._adJustFinished = true;
+-                resumeAudioContext();
+-                setTimeout(resumeAudioContext, 150);
+-                this.restoreRewardSnapshot();
+-              },
+-              adDismissed: () => {
+-                rewardSettled = true;
+-                window._adJustFinished = true;
+-                resumeAudioContext();
+-                failReward(t('rewardedDeclined'));
+-              },
+-              adBreakDone: () => {
+-                window._adJustFinished = true;
+-                resumeAudioContext();
+-                setTimeout(resumeAudioContext, 150);
+-                setTimeout(resumeAudioContext, 400);
+-                if (!rewardFlowAvailable && !rewardSettled) {
+-                  failReward(t('rewardedUnavailable'));
+-                } else if (!rewardSettled) {
+-                  this.adInProgress = false;
+-                }
+-              }
+-            });
++            window.CrazyGames.SDK.ad.requestAd("rewarded", callbacks);
+           } catch (err) {
+-            console.warn('Rewarded ad failed:', err);
+-            resumeAudioContext();
++            console.warn('CrazyGames rewarded requestAd exception:', err);
+             failReward(t('rewardedUnavailable'));
+           }
+         },
+@@ -11964,8 +12068,10 @@
+           SFX.pause();
+           updatePauseButtonUI();
+           if (paused) {
++            crazyGamesGameplayStop();
+             showBanner(`<h1>${t('paused')}</h1><p class="small-text">${t('pressSpaceToResume') || 'Press SPACE to resume'}</p>`);
+           } else {
++            crazyGamesGameplayStart();
+             hideBanner();
+           }
+         }
+@@ -12028,8 +12134,10 @@
+         SFX.pause();
+         updatePauseButtonUI();
+         if (paused) {
++          crazyGamesGameplayStop();
+           showBanner(`<h1>${t('paused')}</h1><p class="small-text">${t('pressSpaceToResume') || 'Press SPACE to resume'}</p>`);
+         } else {
++          crazyGamesGameplayStart();
+           hideBanner();
+         }
+       };
+@@ -12462,7 +12570,7 @@
+         showBanner(`
+           <div class="main-menu-shell">
+             <div class="main-menu-logo-wrap">
+-              <img class="main-menu-logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G├Ârsel/2 Player Snake Logo v3 no bg.png';">
++              <img class="main-menu-logo" src="logo.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp';">
+             </div>
+             <div class="main-menu-actions">
+               <div class="main-menu-btns">
+@@ -12521,7 +12629,7 @@
+         showBanner(`
+           <div class="main-menu-shell">
+             <div class="main-menu-logo-wrap">
+-              <img class="main-menu-logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G├Ârsel/2 Player Snake Logo v3 no bg.png';">
++              <img class="main-menu-logo" src="logo.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp';">
+             </div>
+             <div class="main-menu-actions">
+               <div class="main-menu-btns">
+@@ -12580,7 +12688,7 @@
+         showBanner(`
+           <div class="main-menu-shell">
+             <div class="main-menu-logo-wrap">
+-              <img class="main-menu-logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G├Ârsel/2 Player Snake Logo v3 no bg.png';">
++              <img class="main-menu-logo" src="logo.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp';">
+             </div>
+             <div class="main-menu-actions">
+               <div class="main-menu-btns">
+@@ -12631,7 +12739,7 @@
+         showBanner(`
+           <div class="main-menu-shell">
+             <div class="main-menu-logo-wrap">
+-              <img class="main-menu-logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G├Ârsel/2 Player Snake Logo v3 no bg.png';">
++              <img class="main-menu-logo" src="logo.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp';">
+             </div>
+             <div class="main-menu-actions">
+               <div class="main-menu-btns">
+@@ -12693,7 +12801,7 @@
+         showBanner(`
+           <div class="main-menu-shell">
+             <div class="main-menu-logo-wrap">
+-              <img class="main-menu-logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G├Ârsel/2 Player Snake Logo v3 no bg.png';">
++              <img class="main-menu-logo" src="logo.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp';">
+             </div>
+             <div class="main-menu-actions" style="padding: 24px 28px;">
+               <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; width: 100%;">
+@@ -12759,7 +12867,7 @@
+         showBanner(`
+           <div class="main-menu-shell">
+             <div class="main-menu-logo-wrap">
+-              <img class="main-menu-logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G├Ârsel/2 Player Snake Logo v3 no bg.png';">
++              <img class="main-menu-logo" src="logo.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp';">
+             </div>
+             <div class="main-menu-actions" style="padding: 24px 28px; text-align: center;">
+               <h2 style="font-size: 20px; font-family: 'Orbitron'; color: #35e6e6; margin-top: 0; margin-bottom: 15px;">${t('onlineConnectingTitle')}</h2>
+@@ -12819,7 +12927,7 @@
+         showBanner(`
+           <div class="main-menu-shell">
+             <div class="main-menu-logo-wrap">
+-              <img class="main-menu-logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G├Ârsel/2 Player Snake Logo v3 no bg.png';">
++              <img class="main-menu-logo" src="logo.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp';">
+             </div>
+             <div class="main-menu-actions" style="padding: 24px 28px; text-align: center;">
+               <h2 style="font-size: 20px; font-family: 'Orbitron'; color: #ff4fbf; margin-top: 0; margin-bottom: 10px;">${t('onlineRoomCodeTitle')}</h2>
+@@ -13625,6 +13733,7 @@
+ 
+       /* === Menu Pages === */
+       function openMainMenu(resetNames = false) {
++          crazyGamesGameplayStop();
+           invalidateGameFlow(true);
+           winAnim.active = false; deathAnim.active = false; stopConfetti();
+         if (isOnlineMode) {
+@@ -13693,7 +13802,7 @@
+ 
+         showBanner(`<div class="main-menu-shell">
+       <div class="main-menu-logo-wrap">
+-        <img class="main-menu-logo" src="https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='../../../../G├Ârsel/2 Player Snake Logo v3 no bg.png';">
++        <img class="main-menu-logo" src="logo.webp" alt="2 Player Snake logo" onerror="this.onerror=null;this.src='https://2playersnake.com/wp-content/uploads/2026/04/2-Player-Snake-Logo-v3-no-bg-500px-web.webp';">
+       </div>
+       <div class="main-menu-actions">
+       <div class="main-menu-btns">
+@@ -14058,6 +14167,7 @@
+           selfArea51GreenActive = false;
+         }
+         inCountdown = false; intermission = false; // Kontrol├╝ burada a├ğ
++        crazyGamesGameplayStart();
+         if (!await waitForGameFlow(gameDelay(1000))) return;
+         hideBanner();
+       }
+@@ -15425,6 +15535,7 @@
+       }
+ 
+       function show1PGameOver() {
++        crazyGamesGameplayStop();
+         intermission = true;
+         const safeLen = Math.max(lastKnownLength1P || 0, lastStableLength1P || 0, (snakes && snakes.p1 && snakes.p1.segments ? snakes.p1.segments.length : 0));
+         lastStableLength1P = safeLen;
+@@ -15728,6 +15839,7 @@
+ 
+       /* === v2.27: Game End Statistics Window === */
+       function showGameEndStats(winner) {
++        crazyGamesGameplayStop();
+         // Remove any existing overlay
+         const existing = document.querySelector('.game-end-overlay');
+         if (existing) existing.remove();
+@@ -15869,6 +15981,7 @@
+       }
+ 
+       function endGame(result) {
++        crazyGamesGameplayStop();
+         if (typeof isDemoMode !== 'undefined' && isDemoMode) {
+            const mid = { x: Math.floor(GRID_COLS / 2), y: Math.floor(GRID_ROWS / 2) };
+            const initX1 = mid.x - 6; const initX2 = mid.x + 6;

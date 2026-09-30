@@ -1,26 +1,131 @@
 # 2 Player Snake - Mobil Surumu Yapay Zeka Rehberi
 
+## Güncel kaynak — v3.5.8 (2026-09-30)
+
+- **Çevrimiçi Hükmen Galibiyet (Forfeit) Reklam Monetization & Eşleşme Akışı:**
+  - Çevrimiçi maçlarda rakip bağlantıyı kesip 15 saniye içinde dönmediğinde sunucu `gameOver (reason: 'forfeit')` gönderir.
+  - Önceki sürümlerde reklam atlanıp doğrudan istatistik ekranı açılıyordu; v3.5.8 ile zafer kutlamasının hemen ardından ve istatistik ekranından önce `AdManager.maybeShowGameOverAd` geçiş reklamı tetiklenir.
+  - İstatistik ekranındaki "Tekrar Oyna" butonu, oyuncuyu çevrimdışı oyuna düşürmek yerine doğrudan yeni bir çevrimiçi eşleşme aramaya (`startMatchmaking()`) yönlendirir.
+  - "Ana Menü" butonu ise oyuncuyu çevrimiçi menüye (`openOnlineMenu()`) döndürür.
+  - İstatistik kartına `🏳️ Rakip odadan ayrıldı.` rozeti eklendi.
+- **Android ve iOS offline fallback dosyaları `Mobile v3.5.8` ile bayt bayt eşitlendi.**
+- **Otomatik testler: 130/130 başarılı.**
+
+## Önceki kaynak — v3.5.7 (2026-09-30)
+
+- **Çevrimiçi Cross-Play Rastgele Eşleşme & Özel Odalar (PC & Mobil Ortak Havuz):**
+  - Çevrimiçi rastgele eşleşme (Random Matchmaking) kuyruğu birleştirildi. PC ve Mobil oyuncuları artık aynı havuzda anında eşleşebilir.
+  - PC ve Mobil eşleştiğinde (veya odada en az bir mobil oyuncu olduğunda), maç matrisi mobil standardını (`24 sütun x 36-42 satır`) baz alır; PC tarafı ekran ortasında dikey arcade arenasına geçerek kare hücrelerle mobil oyuncuyla eşit şartlarda yarışır.
+  - İki PC oyuncusu denk geldiğinde klasik 16:9 geniş ekran PC matrisi (`64x36`) korunur (Akıllı Hibrit).
+  - Özel odalarda (Custom Rooms) da platform kısıtlaması kaldırılarak oda koduyla çapraz platform kapışmalarına izin verildi.
+- **Android ve iOS offline fallback dosyaları `Mobile v3.5.7` ile bayt bayt eşitlendi.**
+- **Otomatik testler: 128/128 başarılı.**
+
+## Önceki kaynak — v3.5.6 (2026-09-30)
+
+- **Beast Başlangıç Dengelemesi (Yem Patlamasız / Sadece Yılan Buff'ı):**
+  - v3.5.5'te eklenen "BEAST MODUYLA BAŞLA" ödüllü özelliği başlangıçta `spawnRubyBurstFoods()` çağırıyordu; bu durum 1P vs AI modunda AI'ın başlangıçta etrafa saçılan yemleri süpürerek haksız büyümesine yol açıyordu.
+  - v3.5.6'da başlangıç geri sayımı bitimindeki `countdown` bloğundan `spawnRubyBurstFoods()` ve `redBulkEndTime` çağrısı kaldırıldı.
+  - Beast etkisi yalnızca oyuncunun yılanına verilir: 8 saniye boyunca 1.45x hız çarpanı, dokunulmazlık/faz geçişi, RGB aura efekti ve kalp SFX (`SFX.heart()`). Matriste ekstra yem saçılmaz, standart başlangıç yem düzeni korunur.
+  - Oyun içi doğal yakut kalp yeme mekaniğindeki `spawnRubyBurstFoods()` patlaması korunur.
+  - Süre bittiğinde `beastOwner` durumu güvenli şekilde temizlenir.
+- **Android ve iOS offline fallback dosyaları `Mobile v3.5.6` ile bayt bayt eşitlendi.**
+- **Otomatik testler: 125/125 başarılı.**
+
+## Önceki kaynak — v3.5.5 (2026-09-30)
+
+- **1P Modlarında Ödüllü Video ile Beast Modunda Başlama:**
+  - Hızlı Kurulum (Quick Setup) ekranında 1 Kişilik modlarda (1P Solo, 1P vs AI, Macera, Self Area 51) "BAŞLA" butonunun altına Kırmızı-Turuncu gradyanlı "BEAST MODUYLA BAŞLA (Reklam / VIP)" butonu (`#qs-start-beast`) eklendi.
+  - 2P seçildiğinde buton otomatik gizlenir.
+  - Reklam tamamlandığında 3-2-1 geri sayımının bitmesiyle yılan 8 saniye boyunca Beast Modu (hız, dokunulmazlık, RGB aura, ruby burst yemler, kalp efekti) ile başlar.
+- **Ödüllü Canlanmada 3-2-1 Geri Sayım Koruması (`startRewardedResumeCountdown`):**
+  - Maç içinde ödüllü reklamla canlanıldığında (`restoreRewardSnapshot`) oyun aniden başlamaz; 3-2-1 geri sayımı oynatılır. Geri sayım süresi oyun içi sürelerden düşülmez.
+- **Android ve iOS offline fallback dosyaları `Mobile v3.5.5` ile bayt bayt eşitlendi.**
+- **Otomatik testler: 123/123 başarılı.**
+
+## Önceki kaynak — v3.5.4 (2026-09-30)
+
+- **Reklam Gelir Optimizasyonu & Sürüm Senkronu:**
+  - Küresel reklam bekleme süresi 45 saniyeden 30 saniyeye (`cooldownMs: 30000`) indirildi.
+  - Ödüllü reklamlar (Rewarded Video) küresel bekleme süresinden (global cooldown) tamamen muaf tutuldu.
+  - Solo (Klasik 1P) moduna ödüllü devam desteği (`maybeInterceptSoloLoss`) eklendi; oyuncu yandığında 5 saniyelik geri sayımla canlanma teklif edilir (maçta 1 kez, 5 hamle geriden).
+  - Maç sonu istatistik penceresi (`showGameEndStats`) açılmadan hemen önce `maybeShowGameOverAd` (`match_end`) ile geçiş reklamı gösterilir.
+  - İstatistik ekranındaki "Ana Menü" ve "Tekrar Oyna" butonlarındaki araya giren reklamlar kaldırıldı; butonlar anında tepki verir.
+  - Round arası reklamlar 1-3-5 tek sayılı roundlara (`roundCount > 0 && roundCount % 2 !== 0`) çekildi.
+  - Android ve iOS offline fallback dosyaları `Mobile v3.5.4` ile bayt bayt eşitlendi.
+  - Otomatik testler: 121/121 başarılı. `2 Player Snake Mobile v3.5.4.html` hazırlandı.
+
+## Önceki kaynak — v3.5.3 (2026-09-28)
+
+- **Reklam Gelir Optimizasyonu & Android Bridge Emniyeti:**
+  - `maybeShowStartAdThenStart()` içindeki yapay %50 atlama kaldırıldı, ilk maç cold-start koruması eklendi (`sessionStartedMatchCount <= 1`).
+  - Round arası reklam kuralı `roundCount > 0 && roundCount % 2 === 0` (her 2 round'da bir) olarak ayarlandı, 45 saniyelik küresel cooldown (`cooldownMs: 45000`) korundu.
+  - Pause menüsünden Ana Menü'ye çıkıştaki %30'luk rastgele geçiş reklamı (`pause_exit_home`) kaldırıldı.
+  - Android ve iOS offline fallback dosyaları `Mobile v3.5.3` ile bayt bayt eşitlendi.
+  - Otomatik testler: 120/120 başarılı. WordPress yüklemesi için `Mobile v3.5.3` hazırlandı.
+
+## Önceki kaynak — v3.5.2 (2026-09-28)
+
+- Canlı yayın durumu (2026-09-28): kullanıcı v3.5.2’yi WordPress’e yüklediğini ve canlı olduğunu bildirdi. Bu kayıt kullanıcı bildirimine dayanır; bağımsız canlı URL kontrolü yapılmadı. Önceki yerel doğrulama 118/118 otomatik test ve 546/546 tarayıcı ekran kontrolüdür. Fiziksel Samsung A71 / iPhone 14 Pro Max son kabulü bekliyor. Ayrıntılar: [v3.5.2 doğrulama kaydı](v3.5.2_Localization_Verification.md#wordpress-yüklemesi-ve-son-cihaz-kabulü).
+- Mobile/PC v3.5.2, online metinlerin ve online akışta kullanılan ortak menü/sonuç metinlerinin 21 dildeki eksiklerini tamamlar. Önceki HTML sürümleri korunur.
+- Duraklatma açıklaması sunucuyla eşittir: maç başına oyuncu başına 2 hak, her duraklatma en fazla 15 saniye. Metin şablonları {count}/{seconds} parametrelerini kullanır; kural değerleri testte sunucuyla karşılaştırılır.
+- Mobil bağlantı kaybı/yeniden bağlantı ve hata mesajları yerelleştirildi. Bilinen sunucu hataları çeviri anahtarına, bilinmeyen hatalar yerelleştirilmiş genel mesaja dönüşür. Hata onayı için Devam Et yerine Tamam kullanılır.
+- Mobil Kontroller kapatma, dönüş, D-pad yön ve ses erişilebilirlik etiketleri 21 dilde güncellenir. Uzun bağlantı başlıkları panel içinde satıra bölünür.
+- Android/iOS offline HTML kaynakları Mobile v3.5.2 ile bayt bayt aynıdır. Native sürümler, sunucu ve Socket.IO protokolü değişmedi. v3.5.2 WordPress yayını kullanıcı tarafından tamamlandı; yeni native paket dağıtılmadı.
+- Doğrulama: node --test tests/ios-runtime.test.cjs tests/online-layout.test.cjs tests/ui-lifecycle.test.cjs tests/localization.test.cjs — 118/118 geçti. Ayrıntılar ve cihaz sınırları: MD Files/v3.5.2_Localization_Verification.md.
+- Yerel dil kabul aracı: node tools/localization-preview.cjs → http://127.0.0.1:8766. Test kancaları yalnız bu loopback önizlemesine eklenir; yayımlanacak HTML içinde bulunmaz.
+
+
+## Önceki kaynak — v3.5.1 (2026-09-27)
+
+- Mobile ve PC v3.5.1 HTML kaynakları oluşturuldu; v3.5.0 korunuyor. Android/iOS offline HTML dosyaları Mobile v3.5.1 ile bayt bayt aynı.
+- Mobil online D-pad minimum yüksekliği görünür panel içeriğinden ölçülür; kontrol değişiminde yükseklik animasyonu taşmaya yol açmaz. Saha kalan alana sığar; maçın ortak matrisi değişmez.
+- Mobil online pause ekranında iki oyuncuda da Kontroller ve Ayrıl vardır; Devam Et yalnız duraklatanda görünür. Kontroller kendi cihazının iki düğme/D-pad ve kaydırma tercihini değiştirir. 15 saniye ve oyuncu başına iki pause kuralı aynıdır.
+- Kontrol seçici online pause bağlamını saklar; süre dolması/devam/ayrılma/bağlantı kopmasında kapanır. Yerel pause menüsüne dönmez. Mevcut 21 dildeki controls metinleri kullanılır.
+- Mobile/PC maç, round ve banner geçerlilik sayaçları eski zamanlayıcı, socket ve reklam dönüşlerinin yeni menüyü değiştirmesini önler. Gizli banner inert olur; geçiş kopyalarında yinelenen id bulunmaz.
+- Test komutu: `node --test tests/ios-runtime.test.cjs tests/online-layout.test.cjs tests/ui-lifecycle.test.cjs` — **70/70 geçti**. Tarayıcı kabul aracı: `node tools/online-layout-preview.cjs` → `http://127.0.0.1:8765`.
+- Ayrıntılı kabul ve fiziksel cihaz sınırları: MD Files/v3.5.1_UI_Verification.md.
+- Sunucu/protokol, Android Code 71 / v3.4.9 ve iOS Build 46 / 3.4.2 değişmedi. WordPress, mağaza, native build veya Git yayını yapılmadı. Önceki sürüm notları aşağıda tarihsel kayıt olarak korunur.
+
+
+## Önceki web kaynağı — v3.5.0 (2026-09-27)
+
+- Mobil online matris ilk round'dan itibaren iki cihazda da bütünüyle görünür. Hücre boyutu kullanılabilir genişlik/sütun ile yükseklik/satır oranlarının küçüğüdür; kare hücreler ve ortak sunucu koordinatları korunur.
+- Sabit 105px panel tahmini kaldırıldı. Online HUD animasyonsuz nihai yerleşimde ölçülür; ekranın güvenli alanıyla kesişim alınır. Alt panelin ayırdığı alan tekrar çıkarılmaz.
+- Satır önerisi aşağı yuvarlanan çift sayıdır (10–100; ölçüm yoksa 36). Sunucunun mevcut minimum satır seçimi korunur. Maç içinde yalnız görüntü ölçeği değişir.
+- İlk gameInit panel yerleşimi tamamlandıktan sonra canvas ölçer. ResizeObserver, visualViewport ve native güvenli alan güncellemeleri tek rAF içinde işlenir; sıfır boyut son geçerli ölçüyü bozmaz.
+- Grid önbelleği boyut, satır/sütun ve saha ofseti değişikliklerini izler. Yan boşluklarda neon sınır gösterilir.
+- Mobil/PC v3.5.0 kaynakları oluşturuldu; PC oynanışı değişmedi. Android ve iOS fallback kaynakları mobil v3.5.0 ile bayt bayt eşitlendi.
+- Sunucu, Socket.IO protokolü ve native build numaraları değişmedi. Canlı web yayını, mağaza dağıtımı ve yeni native paket yapılmadı.
+- Doğrulama: node --test tests/ios-runtime.test.cjs tests/online-layout.test.cjs — 62/62 geçti. Yerel tarayıcı test aracı: node tools/online-layout-preview.cjs → http://127.0.0.1:8765.
+- Fiziksel Samsung A71 / iPhone 14 Pro Max ve native WebKit doğrulaması bekleniyor. Chromium'da iPhone güvenli alanı simülasyonu fiziksel cihaz testi yerine geçmez.
+
+
 Bu belge, mobil surum uzerinde calisacak yapay zekalar icin guncel teknik referanstir. Mobil oyun tek HTML dosyasi icinde yasamaya devam eder; CSS, JS, i18n metinleri, canvas cizimi, reklam mantigi ve sentetik ses efektleri ayni dosyada tutulur.
 
 ## Referans Surum
 
-> 2026-09-16 / iOS Build 36 eki: Aynı v3.3.5 HTML'de iOS'a koşullu değişiklikler
-> yapıldı (runtime revision 36). Paket kaynakları, gerçek version-check koruması,
-> yılan başına AI cache'i ve menü akıcılığı düzeltmeleri eklendi. Android/PC binary,
-> sunucu ve AdMob kimlikleri değişmedi. iOS offline dosyasıyla mantık eşitlendi.
-> Web yayını henüz yapılmadı; Git push siteyi güncellemez.
-> Ayrıntılar: [iOS_Build_36_Verification.md](iOS_Build_36_Verification.md).
+> Aşağıdaki v3.4.9 kaynak/yayın notları tarihseldir; güncel durum için üstteki v3.5.4 kaydını esas alın.
 
-- Aktif referans surum: `v3.4.9` (Final Sürüm)
-- Temel referans dosya: `2 Player Snake Mobile v3.4.9.html`
-- Kaynak/yayin durumu: v3.4.9 mobil kaynak dosyasi olusturuldu. Akıllı `HEAD` ETag & Last-Modified cache-busting sürüm kontrol motoru eklendi; geliştirici sürüm numarasını arttırmasa dahi dosya sunucuya yüklendiğinde tüm mobil cihazlar değişikliği 0 KB yükle algılar. Kilitli `no-cache` meta etiketleri optimize edildi, kontrol aralığı 2 saniyeden 30 saniyeye dengelendi.
-- Android durumu: Android cevrimdisi fallback `mobile_offline_fallback.html` v3.4.9 ile esitlendi; bir sonraki build icin hazir.
-- iOS durumu: iOS `mobile_offline_fallback.html` v3.4.9 ile esitlendi; uzaktan `https://2playersnake.com` yayini v3.4.9 ile guncellendiginde webview uzerinden aninda aktiflesir (yeni native builde gerek yoktur).
+- Aktif referans surum: `v3.5.4` (yerel kaynak)
+- Temel referans dosya: `2 Player Snake Mobile v3.5.4.html`
+- Kaynak/yayin durumu: Mobile v3.5.4 yerel olarak tamamlandı ve doğrulandı. 30s cooldown, Solo 1P ödüllü devam, maç sonu istatistik öncesi `match_end` reklamı ve round arası 1-3-5 kuralı devrede; 121/121 otomatik test geçti.
+- Android durumu: depodaki çevrimdışı fallback Mobile v3.5.4 ile bayt bayt eşittir.
+- iOS durumu: depodaki çevrimdışı fallback Mobile v3.5.4 ile bayt bayt eşittir.
 - Dosya yapisi: her sey tek HTML dosyasindadir; CSS veya JS ayirma yapilmaz.
 - Tasarim dili: koyu cyberpunk zemin, neon pembe ve turkuaz glow, camimsi panel dili, mobil odakli dar yerlesim.
 - Ana menu logosu web uzerindeki guncel logo kaynagini kullanir; gerekirse yerel fallback ile calisir.
 
-## Son Guncelleme (v3.4.9 - Akıllı Cache-Busting, Web Audio Kurtarma, Katmanlı Haptikler & 45s Ad Cooldown)
+## Son Guncelleme (v3.5.4 - Reklam Gelir Optimizasyonu, 30s Cooldown, 1P Ödüllü Canlanma & Maç Sonu Akışı)
+- **v3.5.4**: Küresel Reklam Cooldown 30s (`cooldownMs: 30000`), Ödüllü Reklam Global Cooldown Muafiyeti, Solo (1P) Moduna Ödüllü Canlanma, Maç Sonu İstatistik Öncesi Geçiş Reklamı, Butonlardan Reklamların Kaldırılması ve Round Arası 1-3-5 Kuralı (2026-09-30).
+  - **30 Saniye Küresel Cooldown:** Reklam bekleme süresi 45s'den 30s'ye dengelenerek reklam gösterim fırsatları artırıldı.
+  - **Ödüllü Reklam Cooldown Muafiyeti:** `canOfferRewardedContinue()` içindeki cooldown engeli kaldırıldı; oyuncu istediğinde reklam izleyip devam edebilir.
+  - **Solo 1P Ödüllü Canlanma:** Klasik 1P modunda yanan oyuncuya 5 saniyelik canlanma fırsatı verilir; kabul edilirse 5 adım geriden ve 3 saniye dokunulmazlıkla oyuna devam eder.
+  - **Maç Sonu Akışı & Butonlar:** Maç bittiğinde istatistik ekranı açılmadan hemen önce `maybeShowGameOverAd` (`match_end`) gösterilir. İstatistik penceresindeki "Ana Menü" ve "Tekrar Oyna" butonlarındaki reklamlar kaldırılarak gecikmesiz buton tepkisi sağlandı.
+  - **Round Arası Reklamlar (1-3-5):** Tek sayılı round sonlarında (`roundCount > 0 && roundCount % 2 !== 0`) 30s cooldown uygunsa reklam gösterilir.
+  - **Sürüm Senkronizasyonu & Testler:** PC v3.5.4, Mobil v3.5.4, Android offline fallback ve iOS offline fallback tam eşitlendi; `tests/ios-runtime.test.cjs`, `online-layout`, `ui-lifecycle`, `localization` testlerinden **121/121 başarıyla geçti**.
+
+## Onceki Guncelleme (v3.4.9 - Akıllı Cache-Busting, Web Audio Kurtarma, Katmanlı Haptikler & 45s Ad Cooldown)
 - **v3.4.9**: Akıllı HEAD ETag & Last-Modified Sürüm Kontrol Motoru, Sıfır Bayt Gövde Transferi, Web Audio Reklam Sonrası Ses Kurtarma Motoru, Katmanlı Haptikler ve 45s Ad Cooldown (2026-09-27).
   - **iOS WebKit Reklam Sonrası Ses Kurtarma Motoru (`forceRebuildAudio` & `_adJustFinished`):**
     - AdMob tam ekran (interstitial & rewarded) reklam gösterimlerinin ardından iOS WebKit'in `audioCtx.state`'i 'running' göstermesine rağmen ses çıkış motorunu kalıcı olarak kitlemesi/öldürmesi sorunu çözüldü.

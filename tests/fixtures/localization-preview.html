@@ -1,0 +1,53 @@
+<!doctype html><meta charset="utf-8"><title>v3.5.2 Localization Acceptance</title>
+<style>body{background:#080e18;color:#d7f9ff;font:14px system-ui;margin:16px}button,select{padding:8px;margin:3px}iframe{display:block;border:1px solid #345;margin-top:12px}pre{white-space:pre-wrap;max-width:1000px}</style>
+<h1>v3.5.2 — Dil kabulü</h1>
+<button id="run">21 dili test et</button>
+<select id="platform" aria-label="Platform"><option>Mobile</option><option>PC</option></select>
+<select id="language" aria-label="Dil"><option>tr</option><option>en</option><option>de</option><option>ar</option><option>fr</option><option>ptbr</option><option>ja</option></select>
+<select id="screen" aria-label="Ekran"><option value="pause">Duraklatan</option><option value="opponent">Rakip</option><option value="controls">Kontroller</option><option value="ad">Reklam bekleme</option><option value="rematch">Tekrar maç</option><option value="reconnect">Yeniden bağlantı</option><option value="error">Hata</option><option value="menu">Online menü</option></select>
+<button id="sample">Örneği göster</button>
+<pre id="result">Hazır</pre><iframe id="game" width="430" height="932"></iframe>
+<script>
+const frame=document.getElementById('game'), result=document.getElementById('result');
+const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const api=()=>frame.contentWindow.localizationPreview;
+async function load(kind,safe=false){
+ frame.width=kind==='PC'?'1200':safe?'430':'412'; frame.height=kind==='PC'?'720':safe?'932':'915';
+ frame.src='/game?kind='+kind+(safe?'&safe=1':'');
+ await new Promise(resolve=>frame.onload=resolve);
+ for(let i=0;i<100&&!api();i++)await delay(50);
+ if(!api())throw Error('Game did not initialize');
+ await delay(2400);
+}
+document.getElementById('sample').onclick=async()=>{
+ const kind=document.getElementById('platform').value;
+ await load(kind,true);
+ api().show(kind==='PC'&&document.getElementById('language').value==='ptbr'?'pt-BR':document.getElementById('language').value,document.getElementById('screen').value);
+ await delay(400);result.textContent=JSON.stringify(api().snapshot(),null,2);
+};
+document.getElementById('run').onclick=async()=>{
+ const failures=[],passes=[];
+ try{
+ for(const [kind,safe] of [['Mobile',false],['Mobile',true],['PC',false]]){
+  await load(kind,safe);
+  for(const locale of api().locales){
+   for(const screen of ['pause','opponent','controls','ad','rematch','reconnect','disconnect','error','menu']){
+    if(kind==='PC'&&screen==='controls')continue;
+    api().show(locale,screen);await delay(190);
+    const state=api().snapshot();
+    const name=[kind,safe?'safe':'plain',locale,screen].join('/');
+    if(!state.text.trim()||/online[A-Z]\w+|\{(?:count|seconds)\}/.test(state.text))failures.push(name+': missing text');
+    if(locale!=='en'&&/You can pause|WAITING FOR (THE )?OTHER PLAYER/.test(state.text))failures.push(name+': English fallback');
+    if(state.bounds.left<-.5||state.bounds.right>state.width+.5||state.scrollWidth>state.clientWidth+2)failures.push(name+': horizontal overflow');
+    if(state.bounds.top<-.5||state.bounds.bottom>state.height+.5)failures.push(name+': vertical overflow');
+    if(state.controls.some(button=>!button.textFits))failures.push(name+': button overflow');
+    passes.push(name);
+   }
+   result.textContent=passes.length+' ekran kontrol edildi; '+failures.length+' hata. Son: '+kind+' '+locale;
+  }
+ }
+ result.textContent=JSON.stringify({checked:passes.length,failures},null,2);
+ }catch(error){result.textContent=error.stack;}
+};
+// Select a sample or run the acceptance matrix using the visible buttons.
+</script>

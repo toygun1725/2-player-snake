@@ -14,7 +14,7 @@ on:
       version_number:
         description: 'Pazarlama Sürüm Numarası (Örn: 3.3.5 veya 3.3.6)'
         required: false
-        default: '3.4.2'
+        default: '3.5.8'
   push:
     tags:
       - 'ios-v*'

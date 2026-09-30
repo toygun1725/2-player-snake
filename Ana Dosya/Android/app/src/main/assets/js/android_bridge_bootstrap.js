@@ -148,6 +148,15 @@
           }
       }
 
+      // JS Emniyet Zamanlayıcısı: 8.5 saniye içinde native yanıt vermezse oyunu kurtar
+      var safetyTimer = setTimeout(function () {
+          if (window.__nativeAdCallbacks[callbackId]) {
+              console.warn("Android Shell: ⚠️ AdBreak JS zaman aşımı (8.5s), oyun kilitlenmesin diye devam ettiriliyor.");
+              window.__onNativeAdDone(callbackId, false);
+          }
+      }, 8500);
+      window.__nativeAdCallbacks[callbackId].safetyTimer = safetyTimer;
+
       // Send only serializable data to native
       safeCall("adBreak", {
           type: req.type || "next",
@@ -169,7 +178,7 @@
   // function directly (not window.adBreak) to avoid infinite recursion.
   window.adsbygoogle.push = function(o) {
       if (o && typeof o === 'object') {
-          if (o.type === 'next' || o.type === 'reward' || o.type === 'browse') {
+          if (o.type === 'start' || o.type === 'next' || o.type === 'reward' || o.type === 'browse') {
               __nativeAdBreakShim(o);
               return;
           }
@@ -182,6 +191,9 @@
       console.log("Android Shell: Native ad finished, triggering callback:", adBreakDoneCallbackName, "success:", success);
       const callbacks = adBreakDoneCallbackName ? window.__nativeAdCallbacks[adBreakDoneCallbackName] : null;
       if (callbacks) {
+          if (callbacks.safetyTimer) {
+              clearTimeout(callbacks.safetyTimer);
+          }
           // adViewed / adDismissed only make sense for reward-type ads.
           // Interstitials do not define these callbacks.
           if (callbacks.type === "reward") {

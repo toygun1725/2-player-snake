@@ -1,18 +1,52 @@
 # 2 Player Snake - iOS Sürümü Yapay Zeka Rehberi
 
+## Güncel kaynak — v3.5.2 (2026-09-28)
+
+- Canlı yayın durumu (2026-09-28): kullanıcı v3.5.2’yi WordPress’e yüklediğini ve canlı olduğunu bildirdi. Bu kayıt kullanıcı bildirimine dayanır; bağımsız canlı URL kontrolü yapılmadı. Önceki yerel doğrulama 118/118 otomatik test ve 546/546 tarayıcı ekran kontrolüdür. Fiziksel Samsung A71 / iPhone 14 Pro Max son kabulü bekliyor. Ayrıntılar: [v3.5.2 doğrulama kaydı](v3.5.2_Localization_Verification.md#wordpress-yüklemesi-ve-son-cihaz-kabulü).
+- Mobile/PC v3.5.2, online metinlerin ve online akışta kullanılan ortak menü/sonuç metinlerinin 21 dildeki eksiklerini tamamlar. Önceki HTML sürümleri korunur.
+- Duraklatma açıklaması sunucuyla eşittir: maç başına oyuncu başına 2 hak, her duraklatma en fazla 15 saniye. Metin şablonları {count}/{seconds} parametrelerini kullanır; kural değerleri testte sunucuyla karşılaştırılır.
+- Mobil bağlantı kaybı/yeniden bağlantı ve hata mesajları yerelleştirildi. Bilinen sunucu hataları çeviri anahtarına, bilinmeyen hatalar yerelleştirilmiş genel mesaja dönüşür. Hata onayı için Devam Et yerine Tamam kullanılır.
+- Mobil Kontroller kapatma, dönüş, D-pad yön ve ses erişilebilirlik etiketleri 21 dilde güncellenir. Uzun bağlantı başlıkları panel içinde satıra bölünür.
+- Android/iOS offline HTML kaynakları Mobile v3.5.2 ile bayt bayt aynıdır. Native sürümler, sunucu ve Socket.IO protokolü değişmedi. v3.5.2 WordPress yayını kullanıcı tarafından tamamlandı; yeni native paket dağıtılmadı.
+- Doğrulama: node --test tests/ios-runtime.test.cjs tests/online-layout.test.cjs tests/ui-lifecycle.test.cjs tests/localization.test.cjs — 118/118 geçti. Ayrıntılar ve cihaz sınırları: MD Files/v3.5.2_Localization_Verification.md.
+- Yerel dil kabul aracı: node tools/localization-preview.cjs → http://127.0.0.1:8766. Test kancaları yalnız bu loopback önizlemesine eklenir; yayımlanacak HTML içinde bulunmaz.
+
+
+## Önceki kaynak — v3.5.1 (2026-09-27)
+
+- Mobile ve PC v3.5.1 HTML kaynakları oluşturuldu; v3.5.0 korunuyor. Android/iOS offline HTML dosyaları Mobile v3.5.1 ile bayt bayt aynı.
+- Mobil online D-pad minimum yüksekliği görünür panel içeriğinden ölçülür; kontrol değişiminde yükseklik animasyonu taşmaya yol açmaz. Saha kalan alana sığar; maçın ortak matrisi değişmez.
+- Mobil online pause ekranında iki oyuncuda da Kontroller ve Ayrıl vardır; Devam Et yalnız duraklatanda görünür. Kontroller kendi cihazının iki düğme/D-pad ve kaydırma tercihini değiştirir. 15 saniye ve oyuncu başına iki pause kuralı aynıdır.
+- Kontrol seçici online pause bağlamını saklar; süre dolması/devam/ayrılma/bağlantı kopmasında kapanır. Yerel pause menüsüne dönmez. Mevcut 21 dildeki controls metinleri kullanılır.
+- Mobile/PC maç, round ve banner geçerlilik sayaçları eski zamanlayıcı, socket ve reklam dönüşlerinin yeni menüyü değiştirmesini önler. Gizli banner inert olur; geçiş kopyalarında yinelenen id bulunmaz.
+- Test komutu: `node --test tests/ios-runtime.test.cjs tests/online-layout.test.cjs tests/ui-lifecycle.test.cjs` — **70/70 geçti**. Tarayıcı kabul aracı: `node tools/online-layout-preview.cjs` → `http://127.0.0.1:8765`.
+- Ayrıntılı kabul ve fiziksel cihaz sınırları: MD Files/v3.5.1_UI_Verification.md.
+- Sunucu/protokol, Android Code 71 / v3.4.9 ve iOS Build 46 / 3.4.2 değişmedi. WordPress, mağaza, native build veya Git yayını yapılmadı. Önceki sürüm notları aşağıda tarihsel kayıt olarak korunur.
+
+
+## Önceki web/fallback kaynağı — v3.5.0 (2026-09-27)
+
+- Online saha güvenli alana tamamen sığar; ilk round'daki HUD ölçüm hatası giderildi. Kare hücreler ve maç boyunca sabit ortak matris korunur.
+- Depodaki çevrimdışı HTML mobil v3.5.0 ile tam eşitlendi. Kurulu uygulamanın paket içi dosyası ancak ileride yeni native build dağıtılırsa değişir.
+- iOS native Build 46 / marketing version 3.4.2 değişmedi. Yeni AAB/IPA, TestFlight, mağaza gönderimi veya canlı web yüklemesi yapılmadı.
+- Web HTML'i ayrıca yayımlandığında mevcut native kabuklar çevrimiçi oyunu alabilir. Sunucu güncellemesi gerekmiyor.
+- JS doğrulaması: 62/62 geçti. CI komutu yeni online geometri testlerini de içerir. Bu Windows oturumunda macOS WebKit/cihaz testi çalıştırılmadı.
+- Önceki sürüm/build kayıtları aşağıda tarihçe olarak korunmuştur.
+
+
 Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için teknik referanstır. Masada fiziksel bir Mac bilgisayar olmadan, Windows ortamından bulut CI/CD (GitHub Actions + Fastlane) altyapısıyla geliştirilen ve Apple ekosistemiyle %100 uyumlu çalışan iOS kabuğunun tüm mimari detaylarını ve yol haritasını içerir.
 
 ---
 
-## 1. Güncel HTML & Çevrimdışı Fallback Durumu (v3.4.9, 2026-09-27)
+## 1. Güncel Yerel HTML & Çevrimdışı Fallback Durumu (v3.5.2, 2026-09-28)
 
-- HTML Runtime & Web Referansı: `2 Player Snake Mobile v3.4.9.html` ve `2 Player Snake PC v3.4.9.html`.
-- iOS Çevrimdışı Fallback (`TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`): v3.4.9 ile %100 eşitlendi (Web Audio ses kurtarma motoru, semantik haptikler, 45s ad cooldown).
+- Yerel HTML kaynak referansı: `2 Player Snake Mobile v3.5.2.html` ve `2 Player Snake PC v3.5.2.html`.
+- iOS Çevrimdışı Fallback (`TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`): Mobile v3.5.2 ile bayt bayt eşit. Bu kaynak henüz yeni IPA/TestFlight paketi olarak dağıtılmadı.
 - Web Audio Reklam Sonrası Ses Kurtarma Motoru: iOS WebKit'in reklam bitiminde `audioCtx.state`'i 'running' göstermesine rağmen donanım ses çıkışını dondurması sorunu, reklam bitişinde `_adJustFinished` bayrağı ve ilk kullanıcı etkileşiminde `forceRebuildAudio()` çağrısıyla giderildi.
 - Katmanlı Dokunsal Geri Bildirim: `hapticTyped` semantik tipleriyle iOS Taptic Engine ve Android sistemleriyle tam uyum sağlandı.
 - Ad Cooldown Optimizasyonu: AdMob gelirlerinin toparlanması amacıyla global reklam bekleme süresi 45 saniyeye (`cooldownMs: 45000`) indirildi.
-- Otomatik Testler: `node tests/ios-runtime.test.cjs` 56/56 test (%100) başarıyla geçti.
-- WordPress Yayını: Canlı sunucuya (`2playersnake.com`) v3.4.9 dosyaları yüklendiğinde iOS uygulaması Build 46 ve TestFlight kullanıcıları hibrit mimari sayesinde yeni native build gerekmeden anında güncellenir.
+- Doğrulama: 118/118 otomatik test ve 546/546 tarayıcı ekran kontrolü geçti. Fiziksel cihaz / native WebKit kabulü bekliyor.
+- WordPress Yayını: v3.5.2 WordPress’te canlıdır (2026-09-28 kullanıcı bildirimi). Cihazlarda v3.5.2 görünümü ve son kabul sonuçları henüz bildirilmedi. Bu web değişikliği için yeni native build gerekmiyor; paket içi fallback mevcut kurulumda değişmez.
 
 ## 1.1. Native Shell Durumu — Build 46 (v3.4.2, 2026-09-23)
 
@@ -312,9 +346,9 @@ Tüm aşamalar (Aşama 1'den Aşama 7'ye kadar) %100 başarıyla tamamlanmışt�
 Gelecekte bu projeyi devralacak veya yeni bir güncelleme / build çıkaracak herhangi bir AI Agent (veya geliştirici) için adım adım uygulanabilir kılavuz:
 
 ### 1. Mevcut Sürüm ve Numaralandırma Durumu
-* **App Store Canlıdaki Sürüm:** `3.3.5 (Build 29)` — Dünya genelinde yayında.
-* **Son TestFlight Derlemesi:** `3.3.5 (Build 37)` (`ios-v3.3.5-b37` - Başarıyla yüklendi)
-* **Bir Sonraki Build Numarası:** `38` (Build numarası Apple kuralları gereği her zaman monotonik olarak artmalıdır: 38, 39, 40...).
+* **App Store Canlıdaki Sürüm:** `3.4.2 (Build 46)` — Canlı yayında / TestFlight onaylı.
+* **Son TestFlight Derlemesi:** `3.5.8 (Build 47)` (`ios-v3.5.8-b47` - TestFlight dağıtımında)
+* **Bir Sonraki Build Numarası:** `48` (Build numarası Apple kuralları gereği her zaman monotonik olarak artmalıdır: 48, 49, 50...).
 
 ---
 

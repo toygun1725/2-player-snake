@@ -6,7 +6,9 @@ on:
     branches: [main]
     paths:
       - 'Ana Dosya/iOS/**'
-      - 'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.3.5.html'
+      - 'Ana Dosya/Mobile/Beta/v3/**'
+      - 'Ana Dosya/PC/Beta/v3/**'
+      - 'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html'
       - 'tests/**'
       - 'tools/test-ios-runtime.sh'
       - '.github/workflows/ios-runtime-checks.yml'

@@ -1,5 +1,22 @@
 # 2 Player Snake Android
 
+## Web source update: v3.5.2 (2026-09-28)
+
+The user reported v3.5.2 uploaded and live on WordPress on 2026-09-28. Local validation: 118 automated checks and 546 browser screen checks passed. No independent live URL check was performed; physical Samsung/iPhone acceptance remains pending. Updating the hosted HTML updates online content; it does not replace the fallback inside an already installed native package.
+
+The packaged fallback matches Mobile v3.5.2 byte for byte. Online copy, error messages and control accessibility labels now cover all 21 supported languages. Pause copy matches the server: two pauses per player per match, up to 15 seconds each. Automated checks: 118/118 passed. Native versionCode 71 / v3.4.9 is unchanged. See ../../MD Files/v3.5.2_Localization_Verification.md for browser and physical-device acceptance limits. The WordPress upload was completed by the user; no new AAB was produced.
+
+
+## Web source update: v3.5.1 (2026-09-27)
+
+The packaged fallback matches Mobile v3.5.1 byte for byte. Online D-pad panels now use content-based minimum height. Both players can change their own controls or leave during pause. Stale match/menu callbacks are cancelled. Native versionCode 71 / v3.4.9 is unchanged; no AAB or live deployment was made. See `../../MD Files/v3.5.1_UI_Verification.md` for validation and device limitations. Automated result: 70/70 passed; physical Samsung A71 testing remains open.
+
+
+## Web source update: v3.5.0 (2026-09-27)
+
+The packaged fallback source now matches Mobile v3.5.0 byte for byte. Online boards fit the actual safe viewport from the first round, with square cells and a fixed shared grid. Native package remains versionCode 71 / v3.4.9; no new AAB or web deployment was made. Older packaging notes below are historical.
+
+
 Hybrid Android shell for the live mobile build at:
 
 - `https://2playersnake.com/wp-content/uploads/game-mobile/index.html`
