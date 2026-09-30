@@ -1,6 +1,14 @@
 # 2 Player Snake - iOS Sürümü Yapay Zeka Rehberi
 
-## Güncel kaynak — v3.5.2 (2026-09-28)
+## Güncel Native Shell & Canlı Gönderim — v3.5.8 (Build 47) (2026-09-30)
+
+- **App Store İnceleme Durumu (2026-09-30):** Marketing version `3.5.8`, Native Build `47` (Git etiketi: `ios-v3.5.8-b47`). GitHub Actions Run #54 ile derlendi, TestFlight'a yüklendi ve App Store Connect'e bağlandı.
+- **Yayınlanma Zamanı:** 5 Ekim 2026 07:00 (GMT+3) tarihine zamanlanmış otomatik yayınlama (*Scheduled Automatic Release*) ile Apple İncelemesine eklendi / gönderildi.
+- **Bildirim Rozeti Çözümü:** `NotificationManager.clearBadgeAndDeliveredNotifications()` ile uygulama açılışında, ön plana geçişte ve bildirim etkileşiminde teslim edilen bildirimler ve kırmızı ikon rozet sayısı (`setBadgeCount(0)` / `applicationIconBadgeNumber = 0`) otomatik temizlenir.
+- **Monetization & Akış:** Çevrimiçi hükmen galibiyet (forfeit) zafer kutlaması, geçiş reklamı ve doğrudan yeni rakip arama akışı v3.5.8'e dahildir.
+- **Doğrulama:** 130/130 JS regresyon testi + macOS WebKit testi başarıyla geçti.
+
+## Önceki kaynak — v3.5.2 (2026-09-28)
 
 - Canlı yayın durumu (2026-09-28): kullanıcı v3.5.2’yi WordPress’e yüklediğini ve canlı olduğunu bildirdi. Bu kayıt kullanıcı bildirimine dayanır; bağımsız canlı URL kontrolü yapılmadı. Önceki yerel doğrulama 118/118 otomatik test ve 546/546 tarayıcı ekran kontrolüdür. Fiziksel Samsung A71 / iPhone 14 Pro Max son kabulü bekliyor. Ayrıntılar: [v3.5.2 doğrulama kaydı](v3.5.2_Localization_Verification.md#wordpress-yüklemesi-ve-son-cihaz-kabulü).
 - Mobile/PC v3.5.2, online metinlerin ve online akışta kullanılan ortak menü/sonuç metinlerinin 21 dildeki eksiklerini tamamlar. Önceki HTML sürümleri korunur.
