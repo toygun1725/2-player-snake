@@ -11,8 +11,11 @@
   - **7 Katmanlı Taptic Engine (`HapticManager.swift`, `GameScriptMessageHandler.swift`, `ios_bridge_bootstrap.js`):** `window.Android.hapticEvent(eventType, durationMs)` köprüsü eklendi; `tick` (`UISelectionFeedbackGenerator`), `food` (light), `special_food` (rigid), `beast_food` (çift darbeli heavy+rigid), `collision` (heavy), `win` (success + yükselen vuruş) ve `game_over` (error + sönümlenen vuruş) olmak üzere 7 semantik katmana ayrıldı. `installRobustFoodHaptics` 60ms debounce (`window.__lastNativeHapticAt`) ile çift titreşime karşı korundu.
   - **Ana Ekran Hızlı Eylemleri / Quick Actions (`AppDelegate.swift`, `SceneDelegate.swift`, `ViewController.swift`, `AppStrings.swift`):** Uygulama ikonuna basılı tutulduğunda açılan 3 hızlı kısayol (`1p_ai`, `2p_local`, `online_menu`) 21 dil desteğiyle (`AppStrings.Shortcuts`) eklendi. Hem soğuk açılışta (`connectionOptions.shortcutItem`) hem sıcak geçişte (`windowScene(_:performActionFor:completionHandler:)`) doğrudan ilgili oyun modunu başlatır.
   - **Yerel Yüksek Skor & Premium Yedekleme (`GameScriptMessageHandler.swift`, `ViewController.swift`):** `notifyHighScore` mesajı `UserDefaults.standard` üzerinde en yüksek 10 skoru kalıcı olarak saklar ve her sayfa yüklemesinde `window.onCloudSaveLoaded(...)` üzerinden WebView'e geri yükler.
-  - `MARKETING_VERSION`: `3.5.8` $\rightarrow$ **`3.6.1`**, `CURRENT_PROJECT_VERSION`: `47` $\rightarrow$ **`48`** (Git etiketi: `ios-v3.6.1-b48`).
-- **Doğrulama:** `node --test tests/*.test.cjs` (**203/203 otomatik test geçti**).
+- **App Store Gönderim Durumu ve ASO Güncellemesi (2026-10-16):**
+  - **CI/CD Dağıtımı:** `ios-v3.6.1-b48` etiketiyle GitHub Actions Run #55 üzerinden derlendi, TestFlight'a yüklendi ve App Store Connect'e bağlandı.
+  - **İnceleme Gönderimi:** App Store Connect üzerinde sürüm `3.6.1 (Build 48)` seçilerek Apple İncelemesine gönderildi (**Waiting for Review / İnceleme Bekliyor**).
+  - **ASO (App Store Optimization) Güncellemesi:** App Store Connect üzerinde tüm dillerde (İngilizce, Türkçe, Almanca, Fransızca, İspanyolca, İtalyanca, Felemenkçe, Lehçe, Portekizce, Rusça ve diğer mağaza dilleri) 30 karakterlik Başlık (Title / Name), 30 karakterlik Alt Başlık (Subtitle) ve 100 karakterlik Anahtar Kelimeler (Keywords) güncellendi.
+- **Doğrulama:** `node --test tests/*.test.cjs` (**203/203 otomatik test geçti**) ve macOS WebKit duman testleri eksiksiz tamamlandı.
 
 ## Önceki web/fallback kaynağı — v3.6.0 (Canlıda, 2026-10-07)
 

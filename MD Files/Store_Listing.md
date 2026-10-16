@@ -54,6 +54,15 @@ Download now and become the ultimate Snake champion. 🐍👑
 Kurzbeschreibung (max. 80 Zeichen)
 Snake für 2: lokaler & Online-Multiplayer. Gleicher Bildschirm oder Echtzeit!
 
+App Store Title (max 30 characters)
+2 Player Snake: 1v1 Duell
+
+App Store Subtitle (max 30 characters)
+2 Spieler: Lokal & Online PvP
+
+App Store Keywords (max 100 characters)
+spiele,zwei,multiplayer,schlange,offline,party,geteilter bildschirm,klassisch,retro,arcade,paar,wurm
+
 Vollständige Beschreibung
 2 Spieler. Ein Bildschirm. Das ultimative Schlangen-Duell. 🐍
 Erlebe das klassische Snake-Spiel wie nie zuvor — fordere deinen Freund auf demselben Gerät heraus oder kämpfe gegen Spieler aus aller Welt im Online-Multiplayer in Echtzeit!
@@ -168,6 +177,15 @@ Unduh sekarang dan jadilah juara Snake sejati. 🐍👑
 Korte beschrijving (max. 80 tekens)
 Slangen-spel voor 2: lokale & online multiplayer. Zelfde scherm of realtime!
 
+App Store Title (max 30 characters)
+2 Player Snake: 1v1 Strijd
+
+App Store Subtitle (max 30 characters)
+2 Spelers: Lokaal & Online PvP
+
+App Store Keywords (max 100 characters)
+spellen,twee,multiplayer,slang,offline,feest,gesplitst scherm,klassiek,retro,arcade,koppel,vrienden
+
 Volledige beschrijving
 2 Spelers. Één scherm. De ultieme Slangen-strijd. 🐍
 Speel het klassieke Snake zoals je het nog nooit gespeeld hebt — daag je vriend uit op hetzelfde apparaat of vecht tegen spelers van over de hele wereld in online multiplayer in realtime!
@@ -205,6 +223,15 @@ Download het nu en word de ultieme Snake-kampioen. 🐍👑
 <fr-FR>
 Description courte (max. 80 caractères)
 Jeu de serpent à 2 : multijoueur local & en ligne. Même écran ou temps réel !
+
+App Store Title (max 30 characters)
+2 Player Snake: Duel 1v1
+
+App Store Subtitle (max 30 characters)
+2 Joueurs: Local & En Ligne
+
+App Store Keywords (max 100 characters)
+jeux,deux,multijoueur,serpent,pvp,hors ligne,soirée,écran partagé,classique,rétro,arcade,couple,amis
 
 Description complète
 2 joueurs. Un écran. L'ultime bataille du Serpent. 🐍
@@ -358,6 +385,15 @@ Téléchargez maintenant et devenez le champion ultime du Serpent. 🐍👑
 Krótki opis (maks. 80 znaków)
 Wąż dla 2: lokalny i online multiplayer. Ten sam ekran lub czas rzeczywisty!
 
+App Store Title (max 30 characters)
+2 Player Snake: Bitwa 1v1
+
+App Store Subtitle (max 30 characters)
+Gry na 2 Osoby: Lokalnie i PvP
+
+App Store Keywords (max 100 characters)
+dwie,multiplayer,online,wąż,offline,impreza,podzielony ekran,klasyczny,retro,arcade,para,pojedynek
+
 Pełny opis
 2 graczy. Jeden ekran. Epicka bitwa Węża. 🐍
 Zagraj w klasycznego Węża jak nigdy dotąd — rzuć wyzwanie przyjacielowi na tym samym urządzeniu lub walcz z graczami z całego świata w trybie online multiplayer w czasie rzeczywistym!
@@ -395,6 +431,15 @@ Pobierz teraz i zostań mistrzem Węża. 🐍👑
 <pt-BR>
 Descrição curta (máx. 80 caracteres)
 Jogo de cobra para 2: multijogador local e online. Mesma tela ou tempo real!
+
+App Store Title (max 30 characters)
+2 Player Snake: Batalha 1v1
+
+App Store Subtitle (max 30 characters)
+2 Jogadores: Local e Online
+
+App Store Keywords (max 100 characters)
+jogos,dois,multijogador,cobra,pvp,offline,festa,tela dividida,clássico,retro,arcade,casal,amigos,duo
 
 Descrição completa
 2 jogadores. Uma tela. A batalha definitiva da Cobra. 🐍
@@ -471,6 +516,15 @@ Descarrega agora e torna-te o campeão definitivo da Cobra. 🐍👑
 <ru-RU>
 Краткое описание (макс. 80 символов)
 Змейка на двоих: локальный и онлайн мультиплеер. Один экран или реальное время!
+
+App Store Title (max 30 characters)
+2 Player Snake: Битва 1v1
+
+App Store Subtitle (max 30 characters)
+На двоих: Локально и Онлайн
+
+App Store Keywords (max 100 characters)
+игры,два,мультиплеер,змейка,pvp,офлайн,вечеринка,один экран,классика,ретро,аркада,дуэль,друзья,пара
 
 Полное описание
 2 игрока. Один экран. Эпичная битва Змейки. 🐍
@@ -785,6 +839,15 @@ Stáhni si to teď a staň se šampiónem Hada. 🐍👑
 Descripción corta (máx. 80 caracteres)
 Serpiente para 2: multijugador local y online. ¡Misma pantalla o tiempo real!
 
+App Store Title (max 30 characters)
+2 Player Snake: Batalla 1v1
+
+App Store Subtitle (max 30 characters)
+2 Jugadores: Local y Online
+
+App Store Keywords (max 100 characters)
+juegos,dos,multijugador,serpiente,pvp,sin conexión,fiesta,pantalla dividida,clásico,retro,arcade,dúo
+
 Descripción completa
 2 jugadores. Una pantalla. La batalla definitiva de Serpiente. 🐍
 ¡Juega al clásico Snake como nunca antes — desafía a tu amigo en el mismo dispositivo o combate contra jugadores de todo el mundo en multijugador online en tiempo real!
@@ -822,6 +885,15 @@ Descárgalo ahora y conviértete en el campeón definitivo de Serpiente. 🐍�
 <it-IT>
 Descrizione breve (max. 80 caratteri)
 Serpente per 2: multiplayer locale e online. Stesso schermo o tempo reale!
+
+App Store Title (max 30 characters)
+2 Player Snake: Sfida 1v1
+
+App Store Subtitle (max 30 characters)
+2 Giocatori: Locale & Online
+
+App Store Keywords (max 100 characters)
+giochi,due,multiplayer,serpente,pvp,offline,festa,schermo diviso,classico,retro,arcade,coppia,amici
 
 Descrizione completa
 2 giocatori. Uno schermo. La battaglia definitiva del Serpente. 🐍

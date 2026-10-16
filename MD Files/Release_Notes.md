@@ -1,6 +1,44 @@
 # 2 Player Snake - Sürüm Notları (Release Notes)
 
-## Mobile ve PC v3.6.0 (Final Sürüm) — Online Platforma Göre Boost (2026-10-07)
+## Mobile, Android (v3.6.1 / Code 72) & iOS (v3.6.1 / Build 48) — Mağaza İncelemesinde (2026-10-16)
+
+**Durum:** Hem Google Play Console (Üretim / Production kanalı, `versionCode: 72`, `versionName: "v3.6.1"`) hem de App Store Connect (iOS Sürüm `3.6.1`, `Build 48`, GitHub Actions Run #55) mağaza onayına gönderildi (**In Review / Waiting for Review**). Ayrıca App Store Connect üzerinde tüm dillerde ASO (Title, Subtitle, Keywords) optimizasyonu uygulandı.
+
+- **7 Katmanlı Gelişmiş Dokunsal Geri Bildirim (Arcade Haptics):** Hem Android hem iOS Taptic Engine için 7 semantik katman (tick, food, special_food, beast_food, collision, win, game_over) ve 60ms debounce emniyeti.
+- **Ana Ekran Hızlı Kısayolları (Quick Actions):** Uygulama ikonuna basılı tutarak doğrudan Yapay Zekaya Karşı (1P), 2 Kişilik Bölünmüş Ekran veya Online menüye geçiş (21 dilde yerelleştirildi).
+- **Solo Uzunluk Barajları & Yenilenmiş Zafer Kutlamaları:** 10, 20, 30... uzunluklarında özel matris efektleri, ses çanları ve her iki platformda ekrana tam oturan dinamik kutlama glifleri.
+- **Kritik Hata Düzeltmeleri & Çevrimdışı Optimizasyon:**
+  - Android 8.5s reklam `safetyTimer` kilitlenmesi tam olarak giderildi (reklam açıldığı anda zamanlayıcı iptal edilir).
+  - Android & iOS uygulama açılışında teslim edilen eski bildirimlerin otomatik temizliği (`clearDeliveredNotifications`).
+  - Android'e gömülü tam çevrimdışı web varlıkları (Orbitron/VT323 fontları, FontAwesome ikonları, offline logo).
+  - iOS yerel yüksek skor ve reklamsızlık durumunun `UserDefaults` üzerinde yedeklenmesi (`notifyHighScore` & `window.onCloudSaveLoaded`).
+  - Kalp yeminde tanımsız `ACH_SPEED_DEMON` başarım çağrısı temizlendi.
+
+### Mağazada Yayımlanan Resmi Sürüm Notları
+
+<tr-TR>
+v3.6.1 sürümündeki yenilikler!
+
+• Gelişmiş 7 Katmanlı Dokunsal Geri Bildirim (Haptics!): Normal yem, elmas, canavar modu (Beast), çarpışma ve zafer anlarında her hamleyi avucunun içinde hisset!
+
+• Ana Ekran Hızlı Kısayolları: Uygulama ikonuna basılı tutarak Yapay Zekaya Karşı (1P), 2 Oyunculu Yerel veya Online maça tek dokunuşla anında gir!
+
+• Solo Uzunluk Kutlamaları & Yeni Zafer Efektleri: Tek kişilik modda her 10 uzunluk barajında özel matris animasyonları ve yenilenmiş tam ekran zafer kutlamaları.
+
+• Kusursuz Çevrimdışı Deneyim & Hata Düzeltmeleri: İnternetsiz ortamda tam font/ikon desteği, reklam ve ses kararlılık iyileştirmeleri, 60 FPS akıcı arcade keyfi.
+</tr-TR>
+
+<en-US>
+What's new in v3.6.1!
+
+• 7-Tier Arcade Haptics: Feel every move in the palm of your hand! Distinct tactile feedback for regular food, diamonds, Beast Mode double-pulse, collisions, and victory celebrations!
+
+• Home Screen Quick Actions: Long-press the app icon to jump straight into 1P vs AI, 2P Local Split-Screen, or Online Multiplayer!
+
+• Solo Length Milestones & New Victory Glyphs: Celebrate every 10-length milestone in Solo mode with matrix animations, audio chimes, and redesigned victory banners.
+
+• Enhanced Offline Mode & Bug Fixes: Full offline font/icon support, smoother ad & audio transitions, high score backup, and 60 FPS arcade optimizations.
+</en-US>
 
 **Durum:** Final sürüm; PC ve Mobile web kaynakları ile ortak sunucu canlıdadır (Live in production). Android/iOS çevrimdışı HTML fallback kaynakları Mobile v3.6.0 ile eşitlendi. Native sürümler Android Code 71 / v3.4.9 ve iOS Build 47 / 3.5.8 olarak kalır.
 

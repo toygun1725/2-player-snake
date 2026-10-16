@@ -1,6 +1,20 @@
 # 2 Player Snake - iOS & TestFlight GitHub CI/CD Kurulum Rehberi (Mac Olmadan)
 
-## Final web/fallback ve test kapsamı — v3.6.0 (Canlıda, 2026-10-07)
+## Güncel Native TestFlight ve App Store Gönderimi — v3.6.1 Build 48 (2026-10-16)
+
+- **Native TestFlight Paketi:** **Build 48 (v3.6.1)**
+  - Git Tag: `ios-v3.6.1-b48`
+  - GitHub Actions: `.github/workflows/ios-testflight.yml` (Run #55 — ID: `38880175235`)
+  - Pazarlama Sürümü (`MARKETING_VERSION`): `3.6.1`, Build Numarası (`CURRENT_PROJECT_VERSION`): `48`
+  - Durum: GitHub Actions üzerinde derlendi, TestFlight'a başarıyla yüklendi ve App Store Connect üzerinden Apple İncelemesine gönderildi (**Waiting for Review / İnceleme Bekliyor**).
+- **Yeni Özellikler & Parite İyileştirmeleri:**
+  - **7 Katmanlı Taptic Engine:** `tick`, `food`, `special_food`, `beast_food`, `collision`, `win`, `game_over` semantik katmanları ve 60ms debounce emniyeti.
+  - **Ana Ekran Hızlı Kısayolları (Quick Actions):** Uygulama ikonuna uzun basıldığında açılan 3 hızlı mod kısayolu (`1p_ai`, `2p_local`, `online_menu`) 21 dilde yerelleştirildi.
+  - **Yerel Skor & Satın Alma Yedekleme:** `UserDefaults.standard` üzerinde en yüksek 10 skor kalıcı olarak saklanır ve her açılışta `window.onCloudSaveLoaded` ile WebView'e yüklenir.
+  - **ASO (App Store Optimization) Güncellemesi:** App Store Connect üzerinde tüm dillerde (İngilizce, Türkçe, Almanca, Fransızca, İspanyolca, İtalyanca, Felemenkçe, Lehçe, Portekizce, Rusça vb.) Başlık (30 kr), Alt Başlık (30 kr) ve Anahtar Kelimeler (100 kr) optimize edildi.
+- **Doğrulama:** 203/203 otomatik test + macOS WebKit testi eksiksiz geçti.
+
+## Önceki web/fallback ve test kapsamı — v3.6.0 (Canlıda, 2026-10-07)
 
 - PC/Mobile v3.6.0 ve ortak online sunucu için boost izni yalnız PC–PC Hızlı Rekabetçi maçlarda verilir. Mobil/cross-play boost istekleri sunucuda engellenir. Android/iOS fallback Mobile v3.6.0 ile bayt bayt eşittir.
 - `tools/test-ios-runtime.sh` yedi JS paketini çalıştırır; yeni `tests/online-boost.test.cjs` 18 test içerir. Mevcut solo ve kutlama testleri v3.6.0 üzerinde çalışır; localization fixture güncel sürüme taşındı.

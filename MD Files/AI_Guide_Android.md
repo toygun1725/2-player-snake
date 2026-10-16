@@ -13,9 +13,9 @@
   - **21 Dilde Yerelleştirilmiş IAP Mesajları & Paket Fallback (`AppStrings.kt`, `MainActivity.kt`):** Tüm satın alma ve geri yükleme Toast mesajları 21 dilde yerelleştirildi (`AppStrings.IAP`). RevenueCat paket aramasına çok aşamalı fallback (`lifetime` -> `"remove_ads_premium"` / `"$rc_lifetime"` -> `availablePackages.firstOrNull()`) eklendi; release derlemelerde `LogLevel.WARN` kullanıldı.
   - **Tam Çevrimdışı WebAssets Paketi (`GameWebViewClient.kt`, `assets/web_assets/`):** `fonts.css`, `fontawesome.css`, `orbitron.ttf`, `vt323.ttf`, `.woff2` ikon fontları ve `offline_logo.png` yerel asset olarak eklendi ve `shouldInterceptRequest` üzerinden CORS başlıklı (`Access-Control-Allow-Origin: *`) olarak sunuldu. Launcher kısayolları çevrimdışı fallback üzerinde de çalışır.
   - `versionCode`: `71` $\rightarrow$ **`72`**, `versionName`: `v3.4.9` $\rightarrow$ **`v3.6.1`**.
-- **Canlı Mağaza Durumu (Google Play Console):**
-  - **Önceki Canlı Sürüm:** `71 (v3.4.9)` — 🟢 **Üretim ve Google Play Games on PC (GPGPC) kanallarında Tam Kullanıma Sunumda (Google Play'de Mevcut / Canlı)**.
-  - **Yeni Sürüm:** `72 (v3.6.1)` — İmzalı `2PlayerSnake-v3.6.1-release.aab` derlendi.
+- **Mağaza Gönderim Durumu (Google Play Console):**
+  - **Canlı Sürüm (Önceki):** `71 (v3.4.9)` — 🟢 **Üretim ve Google Play Games on PC (GPGPC) kanallarında Tam Kullanıma Sunumda (Google Play'de Mevcut / Canlı)**.
+  - **Yeni Sürüm (İncelemede):** `72 (v3.6.1)` — İmzalı `2PlayerSnake-v3.6.1-release.aab` derlendi, Google Play Console'a yüklendi ve onaya gönderildi (2026-10-16, **In Review / İncelemede**).
 - **Doğrulama:** `node --test tests/*.test.cjs` (**203/203 test geçti**) ve `.\gradlew.bat bundleRelease` (**BUILD SUCCESSFUL**).
 
 ## Önceki web/fallback kaynağı — v3.6.0 (Canlıda, 2026-10-07)
@@ -85,11 +85,20 @@ Bu rehber, ilk Android promptunda istenen hedefleri ve bugun bu hedeflere gore f
 - Android shell kaynagi: `d:\#3 Vibecoding\AI Games\2 Player Snake\Ana Dosya\Android`
 - Guncel web kaynak referansi: `2 Player Snake Mobile v3.6.1 / PC v3.6.1`
 - Android cevrimdisi fallback: `mobile_offline_fallback.html` (Mobile v3.6.1 ile bayt bayt eşit)
-- Guncel kaynak `versionCode`: **71** (Native shell son canlı derleme; sonraki build öncesi v3.6.1 native iyileştirmeleri hazırlandı)
-- Guncel kaynak `versionName`: **`v3.4.9`** (Native shell etiketi)
-- Canlı mağaza durumu: `71 (v3.4.9)` Google Play Production ve Google Play Games on PC (GPGPC) kanallarında **Tam kullanıma sunum / Google Play'de Mevcut (Canlı)** durumundadır.
+- Guncel kaynak `versionCode`: **72** (v3.6.1 derlemesi; imzalı release AAB hazırlandı ve yüklendi)
+- Guncel kaynak `versionName`: **`v3.6.1`** (Native shell etiketi)
+- Mağaza durumu: `71 (v3.4.9)` canlıda, `72 (v3.6.1)` Google Play Console Üretim kanalında **İncelemede (In Review, 2026-10-16)**.
 
-## Son Android Shell Notu (versionCode 71 / v3.4.9)
+## Son Android Shell Notu (versionCode 72 / v3.6.1)
+- **versionCode 72 (v3.6.1)**: Reklam Zamanlayıcısı Güvenliği, Bildirim Çekmecesi Temizliği, 21 Dil IAP ve Tam Çevrimdışı WebAssets Paketi.
+  - **8.5s Ad SafetyTimer Emniyeti (`AdManager.kt`, `MainActivity.kt`):** Reklam açıldığı an (`onAdShowedFullScreenContent`) web bridge `window.__onNativeAdPresented` çağrılarak güvenlik sayacı durdurulur; erken oyun/ses başlama ve çift tetiklenme riski tamamen engellendi.
+  - **Bildirim Tepsisi Otomatik Temizliği (`NotificationHelper.kt`):** `clearDeliveredNotifications(context)` ile uygulama açılışında (`onCreate`) ve ön plana gelişte (`onResume`) bildirim çekmecesi otomatik temizlenir.
+  - **21 Dil IAP & Yedekli Paket Çözümü (`AppStrings.kt`, `MainActivity.kt`):** Satın alma ve geri yükleme bildirimleri 21 dilde yerelleştirildi. RevenueCat paket yüklemesinde kademeli fallback sağlandı.
+  - **Gömülü WebAssets (`GameWebViewClient.shouldInterceptRequest`):** Orbitron ve VT323 fontları, FontAwesome ikonları ve offline logo doğrudan APK/AAB içindeki `assets/web_assets/` klasöründen CORS başlıklı olarak sunulur; tamamen internetsiz ortamda eksiksiz görsel deneyim sağlar.
+  - `versionCode`: 71 → 72, `versionName`: v3.4.9 → v3.6.1.
+  - AAB: `2PlayerSnake-v3.6.1-release.aab` derlendi, imzalandı ve Google Play Console'a yüklendi.
+
+## Önceki Android Shell Notu (versionCode 71 / v3.4.9)
 - **versionCode 71 (v3.4.9)**: Katmanlı Dokunsal Geri Bildirim (Tier-Based Haptics), Web Audio Kurtarma Motoru ve v3.4.9 Çevrimdışı Eşitlemesi.
   - **Katmanlı Haptik Motoru (`GameJavascriptBridge.kt`):** iOS Taptic Engine zenginliğini Android donanımına taşıyan modern haptik motoru kuruldu:
     - `hapticTick()`: D-pad yön tuşları, menü tıklamaları ve sayaç için `EFFECT_TICK` (API 29+) / 8ms.
