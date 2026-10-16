@@ -1,5 +1,17 @@
 # 2 Player Snake Android
 
+## Final web/fallback source: v3.6.0 (Live in production, 2026-10-07)
+
+The repository fallback matches Mobile v3.6.0 byte for byte. Online Boost/Dash is enabled only in PC-PC Fast Competitive rooms; the server rejects both players’ dash requests in cross-play and Mobile-Mobile rooms. Mobile has no boost control. Beast and food power-ups retain their existing rules. Portuguese Beast-start labels now use the game’s `ptbr` locale key.
+
+Validation: **195/195 automated tests** and **13 browser checks** with real local Socket.IO connections passed. See the [v3.6.0 verification](../../MD%20Files/v3.6.0_Online_Boost_Verification.md). v3.6.0 is the final version and is live in production. Native source stays at Code 71 / v3.4.9. The packaged fallback matches Mobile v3.6.0 byte for byte.
+
+## Previous local web/fallback source: v3.5.9 (2026-10-06)
+
+The repository fallback matches Mobile v3.5.9 byte for byte. Local 1P Normal games show each new multiple of ten in the grid with a brief shine, a 1.6-second fade and a short two-note sound that follows the mute setting. P1/P2/AI celebrations now use independent visual data, readable digits and sizing based on both grid dimensions, including short landscape boards and rotation.
+
+Validation: **177/177 automated tests** and **17 celebration browser checks** across PC and Mobile passed. See the [solo verification](../../MD%20Files/v3.5.9_Solo_Milestone_Verification.md) and [celebration verification](../../MD%20Files/v3.5.9_Win_Glyph_Verification.md). Native source remains versionCode 71 / v3.4.9. No new AAB, deployment or physical-device test was performed. The updated fallback enters installed packages only through a future native build; older records below are historical.
+
 ## Web source update: v3.5.2 (2026-09-28)
 
 The user reported v3.5.2 uploaded and live on WordPress on 2026-09-28. Local validation: 118 automated checks and 546 browser screen checks passed. No independent live URL check was performed; physical Samsung/iPhone acceptance remains pending. Updating the hosted HTML updates online content; it does not replace the fallback inside an already installed native package.

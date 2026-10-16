@@ -2,7 +2,20 @@
 
 Bu belge, oyundaki reklam akisinin guncel davranisini ozetler. Web tarafinda reklamlar Google AdSense H5 Games Ads ile, Android shell icinde ise native koordine edilen bir kopru ile calisir.
 
-Referans yerel web kaynağı: `v3.5.8` (native sürümler: iOS Build 46 / Android Code 71)
+Referans web/fallback kaynağı: `v3.6.0` (Final sürüm, canlıda; native proje sürümleri: iOS 3.5.8 / Build 47, Android v3.4.9 / Code 71).
+
+## v3.6.0 Online boost kuralı (Final Sürüm, Canlıda, 2026-10-07)
+
+- Boost izni sunucuda yalnız PC–PC Hızlı Rekabetçi maçlar için verilir; premium veya ödüllü reklam hakkı bu izni değiştirmez. Cross-play ve mobil maçlarda boost kapalıdır. Beast ile başlama ve yem güçleri aynı akışta kullanılır.
+- Reklam kapıları, 30 saniye global cooldown ve premium bypass bu değişiklikte korunur. Mobil Portekizce Beast başlangıç butonunun üç metni doğru locale anahtarına bağlandı.
+- Doğrulama: **195/195 otomatik test** ve gerçek yerel Socket.IO sunucusuyla **13 Edge/Chromium tarayıcı kontrolü** geçti. [v3.6.0 doğrulaması](v3.6.0_Online_Boost_Verification.md). Canlı sunucu/web yayını, native build, fiziksel cihaz ve native WebKit kabulü yapılmadı.
+- Final sürüm; PC/Mobile v3.6.0 HTML kaynakları ve ortak sunucu (`Ana Dosya/Server/Mobile/server.js`) canlıdadır.
+
+## v3.5.9 Solo gösterge ve kutlama çizimi (2026-10-06)
+
+- Yerel 1P Normal moddaki her yeni 10'luk uzunluk eşiği kısa bir görsel ve mevcut ses ayarına bağlı iki notalı SFX üretir. Reklam veya ödül tetiklemez. Ödüllü devam aktif görüntüyü temizler; ulaşılan eşikleri korur, geri sarma aynı eşiği tekrar kutlamaz.
+- P1/P2/AI yazısı yılan gövdesinden bağımsız çizilir. Solo P2-null hatası giderildi; kutlama, istatistik ve sonraki round geçişleri tamamlanır. Mevcut reklam kapıları, premium bypass ve 30 saniye global cooldown aynı akışta kullanılır.
+- Yerel doğrulama: **177/177 JS testi**, **17 kutlama tarayıcı kontrolü**. Bu kabulde native reklam SDK'sı veya gerçek reklam gösterimi sınanmadı; native build/yayın yapılmadı. [Solo doğrulaması](v3.5.9_Solo_Milestone_Verification.md), [kutlama doğrulaması](v3.5.9_Win_Glyph_Verification.md).
 
 ## Çevrimiçi Hükmen Galibiyet (Forfeit) Reklam Entegrasyonu — v3.5.8 (2026-09-30)
 
@@ -13,7 +26,7 @@ Referans yerel web kaynağı: `v3.5.8` (native sürümler: iOS Build 46 / Androi
   - İstatistik ekranındaki "Tekrar Oyna" butonu, oyuncuyu çevrimdışı moda düşürmek yerine doğrudan yeni bir çevrimiçi eşleşme aramaya (`startMatchmaking()`) yönlendirir.
   - Otomatik test sonucu: **130/130 başarılı**.
 
-## Güncel Beast Başlangıç Dengeleme İyileştirmesi — v3.5.6 (2026-09-30)
+## Önceki Beast Başlangıç Dengeleme İyileştirmesi — v3.5.6 (2026-09-30)
 
 - **Oyuncu Odaklı Beast Başlangıcı (Yem Patlamasız / Ruby Burst Yok):**
   - v3.5.5'te eklenen "BEAST MODUYLA BAŞLA" ödüllü video özelliği, başlangıçta `spawnRubyBurstFoods()` çağırarak sahaya 12 normal yem + 1 safir yem saçıyordu.
@@ -89,7 +102,7 @@ Referans yerel web kaynağı: `v3.5.8` (native sürümler: iOS Build 46 / Androi
 - Mobile ve PC yaşam döngüsü regresyonları `tests/ui-lifecycle.test.cjs` içinde doğrulanır. Toplam otomatik sonuç **70/70 başarılıdır**.
 - Native paket numaraları değişmedi; canlı reklam ortamı, AAB/IPA ve mağaza dağıtımı bu çalışmada test edilmedi.
 
-## Güncel Reklam Notu — v3.4.9 (2026-09-27)
+## Önceki Reklam Notu — v3.4.9 (2026-09-27)
 
 - **45 Saniye Global Ad Cooldown (`cooldownMs: 45000`):**
   - AdMob gelir optimizasyonu için küresel reklam bekleme süresi 90 saniyeden 45 saniyeye dengelendi. Bu değişiklik sonrasında reklam gösterim sıklığı ve AdMob geliri hissedilir şekilde arttı.
@@ -100,7 +113,7 @@ Referans yerel web kaynağı: `v3.5.8` (native sürümler: iOS Build 46 / Androi
 - **Tüm Dosyalarda Eşitlik:**
   - `Mobile v3.4.9`, `PC v3.4.9`, `Android offline fallback` ve `iOS offline fallback` dosyalarının tamamında reklam akışı ve ses kurtarma motoru tam uyumlu olarak çalışmaktadır.
 
-## Güncel iOS eki — Build 36 (2026-09-16)
+## Önceki iOS eki — Build 36 (2026-09-16)
 
 Native iOS AdMob App ID/interstitial/rewarded kimlikleri aşağıdakiyle aynıdır; değiştirilmedi.
 Web AdSense ve Android reklam birimleri de değişmedi. iOS'ta web H5 SDK yüklemesi

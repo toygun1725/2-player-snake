@@ -1,9 +1,40 @@
 # 2 Player Snake - iOS Sürümü Yapay Zeka Rehberi
 
-## Güncel Native Shell & Canlı Gönderim — v3.5.8 (Build 47) (2026-09-30)
+## Güncel web/fallback kaynağı ve Native Sürüm — v3.6.1 (Build 48, 2026-10-16)
 
-- **App Store İnceleme Durumu (2026-09-30):** Marketing version `3.5.8`, Native Build `47` (Git etiketi: `ios-v3.5.8-b47`). GitHub Actions Run #54 ile derlendi, TestFlight'a yüklendi ve App Store Connect'e bağlandı.
-- **Yayınlanma Zamanı:** 5 Ekim 2026 07:00 (GMT+3) tarihine zamanlanmış otomatik yayınlama (*Scheduled Automatic Release*) ile Apple İncelemesine eklendi / gönderildi.
+- **Web & Çevrimdışı Fallback Eşitlemesi (`v3.6.1`):**
+  - `Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`, `Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.6.1.html` ile bayt bayt eşitlendi.
+  - `file://` protokolünden açıldığında `window.__twoPlayerSnakeOfflineMode = true` bayrağı otomatik atanır; çevrimdışı modda reklam beklemesi yapılmaz.
+  - Kalp (`heart`) yemi yendiğinde tetiklenen tanımsız `ACH_SPEED_DEMON` çağrısı kaldırıldı (yalnızca `ACH_RAINBOW_POWER` açılır; 15 başarım Game Center ile %100 uyumludur).
+  - Ana ekran kısayolları için `checkShortcuts(explicitShortcut)` ve `window.launchNativeShortcut(shortcutId)` desteği eklendi.
+- **iOS Native Katman İyileştirmeleri (`MARKETING_VERSION = 3.6.1`, `CURRENT_PROJECT_VERSION = 48`):**
+  - **7 Katmanlı Taptic Engine (`HapticManager.swift`, `GameScriptMessageHandler.swift`, `ios_bridge_bootstrap.js`):** `window.Android.hapticEvent(eventType, durationMs)` köprüsü eklendi; `tick` (`UISelectionFeedbackGenerator`), `food` (light), `special_food` (rigid), `beast_food` (çift darbeli heavy+rigid), `collision` (heavy), `win` (success + yükselen vuruş) ve `game_over` (error + sönümlenen vuruş) olmak üzere 7 semantik katmana ayrıldı. `installRobustFoodHaptics` 60ms debounce (`window.__lastNativeHapticAt`) ile çift titreşime karşı korundu.
+  - **Ana Ekran Hızlı Eylemleri / Quick Actions (`AppDelegate.swift`, `SceneDelegate.swift`, `ViewController.swift`, `AppStrings.swift`):** Uygulama ikonuna basılı tutulduğunda açılan 3 hızlı kısayol (`1p_ai`, `2p_local`, `online_menu`) 21 dil desteğiyle (`AppStrings.Shortcuts`) eklendi. Hem soğuk açılışta (`connectionOptions.shortcutItem`) hem sıcak geçişte (`windowScene(_:performActionFor:completionHandler:)`) doğrudan ilgili oyun modunu başlatır.
+  - **Yerel Yüksek Skor & Premium Yedekleme (`GameScriptMessageHandler.swift`, `ViewController.swift`):** `notifyHighScore` mesajı `UserDefaults.standard` üzerinde en yüksek 10 skoru kalıcı olarak saklar ve her sayfa yüklemesinde `window.onCloudSaveLoaded(...)` üzerinden WebView'e geri yükler.
+  - `MARKETING_VERSION`: `3.5.8` $\rightarrow$ **`3.6.1`**, `CURRENT_PROJECT_VERSION`: `47` $\rightarrow$ **`48`** (Git etiketi: `ios-v3.6.1-b48`).
+- **Doğrulama:** `node --test tests/*.test.cjs` (**203/203 otomatik test geçti**).
+
+## Önceki web/fallback kaynağı — v3.6.0 (Canlıda, 2026-10-07)
+
+- PC/Mobile v3.6.0 kaynakları oluşturuldu. iOS offline HTML, Mobile v3.6.0 ile bayt bayt eşittir; önceki solo gösterge ve kutlama düzeltmeleri korunur.
+- Mobilde Boost/Dash kontrolü yoktur. Sunucu PC–Mobile ve Mobile–Mobile maçlarda iki oyuncunun boost isteğini de reddeder; yalnız PC–PC Hızlı Rekabetçi maçlarda izin verir. Beast/yakut gibi yem güçleri aynı kuralları kullanır.
+- Yerel native sürümler Android Code 71 / v3.4.9 ve iOS Build 47 / 3.5.8 olarak kalır. Güncel fallback sonraki native pakete dahil edilir; kurulu paketin dosyası yerinde değişmez.
+- Doğrulama: **195/195 otomatik test** ve gerçek yerel Socket.IO sunucusuyla **13 Edge/Chromium tarayıcı kontrolü** geçti. [v3.6.0 doğrulaması](v3.6.0_Online_Boost_Verification.md). Canlı sunucu/web yayını, native build, fiziksel cihaz ve native WebKit kabulü yapılmadı.
+- Final sürüm; PC/Mobile v3.6.0 HTML kaynakları ve ortak sunucu (`Ana Dosya/Server/Mobile/server.js`) canlıdadır.
+
+## Önceki yerel web/fallback kaynağı — v3.5.9 (2026-10-06)
+
+- PC ve Mobile kaynakları v3.5.9'dur. iOS çevrimdışı HTML, Mobile v3.5.9 ile bayt bayt eşittir.
+- Yerel 1P Normal modda gerçek gövde uzunluğunun 10'luk eşikleri matris sayısıyla, kısa parlama/fade ve mevcut ses ayarına bağlı iki notalı tonla gösterilir.
+- P1/P2/AI kutlamaları yılan verisinden bağımsız çizilir. Ortak rakam desenleri, iki eksene göre ölçek ve yön değişiminde yeniden yerleşim kullanılır; iOS neon glow desteği korunur.
+- **177/177 otomatik JS testi** ve PC/Mobile üzerinde **17 kutlama tarayıcı kontrolü** geçti. [Solo doğrulaması](v3.5.9_Solo_Milestone_Verification.md), [kutlama doğrulaması](v3.5.9_Win_Glyph_Verification.md).
+- Native proje hâlen `MARKETING_VERSION = 3.5.8`, `CURRENT_PROJECT_VERSION = 47` kullanır. Bu web güncellemesinde yeni IPA/TestFlight, WordPress veya mağaza yayını yapılmadı. Fiziksel cihaz ve native WebKit testi çalıştırılmadı; Chromium kontrolü bunların yerine geçmez.
+
+## Canlı Native Sürüm — v3.5.8 (Build 47) (App Store'da Canlı)
+
+- **App Store Durumu:** 🟢 **Review Completed / Approved (App Store'da Canlı)**
+  - **Sürüm:** Marketing version `3.5.8`, Native Build `47` (Git etiketi: `ios-v3.5.8-b47`, GitHub Actions Run #54).
+  - **Submission ID:** `e6b003b1-d370-4cae-8429-6833bc68f270` (Gönderim: 30 Eylül 2026, 21:41 / Sep 30, 2026 at 9:41 PM).
 - **Bildirim Rozeti Çözümü:** `NotificationManager.clearBadgeAndDeliveredNotifications()` ile uygulama açılışında, ön plana geçişte ve bildirim etkileşiminde teslim edilen bildirimler ve kırmızı ikon rozet sayısı (`setBadgeCount(0)` / `applicationIconBadgeNumber = 0`) otomatik temizlenir.
 - **Monetization & Akış:** Çevrimiçi hükmen galibiyet (forfeit) zafer kutlaması, geçiş reklamı ve doğrudan yeni rakip arama akışı v3.5.8'e dahildir.
 - **Doğrulama:** 130/130 JS regresyon testi + macOS WebKit testi başarıyla geçti.
@@ -46,17 +77,16 @@ Bu belge, `2 Player Snake` projesinin iOS native hibrit uygulama katmanı için 
 
 ---
 
-## 1. Güncel Yerel HTML & Çevrimdışı Fallback Durumu (v3.5.2, 2026-09-28)
+## 1. Güncel Web HTML & Çevrimdışı Fallback Durumu (v3.6.1, 2026-10-16)
 
-- Yerel HTML kaynak referansı: `2 Player Snake Mobile v3.5.2.html` ve `2 Player Snake PC v3.5.2.html`.
-- iOS Çevrimdışı Fallback (`TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`): Mobile v3.5.2 ile bayt bayt eşit. Bu kaynak henüz yeni IPA/TestFlight paketi olarak dağıtılmadı.
+- Web HTML kaynak referansı: `2 Player Snake Mobile v3.6.1.html` ve `2 Player Snake PC v3.6.1.html`.
+- iOS Çevrimdışı Fallback (`TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html`): Mobile v3.6.1 ile bayt bayt eşit.
 - Web Audio Reklam Sonrası Ses Kurtarma Motoru: iOS WebKit'in reklam bitiminde `audioCtx.state`'i 'running' göstermesine rağmen donanım ses çıkışını dondurması sorunu, reklam bitişinde `_adJustFinished` bayrağı ve ilk kullanıcı etkileşiminde `forceRebuildAudio()` çağrısıyla giderildi.
-- Katmanlı Dokunsal Geri Bildirim: `hapticTyped` semantik tipleriyle iOS Taptic Engine ve Android sistemleriyle tam uyum sağlandı.
-- Ad Cooldown Optimizasyonu: AdMob gelirlerinin toparlanması amacıyla global reklam bekleme süresi 45 saniyeye (`cooldownMs: 45000`) indirildi.
-- Doğrulama: 118/118 otomatik test ve 546/546 tarayıcı ekran kontrolü geçti. Fiziksel cihaz / native WebKit kabulü bekliyor.
-- WordPress Yayını: v3.5.2 WordPress’te canlıdır (2026-09-28 kullanıcı bildirimi). Cihazlarda v3.5.2 görünümü ve son kabul sonuçları henüz bildirilmedi. Bu web değişikliği için yeni native build gerekmiyor; paket içi fallback mevcut kurulumda değişmez.
+- Katmanlı Dokunsal Geri Bildirim: `hapticEvent` (7 katmanlı semantik Taptic Engine) ile iOS ve Android sistemleriyle tam uyum sağlandı.
+- Ad Cooldown: v3.5.4'ten beri global süre 30 saniyedir (`cooldownMs: 30000`).
+- Doğrulama: **203/203 otomatik test** geçti. Kurulu paketin fallback'i ve yeni native iyileştirmeler bir sonraki native paket dağıtıldığında aktif olur.
 
-## 1.1. Native Shell Durumu — Build 46 (v3.4.2, 2026-09-23)
+## 1.1. Önceki Native Shell Durumu — Build 46 (v3.4.2, 2026-09-23)
 
 - Marketing version: `3.4.2`; son native build `46`, HTML runtime referansı `v3.4.2`.
 - **App Store 21 Dil Desteği (`knownRegions` & `.lproj` Paketleri):**
@@ -168,7 +198,7 @@ Yeni bir build çıkarken (örneğin Build 36 için) şu 4 dosyada yapı numaras
 
 ### Adım 2: Git Commit, Tag ve Push Kuralları (PowerShell Uyarısı!)
 * **ÖNEMLİ KURAL (PowerShell):** Windows PowerShell ortamında komutları zincirlemek için `&&` **KULLANILMAZ**, yerine `;` kullanılır.
-* **Tag Formatı:** GitHub Actions workflow'u yalnızca `ios-v3.3.5-b*` etiketlerini dinler!
+* **Tag Formatı:** GitHub Actions workflow'u `ios-v*` etiketlerini dinler. Aşağıdaki Build 36 komutları tarihsel örnektir; güncel numaralandırma için belgenin sonundaki SOP kullanılır.
 ```powershell
 # 1. Değişiklikleri stage et
 git add "Ana Dosya/iOS/TwoPlayerSnake.xcodeproj/project.pbxproj" "Ana Dosya/iOS/TwoPlayerSnake/Info.plist" "Ana Dosya/iOS/TwoPlayerSnake/ViewController.swift" "Ana Dosya/iOS/TwoPlayerSnake/Bridge/ios_bridge_bootstrap.js" "MD Files/AI_Guide_iOS.md" "MD Files/Release_Notes.md"
@@ -345,7 +375,7 @@ flowchart TD
 ---
 
 ### 🏆 PROJE DURUMU:
-Tüm aşamalar (Aşama 1'den Aşama 7'ye kadar) %100 başarıyla tamamlanmıştır. Uygulama Apple App Store'da resmi olarak yayındadır (v3.3.5 / Build 29). Sonraki güncellemeler ve iyileştirmeler TestFlight hattı (Build 30–37+) üzerinden yürütülmektedir.
+Aşama 1–7 ve v3.3.5 / Build 29 ilk yayın kaydı tarihseldir. Güncel web kaynağı v3.6.0 (final ve canlıda), native proje 3.5.8 / Build 47'dir.
 
 ---
 
@@ -354,8 +384,8 @@ Tüm aşamalar (Aşama 1'den Aşama 7'ye kadar) %100 başarıyla tamamlanmışt�
 Gelecekte bu projeyi devralacak veya yeni bir güncelleme / build çıkaracak herhangi bir AI Agent (veya geliştirici) için adım adım uygulanabilir kılavuz:
 
 ### 1. Mevcut Sürüm ve Numaralandırma Durumu
-* **App Store Canlıdaki Sürüm:** `3.4.2 (Build 46)` — Canlı yayında / TestFlight onaylı.
-* **Son TestFlight Derlemesi:** `3.5.8 (Build 47)` (`ios-v3.5.8-b47` - TestFlight dağıtımında)
+* **Yerel native proje:** `3.5.8 (Build 47)`; web/fallback kaynağı `v3.6.0` (final ve canlıda).
+* **Son kaydedilen TestFlight gönderimi:** `3.5.8 (Build 47)` (`ios-v3.5.8-b47`, 2026-09-30). Güncel App Store dağıtım durumu bu yerel çalışmada sorgulanmadı.
 * **Bir Sonraki Build Numarası:** `48` (Build numarası Apple kuralları gereği her zaman monotonik olarak artmalıdır: 48, 49, 50...).
 
 ---
@@ -369,9 +399,10 @@ Gelecekte bu projeyi devralacak veya yeni bir güncelleme / build çıkaracak he
 
 #### Adım 2: Xcode Projesinde Sürüm / Build Numarasını Güncelleme
 [`Ana Dosya/iOS/TwoPlayerSnake.xcodeproj/project.pbxproj`](file:///d:/%233%20Vibecoding/AI%20Games/2%20Player%20Snake/Ana%20Dosya/iOS/TwoPlayerSnake.xcodeproj/project.pbxproj) dosyasında:
-> ⛔ **KESİN VE DEĞİŞMEZ KURAL:** Kullanıcı bizzat ve açıkça *"v3.3.6 yap"* veya *"yeni mağaza versiyonuna geç"* demediği sürece `MARKETING_VERSION` ASLA değiştirilmez (`3.3.5` olarak sabit tutulur). Hiçbir AI agent veya geliştirici bu numarayı kendi inisiyatifiyle artıramaz.
-* `CURRENT_PROJECT_VERSION`: Yalnızca build numarası bir artırılır (Örn: `29` -> `30`).
-* `MARKETING_VERSION`: Sabit olarak `3.3.5` kalır.
+> Web HTML sürümü ile native mağaza sürümü ayrı takip edilir. Kullanıcı yeni native/mağaza sürümüne geçilmesini istemedikçe `MARKETING_VERSION` artırılmaz; mevcut değer `3.5.8`'dir.
+* Yalnız web kaynağı güncellendiğinde native sürüm ve build numarası değiştirilmez.
+* Yeni native build istenirse `CURRENT_PROJECT_VERSION` son kullanılan numaradan artırılır (mevcut `47`, sonraki `48`); dağıtım öncesi son kullanılan numara doğrulanır.
+* `MARKETING_VERSION` kullanıcının native sürüm talebine göre belirlenir. Aşağıdaki örnekler mevcut 3.5.8 etiketiyle Build 48 içindir; bu çalışma dağıtım başlatmaz.
 
 #### Adım 3: GitHub'a Push ve Otomatik Bulut Derlemesini Tetikleme
 Projede Mac bilgisayara gerek kalmadan derleme yapan GitHub Actions CI/CD hattı hazırdır. Aşağıdaki yöntemlerden **biri** uygulanır:
@@ -379,20 +410,20 @@ Projede Mac bilgisayara gerek kalmadan derleme yapan GitHub Actions CI/CD hattı
 * **Seçenek A — Git Tag ile Otomatik Tetikleme (Önerilen):**
   ```bash
   git add .
-  git commit -m "feat(ios): v3.3.5 build 30 release"
+  git commit -m "feat(ios): v3.5.8 build 48 release"
   git push origin main
-  git tag ios-v3.3.5-b30
-  git push origin ios-v3.3.5-b30
+  git tag ios-v3.5.8-b48
+  git push origin ios-v3.5.8-b48
   ```
   *(Etiket `ios-v*` formatında push edildiği an GitHub Actions otomatik olarak `macos-latest` üzerinde Xcode derlemesini başlatır, dağıtım sertifikasını çözer ve üretilen `.ipa` paketini doğrudan TestFlight / App Store Connect'e yükler).*
 
 * **Seçenek B — GitHub CLI (`gh`) ile Tetikleme:**
   ```bash
-  gh workflow run ios-testflight.yml -f build_number=30 -f version_number=3.3.5
+  gh workflow run ios-testflight.yml -f build_number=48 -f version_number=3.5.8
   ```
 
 * **Seçenek C — GitHub Web Arayüzünden:**
-  GitHub Reposu > **Actions** > **iOS Build & TestFlight Deployment** > **Run workflow** > `build_number: 30` yazıp butona tıklanır.
+  GitHub Reposu > **Actions** > **iOS Build & TestFlight Deployment** > **Run workflow** > doğrulanan yeni build numarası (örnekte `48`) ve native sürüm girilir.
 
 ---
 

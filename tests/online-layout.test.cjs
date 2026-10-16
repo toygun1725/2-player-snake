@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
-const mobilePath = 'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.5.8.html';
+const mobilePath = 'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.6.1.html';
 const html = fs.readFileSync(path.join(root, mobilePath), 'utf8');
 
 function functionSource(name) {
@@ -21,14 +21,14 @@ function fixture(extra = {}) {
   return context;
 }
 
-test('v3.5.8 source and both packaged fallbacks are identical; both scripts parse', () => {
+test('Mobile v3.6.1 and both packaged fallbacks are identical; Mobile and PC scripts parse', () => {
   for (const fallback of ['Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
     'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html']) {
     assert.equal(fs.readFileSync(path.join(root, fallback), 'utf8'), html);
   }
-  const pc = fs.readFileSync(path.join(root, 'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.5.8.html'), 'utf8');
-  for (const source of [html, pc]) {
-    assert.match(source, /const VERSION = 'v3\.5\.8';/);
+  const pc = fs.readFileSync(path.join(root, 'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.6.1.html'), 'utf8');
+  for (const [source, version] of [[html, 'v3.6.1'], [pc, 'v3.6.1']]) {
+    assert.ok(source.includes(`const VERSION = '${version}';`));
     for (const script of source.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)) {
       new vm.Script(script[1]);
     }
@@ -121,8 +121,8 @@ test('resize preserves online matrix, skips unchanged buffers and retains last v
   assert.equal(writes, 2); assert.equal(c.onlineViewport, saved);
 });
 
-test('PC v3.5.8: vertical arena locks aspect ratio and produces square cells for cross-play', () => {
-  const pcHtml = fs.readFileSync(path.join(root, 'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.5.8.html'), 'utf8');
+test('PC v3.6.1: vertical arena locks aspect ratio and produces square cells for cross-play', () => {
+  const pcHtml = fs.readFileSync(path.join(root, 'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.6.1.html'), 'utf8');
   assert.match(pcHtml, /#stage\.vertical-arena #canvasWrap/);
   assert.match(pcHtml, /st\.classList\.toggle\('vertical-arena',\s*isVerticalArena\)/);
   assert.match(pcHtml, /cwEl\.style\.aspectRatio\s*=\s*`\$\{GRID_COLS\} \/ \$\{GRID_ROWS\}`/);

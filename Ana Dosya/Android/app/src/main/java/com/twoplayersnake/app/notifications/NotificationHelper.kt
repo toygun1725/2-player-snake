@@ -52,4 +52,12 @@ object NotificationHelper {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.notify(notificationId, notification)
     }
+
+    fun clearDeliveredNotifications(context: Context) {
+        try {
+            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+            manager?.cancelAll()
+        } catch (_: Exception) {
+        }
+    }
 }

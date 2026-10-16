@@ -14,18 +14,34 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         let rootViewController = ViewController()
 
-        // Universal Link veya Custom Scheme ile soğuk başlangıç (cold start) kontrolü
+        // Universal Link, Custom Scheme veya Quick Action Shortcut ile soğuk başlangıç (cold start) kontrolü
         if let userActivity = connectionOptions.userActivities.first(where: { $0.activityType == NSUserActivityTypeBrowsingWeb }),
            let url = userActivity.webpageURL {
             rootViewController.handleDeepLink(url: url)
         } else if let url = connectionOptions.urlContexts.first?.url {
             rootViewController.handleDeepLink(url: url)
+        } else if let shortcutItem = connectionOptions.shortcutItem {
+            rootViewController.handleShortcut(shortcutId: shortcutItem.type)
         }
 
         window.rootViewController = rootViewController
         window.backgroundColor = .black
         self.window = window
         window.makeKeyAndVisible()
+    }
+
+    // MARK: - Home Screen Quick Actions (Uygulama arka plandayken kısayol seçimi)
+    func windowScene(
+        _ windowScene: UIWindowScene,
+        performActionFor shortcutItem: UIApplicationShortcutItem,
+        completionHandler: @escaping (Bool) -> Void
+    ) {
+        if let rootViewController = window?.rootViewController as? ViewController {
+            rootViewController.handleShortcut(shortcutId: shortcutItem.type)
+            completionHandler(true)
+        } else {
+            completionHandler(false)
+        }
     }
 
     // MARK: - Universal Links (Uygulama arka plandayken / etkinken gelen web bağlantıları)

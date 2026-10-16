@@ -1,6 +1,9 @@
 (function () {
   if (window.__twoPlayerSnakeAndroidBridgeInstalled) return;
   window.__twoPlayerSnakeAndroidBridgeInstalled = true;
+  if (typeof window !== "undefined" && window.location && window.location.protocol === "file:") {
+    window.__twoPlayerSnakeOfflineMode = true;
+  }
   window.__nativeAdCallbacks = window.__nativeAdCallbacks || {};
 
   function safeSerialize(payload) {
@@ -90,6 +93,16 @@
   // --- H5 Ad Shim Integration ---
   window.adsbygoogle = window.adsbygoogle || [];
 
+  function isAdsRemovedEnabled() {
+      if (window.TwoPlayerSnakeAppSettings && window.TwoPlayerSnakeAppSettings.adsRemoved === true) return true;
+      try {
+          if (window.Android && typeof window.Android.isAdsRemoved === "function") {
+              return window.Android.isAdsRemoved() === "true";
+          }
+      } catch (e) {}
+      return false;
+  }
+
   // Core shim logic — routes adBreak calls to the native Android bridge.
   // Defined as a standalone function so both the adBreak override and the
   // adsbygoogle.push override can call it without infinite recursion.
@@ -97,11 +110,24 @@
       console.log("Android Shell: adBreak requested", o);
 
       var req = (o && typeof o === "object") ? o : {};
+      var adType = req.type || "next";
+
+      // --- Offline fallback bypass: skip network ads when running offline ---
+      if (window.__twoPlayerSnakeOfflineMode === true && !isAdsRemovedEnabled()) {
+          try { if (typeof req.beforeAd === "function") req.beforeAd(); } catch(e) {}
+          if (adType === "reward") {
+              try { if (typeof req.beforeReward === "function") req.beforeReward(function() {}); } catch(e) {}
+              try { if (typeof req.adDismissed === "function") req.adDismissed(); } catch(e) {}
+          }
+          try { if (typeof req.afterAd === "function") req.afterAd(); } catch(e) {}
+          try { if (typeof req.adBreakDone === "function") req.adBreakDone(); } catch(e) {}
+          if (window.AdManager) { window.AdManager.adInProgress = false; }
+          return;
+      }
 
       // --- Premium bypass: skip ads entirely if adsRemoved is true ---
-      if (window.TwoPlayerSnakeAppSettings && window.TwoPlayerSnakeAppSettings.adsRemoved === true) {
-          console.log("Android Shell: adsRemoved=true, bypassing ad", req.type);
-          var adType = req.type || "next";
+      if (isAdsRemovedEnabled()) {
+          console.log("Android Shell: adsRemoved=true, bypassing ad", adType);
           try { if (typeof req.beforeAd === "function") req.beforeAd(); } catch(e) {}
           if (adType === "reward") {
               // For rewarded: fire beforeReward (no-op fn), then adViewed, then afterAd, then adBreakDone
@@ -110,19 +136,21 @@
           }
           try { if (typeof req.afterAd === "function") req.afterAd(); } catch(e) {}
           try { if (typeof req.adBreakDone === "function") req.adBreakDone(); } catch(e) {}
+          if (window.AdManager) { window.AdManager.adInProgress = false; }
           return;
       }
       // --- End premium bypass ---
 
       var callbackId = "adb_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
       window.__nativeAdCallbacks[callbackId] = {
-          type: req.type || "next",
+          type: adType,
           beforeAd: (typeof req.beforeAd === "function") ? req.beforeAd : null,
           afterAd: (typeof req.afterAd === "function") ? req.afterAd : null,
           adBreakDone: (typeof req.adBreakDone === "function") ? req.adBreakDone : null,
           adViewed: (typeof req.adViewed === "function") ? req.adViewed : null,
           adDismissed: (typeof req.adDismissed === "function") ? req.adDismissed : null,
-          beforeReward: (typeof req.beforeReward === "function") ? req.beforeReward : null
+          beforeReward: (typeof req.beforeReward === "function") ? req.beforeReward : null,
+          presented: false
       };
 
       try {
@@ -136,7 +164,7 @@
       // For reward-type ads, trigger beforeReward with a no-op showAdFn.
       // The native SDK manages actual display; this call ensures the game
       // sets rewardFlowAvailable = true before the native ad fires.
-      if ((req.type || "next") === "reward") {
+      if (adType === "reward") {
           try {
               if (window.__nativeAdCallbacks[callbackId].beforeReward) {
                   window.__nativeAdCallbacks[callbackId].beforeReward(function() {
@@ -148,7 +176,7 @@
           }
       }
 
-      // JS Emniyet Zamanlayıcısı: 8.5 saniye içinde native yanıt vermezse oyunu kurtar
+      // JS Emniyet Zamanlayıcısı: 8.5 saniye içinde native reklam ekrana gelmezse oyunu kurtar
       var safetyTimer = setTimeout(function () {
           if (window.__nativeAdCallbacks[callbackId]) {
               console.warn("Android Shell: ⚠️ AdBreak JS zaman aşımı (8.5s), oyun kilitlenmesin diye devam ettiriliyor.");
@@ -159,7 +187,7 @@
 
       // Send only serializable data to native
       safeCall("adBreak", {
-          type: req.type || "next",
+          type: adType,
           name: req.name || "",
           callbackId: callbackId
       });
@@ -186,11 +214,24 @@
       // Non-ad calls (e.g. adConfig onReady) — silently consume.
   };
 
+  // Called by Native as soon as the fullscreen ad is actually presented on screen.
+  // Cancels the 8.5s safetyTimer so 15-30s rewarded videos are never prematurely aborted.
+  window.__onNativeAdPresented = function(callbackId) {
+      var callbacks = callbackId ? window.__nativeAdCallbacks[callbackId] : null;
+      if (!callbacks) return;
+      callbacks.presented = true;
+      if (callbacks.safetyTimer) {
+          clearTimeout(callbacks.safetyTimer);
+      }
+  };
+
   // Callback for Native to resume the game
   window.__onNativeAdDone = function(adBreakDoneCallbackName, success) {
       console.log("Android Shell: Native ad finished, triggering callback:", adBreakDoneCallbackName, "success:", success);
-      const callbacks = adBreakDoneCallbackName ? window.__nativeAdCallbacks[adBreakDoneCallbackName] : null;
+      var callbacks = adBreakDoneCallbackName ? window.__nativeAdCallbacks[adBreakDoneCallbackName] : null;
       if (callbacks) {
+          delete window.__nativeAdCallbacks[adBreakDoneCallbackName];
+          if (window.AdManager) window.AdManager.adInProgress = false;
           if (callbacks.safetyTimer) {
               clearTimeout(callbacks.safetyTimer);
           }
@@ -217,16 +258,29 @@
           } catch (e) {
               console.warn("Android Shell: adBreakDone callback error", e);
           }
-          delete window.__nativeAdCallbacks[adBreakDoneCallbackName];
+          try {
+              if (typeof window.resumeAudioContext === "function") {
+                  window.resumeAudioContext();
+              }
+          } catch (e) {}
           return;
       }
 
+      // Late native replies after the watchdog must not finish a newer request.
+      if (adBreakDoneCallbackName && adBreakDoneCallbackName.indexOf("adb_") === 0) return;
+
       // Legacy fallback
+      if (window.AdManager) window.AdManager.adInProgress = false;
       if (adBreakDoneCallbackName && typeof window[adBreakDoneCallbackName] === 'function') {
           window[adBreakDoneCallbackName]();
       } else if (typeof window.adBreakDone === 'function') {
           window.adBreakDone();
       }
+      try {
+          if (typeof window.resumeAudioContext === "function") {
+              window.resumeAudioContext();
+          }
+      } catch (e) {}
   };
 
   // --- Quality & Memory Optimization Lifecycle Hooks ---

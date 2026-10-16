@@ -40,6 +40,9 @@ Yazılım geçmişi olmayan bir video yapımcısı ve bir avukatın, yapay zekay
 
 Tüm teknik kılavuzlar ve sürüm geçmişi [`MD Files/`](MD%20Files/) dizinindedir:
 - [Sürüm Notları (Release Notes)](MD%20Files/Release_Notes.md)
+- [v3.6.0 Online Boost Doğrulaması](MD%20Files/v3.6.0_Online_Boost_Verification.md)
+- [v3.5.9 Solo Uzunluk Göstergesi Doğrulaması](MD%20Files/v3.5.9_Solo_Milestone_Verification.md)
+- [v3.5.9 Kutlama Yazısı Doğrulaması](MD%20Files/v3.5.9_Win_Glyph_Verification.md)
 - [Mobil Web Geliştirici Kılavuzu](MD%20Files/AI_Guide_Mobile.md)
 - [PC Web Geliştirici Kılavuzu](MD%20Files/AI_Guide_PC.md)
 - [iOS Geliştirici Kılavuzu](MD%20Files/AI_Guide_iOS.md)
@@ -49,7 +52,7 @@ Tüm teknik kılavuzlar ve sürüm geçmişi [`MD Files/`](MD%20Files/) dizinind
 - [Reklam & Gelir Modeli Kılavuzu](MD%20Files/AI_Guide_Ads.md)
 - [App Store Açıklamaları (Tüm Diller)](MD%20Files/App_Store_Descriptions.md)
 
-> **Güncel kaynak sürümü:** `v3.5.8` — Çevrimiçi maçlarda rakip ayrıldığında (forfeit) geçiş reklamı (interstitial) monetization entegrasyonu, istatistik ekranı sonrası "Tekrar Oyna" butonunun doğrudan yeni eşleşme başlatması ve 130/130 otomatik test geçti.
+> **Final Sürüm (Canlıda):** `v3.6.0` — Online Boost/Dash kuralı (yalnız PC–PC Hızlı Rekabetçi maçlarda aktif, cross-play ve mobil maçlarda kapalı), Android ve iOS çevrimdışı fallback eşitliği, 1P Normal 10'luk uzunluk kutlaması ve düzeltilmiş kutlama glifleri. PC ve Mobile için nihai final sürümdür ve canlı yayındadır. **195/195 otomatik test** ve **13 Socket.IO kontrolü** doğrulanmıştır ([v3.6.0 Online Boost Doğrulaması](MD%20Files/v3.6.0_Online_Boost_Verification.md)). Native sürümler Android Code 71 / v3.4.9 ve iOS Build 47 / 3.5.8 olarak kalır.
 
 ---
 © 2026 RomiToy Games. All rights reserved.

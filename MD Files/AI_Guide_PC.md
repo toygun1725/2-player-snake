@@ -1,6 +1,28 @@
 # 2 Player Snake - PC Surumu Yapay Zeka Rehberi
 
-## Güncel kaynak — v3.5.8 (2026-09-30)
+## Final kaynak — v3.6.0 (Canlıda, 2026-10-07)
+
+- Online Boost/Dash yalnız iki PC oyuncusunun eşleştiği Hızlı Rekabetçi maçlarda kullanılabilir. PC–Mobile ve Mobile–Mobile odalarında iki oyuncu için de kapalıdır; rastgele eşleşme, özel oda, yeni round ve tekrar maç aynı kurala uyar.
+- Sunucu `isBoostAllowed(room)` ile modu, oda platformunu ve iki oyuncunun platformunu kontrol eder; `gameInit.boostEnabled` ile sonucu bildirir. İzin verilmeyen istekler gövde, cooldown, flaş veya ses üretmez; eski dash süresi de hız döngüsünde uygulanmaz.
+- PC `onlineBoostEnabled` değerini yerel `boostEnabled` tercihinden ayrı saklar. `isBoostEnabled()` Shift, boost çubukları, kontrol ipuçları ve çubuk güncellemelerinin ortak koşuludur. Online çıkış izni temizler; yerel tercih korunur.
+- Yerel PC Hızlı Rekabetçi modda mevcut boost seçeneği devam eder. Beast/yakut ve diğer yem güçleri kendi kurallarını kullanır. v3.5.9 solo göstergesi ve kutlama düzeltmeleri yeni kaynağa taşındı.
+- Doğrulama: **195/195 otomatik test** ve gerçek yerel Socket.IO sunucusuyla **13 Edge/Chromium tarayıcı kontrolü** geçti. [v3.6.0 doğrulaması](v3.6.0_Online_Boost_Verification.md). Canlı sunucu/web yayını, native build, fiziksel cihaz ve native WebKit kabulü yapılmadı.
+- Final sürüm; PC/Mobile v3.6.0 HTML kaynakları ve ortak sunucu (`Ana Dosya/Server/Mobile/server.js`) canlıdadır.
+
+## Önceki kaynak — v3.5.9 (2026-10-06)
+
+- Kullanıcı geri bildirimi (2026-10-06): kutlama düzeltmesi “Evet iyi oldu” olarak değerlendirildi. [Kabul kaydı](v3.5.9_Win_Glyph_Verification.md#kullanıcı-geri-bildirimi).
+- **1P Normal (Solo) uzunluk göstergesi:** Yılanın gerçek gövdesi 10, 20, 30… uzunluklarına ulaştığında, matrisin ortasında oyuncunun renginde hücrelerden oluşan bir sayı belirir. Kısa bir parlamadan sonra 1600 ms aktif oyun süresinde yumuşakça kaybolur; periyodik yanıp sönme yoktur.
+- Mobile v3.5.9 ile aynı rakam desenleri, eşik geçmişi, fade ve iki notalı ses kullanılır. PC `getCellCoords()` hesabı mevcut canvas çizimiyle aynı CSS genişlik/yüksekliğine bağlıdır; yüksek DPI ekranlarda da konum değişmez. Standart PC matrisi 64×36 korunur.
+- `bodyAdvance()` gerçek gövde büyümesinde eşiği kaydeder; `step()` yerel oyun süresini ilerletir. `render()` göstergeyi yılan ve yemlerden önce çizer; klavye girişleri devam eder.
+- `SFX.lengthMilestone()` mevcut ses ayarına uyar: 880 Hz triangle, 90 ms sonra 1320 Hz sine; toplam yaklaşık 260 ms. İkinci nota `setGameTimeout()` ile maç/round yaşam döngüsüne bağlıdır.
+- Kapsam yalnız AI kapalı yerel 1P Normal moddur. Duraklatma, geri sayım ve sonuç animasyonları süreyi dondurur; yeni maç geçmişi sıfırlar. Ödüllü devam eski görüntüyü temizler ve ulaşılan eşik geçmişini korur.
+- PC v3.5.8 korunarak ayrı `2 Player Snake PC v3.5.9.html` oluşturuldu. Mobil ve PC güncel kaynakları v3.5.9'dur.
+- **Kutlama yazısı düzeltmesi:** `startWinAnim()` yılanın `segments`/`prev` verisini değiştirmez. P1/P2/AI, `buildWinGlyphData()` ve `drawWinGlyph()` ile ayrı görsel veri olarak çizilir. Solo modda P2'nin bulunmaması artık hata üretmez; eski konum, sarsıntı, flaş ve büyüme efektleri yazıyı bozamaz.
+- Rakamlar solo uzunluk göstergesiyle aynı 5×7 desenleri kullanır; “1”in geniş orta çizgisi giderildi. Boş sütunları kırpılmış yazı hem sütun hem satır sayısına göre 1–3 ölçekle ortalanır. 24×36/42 cross-play sahaları ve kısa ekranlar kapsanır; matris değişince yerleşim yenilenir, piksel boyutları her çizimde güncel canvas'tan alınır. Yedi satırdan kısa sahada kompakt metin kullanılır.
+- Doğrulama: **177/177 otomatik test**. Solo göstergesi için **12 PC tarayıcı kabul kontrolüne** ek olarak, iki platformda **17 kutlama kontrolü** geçti: P1/P2/AI, uzun yılan, cross-play, DPI 2, canlı ekran değişimi, solo sonuç ekranı ve sonraki round. [Solo doğrulaması](v3.5.9_Solo_Milestone_Verification.md), [kutlama doğrulaması](v3.5.9_Win_Glyph_Verification.md). Yerel kaynak hazırlandı; yayın/native build yapılmadı.
+
+## Önceki kaynak — v3.5.8 (2026-09-30)
 
 - **Çevrimiçi Hükmen Galibiyet (Forfeit) Reklam Monetization & Eşleşme Akışı:**
   - Çevrimiçi maçlarda rakip bağlantıyı kesip 15 saniye içinde dönmediğinde sunucu `gameOver (reason: 'forfeit')` gönderir.
@@ -96,11 +118,11 @@
 Bu belge, PC surumunde calisacak yapay zekalar icin guncel teknik referanstir. PC surumu de mobil gibi tek HTML dosyada yasamalidir; CSS, JS, i18n, canvas cizimi, reklam mantigi ve sentetik sesler ayni dosyada tutulur.
 
 ### Referans Surum
-- Aktif referans surum: `v3.5.4` (yerel kaynak)
-- Temel referans dosya: `2 Player Snake PC v3.5.4.html`
-- Kaynak/yayin durumu: PC v3.5.4 yerel olarak tamamlandı ve doğrulandı. 30s cooldown, Solo 1P ödüllü devam ve maç sonu akış optimizasyonları devrede; 121/121 otomatik test geçti.
+- Aktif referans surum: `v3.6.0` (Final sürüm, canlıda)
+- Temel referans dosya: `Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.6.0.html`
+- Kaynak/yayin durumu: v3.6.0 nihai final sürümdür ve canlı yayındadır. Önceki sürüm kayıtları tarihseldir.
 
-## Son Guncelleme (v3.5.4 - Reklam Gelir Optimizasyonu, 30s Cooldown, 1P Ödüllü Canlanma & Maç Sonu Akışı)
+## Onceki Guncelleme (v3.5.4 - Reklam Gelir Optimizasyonu, 30s Cooldown, 1P Ödüllü Canlanma & Maç Sonu Akışı)
 - **v3.5.4**: Küresel Reklam Cooldown 30s (`cooldownMs: 30000`), Ödüllü Reklam Global Cooldown Muafiyeti, Solo (1P) Moduna Ödüllü Canlanma, Maç Sonu İstatistik Öncesi Geçiş Reklamı, Butonlardan Reklamların Kaldırılması ve Round Arası 1-3-5 Kuralı (2026-09-30).
   - **30 Saniye Küresel Cooldown:** Reklam bekleme süresi 45s'den 30s'ye dengelenerek reklam gösterim fırsatları artırıldı.
   - **Ödüllü Reklam Cooldown Muafiyeti:** `canOfferRewardedContinue()` içindeki cooldown engeli kaldırıldı; oyuncu istediğinde reklam izleyip devam edebilir.
@@ -737,7 +759,7 @@ Macera modunda:
 
 ## Sonraki AI Icin Kisa Not
 PC tarafinda yeni bir parity veya refactor isi gelirse once bu rehberi, sonra mobil rehberi birlikte oku:
-- [AI_Guide_Mobile.md](C:/Users/Toygun/Desktop/AI%20Games/2%20Player%20Snake/AI_Guide_Mobile.md)
+- [AI_Guide_Mobile.md](AI_Guide_Mobile.md)
 
 Kaynak yorumlarken "mobilde boyleydi, PC'ye aynen gelir" varsayimi yapma. Ozellikle sureler, popup boyutu ve kazanim animasyonu PC'de artik bilincli olarak farklidir.
 

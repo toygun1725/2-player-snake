@@ -1,6 +1,29 @@
 # 2 Player Snake - iOS & TestFlight GitHub CI/CD Kurulum Rehberi (Mac Olmadan)
 
-## Güncel Native Shell & TestFlight — v3.5.8 Build 47 (2026-09-30)
+## Final web/fallback ve test kapsamı — v3.6.0 (Canlıda, 2026-10-07)
+
+- PC/Mobile v3.6.0 ve ortak online sunucu için boost izni yalnız PC–PC Hızlı Rekabetçi maçlarda verilir. Mobil/cross-play boost istekleri sunucuda engellenir. Android/iOS fallback Mobile v3.6.0 ile bayt bayt eşittir.
+- `tools/test-ios-runtime.sh` yedi JS paketini çalıştırır; yeni `tests/online-boost.test.cjs` 18 test içerir. Mevcut solo ve kutlama testleri v3.6.0 üzerinde çalışır; localization fixture güncel sürüme taşındı.
+- Native iOS değerleri 3.5.8 / Build 47 olarak kalır. CI/TestFlight, yeni IPA, mağaza ve canlı web/sunucu yayını başlatılmadı. Windows kabulü macOS WebKit bölümünü çalıştırmaz.
+- Doğrulama: **195/195 otomatik test** ve gerçek yerel Socket.IO sunucusuyla **13 Edge/Chromium tarayıcı kontrolü** geçti. [v3.6.0 doğrulaması](v3.6.0_Online_Boost_Verification.md). Canlı sunucu/web yayını, native build, fiziksel cihaz ve native WebKit kabulü yapılmadı.
+- Final sürüm; PC/Mobile v3.6.0 HTML kaynakları ve ortak sunucu (`Ana Dosya/Server/Mobile/server.js`) canlıdadır.
+
+```bash
+node --test tests/ios-runtime.test.cjs tests/online-layout.test.cjs tests/ui-lifecycle.test.cjs tests/localization.test.cjs tests/solo-length-milestone.test.cjs tests/win-glyph.test.cjs tests/online-boost.test.cjs
+```
+
+## Önceki yerel web/fallback ve test kapsamı — v3.5.9 (2026-10-06)
+
+- PC ve Mobile kaynakları v3.5.9; Android/iOS offline HTML dosyaları Mobile v3.5.9 ile bayt bayt eşittir. Solo 10'luk uzunluk göstergesi ve P1/P2/AI için yılan verisinden bağımsız, ekrana sığan kutlama çizimi dahil edildi.
+- Native iOS proje değerleri `MARKETING_VERSION = 3.5.8`, `CURRENT_PROJECT_VERSION = 47` olarak kalır. v3.5.9 için IPA/TestFlight, canlı web veya mağaza dağıtımı başlatılmadı.
+- `tools/test-ios-runtime.sh` artık mevcut dört JS paketine ek olarak `solo-length-milestone.test.cjs` ve `win-glyph.test.cjs` çalıştırır. Windows'ta altı paketle **177/177 test** geçti; kutlama için **17 PC/Mobile tarayıcı kontrolü** geçti.
+- macOS WebKit bölümü bu Windows oturumunda çalıştırılmadı; CI tetiklenmedi. Sonraki native build depodaki güncel fallback'i paketler. [Solo doğrulaması](v3.5.9_Solo_Milestone_Verification.md), [kutlama doğrulaması](v3.5.9_Win_Glyph_Verification.md).
+
+```bash
+node --test tests/ios-runtime.test.cjs tests/online-layout.test.cjs tests/ui-lifecycle.test.cjs tests/localization.test.cjs tests/solo-length-milestone.test.cjs tests/win-glyph.test.cjs
+```
+
+## Son kaydedilen native TestFlight gönderimi — v3.5.8 Build 47 (2026-09-30)
 
 - **Son Native TestFlight Paketi:** **Build 47 (v3.5.8)**
   - Tag: `ios-v3.5.8-b47`
@@ -55,7 +78,7 @@ Bu belge, **fiziksel bir Mac bilgisayara ihtiyaç duymadan**, Windows bilgisayar
 
 ---
 
-## Güncel Native Shell & CI/CD Durumu — Build 46 (v3.4.2); Yerel Paket Kaynağı v3.5.2 (2026-09-28)
+## Önceki Native Shell & CI/CD Kaydı — Build 46 (v3.4.2); Yerel Paket Kaynağı v3.5.2 (2026-09-28)
 
 - **Son Native TestFlight Paketi:** **Build 46 (v3.4.2)**
   - Tag: `ios-v3.4.2-b46`

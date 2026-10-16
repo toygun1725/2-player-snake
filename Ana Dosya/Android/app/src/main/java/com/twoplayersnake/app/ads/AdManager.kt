@@ -96,10 +96,16 @@ class AdManager(private val activity: Activity) {
         rewardedRetryAttempt++
     }
 
-    fun showInterstitial(onDone: () -> Unit) {
+    fun showInterstitial(onPresented: (() -> Unit)? = null, onDone: () -> Unit) {
         val ad = interstitialAd
         if (ad != null) {
+            interstitialAd = null
             ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+                override fun onAdShowedFullScreenContent() {
+                    Log.d(TAG, "Interstitial Showed FullScreen")
+                    onPresented?.invoke()
+                }
+
                 override fun onAdDismissedFullScreenContent() {
                     Log.d(TAG, "Interstitial Dismissed")
                     onDone()
@@ -120,11 +126,17 @@ class AdManager(private val activity: Activity) {
         }
     }
 
-    fun showRewarded(onDone: (rewarded: Boolean) -> Unit) {
+    fun showRewarded(onPresented: (() -> Unit)? = null, onDone: (rewarded: Boolean) -> Unit) {
         val ad = rewardedAd
         if (ad != null) {
+            rewardedAd = null
             var earnedReward = false
             ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+                override fun onAdShowedFullScreenContent() {
+                    Log.d(TAG, "Rewarded Showed FullScreen")
+                    onPresented?.invoke()
+                }
+
                 override fun onAdDismissedFullScreenContent() {
                     Log.d(TAG, "Rewarded Dismissed")
                     onDone(earnedReward)

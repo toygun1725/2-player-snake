@@ -38,7 +38,7 @@ test('CrazyGames index.html implements CrazyGames lifecycle, ad methods, and saf
   // Gameplay lifecycle hooks
   assert.match(content, /function crazyGamesGameplayStart\(\)/, 'Should define crazyGamesGameplayStart');
   assert.match(content, /function crazyGamesGameplayStop\(\)/, 'Should define crazyGamesGameplayStop');
-  assert.match(content, /window\.CrazyGames\.SDK\.game\.gameplayStart\(\)/, 'Should call SDK gameplayStart');
+  assert.match(content, /(?:window\.CrazyGames\.SDK\.game|gameModule)\.gameplayStart\(\)/, 'Should call SDK gameplayStart');
   assert.match(content, /window\.CrazyGames\.SDK\.game\.gameplayStop\(\)/, 'Should call SDK gameplayStop');
 
   // Audio muting during ads

@@ -1,6 +1,40 @@
 # 2 Player Snake - Android Surumu Yapay Zeka Rehberi
 
-## Güncel kaynak — v3.5.3 (2026-09-28)
+## Güncel web/fallback kaynağı ve Native Sürüm — v3.6.1 (versionCode 72, 2026-10-16)
+
+- **Web & Çevrimdışı Fallback Eşitlemesi (`v3.6.1`):**
+  - `Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html`, `Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.6.1.html` ile bayt bayt eşitlendi.
+  - `file://` protokolünden açıldığında `window.__twoPlayerSnakeOfflineMode = true` bayrağı otomatik atanır; çevrimdışı modda reklam beklemesi yapılmaz.
+  - Kalp (`heart`) yemi yendiğinde tetiklenen tanımsız `ACH_SPEED_DEMON` çağrısı kaldırıldı (yalnızca `ACH_RAINBOW_POWER` açılır; 15 başarım Google Play Games & Game Center ile %100 uyumludur).
+  - Kısayol yönlendirmeleri için `checkShortcuts(explicitShortcut)` ve `window.launchNativeShortcut(shortcutId)` desteği eklendi.
+- **Android Native Katman İyileştirmeleri (`versionCode 72` / `v3.6.1`):**
+  - **8.5s `safetyTimer` Reklam Hatası Çözümü (`AdManager.kt`, `MainActivity.kt`, `android_bridge_bootstrap.js`):** Tam ekran geçiş veya ödüllü reklam ekranda açıldığı anda (`onAdShowedFullScreenContent`) JS tarafındaki `window.__onNativeAdPresented(callbackId)` çağrılarak 8.5 saniyelik emniyet zamanlayıcısı durdurulur. Reklam açıkken arka planda oyunun/müziğin erken başlaması ve ödüllü reklamda çift callback çakışması tamamen önlendi.
+  - **Bildirim Tepsisi Otomatik Temizliği (`NotificationHelper.kt`, `MainActivity.kt`):** `NotificationHelper.clearDeliveredNotifications(context)` eklendi; uygulama açıldığında (`onCreate`) ve ön plana geldiğinde (`onResume`) bildirim çekmecesindeki eski hatırlatma bildirimleri otomatik silinir.
+  - **21 Dilde Yerelleştirilmiş IAP Mesajları & Paket Fallback (`AppStrings.kt`, `MainActivity.kt`):** Tüm satın alma ve geri yükleme Toast mesajları 21 dilde yerelleştirildi (`AppStrings.IAP`). RevenueCat paket aramasına çok aşamalı fallback (`lifetime` -> `"remove_ads_premium"` / `"$rc_lifetime"` -> `availablePackages.firstOrNull()`) eklendi; release derlemelerde `LogLevel.WARN` kullanıldı.
+  - **Tam Çevrimdışı WebAssets Paketi (`GameWebViewClient.kt`, `assets/web_assets/`):** `fonts.css`, `fontawesome.css`, `orbitron.ttf`, `vt323.ttf`, `.woff2` ikon fontları ve `offline_logo.png` yerel asset olarak eklendi ve `shouldInterceptRequest` üzerinden CORS başlıklı (`Access-Control-Allow-Origin: *`) olarak sunuldu. Launcher kısayolları çevrimdışı fallback üzerinde de çalışır.
+  - `versionCode`: `71` $\rightarrow$ **`72`**, `versionName`: `v3.4.9` $\rightarrow$ **`v3.6.1`**.
+- **Canlı Mağaza Durumu (Google Play Console):**
+  - **Önceki Canlı Sürüm:** `71 (v3.4.9)` — 🟢 **Üretim ve Google Play Games on PC (GPGPC) kanallarında Tam Kullanıma Sunumda (Google Play'de Mevcut / Canlı)**.
+  - **Yeni Sürüm:** `72 (v3.6.1)` — İmzalı `2PlayerSnake-v3.6.1-release.aab` derlendi.
+- **Doğrulama:** `node --test tests/*.test.cjs` (**203/203 test geçti**) ve `.\gradlew.bat bundleRelease` (**BUILD SUCCESSFUL**).
+
+## Önceki web/fallback kaynağı — v3.6.0 (Canlıda, 2026-10-07)
+
+- PC/Mobile v3.6.0 kaynakları oluşturuldu. Android offline HTML, Mobile v3.6.0 ile bayt bayt eşittir; önceki solo gösterge ve kutlama düzeltmeleri korunur.
+- Mobilde Boost/Dash kontrolü yoktur. Sunucu PC–Mobile ve Mobile–Mobile maçlarda iki oyuncunun boost isteğini de reddeder; yalnız PC–PC Hızlı Rekabetçi maçlarda izin verir. Beast/yakut gibi yem güçleri aynı kuralları kullanır.
+- Yerel native sürümler Android Code 71 / v3.4.9 ve iOS Build 47 / 3.5.8 olarak kalır. Güncel fallback sonraki native pakete dahil edilir; kurulu paketin dosyası yerinde değişmez.
+- Doğrulama: **195/195 otomatik test** ve gerçek yerel Socket.IO sunucusuyla **13 Edge/Chromium tarayıcı kontrolü** geçti. [v3.6.0 doğrulaması](v3.6.0_Online_Boost_Verification.md). Canlı sunucu/web yayını, native build, fiziksel cihaz ve native WebKit kabulü yapılmadı.
+- Final sürüm; PC/Mobile v3.6.0 HTML kaynakları ve ortak sunucu (`Ana Dosya/Server/Mobile/server.js`) canlıdadır.
+
+## Önceki yerel web/fallback kaynağı — v3.5.9 (2026-10-06)
+
+- PC ve Mobile web kaynakları v3.5.9'dur. `app/src/main/assets/offline/mobile_offline_fallback.html`, Mobile v3.5.9 ile bayt bayt eşittir.
+- AI kapalı yerel 1P Normal modda 10, 20, 30… gerçek gövde uzunlukları matris hücreleriyle gösterilir; kısa parlamanın ardından 1,6 saniyede kaybolur. Mevcut ses ayarına bağlı iki notalı kısa bir ton çalar.
+- P1/P2/AI kutlaması yılan verisinden bağımsız çizilir; okunabilir rakam desenleri, iki eksende sığdırma ve ekran değişiminde yeniden yerleşim kullanır. Android WebView'in glow kısıtı korunur.
+- **177/177 JS testi** ve iki platformda **17 kutlama tarayıcı kontrolü** geçti. [Solo doğrulaması](v3.5.9_Solo_Milestone_Verification.md), [kutlama doğrulaması](v3.5.9_Win_Glyph_Verification.md).
+- Native kaynak `versionCode 71 / versionName v3.4.9` olarak kalır. Yeni AAB, canlı web yüklemesi ve fiziksel cihaz testi yapılmadı. Depodaki fallback değişikliği kurulu paketin içindeki dosyayı değiştirmez; sonraki native pakete dahil edilir.
+
+## Önceki kaynak — v3.5.3 (2026-09-28)
 
 - **Reklam Gelir Optimizasyonu & Android Bridge Emniyeti:**
   - `android_bridge_bootstrap.js` içinde `adsbygoogle.push` filtresine eksik olan `'start'` ad türü eklendi (`start || next || reward || browse`).
@@ -49,11 +83,11 @@ Bu rehber, ilk Android promptunda istenen hedefleri ve bugun bu hedeflere gore f
 
 ## Referans Durum
 - Android shell kaynagi: `d:\#3 Vibecoding\AI Games\2 Player Snake\Ana Dosya\Android`
-- Guncel yerel web kaynak referansi: `2 Player Snake Mobile v3.5.2 / PC v3.5.2`
-- Android cevrimdisi fallback: `mobile_offline_fallback.html` (Mobile v3.5.2 ile bayt bayt eşit; yeni native paket henüz üretilmedi)
-- Guncel kaynak `versionCode`: **71** (Native shell son derleme; v3.4.9 tier-based haptic engine ve güncel offline fallback ile derlendi)
+- Guncel web kaynak referansi: `2 Player Snake Mobile v3.6.1 / PC v3.6.1`
+- Android cevrimdisi fallback: `mobile_offline_fallback.html` (Mobile v3.6.1 ile bayt bayt eşit)
+- Guncel kaynak `versionCode`: **71** (Native shell son canlı derleme; sonraki build öncesi v3.6.1 native iyileştirmeleri hazırlandı)
 - Guncel kaynak `versionName`: **`v3.4.9`** (Native shell etiketi)
-- Yayin/AAB durumu: versionCode 71 (v3.4.9) AAB derlendi, imzalandı ve Google Play Console üzerinden Üretim (Production) kanalına yüklendi; Google incelemesinde (In Review).
+- Canlı mağaza durumu: `71 (v3.4.9)` Google Play Production ve Google Play Games on PC (GPGPC) kanallarında **Tam kullanıma sunum / Google Play'de Mevcut (Canlı)** durumundadır.
 
 ## Son Android Shell Notu (versionCode 71 / v3.4.9)
 - **versionCode 71 (v3.4.9)**: Katmanlı Dokunsal Geri Bildirim (Tier-Based Haptics), Web Audio Kurtarma Motoru ve v3.4.9 Çevrimdışı Eşitlemesi.

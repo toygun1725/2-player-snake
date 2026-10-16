@@ -2,7 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const source = (kind, version = 'v3.5.8') => fs.readFileSync(`Ana Dosya/${kind}/Beta/v3/2 Player Snake ${kind} ${version}.html`, 'utf8').replace(/\r\n/g, '\n');
+const source = (kind, version = 'v3.6.1') => fs.readFileSync(`Ana Dosya/${kind}/Beta/v3/2 Player Snake ${kind} ${version}.html`, 'utf8').replace(/\r\n/g, '\n');
 function fn(s, name, indent = '            ') {
   const start = s.search(new RegExp('^' + indent + '(?:async )?function ' + name + '\\(', 'm'));
   assert.ok(start >= 0, name);

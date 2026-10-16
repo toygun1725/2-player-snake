@@ -2,11 +2,14 @@
 Short Description (max 80 characters)
 2 Player Snake game: local & online multiplayer. Same screen or real-time!
 
+App Store Title (max 30 characters)
+2 Player Snake: 1v1 Battle
+
 App Store Subtitle (max 30 characters)
-Classic 2 Player Snake Battle
+Local & Online Multiplayer PvP
 
 App Store Keywords (max 100 characters)
-snake,2 player,multiplayer,offline,party,arcade,retro,pvp,two player,duo,worm,classic,battle
+two,games,duo,couple,friends,split screen,classic,retro,arcade,offline,party,slither,worm,versus
 
 Full Description
 2 Players. One screen. Ultimate Snake battle. 🐍
@@ -545,11 +548,14 @@ Descarrega agora e torna-te o campeão definitivo da Cobra. 🐍👑
 Kısa Açıklama (max 80 karakter)
 2 Kişilik Yılan oyunu: lokal & online PvP. Aynı ekran veya gerçek zamanlı!
 
+App Store Başlık (max 30 karakter)
+2 Player Snake: Yılan Oyunu
+
 App Store Alt Başlık (max 30 karakter)
-2 Kişilik Klasik Yılan Oyunu
+2 Kişilik Lokal & Online PvP
 
 App Store Anahtar Kelimeler (max 100 karakter)
-yılan,2 kişilik,yılan oyunu,iki kişilik,arcade,klasik,çevrimdışı,pvp,arkadaş,retro,düello,snake
+oyunlar,iki,aynı ekran,çevrimdışı,arkadaş,sevgili,parti,çift,klasik,retro,arcade,düello,1v1,slither
 
 Uzun Açıklama
 2 Oyuncu. Tek ekran. Efsane Yılan kapışması. 🐍

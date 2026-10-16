@@ -108,7 +108,7 @@ class MainActivity : AppCompatActivity() {
         // Buradan çağrılması Activity yeniden oluşturulduğunda popup'a neden oluyordu.
 
         // Initialize RevenueCat
-        Purchases.logLevel = LogLevel.DEBUG
+        Purchases.logLevel = if (BuildConfig.DEBUG) LogLevel.DEBUG else LogLevel.WARN
         Purchases.configure(
             PurchasesConfiguration.Builder(this, "goog_RTZchIHQaIxXoqgGcwvriNeVOGE").build()
         )
@@ -129,11 +129,15 @@ class MainActivity : AppCompatActivity() {
             onAdRequest = { type, callbackId ->
                 runOnUiThread {
                     if (type == "reward") {
-                        adManager.showRewarded { success ->
+                        adManager.showRewarded(
+                            onPresented = { notifyNativeAdPresented(callbackId) }
+                        ) { success ->
                             resumeGameAfterAd(callbackId, success)
                         }
                     } else {
-                        adManager.showInterstitial {
+                        adManager.showInterstitial(
+                            onPresented = { notifyNativeAdPresented(callbackId) }
+                        ) {
                             resumeGameAfterAd(callbackId, true) // interstitial completed normally
                         }
                     }
@@ -179,9 +183,10 @@ class MainActivity : AppCompatActivity() {
             }, 3000L)
         }
 
-        // v3.3.1 — Son oynama zamanını güncelle ve bildirimleri yeniden planla
+        // v3.3.1 — Son oynama zamanını güncelle, aktif bildirimleri temizle ve bildirimleri yeniden planla
         preferences.lastPlayedAt = System.currentTimeMillis()
         NotificationHelper.createChannel(this)
+        NotificationHelper.clearDeliveredNotifications(this)
         if (hasNotificationPermission()) {
             scheduleReEngagementNotifications()
         } else if (!preferences.notificationPermissionAsked && preferences.appLaunchCount >= 3) {
@@ -226,6 +231,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        NotificationHelper.clearDeliveredNotifications(this)
         binding.webView.onResume()
         binding.webView.resumeTimers()
         enableImmersiveMode()
@@ -518,7 +524,12 @@ class MainActivity : AppCompatActivity() {
             WebSettings.LOAD_CACHE_ELSE_NETWORK
         }
 
-        val targetUrl = if (isOnline) buildGameUrl() else TrustedWebOrigin.OFFLINE_FALLBACK_URL
+        val targetUrl = if (isOnline) {
+            buildGameUrl()
+        } else {
+            val baseFallback = TrustedWebOrigin.OFFLINE_FALLBACK_URL
+            if (!shortcutParam.isNullOrBlank()) "$baseFallback?shortcut=$shortcutParam" else baseFallback
+        }
         binding.webView.loadUrl(targetUrl)
     }
 
@@ -769,6 +780,12 @@ html.gpgpc-webview-tune body.hud-collapsed {
             .show()
     }
 
+    private fun notifyNativeAdPresented(callbackId: String?) {
+        if (callbackId.isNullOrBlank()) return
+        val script = "if (typeof window.__onNativeAdPresented === 'function') { window.__onNativeAdPresented('$callbackId'); }"
+        binding.webView.evaluateJavascript(script, null)
+    }
+
     private fun resumeGameAfterAd(callbackId: String?, success: Boolean) {
         val script = "if (typeof window.__onNativeAdDone === 'function') { window.__onNativeAdDone('${callbackId ?: ""}', $success); }"
         binding.webView.evaluateJavascript(script, null)
@@ -832,16 +849,29 @@ html.gpgpc-webview-tune body.hud-collapsed {
                 android.util.Log.e("MainActivity", "RevenueCat getOfferings error: ${error.message}")
                 runOnUiThread {
                     MaterialAlertDialogBuilder(this)
-                        .setTitle("Hata")
-                        .setMessage("Satın alma işlemi başlatılamadı. Lütfen tekrar deneyin.")
-                        .setPositiveButton("Tamam", null)
+                        .setTitle(AppStrings.IAP.errorTitle)
+                        .setMessage(AppStrings.IAP.purchaseFailedMessage(error.message))
+                        .setPositiveButton(AppStrings.IAP.okButton, null)
                         .show()
                 }
             },
             onSuccess = { offerings ->
                 val pkg = offerings.current?.lifetime
+                    ?: offerings.current?.availablePackages?.firstOrNull {
+                        it.identifier == "remove_ads_premium" || it.identifier == "\$rc_lifetime"
+                    }
+                    ?: offerings.current?.availablePackages?.firstOrNull()
+                    ?: offerings.all.values.firstOrNull()?.availablePackages?.firstOrNull()
+
                 if (pkg == null) {
-                    android.util.Log.e("MainActivity", "RevenueCat: no lifetime package in current offering")
+                    android.util.Log.e("MainActivity", "RevenueCat: no package found in offerings")
+                    runOnUiThread {
+                        MaterialAlertDialogBuilder(this)
+                            .setTitle(AppStrings.IAP.errorTitle)
+                            .setMessage(AppStrings.IAP.packageNotFoundMessage)
+                            .setPositiveButton(AppStrings.IAP.okButton, null)
+                            .show()
+                    }
                     return@getOfferingsWith
                 }
                 runOnUiThread {
@@ -851,9 +881,9 @@ html.gpgpc-webview-tune body.hud-collapsed {
                             if (!userCancelled) {
                                 android.util.Log.e("MainActivity", "Purchase error: ${error.message}")
                                 MaterialAlertDialogBuilder(this)
-                                    .setTitle("Hata")
-                                    .setMessage("Satın alma başarısız: ${error.message}")
-                                    .setPositiveButton("Tamam", null)
+                                    .setTitle(AppStrings.IAP.errorTitle)
+                                    .setMessage(AppStrings.IAP.purchaseFailedMessage(error.message))
+                                    .setPositiveButton(AppStrings.IAP.okButton, null)
                                     .show()
                             }
                         },
@@ -863,9 +893,9 @@ html.gpgpc-webview-tune body.hud-collapsed {
                             publishSettingsToGame()
                             if (isPremium) {
                                 MaterialAlertDialogBuilder(this)
-                                    .setTitle("👑 Reklamlar Kaldırıldı!")
-                                    .setMessage("Teşekkürler! Artık reklamsız bir deneyimin tadını çıkarabilirsin.")
-                                    .setPositiveButton("Harika!", null)
+                                    .setTitle(AppStrings.IAP.removeAdsSuccessTitle)
+                                    .setMessage(AppStrings.IAP.removeAdsSuccessMessage)
+                                    .setPositiveButton(AppStrings.IAP.awesomeButton, null)
                                     .show()
                             }
                         }
@@ -881,9 +911,9 @@ html.gpgpc-webview-tune body.hud-collapsed {
                 android.util.Log.e("MainActivity", "Restore error: ${error.message}")
                 runOnUiThread {
                     MaterialAlertDialogBuilder(this)
-                        .setTitle("Hata")
-                        .setMessage("Satın alımlar geri yüklenemedi. Lütfen tekrar deneyin.")
-                        .setPositiveButton("Tamam", null)
+                        .setTitle(AppStrings.IAP.errorTitle)
+                        .setMessage(AppStrings.IAP.restoreFailedMessage(error.message))
+                        .setPositiveButton(AppStrings.IAP.okButton, null)
                         .show()
                 }
             },
@@ -892,14 +922,15 @@ html.gpgpc-webview-tune body.hud-collapsed {
                 preferences.adsRemoved = isPremium
                 runOnUiThread {
                     publishSettingsToGame()
-                    val msg = if (isPremium)
-                        "👑 Reklamsız satın alımın başarıyla geri yüklendi!"
-                    else
-                        "Bu Google hesabında daha önce reklam kaldırma satın alımı bulunamadı."
+                    val msg = if (isPremium) {
+                        AppStrings.IAP.restoreSuccessMessage
+                    } else {
+                        AppStrings.IAP.restoreNotFoundMessage
+                    }
                     MaterialAlertDialogBuilder(this)
-                        .setTitle("Satın Alımları Geri Yükle")
+                        .setTitle(AppStrings.IAP.restoreTitle)
                         .setMessage(msg)
-                        .setPositiveButton("Tamam", null)
+                        .setPositiveButton(AppStrings.IAP.okButton, null)
                         .show()
                 }
             }

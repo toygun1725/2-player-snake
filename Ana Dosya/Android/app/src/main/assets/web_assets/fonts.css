@@ -1,0 +1,15 @@
+/* Original game font families, loaded locally by the iOS asset handler. */
+@font-face {
+  font-family: 'Orbitron';
+  src: url('orbitron.ttf') format('truetype');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'VT323';
+  src: url('vt323.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

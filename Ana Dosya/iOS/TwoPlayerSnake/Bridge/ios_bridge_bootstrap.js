@@ -11,6 +11,9 @@
     window.isAndroidWebView = true;
   }
   window.__twoPlayerSnakePlatform = "ios";
+  if (typeof window !== "undefined" && window.location && window.location.protocol === "file:") {
+    window.__twoPlayerSnakeOfflineMode = true;
+  }
   window.__nativeAdCallbacks = window.__nativeAdCallbacks || {};
 
   // Build 36's HTML checks this capability before loading bundled assets.
@@ -51,6 +54,7 @@
   // Android köprüsünü taklit ederek web oyun koduna dokunmadan çalışmasını sağla
   window.Android = {
     onEatFood: function (payload) {
+      window.__lastNativeHapticAt = Date.now();
       postToNative("onEatFood", payload);
     },
     onGameStart: function (payload) {
@@ -64,6 +68,15 @@
     },
     emit: function (payload) {
       postToNative("emit", payload);
+    },
+    hapticEvent: function (eventType, durationMs) {
+      if (eventType === "light" || eventType === "medium" || eventType === "beastFood") {
+        window.__lastNativeHapticAt = Date.now();
+      }
+      postToNative("hapticEvent", {
+        eventType: eventType || null,
+        durationMs: durationMs != null ? String(durationMs) : null
+      });
     },
     triggerVibration: function (durationMs) {
       postToNative("triggerVibration", { durationMs: durationMs });
@@ -527,6 +540,7 @@
     function triggerEatHaptic(type) {
       var now = Date.now();
       if (now - lastHapticTime < 50) return; // 50ms debounce
+      if (window.__lastNativeHapticAt && (now - window.__lastNativeHapticAt) < 120) return;
       lastHapticTime = now;
       postToNative("onEatFood", { type: type || "normal" });
     }

@@ -2,7 +2,19 @@
 
 Bu belge, **2 Player Snake** oyununun premium (reklamsız sürüm) altyapısı, kullanılan API anahtarları, entegrasyon ayarları ve native/web köprüsü davranışları için teknik referanstır.
 
-> **Canlı Durum (v3.4.6 - 2026-09-25):** RevenueCat IAP entegrasyonu, Android (`versionCode 70`) ve iOS (`Build 46`) native kabuklarında ve `v3.4.6` web/çevrimdışı runtime'ında sorunsuz çalışmaya devam etmektedir. Reklamsız modda tüm geçiş reklamları bypass edilir ve ödüllü devam hakları anında verilir.
+## Final kaynak bağlamı — v3.6.0 (Canlıda, 2026-10-07)
+
+PC/Mobile web kaynakları v3.6.0; Android/iOS fallback Mobile v3.6.0 ile bayt bayt eşittir. Online Boost/Dash yalnız PC–PC Hızlı Rekabetçi maçlarda kullanılabilir; premium statüsü bu maç kuralını değiştirmez. Cross-play ve mobil maçlarda sunucu boost isteğini reddeder. Beast ile başlama ve mevcut IAP/reklam bypass akışı korunur. Native sürümler Android Code 71 / v3.4.9 ve iOS Build 47 / 3.5.8 olarak kalır.
+
+195/195 JS testi ve 13 yerel Socket.IO tarayıcı kontrolü geçti. v3.6.0 nihai final sürümdür ve canlı yayındadır. [v3.6.0 doğrulaması](v3.6.0_Online_Boost_Verification.md).
+
+## Önceki yerel kaynak bağlamı — v3.5.9 (2026-10-06)
+
+PC/Mobile web kaynakları v3.5.9'dur; Android/iOS fallback'leri Mobile v3.5.9 ile bayt bayt eşittir. Native kaynaklar Android Code 71 / v3.4.9 ve iOS Build 47 / 3.5.8 olarak kalır. Solo uzunluk göstergesi ve bağımsız P1/P2/AI kutlaması premium ve ücretsiz oyuncularda aynı görsel davranışı kullanır. Ödüllü devam eşik geçmişini korur. RevenueCat yapılandırması ve mevcut premium reklam bypass akışı bu değişiklikte güncellenmedi.
+
+177/177 JS testi ve 17 kutlama tarayıcı kontrolü geçti; gerçek satın alma/restore, native reklam SDK'sı ve fiziksel cihaz kabulü bu çalışmada yapılmadı. Yeni native paket veya canlı yayın oluşturulmadı. [v3.5.9 doğrulaması](v3.5.9_Win_Glyph_Verification.md).
+
+> **Önceki canlı durum kaydı (v3.4.6 - 2026-09-25):** RevenueCat IAP entegrasyonu o tarihte Android (`versionCode 70`), iOS (`Build 46`) ve `v3.4.6` web/çevrimdışı runtime'ında çalışır olarak kaydedildi. Reklamsız modda geçiş reklamları bypass edilir ve ödüllü devam hakları anında verilir. Bu tarihsel kayıt v3.5.9 için yeni bir satın alma doğrulaması değildir.
 
 ---
 

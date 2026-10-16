@@ -9,6 +9,7 @@ import android.webkit.RenderProcessGoneDetail
 import android.webkit.SslErrorHandler
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 
@@ -19,6 +20,52 @@ class GameWebViewClient(
     private val onMainFrameLoadFailed: () -> Unit,
     private val onRenderProcessGone: () -> Unit
 ) : WebViewClient() {
+
+    override fun shouldInterceptRequest(
+        view: WebView?,
+        request: WebResourceRequest
+    ): WebResourceResponse? {
+        val url = request.url.toString()
+        val assetMatch = resolveBundledWebAsset(url)
+        if (assetMatch != null) {
+            val (assetPath, mimeType, encoding) = assetMatch
+            return try {
+                val stream = context.assets.open(assetPath)
+                WebResourceResponse(mimeType, encoding, stream).apply {
+                    responseHeaders = mapOf(
+                        "Access-Control-Allow-Origin" to "*",
+                        "Cache-Control" to "public, max-age=31536000, immutable"
+                    )
+                }
+            } catch (_: Exception) {
+                super.shouldInterceptRequest(view, request)
+            }
+        }
+        return super.shouldInterceptRequest(view, request)
+    }
+
+    private fun resolveBundledWebAsset(url: String): Triple<String, String, String?>? {
+        val lower = url.lowercase()
+        return when {
+            lower.contains("fonts.googleapis.com/css") && (lower.contains("orbitron") || lower.contains("vt323")) ->
+                Triple("web_assets/fonts.css", "text/css", "UTF-8")
+            lower.endsWith("/orbitron.ttf") ->
+                Triple("web_assets/orbitron.ttf", "font/ttf", null)
+            lower.endsWith("/vt323.ttf") ->
+                Triple("web_assets/vt323.ttf", "font/ttf", null)
+            lower.contains("font-awesome") && lower.contains("all.min.css") ->
+                Triple("web_assets/fontawesome.css", "text/css", "UTF-8")
+            lower.contains("fa-solid-900.woff2") ->
+                Triple("web_assets/fa-solid-900.woff2", "font/woff2", null)
+            lower.contains("fa-regular-400.woff2") ->
+                Triple("web_assets/fa-regular-400.woff2", "font/woff2", null)
+            lower.contains("fa-brands-400.woff2") ->
+                Triple("web_assets/fa-brands-400.woff2", "font/woff2", null)
+            lower.contains("blogger.googleusercontent.com") && lower.contains("snake%20logo.png") ->
+                Triple("web_assets/offline_logo.png", "image/png", null)
+            else -> null
+        }
+    }
 
     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest): Boolean {
         if (!request.isForMainFrame) return false

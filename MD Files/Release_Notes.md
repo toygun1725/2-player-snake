@@ -1,5 +1,209 @@
 # 2 Player Snake - Sürüm Notları (Release Notes)
 
+## Mobile ve PC v3.6.0 (Final Sürüm) — Online Platforma Göre Boost (2026-10-07)
+
+**Durum:** Final sürüm; PC ve Mobile web kaynakları ile ortak sunucu canlıdadır (Live in production). Android/iOS çevrimdışı HTML fallback kaynakları Mobile v3.6.0 ile eşitlendi. Native sürümler Android Code 71 / v3.4.9 ve iOS Build 47 / 3.5.8 olarak kalır.
+
+- Online Boost/Dash yalnız **PC–PC Hızlı Rekabetçi** maçlarda kullanılabilir. PC–Mobile ve Mobile–Mobile eşleşmelerde iki oyuncu için de kapalıdır. Rastgele eşleşme, özel oda, yeni round ve tekrar maç aynı kurala uyar.
+- Sunucu oda modu ve iki oyuncunun platformunu kontrol edip `gameInit.boostEnabled` ile izin bildirir. İzin verilmeyen boost istekleri reddedilir; eski dash süresi hareket hızını artırmaz.
+- PC'de Shift, boost çubukları ve kontrol ipuçları sunucu iznine uyar. Eksik izin bilgisi online boost'u kapatır. Yerel PC boost tercihi ayrı tutulur; online maçtan çıkınca korunur.
+- Mobilde boost kontrolü yoktur. Beast/yakut ve diğer yem güçleri mevcut kurallarını kullanır. v3.5.9 solo uzunluk göstergesi ve kutlama düzeltmeleri korunur.
+- Mobil Portekizce Beast başlangıç metinlerinin locale anahtarı düzeltildi; üç metnin İngilizceye düşmesi giderildi.
+- Doğrulama: **195/195 otomatik test** (18 yeni boost testi dahil) ve gerçek yerel Socket.IO sunucusuyla **13 Edge/Chromium tarayıcı kontrolü** geçti. Fiziksel cihaz/native WebKit kabulü ve native build yapılmadı. [Doğrulama raporu](v3.6.0_Online_Boost_Verification.md).
+- PC/Mobile v3.6.0 HTML kaynakları ve ortak sunucu (`Ana Dosya/Server/Mobile/server.js`) canlıda yayındadır.
+
+### 21 dilde sürüm notu taslağı
+
+Aşağıdaki metinler ilerideki yayın için taslaktır; mağazaya gönderilmedi.
+
+<tr-TR>
+Online boost artık yalnız PC–PC Hızlı Rekabetçi maçlarda kullanılabilir. PC–mobil ve mobil–mobil maçlarda iki oyuncu için de kapalıdır. Yerel PC boost seçeneği korunur.
+</tr-TR>
+
+<en-US>
+Online boost is now available only in PC–PC Fast Competitive matches. Boost is disabled for both players in PC–mobile and mobile–mobile matches. The local PC boost option remains available.
+</en-US>
+
+<de-DE>
+Online-Boost ist jetzt nur in PC–PC-Matches im Modus Fast Competitive verfügbar. In PC–Mobil- und Mobil–Mobil-Matches ist Boost für beide Spieler deaktiviert. Die lokale PC-Boost-Option bleibt verfügbar.
+</de-DE>
+
+<fr-FR>
+Le boost en ligne est désormais réservé aux matchs PC–PC en mode Fast Competitive. Il est désactivé pour les deux joueurs dans les matchs PC–mobile et mobile–mobile. L’option boost sur PC en local reste disponible.
+</fr-FR>
+
+<es-ES>
+El boost online ahora solo está disponible en partidas PC–PC de Fast Competitive. Está desactivado para ambos jugadores en partidas PC–móvil y móvil–móvil. La opción de boost en PC local sigue disponible.
+</es-ES>
+
+<it-IT>
+Il boost online è ora disponibile solo nelle partite PC–PC in modalità Fast Competitive. È disattivato per entrambi i giocatori nelle partite PC–mobile e mobile–mobile. L’opzione boost su PC in locale resta disponibile.
+</it-IT>
+
+<hi-IN>
+ऑनलाइन बूस्ट अब केवल PC–PC Fast Competitive मैचों में उपलब्ध है। PC–मोबाइल और मोबाइल–मोबाइल मैचों में दोनों खिलाड़ियों के लिए बूस्ट बंद है। स्थानीय PC बूस्ट विकल्प उपलब्ध रहता है।
+</hi-IN>
+
+<pl-PL>
+Boost online jest teraz dostępny tylko w meczach PC–PC w trybie Fast Competitive. W meczach PC–telefon i telefon–telefon jest wyłączony dla obu graczy. Lokalna opcja boostu na PC pozostaje dostępna.
+</pl-PL>
+
+<pt-BR>
+O boost online agora está disponível apenas em partidas PC–PC no modo Fast Competitive. Ele fica desativado para os dois jogadores em partidas PC–celular e celular–celular. A opção de boost local no PC continua disponível.
+</pt-BR>
+
+<ar>
+أصبح التعزيز عبر الإنترنت متاحًا فقط في مباريات PC–PC في وضع Fast Competitive. يُعطّل التعزيز لكلا اللاعبين في مباريات الكمبيوتر–الهاتف والهاتف–الهاتف. يظل خيار التعزيز المحلي على الكمبيوتر متاحًا.
+</ar>
+
+<ru-RU>
+Ускорение онлайн теперь доступно только в матчах ПК–ПК в режиме Fast Competitive. В матчах ПК–мобильный и мобильный–мобильный оно отключено для обоих игроков. Опция ускорения в локальной игре на ПК сохранена.
+</ru-RU>
+
+<id>
+Boost online kini hanya tersedia dalam pertandingan PC–PC di mode Fast Competitive. Boost dinonaktifkan untuk kedua pemain dalam pertandingan PC–ponsel dan ponsel–ponsel. Opsi boost lokal di PC tetap tersedia.
+</id>
+
+<ja-JP>
+オンラインのブーストは、Fast CompetitiveモードのPC同士の対戦でのみ使用できます。PCとモバイル、モバイル同士の対戦では両プレイヤーのブーストが無効になります。PCのローカル対戦ではブースト設定を引き続き使用できます。
+</ja-JP>
+
+<ko-KR>
+온라인 부스트는 이제 Fast Competitive 모드의 PC–PC 대전에서만 사용할 수 있습니다. PC–모바일 및 모바일–모바일 대전에서는 두 플레이어 모두 부스트가 비활성화됩니다. PC 로컬 부스트 옵션은 유지됩니다.
+</ko-KR>
+
+<vi>
+Boost trực tuyến giờ chỉ dùng được trong trận PC–PC ở chế độ Fast Competitive. Boost bị tắt cho cả hai người chơi trong trận PC–di động và di động–di động. Tùy chọn boost khi chơi cục bộ trên PC vẫn được giữ.
+</vi>
+
+<th>
+บูสต์ออนไลน์ใช้ได้เฉพาะการแข่งขัน PC–PC ในโหมด Fast Competitive เท่านั้น การแข่งขัน PC–มือถือและมือถือ–มือถือจะปิดบูสต์สำหรับผู้เล่นทั้งสองคน ตัวเลือกบูสต์ในการเล่นบน PC แบบออฟไลน์ยังคงมีอยู่
+</th>
+
+<fil-PH>
+Ang online boost ay magagamit na lamang sa PC–PC na laban sa Fast Competitive mode. Naka-off ito para sa parehong manlalaro sa PC–mobile at mobile–mobile na laban. Nananatili ang boost option sa lokal na laro sa PC.
+</fil-PH>
+
+<nl-NL>
+Online boost is nu alleen beschikbaar in PC–PC-wedstrijden in Fast Competitive. In PC–mobiel- en mobiel–mobiel-wedstrijden is boost voor beide spelers uitgeschakeld. De boostoptie voor lokaal spelen op PC blijft beschikbaar.
+</nl-NL>
+
+<el-GR>
+Το online boost είναι πλέον διαθέσιμο μόνο σε αγώνες PC–PC στη λειτουργία Fast Competitive. Στους αγώνες PC–κινητό και κινητό–κινητό απενεργοποιείται και για τους δύο παίκτες. Η επιλογή boost στο τοπικό παιχνίδι σε PC διατηρείται.
+</el-GR>
+
+<cs-CZ>
+Online boost je nyní dostupný pouze v zápasech PC–PC v režimu Fast Competitive. V zápasech PC–mobil a mobil–mobil je vypnutý pro oba hráče. Možnost boostu při místním hraní na PC zůstává dostupná.
+</cs-CZ>
+
+<zh-CN>
+在线加速现在仅适用于 Fast Competitive 模式的 PC–PC 对局。PC–移动端和移动端–移动端对局中，双方玩家的加速均被禁用。本地 PC 游戏的加速选项继续保留。
+</zh-CN>
+
+## Mobile ve PC v3.5.9 — Solo Matris Uzunluk Göstergesi ve Kutlama Yazısı Düzeltmesi (2026-10-06)
+
+**Durum:** Yerel web/fallback kaynaklarıdır; canlı web veya mağaza yayını yapılmadı. Native proje sürümleri Android Code 71 / v3.4.9 ve iOS Build 47 / 3.5.8 olarak kalır.
+
+- Yılan 10, 20, 30… uzunluklarına ulaştığında, sahanın ortasında gerçek matris hücrelerinden oluşan büyük bir sayı gösterilir.
+- Sayı oyuncunun yılan rengiyle, yarı saydam olarak kısa bir parlamayla belirip 1,6 saniye içinde yumuşakça kaybolur. Yılan ve yemler sayının üzerinde kalır; oyun ve yön girişleri devam eder.
+- Her yeni 10'luk eşikte yaklaşık 0,26 saniyelik, iki notalı yükselen bir arcade tonu çalar. Mevcut ses aç/kapat ayarına bağlıdır.
+- Tetikleme gerçek gövde büyümesine bağlıdır. Duraklatma/geri sayım süreyi tüketmez; yeni maç geçmişi sıfırlar. Ödüllü devamda daha önce ulaşılan eşikler yeniden gösterilmez.
+- Sistem yalnız AI kapalı yerel 1P Normal modda çalışır. Rakamlar ekran ve matris boyutuna göre sığdırılır; periyodik yanıp sönme kullanılmaz.
+- Mobile ve PC v3.5.8 dosyaları korunarak ayrı v3.5.9 dosyaları oluşturuldu; Android ve iOS çevrimdışı HTML kaynakları yeni mobil kaynakla eşitlendi. PC'de 64×36 matris ve yüksek DPI çizimiyle uyumlu merkezleme kullanılır; ok tuşları ve WASD efekt sırasında çalışmaya devam eder.
+- P1/P2/AI maç sonu kutlamaları yılan gövdesinden bağımsız çizilir. Solo P2-null hatası, eski yılan konumlarından kaynaklanan eksik/fazla hücreler ve “1”in geniş orta çizgisi giderildi. Yılanın uzunluğu ve efektleri yazıyı bozmaz.
+- Yazı hem sütun hem satır sayısına göre sığdırılıp ortalanır; PC'nin dar cross-play sahaları, mobil yatay ekranlar ve kutlama sırasında yön/ekran değişimi kapsanır. Mevcut kutlama sesi, konfeti, süre ve sonraki ekran akışı korunur.
+- Doğrulama: **177/177 otomatik test**; solo gösterge için **10 mobil + 12 PC**, kutlama düzeltmesi için ayrıca **17 PC/Mobile tarayıcı kontrolü** geçti. Fiziksel cihaz/native WebKit testi ve yayın yapılmadı. [Solo doğrulaması](v3.5.9_Solo_Milestone_Verification.md), [kutlama doğrulaması](v3.5.9_Win_Glyph_Verification.md).
+
+Kutlama düzeltmesi için 2026-10-06 tarihinde kullanıcıdan “Evet iyi oldu” geri bildirimi alındı. [Kabul kaydı](v3.5.9_Win_Glyph_Verification.md#kullanıcı-geri-bildirimi).
+
+### 21 dilde sürüm notu taslağı
+
+Aşağıdaki metinler ilerideki yayın için taslaktır; mağazaya gönderilmedi.
+
+<tr-TR>
+1P Normal modda her yeni 10'luk yılan uzunluğu matris üzerinde kısa bir parlama ve sesle kutlanır. P1/P2/AI kutlama yazıları düzeltildi; farklı ekran boyutlarına ve yön değişimine uyum sağlar.
+</tr-TR>
+
+<en-US>
+In 1P Normal mode, each new multiple of ten in snake length is celebrated on the grid with a brief shine and sound. P1/P2/AI celebration text is fixed and adapts to different screen sizes and orientation changes.
+</en-US>
+
+<de-DE>
+Im 1P-Normalmodus wird jedes neue Vielfache von zehn bei der Schlangenlänge mit kurzem Aufleuchten und Ton im Raster gefeiert. Die P1/P2/AI-Anzeige wurde korrigiert und passt sich Bildschirmgröße und Ausrichtung an.
+</de-DE>
+
+<fr-FR>
+En mode Normal 1P, chaque nouveau multiple de dix de la longueur du serpent est célébré sur la grille avec un bref éclat et un son. Les textes P1/P2/AI sont corrigés et s’adaptent aux tailles d’écran et aux changements d’orientation.
+</fr-FR>
+
+<es-ES>
+En el modo Normal 1P, cada nuevo múltiplo de diez en la longitud de la serpiente se celebra en la cuadrícula con un breve brillo y sonido. Los textos P1/P2/AI se han corregido y se adaptan al tamaño y la orientación de la pantalla.
+</es-ES>
+
+<it-IT>
+In modalità Normale 1P, ogni nuovo multiplo di dieci della lunghezza del serpente viene celebrato sulla griglia con un breve bagliore e un suono. Le scritte P1/P2/AI sono corrette e si adattano alle dimensioni e all’orientamento dello schermo.
+</it-IT>
+
+<hi-IN>
+1P Normal मोड में साँप की लंबाई के हर नए दस के गुणज पर ग्रिड में हल्की चमक और ध्वनि के साथ जश्न मनाया जाता है। P1/P2/AI के जश्न वाले टेक्स्ट ठीक किए गए हैं और स्क्रीन के आकार व दिशा के अनुसार बदलते हैं।
+</hi-IN>
+
+<pl-PL>
+W trybie Normal 1P każda nowa wielokrotność dziesięciu w długości węża jest świętowana na siatce krótkim rozbłyskiem i dźwiękiem. Poprawiono napisy P1/P2/AI, które dopasowują się do rozmiaru i orientacji ekranu.
+</pl-PL>
+
+<pt-BR>
+No modo Normal 1P, cada novo múltiplo de dez no comprimento da cobra é comemorado na grade com um breve brilho e som. Os textos P1/P2/AI foram corrigidos e se adaptam ao tamanho e à orientação da tela.
+</pt-BR>
+
+<ar>
+في وضع Normal للاعب واحد، يُحتفل بكل مضاعف جديد للعشرة في طول الثعبان على الشبكة بوميض وصوت قصيرين. تم إصلاح نصوص الاحتفال P1/P2/AI لتتكيف مع أحجام الشاشة وتغييرات الاتجاه.
+</ar>
+
+<ru-RU>
+В режиме Normal для одного игрока каждое новое значение длины змейки, кратное десяти, отмечается на сетке коротким сиянием и звуком. Исправлены надписи P1/P2/AI: они подстраиваются под размер и ориентацию экрана.
+</ru-RU>
+
+<id>
+Dalam mode Normal 1P, setiap kelipatan sepuluh baru pada panjang ular dirayakan di kisi dengan kilau dan suara singkat. Teks perayaan P1/P2/AI diperbaiki dan menyesuaikan ukuran serta orientasi layar.
+</id>
+
+<ja-JP>
+1P Normalモードで、ヘビの長さが新たに10の倍数に達すると、グリッド上の短い光と音でお祝いします。P1/P2/AIのお祝い表示を修正し、画面サイズや向きの変更に対応しました。
+</ja-JP>
+
+<ko-KR>
+1P Normal 모드에서 뱀 길이가 새로운 10의 배수에 도달하면 격자에 짧은 빛과 소리로 축하합니다. P1/P2/AI 축하 표시를 수정하고 화면 크기와 방향 변화에 맞게 조정했습니다.
+</ko-KR>
+
+<vi>
+Trong chế độ Normal 1P, mỗi mốc độ dài rắn mới là bội số của mười được chúc mừng trên lưới bằng ánh sáng và âm thanh ngắn. Chữ P1/P2/AI đã được sửa và thích ứng với kích thước cũng như hướng màn hình.
+</vi>
+
+<th>
+ในโหมด Normal 1P เมื่อความยาวงูถึงหลักสิบใหม่ จะแสดงแสงและเสียงสั้น ๆ ฉลองบนตาราง แก้ไขข้อความฉลอง P1/P2/AI ให้ปรับตามขนาดและการหมุนหน้าจอแล้ว
+</th>
+
+<fil-PH>
+Sa 1P Normal mode, bawat bagong haba ng ahas na multiple ng sampu ay ipinagdiriwang sa grid gamit ang maikling kislap at tunog. Inayos ang P1/P2/AI na teksto upang umangkop sa laki at pag-ikot ng screen.
+</fil-PH>
+
+<nl-NL>
+In de 1P Normal-modus wordt elk nieuw veelvoud van tien in de slanglengte op het raster gevierd met een korte gloed en geluid. De P1/P2/AI-tekst is hersteld en past zich aan de schermgrootte en oriëntatie aan.
+</nl-NL>
+
+<el-GR>
+Στη λειτουργία Normal 1P, κάθε νέο πολλαπλάσιο του δέκα στο μήκος του φιδιού γιορτάζεται στο πλέγμα με σύντομη λάμψη και ήχο. Διορθώθηκαν οι ενδείξεις P1/P2/AI και προσαρμόζονται στο μέγεθος και τον προσανατολισμό της οθόνης.
+</el-GR>
+
+<cs-CZ>
+V režimu Normal 1P se každý nový násobek deseti v délce hada oslaví na mřížce krátkým rozzářením a zvukem. Opravené nápisy P1/P2/AI se přizpůsobují velikosti a orientaci obrazovky.
+</cs-CZ>
+
+<zh-CN>
+在1P Normal模式中，蛇身长度每达到一个新的10的倍数，网格上都会以短暂的光效和音效庆祝。已修复P1/P2/AI庆祝文字，并使其适应不同屏幕尺寸和方向变化。
+</zh-CN>
+
 ## v3.5.8 — Çevrimiçi Hükmen Galibiyet (Forfeit) Reklam Monetization & Eşleşme Akışı Düzeltmesi (2026-09-30)
 
 - **Çevrimiçi Hükmen Galibiyette Geçiş Reklamı (Interstitial Monetization):**

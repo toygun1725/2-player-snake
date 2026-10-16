@@ -11,8 +11,8 @@ android {
         applicationId = "com.twoplayersnake.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 71
-        versionName = "v3.4.9"
+        versionCode = 72
+        versionName = "v3.6.1"
         buildConfigField("String", "GAME_URL_MOBILE", "\"https://2playersnake.com/wp-content/uploads/game-mobile/index.html\"")
         buildConfigField("String", "GAME_URL_PC", "\"https://2playersnake.com/wp-content/uploads/game/index.html\"")
 

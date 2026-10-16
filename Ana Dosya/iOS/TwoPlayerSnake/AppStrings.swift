@@ -648,4 +648,94 @@ enum AppStrings {
             return packageNotFoundMessages[lang] ?? packageNotFoundMessages["en"]!
         }
     }
+
+    // MARK: - 4. Ana Ekran Hızlı Eylemleri (Home Screen Quick Actions / Shortcuts)
+    enum Shortcuts {
+        private static let normal1PTitles: [String: String] = [
+            "en": "Normal: 1 Player",
+            "tr": "Normal: 1 Oyuncu",
+            "de": "Normal: 1 Spieler",
+            "fr": "Normal : 1 Joueur",
+            "es": "Normal: 1 Jugador",
+            "it": "Normale: 1 Giocatore",
+            "pt": "Normal: 1 Jogador",
+            "zh": "普通：单人模式",
+            "ja": "ノーマル：1プレイヤー",
+            "ko": "노멀: 1인 플레이",
+            "ru": "Обычный: 1 Игрок",
+            "ar": "عادي: لاعب واحد",
+            "id": "Normal: 1 Pemain",
+            "nl": "Normaal: 1 Speler",
+            "pl": "Normalny: 1 Gracz",
+            "th": "ปกติ: ผู้เล่น 1 คน",
+            "vi": "Thường: 1 Người chơi",
+            "el": "Κανονικό: 1 Παίκτης",
+            "cs": "Normální: 1 Hráč",
+            "tl": "Normal: 1 Manlalaro",
+            "hi": "सामान्य: 1 खिलाड़ी"
+        ]
+
+        private static let fc2PTitles: [String: String] = [
+            "en": "Fast Competitive: 2 Players",
+            "tr": "Hızlı Rekabetçi: 2 Oyuncu",
+            "de": "Schnell & Kompetitiv: 2 Spieler",
+            "fr": "Compétitif Rapide : 2 Joueurs",
+            "es": "Competitivo Rápido: 2 Jugadores",
+            "it": "Competitivo Veloce: 2 Giocatori",
+            "pt": "Competitivo Rápido: 2 Jogadores",
+            "zh": "快速竞技：双人同屏",
+            "ja": "高速対戦：2プレイヤー",
+            "ko": "빠른 경쟁: 2인 플레이",
+            "ru": "Быстрый: 2 Игрока",
+            "ar": "تنافسي سريع: لاعبان",
+            "id": "Kompetitif Cepat: 2 Pemain",
+            "nl": "Snel Competitief: 2 Spelers",
+            "pl": "Szybka Rywalizacja: 2 Graczy",
+            "th": "แข่งขันเร็ว: ผู้เล่น 2 คน",
+            "vi": "Cạnh tranh nhanh: 2 Người chơi",
+            "el": "Γρήγορο Ανταγωνιστικό: 2 Παίκτες",
+            "cs": "Rychlý Souboj: 2 Hráči",
+            "tl": "Mabilisang Kompetisyon: 2 Manlalaro",
+            "hi": "तेज़ प्रतिस्पर्धी: 2 खिलाड़ी"
+        ]
+
+        private static let fc1PAITitles: [String: String] = [
+            "en": "Fast Competitive: 1P vs. AI",
+            "tr": "Hızlı Rekabetçi: 1P vs. AI",
+            "de": "Schnell & Kompetitiv: 1S vs. KI",
+            "fr": "Compétitif Rapide : 1J vs. IA",
+            "es": "Competitivo Rápido: 1J vs. IA",
+            "it": "Competitivo Veloce: 1G vs. IA",
+            "pt": "Competitivo Rápido: 1J vs. IA",
+            "zh": "快速竞技：单人对战AI",
+            "ja": "高速対戦：1P vs AI",
+            "ko": "빠른 경쟁: 1P vs AI",
+            "ru": "Быстрый: 1И против ИИ",
+            "ar": "تنافسي سريع: لاعب ضد الذكاء الاصطناعي",
+            "id": "Kompetitif Cepat: 1P vs. AI",
+            "nl": "Snel Competitief: 1S vs. AI",
+            "pl": "Szybka Rywalizacja: 1G vs. SI",
+            "th": "แข่งขันเร็ว: 1P ปะทะ AI",
+            "vi": "Cạnh tranh nhanh: 1P đấu AI",
+            "el": "Γρήγορο Ανταγωνιστικό: 1Π εναντίον AI",
+            "cs": "Rychlý Souboj: 1H vs. AI",
+            "tl": "Mabilisang Kompetisyon: 1P vs. AI",
+            "hi": "तेज़ प्रतिस्पर्धी: 1P बनाम AI"
+        ]
+
+        static var normal1P: String {
+            let lang = AppStrings.currentLanguageCode
+            return normal1PTitles[lang] ?? normal1PTitles["en"]!
+        }
+
+        static var fastCompetitive2P: String {
+            let lang = AppStrings.currentLanguageCode
+            return fc2PTitles[lang] ?? fc2PTitles["en"]!
+        }
+
+        static var fastCompetitive1PAI: String {
+            let lang = AppStrings.currentLanguageCode
+            return fc1PAITitles[lang] ?? fc1PAITitles["en"]!
+        }
+    }
 }

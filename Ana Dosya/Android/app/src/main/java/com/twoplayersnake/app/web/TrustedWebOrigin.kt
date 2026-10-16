@@ -19,7 +19,7 @@ object TrustedWebOrigin {
 
     fun isTrustedTopLevelUrl(url: String?): Boolean {
         if (url.isNullOrBlank()) return false
-        if (url == OFFLINE_FALLBACK_URL) return true
+        if (url == OFFLINE_FALLBACK_URL || url.startsWith("$OFFLINE_FALLBACK_URL?")) return true
         val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return false
         val host = uri.host?.lowercase() ?: return false
         val scheme = uri.scheme?.lowercase()

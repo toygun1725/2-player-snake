@@ -1,6 +1,29 @@
 # 2 Player Snake - Mobil Surumu Yapay Zeka Rehberi
 
-## Güncel kaynak — v3.5.8 (2026-09-30)
+## Final kaynak — v3.6.0 (Canlıda, 2026-10-07)
+
+- Mobil istemcide Boost/Dash düğmesi veya klavye tetiklemesi bulunmaz. Mobile–Mobile ve PC–Mobile online maçlarda sunucu iki oyuncunun boost isteğini de reddeder; PC–PC Hızlı Rekabetçi maçlarda boost kullanılabilir.
+- Sunucu her `gameInit` içinde `boostEnabled` bildirir; rastgele eşleşme, özel oda ve tekrar maçta kural yeniden hesaplanır. Mobilde yeni kontrol eklenmedi. Beast/yakut gibi yem güçleri korunur.
+- Portekizce Beast başlangıç metinlerinin locale anahtarı `pt-BR` yerine oyunun kullandığı `ptbr` ile eşleştirildi; üç metnin İngilizceye düşmesi giderildi. 21 dil testi güncel v3.6.0 kaynaklarını okur.
+- Mobile v3.6.0 ayrı dosya olarak oluşturuldu; Android/iOS fallback kaynakları bayt bayt eşitlendi. Native sürümler Android Code 71 / v3.4.9 ve iOS Build 47 / 3.5.8 olarak kalır.
+- Doğrulama: **195/195 otomatik test** ve gerçek yerel Socket.IO sunucusuyla **13 Edge/Chromium tarayıcı kontrolü** geçti. [v3.6.0 doğrulaması](v3.6.0_Online_Boost_Verification.md). Canlı sunucu/web yayını, native build, fiziksel cihaz ve native WebKit kabulü yapılmadı.
+- Final sürüm; PC/Mobile v3.6.0 HTML kaynakları ve ortak sunucu (`Ana Dosya/Server/Mobile/server.js`) canlıdadır.
+
+## Önceki kaynak — v3.5.9 (2026-10-06)
+
+- Kullanıcı geri bildirimi (2026-10-06): kutlama düzeltmesi “Evet iyi oldu” olarak değerlendirildi. [Kabul kaydı](v3.5.9_Win_Glyph_Verification.md#kullanıcı-geri-bildirimi).
+- **1P Normal (Solo) uzunluk kilometre taşları:** Yılanın gerçek gövdesi 10, 20, 30… uzunluklarına ulaştığında sayı, matris hücreleriyle oluşturulup sahanın ortasında gösterilir. Normal yemdeki +2 büyüme iki hareket boyunca uygulanır; tetikleme yem sayısından veya bekleyen `grow` değerinden yapılmaz.
+- `recordSoloLengthMilestone()` büyüme adımına bağlıdır; `drawSoloLengthMilestone()` sayıyı yılan ve yemlerin arkasında, oyuncunun seçtiği renkle ve en fazla %34 opaklıkla çizer. Her rakam 5×7 piksel deseni kullanır; ölçek ve merkez, gerçek matris boyutlarından hesaplanır.
+- Efekt kısa bir parlamayla belirip 1600 ms aktif oyun süresi boyunca yumuşakça kaybolur. Periyodik yanıp sönme yoktur; tüm hareket tercihlerinde aynı sade fade uygulanır. Duraklatma ve geri sayım süreyi tüketmez.
+- Her yeni eşikte `SFX.lengthMilestone()` mevcut ses motoruyla iki notalı kısa bir arcade tonu üretir: 880 Hz triangle ve 90 ms sonra 1320 Hz sine; toplam yaklaşık 260 ms. Mevcut `muted` ayarına uyar. İkinci nota `setGameTimeout()` ile maç/round yaşam döngüsüne bağlıdır; duraklatma veya menüye çıkış sonrasında çalmaz.
+- Her eşik maçta bir kez gösterilir. Yeni maçta `resetArcadeFxState()` geçmişi temizler; ödüllü devamda `resetSoloLengthMilestone(false)` aktif görüntüyü temizleyip ulaşılan eşikleri korur.
+- Kapsam: yalnız yerel 1P Normal ve AI kapalı. Demo, online, 2P, 1P vs AI ve diğer modlar efekti tetiklemez. Aynı davranış PC v3.5.9'a da taşındı.
+- Android/iOS çevrimdışı HTML kaynakları Mobile v3.5.9 ile bayt bayt eşittir; native build numaraları değiştirilmedi.
+- **Kutlama yazısı düzeltmesi:** P1/P2/AI artık yılan gövdesine dönüştürülmez; `winAnim.glyph` görsel verisi `drawWinGlyph()` tarafından bağımsız çizilir. Eski konumlar ve yılan efektleri yazıyı etkilemez; solo modda ikinci yılanın bulunması gerekmez. Normal `render()` de aktif kutlamayı `renderWinAnim()` üzerinden çizer.
+- Kutlama rakamları solo göstergesiyle ortak 5×7 desenleri kullanır. Yazı hem sütun hem satır sayısına göre ortalanıp ölçeklenir; yön değişiminde yerleşim güncellenir. 24×10/12 yatay sahalar ve DPI 2 kapsanır; yedi satırdan kısa sahada kompakt metin kullanılır. Android WebView için mevcut glow kısıtı korunur.
+- Doğrulama: PC kapsamıyla birlikte **177/177 otomatik test**. Solo göstergesi için **10 mobil tarayıcı kontrolüne** ek olarak iki platformda **17 kutlama kontrolü** geçti. Fiziksel cihaz ve native WebKit testi yapılmadı; v3.5.9 yayını/native build yapılmadı. [Solo doğrulaması](v3.5.9_Solo_Milestone_Verification.md), [kutlama doğrulaması](v3.5.9_Win_Glyph_Verification.md).
+
+## Önceki kaynak — v3.5.8 (2026-09-30)
 
 - **Çevrimiçi Hükmen Galibiyet (Forfeit) Reklam Monetization & Eşleşme Akışı:**
   - Çevrimiçi maçlarda rakip bağlantıyı kesip 15 saniye içinde dönmediğinde sunucu `gameOver (reason: 'forfeit')` gönderir.
@@ -105,18 +128,18 @@ Bu belge, mobil surum uzerinde calisacak yapay zekalar icin guncel teknik refera
 
 ## Referans Surum
 
-> Aşağıdaki v3.4.9 kaynak/yayın notları tarihseldir; güncel durum için üstteki v3.5.4 kaydını esas alın.
+> Önceki sürümlerin kaynak/yayın notları tarihseldir; güncel durum için üstteki v3.6.0 kaydını esas alın.
 
-- Aktif referans surum: `v3.5.4` (yerel kaynak)
-- Temel referans dosya: `2 Player Snake Mobile v3.5.4.html`
-- Kaynak/yayin durumu: Mobile v3.5.4 yerel olarak tamamlandı ve doğrulandı. 30s cooldown, Solo 1P ödüllü devam, maç sonu istatistik öncesi `match_end` reklamı ve round arası 1-3-5 kuralı devrede; 121/121 otomatik test geçti.
-- Android durumu: depodaki çevrimdışı fallback Mobile v3.5.4 ile bayt bayt eşittir.
-- iOS durumu: depodaki çevrimdışı fallback Mobile v3.5.4 ile bayt bayt eşittir.
+- Aktif referans surum: `v3.6.0` (Final sürüm, canlıda)
+- Temel referans dosya: `Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.6.0.html`
+- Kaynak/yayin durumu: v3.6.0 nihai final sürümdür ve canlı yayındadır.
+- Android durumu: depodaki çevrimdışı fallback Mobile v3.6.0 ile bayt bayt eşittir; native kaynak sürümü Code 71 / v3.4.9'dur.
+- iOS durumu: depodaki çevrimdışı fallback Mobile v3.6.0 ile bayt bayt eşittir; native kaynak sürümü Build 47 / 3.5.8'dir. Kurulu paketlerin fallback'i yeni native paket dağıtımıyla güncellenir.
 - Dosya yapisi: her sey tek HTML dosyasindadir; CSS veya JS ayirma yapilmaz.
 - Tasarim dili: koyu cyberpunk zemin, neon pembe ve turkuaz glow, camimsi panel dili, mobil odakli dar yerlesim.
 - Ana menu logosu web uzerindeki guncel logo kaynagini kullanir; gerekirse yerel fallback ile calisir.
 
-## Son Guncelleme (v3.5.4 - Reklam Gelir Optimizasyonu, 30s Cooldown, 1P Ödüllü Canlanma & Maç Sonu Akışı)
+## Onceki Guncelleme (v3.5.4 - Reklam Gelir Optimizasyonu, 30s Cooldown, 1P Ödüllü Canlanma & Maç Sonu Akışı)
 - **v3.5.4**: Küresel Reklam Cooldown 30s (`cooldownMs: 30000`), Ödüllü Reklam Global Cooldown Muafiyeti, Solo (1P) Moduna Ödüllü Canlanma, Maç Sonu İstatistik Öncesi Geçiş Reklamı, Butonlardan Reklamların Kaldırılması ve Round Arası 1-3-5 Kuralı (2026-09-30).
   - **30 Saniye Küresel Cooldown:** Reklam bekleme süresi 45s'den 30s'ye dengelenerek reklam gösterim fırsatları artırıldı.
   - **Ödüllü Reklam Cooldown Muafiyeti:** `canOfferRewardedContinue()` içindeki cooldown engeli kaldırıldı; oyuncu istediğinde reklam izleyip devam edebilir.

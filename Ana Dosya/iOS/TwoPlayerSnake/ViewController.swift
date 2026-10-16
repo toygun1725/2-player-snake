@@ -41,9 +41,10 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     private var activeNavigation: WKNavigation?
     private var loadStartedAt = Date()
 
-    // MARK: - Deep Link Durumu
+    // MARK: - Deep Link & Shortcut Durumu
     private var pendingDeepLinkRoom: String?
     private var pendingDeepLinkMode: String?
+    private var pendingShortcutId: String?
 
     override var prefersStatusBarHidden: Bool {
         return true
@@ -421,6 +422,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             if let mode = pendingDeepLinkMode {
                 queryItems.append(URLQueryItem(name: "mode", value: mode))
             }
+        } else if let shortcut = pendingShortcutId {
+            queryItems.append(URLQueryItem(name: "shortcut", value: shortcut))
         }
 
         components.queryItems = queryItems
@@ -627,6 +630,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         guard navigation === activeNavigation else { return }
         injectSafeAreaVariables(force: true)
         publishSettingsToGame()
+        restoreLocalScoreBackupToGame()
         // Older hosted HTML does not send gameReady; retain its existing finish behavior.
         webView.evaluateJavaScript(GameWebRuntime.readinessProbe) { [weak self] result, _ in
             guard let self = self, navigation === self.activeNavigation else { return }
@@ -646,9 +650,13 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         coldStartWatchdogTimer?.invalidate()
         coldStartWatchdogTimer = nil
         publishSettingsToGame()
+        restoreLocalScoreBackupToGame()
 
         if pendingDeepLinkRoom != nil {
             executePendingDeepLink()
+        } else if pendingShortcutId != nil {
+            executePendingShortcut()
+            showStartButton()
         } else {
             showStartButton()
         }
@@ -657,6 +665,13 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         if isTeaserDismissed && !isShowingOfflineGame {
             AdManager.shared.requestTrackingAuthorization()
         }
+    }
+
+    private func restoreLocalScoreBackupToGame() {
+        guard let backupJson = GameScriptMessageHandler.loadLocalBackupJson(adsRemoved: IAPManager.shared.isAdsRemoved) else {
+            return
+        }
+        evaluateJavaScript("if (typeof window.onCloudSaveLoaded === 'function') { window.onCloudSaveLoaded(\(backupJson)); }")
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
@@ -733,6 +748,30 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             alert.addAction(UIAlertAction(title: buttonText, style: .default, handler: nil))
             self.present(alert, animated: true, completion: nil)
         }
+    }
+
+    // MARK: - Home Screen Quick Actions (Shortcuts)
+    func handleShortcut(shortcutId: String) {
+        guard !shortcutId.isEmpty else { return }
+        pendingShortcutId = shortcutId
+        print("[Shortcut] Received shortcut: \(shortcutId)")
+        if isGameLoaded {
+            executePendingShortcut()
+        }
+    }
+
+    private func executePendingShortcut() {
+        guard let shortcutId = pendingShortcutId else { return }
+        pendingShortcutId = nil
+        let escapedShortcut = shortcutId.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "'", with: "\\'")
+        let js = """
+        if (typeof window.launchNativeShortcut === 'function') {
+            window.launchNativeShortcut('\(escapedShortcut)');
+        } else {
+            window.__twoPlayerSnakePendingShortcut = '\(escapedShortcut)';
+        }
+        """
+        webView.evaluateJavaScript(js, completionHandler: nil)
     }
 
     // MARK: - Deep Linking (Universal Links & Custom Scheme)

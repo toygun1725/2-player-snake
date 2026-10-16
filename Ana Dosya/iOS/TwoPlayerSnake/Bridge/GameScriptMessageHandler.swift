@@ -46,9 +46,9 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
             }
             switch foodType {
             case "heart":
-                HapticManager.shared.playGameOverHaptic() // güçlü — beast mode
+                HapticManager.shared.playBeastFoodHaptic() // güçlü çift nabız — beast mode
             case "diamond":
-                HapticManager.shared.playSpecialFoodHaptic() // orta
+                HapticManager.shared.playSpecialFoodHaptic() // orta — elmas
             default:
                 HapticManager.shared.playFoodHaptic() // hafif — normal yem
             }
@@ -62,12 +62,43 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
         case "onGameOver":
             HapticManager.shared.playGameOverHaptic()
 
+        case "hapticEvent":
+            var eventType: String? = nil
+            var durationMs: Int? = nil
+            if let dict = payload as? [String: Any] {
+                eventType = dict["eventType"] as? String
+                if let durInt = dict["durationMs"] as? Int {
+                    durationMs = durInt
+                } else if let durStr = dict["durationMs"] as? String, let parsed = Int(durStr) {
+                    durationMs = parsed
+                }
+            } else if let str = payload as? String,
+                      let data = str.data(using: .utf8),
+                      let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                eventType = json["eventType"] as? String
+                if let durInt = json["durationMs"] as? Int {
+                    durationMs = durInt
+                } else if let durStr = json["durationMs"] as? String, let parsed = Int(durStr) {
+                    durationMs = parsed
+                }
+            }
+            HapticManager.shared.playHapticEvent(eventType: eventType, durationMs: durationMs)
+
         case "triggerVibration":
             var ms = 30
             if let dict = payload as? [String: Any], let duration = dict["durationMs"] as? Int {
                 ms = duration
-            } else if let str = payload as? String, let parsed = Int(str) {
-                ms = parsed
+            } else if let str = payload as? String {
+                if let parsed = Int(str) {
+                    ms = parsed
+                } else if let data = str.data(using: .utf8),
+                          let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    if let dInt = json["durationMs"] as? Int {
+                        ms = dInt
+                    } else if let dStr = json["durationMs"] as? String, let parsed = Int(dStr) {
+                        ms = parsed
+                    }
+                }
             }
             HapticManager.shared.triggerVibration(durationMs: ms)
 
@@ -84,7 +115,7 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
             handleRestorePurchases()
 
         case "notifyHighScore":
-            print("Bridge: Yüksek Skor Bildirildi: \(String(describing: payload))")
+            handleNotifyHighScore(payload: payload)
 
         case "showAchievements":
             print("Bridge: Başarımlar Menüsü İstendi")
@@ -260,5 +291,78 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
         guard let key = achKey, !key.isEmpty else { return }
         print("Bridge: Başarım kilidi açılıyor: \(key)")
         GameCenterManager.shared.reportAchievement(identifier: key)
+    }
+
+    // MARK: - Local High Score & Premium Backup (WebKit Cache-Clear Resilience)
+
+    private static let localBackupDefaultsKey = "twoplayersnake_cloud_save_backup"
+    private static let maxStoredScores = 10
+
+    private func handleNotifyHighScore(payload: Any?) {
+        var scoresJsonString: String? = nil
+        var platform = "mobile"
+
+        if let dict = payload as? [String: Any] {
+            scoresJsonString = dict["scoresJson"] as? String
+            platform = (dict["platform"] as? String) ?? "mobile"
+        } else if let str = payload as? String,
+                  let data = str.data(using: .utf8),
+                  let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] {
+            scoresJsonString = json["scoresJson"] as? String
+            platform = (json["platform"] as? String) ?? "mobile"
+        }
+
+        guard let rawScores = scoresJsonString,
+              let incomingData = rawScores.data(using: .utf8),
+              let incomingArray = (try? JSONSerialization.jsonObject(with: incomingData)) as? [[String: Any]] else {
+            return
+        }
+
+        var root: [String: Any] = [:]
+        if let existingStr = UserDefaults.standard.string(forKey: Self.localBackupDefaultsKey),
+           let existingData = existingStr.data(using: .utf8),
+           let parsed = (try? JSONSerialization.jsonObject(with: existingData)) as? [String: Any] {
+            root = parsed
+        }
+
+        let field = (platform == "pc") ? "pcScores" : "mobileScores"
+        let existingScores = (root[field] as? [[String: Any]]) ?? []
+        root[field] = Self.mergeScoreEntries(existingScores, incomingArray)
+        if IAPManager.shared.isAdsRemoved {
+            root["adsRemoved"] = true
+        }
+        root["savedAt"] = Int64(Date().timeIntervalSince1970 * 1000)
+
+        if let updatedData = try? JSONSerialization.data(withJSONObject: root),
+           let updatedStr = String(data: updatedData, encoding: .utf8) {
+            UserDefaults.standard.set(updatedStr, forKey: Self.localBackupDefaultsKey)
+        }
+    }
+
+    static func loadLocalBackupJson(adsRemoved: Bool) -> String? {
+        guard let existingStr = UserDefaults.standard.string(forKey: localBackupDefaultsKey),
+              let existingData = existingStr.data(using: .utf8),
+              var root = (try? JSONSerialization.jsonObject(with: existingData)) as? [String: Any] else {
+            return nil
+        }
+        if adsRemoved {
+            root["adsRemoved"] = true
+        }
+        guard let data = try? JSONSerialization.data(withJSONObject: root) else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
+    private static func mergeScoreEntries(
+        _ a: [[String: Any]],
+        _ b: [[String: Any]]
+    ) -> [[String: Any]] {
+        var combined: [(name: String, score: Int)] = []
+        for entry in (a + b) {
+            let name = (entry["name"] as? String) ?? "?"
+            let score = (entry["score"] as? Int) ?? (entry["score"] as? NSNumber)?.intValue ?? 0
+            combined.append((name: name, score: score))
+        }
+        combined.sort { $0.score > $1.score }
+        return combined.prefix(maxStoredScores).map { ["name": $0.name, "score": $0.score] }
     }
 }

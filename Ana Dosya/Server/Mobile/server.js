@@ -52,6 +52,12 @@ const perfStats = {
 };
 
 // Helper functions
+// v3.6.0: Only PC-PC Fast Competitive rooms can use keyboard dash/boost.
+function isBoostAllowed(room) {
+    return !!room && room.mode === 'fastCompetitive' && room.platform === 'pc' &&
+        room.p1?.platform === 'pc' && room.p2?.platform === 'pc';
+}
+
 function generateRoomId() {
     let id;
     do {
@@ -766,6 +772,7 @@ function initGameInRoom(room) {
         snakes: room.snakes,
         foods: room.foods,
         mode: room.mode,
+        boostEnabled: isBoostAllowed(room),
         state: room.state,
         countdownValue: room.countdownValue,
         gridCols: cols,
@@ -888,7 +895,7 @@ function gameTick60FPS(room, dt) {
         if (now < s.powerEnd) {
             speed *= 1.25; // Beast mode speed boost (~75.1 ms)
         }
-        if (now < s.dashEndTime) {
+        if (isBoostAllowed(room) && now < s.dashEndTime) {
             speed *= 1.45; // Fast Competitive dash boost (~64.7 ms, tactical surge without suicidal panic)
         }
         if (now < s.slowEnd) {
@@ -1653,7 +1660,7 @@ io.on('connection', (socket) => {
     // Fast Competitive dash/boost request
     socket.on('requestDash', (data) => {
         const room = rooms[data.roomId];
-        if (!room || room.state !== 'playing' || room.mode !== 'fastCompetitive') return;
+        if (!room || room.state !== 'playing' || !isBoostAllowed(room)) return;
 
         const role = room.p1.id === socket.id ? 'p1' : (room.p2 && room.p2.id === socket.id ? 'p2' : null);
         if (!role) return;

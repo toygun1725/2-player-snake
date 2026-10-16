@@ -188,7 +188,7 @@ for (const file of files) {
 
 test('online/offline AI implementation stays identical', () => {
   const onlineOfflineFiles = [
-    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.5.8.html',
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.6.1.html',
     'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
     'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html'
   ];
@@ -608,7 +608,7 @@ test('v3.4.8 mobile, pc and offline fallbacks implement v3.4.8 button layout, sh
   ];
   for (const p of targets) {
     const html = read(p);
-    assert.match(html, /const VERSION = 'v3\.(?:4\.[89]|5\.[0-9]+)';/);
+    assert.match(html, /const VERSION = 'v3\.(?:4\.[89]|5\.[0-9]+|6\.[0-9]+)';/);
     // Button order in game end actions: Main Menu first (left), Play Again second (right)
     assert.match(html, /id="gameEndMenuBtn"[\s\S]*?id="gameEndReplayBtn"/);
     // Share button completely removed
@@ -794,16 +794,17 @@ test('v3.5.7 mobile and pc implement cross-play matchmaking and pc vertical aren
   assert.doesNotThrow(() => new vm.Script(serverJs), 'Syntax error in server.js');
 });
 
-test('v3.5.8 mobile, pc, fallbacks implement forfeit ad monetization and matchmaking restart', () => {
+test('v3.6.1 mobile/pc and current fallbacks retain forfeit ad monetization, matchmaking restart, and clean achievement keys', () => {
   const targets = [
-    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.5.8.html',
-    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.5.8.html',
+    'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.6.1.html',
+    'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.6.1.html',
     'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
     'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html'
   ];
   for (const p of targets) {
     const html = read(p);
-    assert.match(html, /const VERSION = 'v3\.5\.8';/);
+    assert.ok(html.includes("const VERSION = 'v3.6.1';"), p);
+    assert.doesNotMatch(html, /ACH_SPEED_DEMON/, `Unmapped ACH_SPEED_DEMON must not exist in ${p}`);
     assert.match(html, /data\.reason === 'forfeit'/);
     assert.match(html, /AdManager\.maybeShowGameOverAd/);
     assert.match(html, /showGameEndStats\([^,]+,\s*\{[^}]*isForfeit:\s*isForfeit/);
@@ -815,13 +816,84 @@ test('v3.5.8 mobile, pc, fallbacks implement forfeit ad monetization and matchma
   }
 });
 
-test('android_bridge_bootstrap.js implements start ad handling and 8.5s safetyTimer matching iOS', () => {
+test('android_bridge_bootstrap.js implements start ad handling, __onNativeAdPresented timer cancellation, and offline bypass matching iOS', () => {
   const bridgeJs = read('Ana Dosya/Android/app/src/main/assets/js/android_bridge_bootstrap.js');
   assert.match(bridgeJs, /o\.type === 'start' \|\| o\.type === 'next'/);
   assert.match(bridgeJs, /var safetyTimer = setTimeout\(function \(\) \{/);
   assert.match(bridgeJs, /8500\);/);
+  assert.match(bridgeJs, /window\.__onNativeAdPresented = function/);
   assert.match(bridgeJs, /clearTimeout\(callbacks\.safetyTimer\);/);
   assert.doesNotThrow(() => new vm.Script(bridgeJs), 'Syntax error in android_bridge_bootstrap.js');
+
+  const timers = new Map(), calls = [];
+  let nextTimer = 0;
+  const ctx = {
+    console: { log() {}, warn() {} },
+    location: { protocol: 'https:' },
+    setTimeout(fn, delay) { timers.set(++nextTimer, { fn, delay }); return nextTimer; },
+    clearTimeout(id) { timers.delete(id); },
+    addEventListener() {},
+    document: { documentElement: { setAttribute() {} }, addEventListener() {}, dispatchEvent() {} },
+    dispatchEvent() {},
+    CustomEvent: function(name, opts) { this.name = name; this.detail = opts && opts.detail; },
+    Android: { adBreak(payload) { calls.push(JSON.parse(payload)); } },
+    AdManager: { adInProgress: true }
+  };
+  ctx.window = ctx;
+  vm.createContext(ctx);
+  vm.runInContext(bridgeJs, ctx);
+
+  let viewed = 0, dismissed = 0, done = 0;
+  ctx.adBreak({
+    type: 'reward',
+    adViewed() { viewed++; },
+    adDismissed() { dismissed++; },
+    adBreakDone() { done++; }
+  });
+  assert.equal(calls.length, 1);
+  const cid = calls[0].callbackId;
+  assert.equal(timers.size, 1);
+
+  // Ad presented on screen -> cancels 8.5s safetyTimer so 30s video can finish
+  ctx.__onNativeAdPresented(cid);
+  assert.equal(timers.size, 0);
+
+  // Ad finishes with reward
+  ctx.__onNativeAdDone(cid, true);
+  assert.equal(viewed, 1);
+  assert.equal(dismissed, 0);
+  assert.equal(done, 1);
 });
+
+test('ios_bridge_bootstrap.js forwards 7-tier hapticEvent and auto-detects file: offline mode', () => {
+  const f = bridgeFixture();
+  for (const tier of ['tick', 'light', 'medium', 'heavy', 'gameOver', 'win', 'beastFood']) {
+    f.context.Android.hapticEvent(tier, 20);
+    const last = f.messages.at(-1);
+    assert.equal(last.action, 'hapticEvent');
+    const payload = JSON.parse(last.payload);
+    assert.equal(payload.eventType, tier);
+  }
+
+  const swiftHandler = read('Ana Dosya/iOS/TwoPlayerSnake/Bridge/GameScriptMessageHandler.swift');
+  const swiftHaptic = read('Ana Dosya/iOS/TwoPlayerSnake/Haptics/HapticManager.swift');
+  assert.match(swiftHandler, /case "hapticEvent":/);
+  assert.match(swiftHandler, /handleNotifyHighScore\(payload: payload\)/);
+  assert.match(swiftHaptic, /func playHapticEvent\(eventType: String\?, durationMs: Int\?\)/);
+  assert.match(swiftHaptic, /func playBeastFoodHaptic\(\)/);
+  assert.match(swiftHaptic, /func playWinHaptic\(\)/);
+});
+
+test('Android AppStrings.kt and iOS AppStrings.swift Shortcuts cover all 21 languages', () => {
+  const langs = ['en', 'tr', 'de', 'fr', 'es', 'it', 'pt', 'zh', 'ja', 'ko', 'ru', 'ar', 'id', 'nl', 'pl', 'th', 'vi', 'el', 'cs', 'tl', 'hi'];
+  const androidStrings = read('Ana Dosya/Android/app/src/main/java/com/twoplayersnake/app/ui/AppStrings.kt');
+  const iosStrings = read('Ana Dosya/iOS/TwoPlayerSnake/AppStrings.swift');
+  for (const lang of langs) {
+    assert.match(androidStrings, new RegExp(`"${lang}"\\s+to\\s+`), `Android AppStrings.kt missing ${lang}`);
+    assert.match(iosStrings, new RegExp(`"${lang}":\\s+"`), `iOS AppStrings.swift missing ${lang}`);
+  }
+  assert.match(iosStrings, /enum Shortcuts \{/);
+});
+
 
 

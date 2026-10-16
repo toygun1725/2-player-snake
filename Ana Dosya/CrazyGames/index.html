@@ -34,6 +34,60 @@
       }
     })();
 
+    // Route the game's existing localStorage calls through the CrazyGames Data module
+    // after SDK initialization, while retaining the current browser data for migration.
+    var __crazyGamesLegacyStorage = window.localStorage;
+    var __crazyGamesStorageTarget = __crazyGamesLegacyStorage;
+    var __crazyGamesSavedKeys = [
+      'neoSnakeLang', 'snakeLang', 'neoSnakeTheme', 'snakePlayerNames',
+      'neoSnakeMuted', 'neoSnakeHighscores'
+    ];
+    var __crazyGamesStorageProxy = {
+      getItem: function(key) { return __crazyGamesStorageTarget.getItem(String(key)); },
+      setItem: function(key, value) { return __crazyGamesStorageTarget.setItem(String(key), String(value)); },
+      removeItem: function(key) { return __crazyGamesStorageTarget.removeItem(String(key)); },
+      clear: function() { return __crazyGamesStorageTarget.clear(); },
+      key: function(index) {
+        return typeof __crazyGamesStorageTarget.key === 'function' ? __crazyGamesStorageTarget.key(index) : null;
+      },
+      get length() { return Number(__crazyGamesStorageTarget.length) || 0; }
+    };
+    try {
+      Object.defineProperty(window, 'localStorage', {
+        configurable: true,
+        get: function() { return __crazyGamesStorageProxy; }
+      });
+    } catch (e) {
+      console.warn('CrazyGames storage routing is unavailable; keeping browser storage.', e);
+    }
+
+    window.__crazyGamesMuteAudio = false;
+    window.__crazyGamesUsername = '';
+    // The Basic Launch does not serve ads; enable after approval for Full Launch.
+    window.__crazyGamesAdsEnabled = false;
+    window.__crazyGamesLoadingStarted = false;
+    window.__crazyGamesLoadingStopped = false;
+    window.__crazyGamesGameplayActive = false;
+
+    function activateCrazyGamesDataStorage(dataModule) {
+      if (!dataModule || typeof dataModule.getItem !== 'function' || typeof dataModule.setItem !== 'function') return false;
+      try {
+        // This read also confirms that the Data module is enabled for this submission.
+        dataModule.getItem('neoSnakeTheme');
+        __crazyGamesSavedKeys.forEach(function(key) {
+          var oldValue = __crazyGamesLegacyStorage.getItem(key);
+          if (oldValue !== null && dataModule.getItem(key) === null) {
+            dataModule.setItem(key, oldValue);
+          }
+        });
+        __crazyGamesStorageTarget = dataModule;
+        return true;
+      } catch (error) {
+        console.warn('CrazyGames Data module unavailable; keeping browser storage.', error);
+        return false;
+      }
+    }
+
     // 2. Ensure iframe grabs keyboard focus immediately upon interaction
     window.addEventListener('pointerdown', function() {
       try { window.focus(); } catch (e) {}
@@ -44,16 +98,58 @@
     window.__crazyGamesInitPromise = null;
     window.__crazyGamesAdblockActive = false;
 
+    function applyCrazyGamesGameSettings(settings) {
+      window.__crazyGamesMuteAudio = !!(settings && settings.muteAudio);
+      window.dispatchEvent(new CustomEvent('crazygames:settingschange', { detail: settings || {} }));
+    }
+
     async function initCrazyGames() {
       if (!window.CrazyGames || !window.CrazyGames.SDK) {
         console.warn('CrazyGames SDK not found.');
         return false;
       }
       if (window.__crazyGamesInitPromise) return window.__crazyGamesInitPromise;
-      window.__crazyGamesInitPromise = window.CrazyGames.SDK.init()
+      // Defer SDK.init into the promise chain so even a synchronous SDK error
+      // (for example when this file is opened from file://) reaches .catch()
+      // and cannot prevent the game bootstrap from reaching the splash fallback.
+      window.__crazyGamesInitPromise = Promise.resolve()
+        .then(() => window.CrazyGames.SDK.init())
         .then(async () => {
           window.__crazyGamesReady = true;
           console.log('CrazyGames SDK v3 initialized successfully.');
+          try {
+            var gameModule = window.CrazyGames.SDK.game;
+            if (gameModule && typeof gameModule.loadingStart === 'function') {
+              gameModule.loadingStart();
+              window.__crazyGamesLoadingStarted = true;
+            }
+            if (gameModule) {
+              applyCrazyGamesGameSettings(gameModule.settings);
+              if (typeof gameModule.addSettingsChangeListener === 'function') {
+                gameModule.addSettingsChangeListener(applyCrazyGamesGameSettings);
+              }
+            }
+            activateCrazyGamesDataStorage(window.CrazyGames.SDK.data);
+          } catch (e) {
+            console.warn('CrazyGames game settings or data setup failed:', e);
+          }
+          try {
+            var userModule = window.CrazyGames.SDK.user;
+            if (userModule && typeof userModule.getUser === 'function') {
+              window.__crazyGamesUserPromise = userModule.getUser()
+                .then(function(user) {
+                  window.__crazyGamesUsername = user && user.username ? String(user.username) : '';
+                  window.dispatchEvent(new CustomEvent('crazygames:userchange', { detail: user || null }));
+                  return user || null;
+                })
+                .catch(function(error) {
+                  console.warn('CrazyGames user lookup unavailable:', error);
+                  return null;
+                });
+            }
+          } catch (e) {
+            console.warn('CrazyGames user lookup unavailable:', e);
+          }
           try {
             if (window.CrazyGames.SDK.ad && typeof window.CrazyGames.SDK.ad.hasAdblock === 'function') {
               window.__crazyGamesAdblockActive = await window.CrazyGames.SDK.ad.hasAdblock();
@@ -70,22 +166,15 @@
       return window.__crazyGamesInitPromise;
     }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => { initCrazyGames(); });
-    } else {
-      initCrazyGames();
-    }
-    window.addEventListener('load', () => {
-      if (!window.__crazyGamesReady) initCrazyGames();
-    });
+    initCrazyGames();
   </script>
 
-  <title>2 Player Snake</title>
+  <title>2 Player Snake | v3.5.8</title>
   <meta name="description" content="Play 2 Player Snake online – challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
 
   <!-- Open Graph / Social Media / Google Search Thumbnail Meta Tags -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="2 Player Snake | v3.5.3 - Play Online & Local">
+  <meta property="og:title" content="2 Player Snake | v3.5.8 - Play Online & Local">
   <meta property="og:description" content="Play 2 Player Snake online – challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
   <meta property="og:url" content="https://2playersnake.com/wp-content/uploads/game/index.html">
   <meta property="og:image" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
@@ -103,7 +192,7 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="2 Player Snake | v3.5.3 - Play Online & Local">
+  <meta name="twitter:title" content="2 Player Snake | v3.5.8 - Play Online & Local">
   <meta name="twitter:description" content="Play 2 Player Snake online – challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
   <meta name="twitter:image" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
 
@@ -117,7 +206,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <!-- Version: v3.5.3 -->
+  <!-- Version: v3.5.8 -->
   <style>
     :root {
       --bg: #0b0f14;
@@ -1549,6 +1638,9 @@
     #stage {
       position: relative;
       height: calc(100vh - var(--hud-footer-height));
+      display: flex;
+      justify-content: center;
+      align-items: center;
       transition: height 0.34s cubic-bezier(0.22, 0.61, 0.36, 1);
     }
 
@@ -1559,7 +1651,19 @@
       border-radius: 22px;
       overflow: hidden;
       box-shadow: 0 44px 130px #000a, 0 12px 44px #0009, inset 0 0 0 1px #1a2636;
-      background: #09101a
+      background: #09101a;
+      transition: width 0.28s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.28s ease;
+    }
+
+    /* Cross-Play Dikey Arcade Sahnesi (Vertical Arena) */
+    #stage.vertical-arena #canvasWrap {
+      width: auto;
+      max-width: 100%;
+      height: 100%;
+      box-shadow: 
+        0 0 45px rgba(53, 230, 230, 0.18),
+        0 20px 80px rgba(0, 0, 0, 0.85),
+        inset 0 0 0 1px rgba(53, 230, 230, 0.25);
     }
 
     canvas {
@@ -1977,6 +2081,19 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+    }
+
+    .main-menu-privacy-note {
+      max-width: 560px;
+      margin: 12px auto 0;
+      color: #b4c5d8;
+      font-size: 11px;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    [data-theme="light"] .main-menu-privacy-note {
+      color: #425466;
     }
 
     .main-menu-actions .btn-menu-row {
@@ -3731,7 +3848,12 @@
             0 0 10px rgba(53, 230, 230, 0.4),
             0 0 20px rgba(255, 79, 191, 0.3);
         transition: width 0.3s ease;
+        animation: splashBarProgress 2s linear forwards;
         position: relative;
+    }
+    @keyframes splashBarProgress {
+        from { width: 0%; }
+        to { width: 100%; }
     }
     #loading-splash .splash-bar-fill::after {
         content: '';
@@ -3800,6 +3922,28 @@
         }
         .pc-qs-start-btn:hover { opacity: 0.9; }
         .pc-qs-start-btn:active { transform: scale(0.97); }
+        .pc-qs-start-beast-btn {
+          width: 100%; padding: 12px 18px; border-radius: 12px;
+          background: linear-gradient(135deg, #ff1744 0%, #ff5722 50%, #ff9100 100%);
+          border: 1.5px solid rgba(255, 145, 0, 0.55); color: #fff;
+          cursor: pointer; font-family: 'Orbitron', sans-serif;
+          margin-top: 8px; box-shadow: 0 4px 18px rgba(255, 23, 68, 0.42), 0 0 12px rgba(255, 87, 34, 0.35);
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+          transition: transform 0.15s, filter 0.15s, opacity 0.2s;
+        }
+        .pc-qs-start-beast-btn:hover { filter: brightness(1.1); }
+        .pc-qs-start-beast-btn:active { transform: scale(0.97); }
+        .pc-qs-beast-title {
+          font-size: 17px; font-weight: 900; letter-spacing: 1.2px;
+          display: flex; align-items: center; justify-content: center; gap: 9px; text-shadow: 0 1px 5px rgba(0,0,0,0.7);
+        }
+        .pc-qs-beast-title i {
+          font-size: 16px;
+        }
+        .pc-qs-beast-sub {
+          font-size: 12.5px; font-weight: 700; color: #fff3e0;
+          letter-spacing: 0.8px; font-family: system-ui, sans-serif; text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+        }
         .pc-qs-action-row {
           display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 6px;
         }
@@ -3874,6 +4018,29 @@
         </div>
         <div class="splash-text" id="splashText">Loading...</div>
     </div>
+    <script>
+      // Start the splash progress before the large game script is parsed.
+      // CSS provides the first visible frames; this clock keeps JavaScript in sync.
+      (function startSplashImmediately() {
+        const splash = window.__snakeSplash = {
+          el: document.getElementById('loading-splash'),
+          bar: document.getElementById('splashBarFill'),
+          progress: 0,
+          target: 100,
+          timer: null,
+          done: false,
+          startedAt: performance.now()
+        };
+        const duration = 2000;
+        function tick(now) {
+          if (splash.done) return;
+          splash.progress = Math.min(100, Math.max(0, now - splash.startedAt) / duration * 100);
+          if (splash.bar) splash.bar.style.width = splash.progress + '%';
+          if (splash.progress < 100) splash.timer = requestAnimationFrame(tick);
+        }
+        splash.timer = requestAnimationFrame(tick);
+      })();
+    </script>
   <div class="wrap">
     <div id="stage">
       <div id="canvasWrap" class="paused-blur">
@@ -4014,11 +4181,13 @@
 
   <script>
     (() => {
+      // The SDK initializes independently. Do not hold the game bootstrap for
+      // its network response: local files and portal previews may take seconds.
       /* ===========================
-        2 Player Snake - Beta v3.5.3
+        2 Player Snake - Beta v3.5.8
         =========================== */
 
-      const VERSION = 'v3.5.3';  /* === i18n === */
+      const VERSION = 'v3.5.8';  /* === i18n === */
       const VERSION_CHECK_INTERVAL_MS = 45000;
       let lastVersionCheckAt = 0;
       let versionCheckInFlight = false;
@@ -4188,6 +4357,7 @@
       const STRINGS = {
         tr: {
                     colorPick: 'Ad & Renk', namePlaceholder: 'Ad',
+          privacyNotice: 'Gizlilik notu: Çevrimiçi oyunda görünen adınız oda kurma/katılma ve maçta gösterilme amacıyla çok oyunculu sunucuya gönderilir. Gerçek ad veya kişisel bilgi kullanmayın.',
           language: 'Dil',
           languageName: 'Türkçe',
           sound: 'Ses',
@@ -4332,7 +4502,6 @@
 </div>
 <div class="developers-section">
   <p><strong>İletişim:</strong> toyguncetin@gmail.com</p>
-  <p><strong>Website:</strong> 2playersnake.com</p>
   <p class="copyright">© 2026 <strong style="color: #ff4fbf">Romi</strong><strong style="color: #35e6e6">Toy</strong>. Tüm hakları saklıdır.</p>
 </div>
 <div class="developers-section">
@@ -4341,6 +4510,7 @@
         },
         en: {
                     colorPick: 'Name & Color', namePlaceholder: 'Name',
+          privacyNotice: 'Privacy notice: Online play sends your display name to the multiplayer server to create or join rooms and show it in matches. Do not use your real name or personal information.',
           language: 'Language',
           languageName: 'English',
           sound: 'Sound',
@@ -4486,7 +4656,6 @@
 </div>
 <div class="developers-section">
   <p><strong>Contact:</strong> toyguncetin@gmail.com</p>
-  <p><strong>Website:</strong> 2playersnake.com</p>
   <p class="copyright">© 2026 <strong style="color: #ff4fbf">Romi</strong><strong style="color: #35e6e6">Toy</strong>. All rights reserved.</p>
 </div>
 <div class="developers-section">
@@ -5695,7 +5864,6 @@
 </div>
 <div class="developers-section">
   <p><strong>البريد:</strong> toyguncetin@gmail.com</p>
-  <p><strong>الموقع:</strong> 2playersnake.com</p>
   <p class="copyright">© 2026 <strong style="color: #ff4fbf">Romi</strong><strong style="color: #35e6e6">Toy</strong>. جميع الحقوق محفوظة.</p>
 </div>
 <div class="developers-section">
@@ -5845,7 +6013,6 @@
 </div>
 <div class="developers-section">
   <p><strong>Контакт:</strong> toyguncetin@gmail.com</p>
-  <p><strong>Сайт:</strong> 2playersnake.com</p>
   <p class="copyright">© 2026 <strong style="color: #ff4fbf">Romi</strong><strong style="color: #35e6e6">Toy</strong>. Все права защищены.</p>
 </div>
 <div class="developers-section">
@@ -5995,7 +6162,6 @@
 </div>
 <div class="developers-section">
   <p><strong>Kontak:</strong> toyguncetin@gmail.com</p>
-  <p><strong>Situs:</strong> 2playersnake.com</p>
   <p class="copyright">© 2026 <strong style="color: #ff4fbf">Romi</strong><strong style="color: #35e6e6">Toy</strong>. Hak cipta dilindungi.</p>
 </div>
 <div class="developers-section">
@@ -6145,7 +6311,6 @@
 </div>
 <div class="developers-section">
   <p><strong>連絡:</strong> toyguncetin@gmail.com</p>
-  <p><strong>サイト:</strong> 2playersnake.com</p>
   <p class="copyright">© 2026 <strong style="color: #ff4fbf">Romi</strong><strong style="color: #35e6e6">Toy</strong>. 無断転載を禁じます。</p>
 </div>
 <div class="developers-section">
@@ -6295,7 +6460,6 @@
 </div>
 <div class="developers-section">
   <p><strong>연락처:</strong> toyguncetin@gmail.com</p>
-  <p><strong>웹사이트:</strong> 2playersnake.com</p>
   <p class="copyright">© 2026 <strong style="color: #ff4fbf">Romi</strong><strong style="color: #35e6e6">Toy</strong>. 모든 권리 보유.</p>
 </div>
 <div class="developers-section">
@@ -6483,7 +6647,6 @@
 </div>
 <div class="developers-section">
   <p><strong>Liên Hệ:</strong> toyguncetin@gmail.com</p>
-  <p><strong>Website:</strong> 2playersnake.com</p>
   <p class="copyright">© 2026 <strong style="color: #ff4fbf">Romi</strong><strong style="color: #35e6e6">Toy</strong>. Tất cả quyền được bảo lưu.</p>
 </div>
 <div class="developers-section">
@@ -6671,7 +6834,6 @@
 </div>
 <div class="developers-section">
   <p><strong>ติดต่อ:</strong> toyguncetin@gmail.com</p>
-  <p><strong>เว็บไซต์:</strong> 2playersnake.com</p>
   <p class="copyright">© 2026 <strong style="color: #ff4fbf">Romi</strong><strong style="color: #35e6e6">Toy</strong>. สงวนลิขสิทธิ์ทั้งหมด</p>
 </div>
 <div class="developers-section">
@@ -6859,7 +7021,6 @@
 </div>
 <div class="developers-section">
   <p><strong>Makipag-ugnayan:</strong> toyguncetin@gmail.com</p>
-  <p><strong>Website:</strong> 2playersnake.com</p>
   <p class="copyright">© 2026 <strong style="color: #ff4fbf">Romi</strong><strong style="color: #35e6e6">Toy</strong>. Lahat ng karapatan ay nakalaan.</p>
 </div>
 <div class="developers-section">
@@ -7047,7 +7208,6 @@
 </div>
 <div class="developers-section">
   <p><strong>Contact:</strong> toyguncetin@gmail.com</p>
-  <p><strong>Website:</strong> 2playersnake.com</p>
   <p class="copyright">© 2026 <strong style="color: #ff4fbf">Romi</strong><strong style="color: #35e6e6">Toy</strong>. Alle rechten voorbehouden.</p>
 </div>
 <div class="developers-section">
@@ -7235,7 +7395,6 @@
 </div>
 <div class="developers-section">
   <p><strong>Επικοινωνία:</strong> toyguncetin@gmail.com</p>
-  <p><strong>Ιστότοπος:</strong> 2playersnake.com</p>
   <p class="copyright">© 2026 <strong style="color: #ff4fbf">Romi</strong><strong style="color: #35e6e6">Toy</strong>. Όλα τα δικαιώματα διατηρούνται.</p>
 </div>
 <div class="developers-section">
@@ -7423,7 +7582,6 @@
 </div>
 <div class="developers-section">
   <p><strong>Kontakt:</strong> toyguncetin@gmail.com</p>
-  <p><strong>Webová stránka:</strong> 2playersnake.com</p>
   <p class="copyright">© 2026 <strong style="color: #ff4fbf">Romi</strong><strong style="color: #35e6e6">Toy</strong>. Všechna práva vyhrazena.</p>
 </div>
 <div class="developers-section">
@@ -7447,7 +7605,7 @@
         "newRecord": "YENİ KİŞİSEL REKOR!",
         "shareScore": "Paylaş",
         "scoreCopied": "Skor panoya kopyalandı!",
-        "shareText": "🐍 2 Player Snake oyununda {score} puan yaptım! Sen de dene: https://2playersnake.com"
+        "shareText": "🐍 2 Player Snake oyununda {score} puan yaptım! Sen de dene."
     },
     "en": {
         "colorPick": "Name & Color",
@@ -7463,7 +7621,7 @@
         "newRecord": "NEW PERSONAL RECORD!",
         "shareScore": "Share",
         "scoreCopied": "Score copied to clipboard!",
-        "shareText": "🐍 I scored {score} in 2 Player Snake! Can you beat me? https://2playersnake.com"
+        "shareText": "🐍 I scored {score} in 2 Player Snake! Can you beat me?"
     },
     "fr": {
         "colorPick": "Nom & Couleur",
@@ -7933,6 +8091,36 @@
       Object.keys(VS_AI_STRINGS).forEach(locale => {
         EXTRA_STRINGS[locale] = { ...(EXTRA_STRINGS[locale] || {}), ...VS_AI_STRINGS[locale] };
       });
+
+      const BEAST_MODE_STRINGS = {
+        "tr": { "startWithBeast": "BEAST MODUYLA BAŞLA", "startWithBeastAd": "(Reklam)", "startWithBeastVip": "(VIP / Ücretsiz)" },
+        "en": { "startWithBeast": "START IN BEAST MODE", "startWithBeastAd": "(Ad)", "startWithBeastVip": "(VIP / Free)" },
+        "de": { "startWithBeast": "IN BEAST-MODUS STARTEN", "startWithBeastAd": "(Werbung)", "startWithBeastVip": "(VIP / Gratis)" },
+        "fr": { "startWithBeast": "LANCER EN MODE BEAST", "startWithBeastAd": "(Pub)", "startWithBeastVip": "(VIP / Gratuit)" },
+        "es": { "startWithBeast": "EMPEZAR EN MODO BEAST", "startWithBeastAd": "(Anuncio)", "startWithBeastVip": "(VIP / Gratis)" },
+        "it": { "startWithBeast": "INIZIA IN MODALITÀ BEAST", "startWithBeastAd": "(Pubblicità)", "startWithBeastVip": "(VIP / Gratis)" },
+        "zh": { "startWithBeast": "以野兽模式开始", "startWithBeastAd": "(广告)", "startWithBeastVip": "(VIP / 免费)" },
+        "hi": { "startWithBeast": "बीस्ट मोड में शुरू करें", "startWithBeastAd": "(विज्ञापन)", "startWithBeastVip": "(वीआईपी / मुफ्त)" },
+        "pl": { "startWithBeast": "START W TRYBIE BESTII", "startWithBeastAd": "(Reklama)", "startWithBeastVip": "(VIP / Za darmo)" },
+        "pt-BR": { "startWithBeast": "INICIAR EM MODO BEAST", "startWithBeastAd": "(Anúncio)", "startWithBeastVip": "(VIP / Grátis)" },
+        "ar": { "startWithBeast": "ابدأ بوضع الوحش", "startWithBeastAd": "(إعلان)", "startWithBeastVip": "(VIP / مجاني)" },
+        "ru": { "startWithBeast": "НАЧАТЬ В РЕЖИМЕ ЗВЕРЯ", "startWithBeastAd": "(Реклама)", "startWithBeastVip": "(VIP / Бесплатно)" },
+        "id": { "startWithBeast": "MULAI MODE BEAST", "startWithBeastAd": "(Iklan)", "startWithBeastVip": "(VIP / Gratis)" },
+        "ja": { "startWithBeast": "ビーストモードで開始", "startWithBeastAd": "(広告)", "startWithBeastVip": "(VIP / 無料)" },
+        "ko": { "startWithBeast": "비스트 모드로 시작", "startWithBeastAd": "(광고)", "startWithBeastVip": "(VIP / 무료)" },
+        "vi": { "startWithBeast": "BẮT ĐẦU CHẾ ĐỘ BEAST", "startWithBeastAd": "(Quảng cáo)", "startWithBeastVip": "(VIP / Miễn phí)" },
+        "th": { "startWithBeast": "เริ่มด้วยโหมดบีสต์", "startWithBeastAd": "(โฆษณา)", "startWithBeastVip": "(VIP / ฟรี)" },
+        "tl": { "startWithBeast": "SIMULAN SA BEAST MODE", "startWithBeastAd": "(Ad)", "startWithBeastVip": "(VIP / Libre)" },
+        "nl": { "startWithBeast": "START IN BEAST-MODUS", "startWithBeastAd": "(Advertentie)", "startWithBeastVip": "(VIP / Gratis)" },
+        "el": { "startWithBeast": "ΕΚΚΙΝΗΣΗ ΣΕ BEAST MODE", "startWithBeastAd": "(Διαφήμιση)", "startWithBeastVip": "(VIP / Δωρεάν)" },
+        "cs": { "startWithBeast": "SPUSTIT V REŽIMU BEAST", "startWithBeastAd": "(Reklama)", "startWithBeastVip": "(VIP / Zdarma)" }
+      };
+      Object.keys(BEAST_MODE_STRINGS).forEach(locale => {
+        EXTRA_STRINGS[locale] = { ...(EXTRA_STRINGS[locale] || {}), ...BEAST_MODE_STRINGS[locale] };
+      });
+      if (EXTRA_STRINGS['ptbr']) {
+        EXTRA_STRINGS['ptbr'] = { ...EXTRA_STRINGS['ptbr'], ...BEAST_MODE_STRINGS['pt-BR'] };
+      }
 
       const PC_V255_OVERRIDES = {
         tr: {
@@ -9856,6 +10044,7 @@
       const canvasWrap = document.getElementById('canvasWrap');
       const ctx = canvas.getContext('2d');
       let GRID_COLS = 64, GRID_ROWS = 36;
+      let isOnlineMode = false;
       const BASE_TPS = 14.2;
       const _perfUrlParams = new URLSearchParams(window.location.search);
       const _appDeviceParam = (_perfUrlParams.get('app_device') || '').toLowerCase();
@@ -9881,32 +10070,32 @@
       function markGridDirty() { gridCache.dirty = true; }
       function resize() {
         const st = document.getElementById('stage');
-        const r = st.getBoundingClientRect();
+        const cwEl = document.getElementById('canvasWrap');
+        if (!st || !cwEl) return;
+
+        // Cross-Play: Check if vertical arena should be active (online match with portrait grid e.g. 24x42 or 24x36)
+        const isVerticalArena = Boolean(isOnlineMode && (GRID_COLS < GRID_ROWS));
+        st.classList.toggle('vertical-arena', isVerticalArena);
+
+        if (isVerticalArena) {
+          cwEl.style.aspectRatio = `${GRID_COLS} / ${GRID_ROWS}`;
+          cwEl.style.width = 'auto';
+          cwEl.style.maxWidth = '100%';
+          cwEl.style.height = '100%';
+        } else {
+          cwEl.style.aspectRatio = '';
+          cwEl.style.width = '100%';
+          cwEl.style.maxWidth = '';
+          cwEl.style.height = '100%';
+        }
+
+        const r = cwEl.getBoundingClientRect();
         dpr = Math.max(1, Math.min(perfProfile.dprMax, window.devicePixelRatio || 1));
         
         // Update resolution to prevent blur
         canvas.width = Math.floor(r.width * dpr);
         canvas.height = Math.floor(r.height * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-        // Aspect ratio locking: Calculate effective area to maintain 64:36 without stretching
-        const targetAspect = 64 / 36;
-        const currentAspect = r.width / r.height;
-
-        let drawW, drawH;
-        if (currentAspect > targetAspect) {
-          // Wider than 16:9 - bound by height
-          drawH = r.height;
-          drawW = r.height * targetAspect;
-        } else {
-          // Taller than 16:9 - bound by width
-          drawW = r.width;
-          drawH = r.width / targetAspect;
-        }
-
-        // We could use these calculated drawW/drawH to center the grid,
-        // but for now, the primary fix is updating the canvas.width/height 
-        // to match the screen pixels, which is what v2.73 missed.
         
         markGridDirty();
       }
@@ -9922,6 +10111,9 @@
 
       /* === Sound & Feel === */
       let audioCtx; let muted = localStorage.getItem('neoSnakeMuted') === '1'; const muteBtn = document.getElementById('muteBtn');
+      function isGameAudioMuted() {
+        return muted || !!window.__crazyGamesMuteAudio;
+      }
       const screenShake = {
         trauma: 0,
         decay: 3.5,
@@ -9949,7 +10141,7 @@
         ctx._hasStateListener = true;
         try {
           ctx.addEventListener('statechange', () => {
-            if (!muted && !document.hidden && (ctx.state === 'suspended' || ctx.state === 'interrupted')) {
+            if (!isGameAudioMuted() && !document.hidden && (ctx.state === 'suspended' || ctx.state === 'interrupted')) {
               ctx.resume().then(() => primeAudioContext(ctx)).catch(() => {});
             }
           });
@@ -9969,7 +10161,7 @@
       }
 
       function resumeAudioContext() {
-        if (muted) return;
+        if (isGameAudioMuted()) return;
         try {
           if (!audioCtx || audioCtx.state === 'closed') {
             ensureAudio();
@@ -10004,7 +10196,7 @@
       // but audio is actually dead. On next touch we force-rebuild the AudioContext.
       window._adJustFinished = false;
       function forceRebuildAudio() {
-        if (muted) return;
+        if (isGameAudioMuted()) return;
         try {
           if (audioCtx && audioCtx.state !== 'closed') {
             audioCtx.close().catch(() => {});
@@ -10018,7 +10210,7 @@
       }
       const userAudioGestureEvents = ['touchstart', 'touchend', 'pointerdown', 'mousedown', 'keydown'];
       function handleUserAudioGesture() {
-        if (muted) return;
+        if (isGameAudioMuted()) return;
         if (window._adJustFinished) {
           window._adJustFinished = false;
           forceRebuildAudio();
@@ -10049,7 +10241,7 @@
       });
 
       function tone(freq, dur, { type = 'square', gain = 0.06, attack = 0.004, release = 0.06, sweep = 0, force = false } = {}) {
-        if (muted || (typeof adAudioMuted !== 'undefined' && adAudioMuted)) return; if (!force && typeof isDemoMode !== 'undefined' && isDemoMode) return; try {
+        if (isGameAudioMuted() || (typeof adAudioMuted !== 'undefined' && adAudioMuted)) return; if (!force && typeof isDemoMode !== 'undefined' && isDemoMode) return; try {
           ensureAudio();
           if (!audioCtx) return;
           if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
@@ -10119,7 +10311,7 @@
         menuClick() { tone(880, 0.05, { type: 'triangle', gain: 0.04, force: true }); },
         countdownTick() { tone(1200, 0.08, { type: 'sine', gain: 0.03 }); },
         beastMode() {
-          if (muted) return;
+          if (isGameAudioMuted()) return;
           ensureAudio();
           const now = audioCtx.currentTime;
           const base = 160;
@@ -10141,7 +10333,7 @@
           setTimeout(() => tone(340, 0.14, { type: 'triangle', gain: 0.05 }), 80);
         },
         win() {
-          if (muted) return;
+          if (isGameAudioMuted()) return;
           ensureAudio();
           const notes = [660, 880, 660, 990, 880, 660, 550, 660, 770, 660, 880, 990, 880, 660, 550, 660, 770, 880, 660, 440];
           notes.forEach((freq, idx) => {
@@ -10152,7 +10344,7 @@
           });
         },
         winRound() {
-          if (muted) return;
+          if (isGameAudioMuted()) return;
           ensureAudio();
           const notes = [660, 880, 990, 880, 660, 550, 660];
           notes.forEach((freq, idx) => {
@@ -10171,8 +10363,9 @@
       function updateMuteUI() {
         const onLabel = t('on') || 'ON';
         const offLabel = t('off') || 'OFF';
-        setMenuButtonLabel(muteBtn, `${t('sound')}: ${muted ? offLabel : onLabel}`);
-        setMenuButtonIcon(muteBtn, muted
+        const audioMuted = isGameAudioMuted();
+        setMenuButtonLabel(muteBtn, `${t('sound')}: ${audioMuted ? offLabel : onLabel}`);
+        setMenuButtonIcon(muteBtn, audioMuted
           ? '<i class="fa-solid fa-volume-xmark"></i>'
           : '<i class="fa-solid fa-volume-high"></i>');
         localStorage.setItem('neoSnakeMuted', muted ? '1' : '0');
@@ -10181,11 +10374,19 @@
         // Update icon based on mute state
         muteBtn.className = muteBtn.className.replace(/sound( muted)?/g, '');
         muteBtn.classList.add('sound');
-        if (muted) {
+        if (audioMuted) {
           muteBtn.classList.add('muted');
         }
       }
       updateMuteUI();
+      window.addEventListener('crazygames:settingschange', () => {
+        updateMuteUI();
+        if (isGameAudioMuted()) {
+          if (audioCtx && audioCtx.state === 'running') audioCtx.suspend().catch(() => {});
+        } else if (audioCtx) {
+          resumeAudioContext();
+        }
+      });
 
       /* === UI State === */
 
@@ -10373,7 +10574,7 @@
         ? 'http://localhost:3000'
         : 'https://two-player-snake-server.onrender.com';
       let socket = null;
-      let isOnlineMode = false;
+      isOnlineMode = false;
       let lastOnlineUpdate = 0;
       let lastP1Update = 0;
       let lastP2Update = 0;
@@ -10387,6 +10588,109 @@
       let onlineRematchInterval = null;
       let connectionTimeoutTimer = null;
       let countdownValue = 3;
+      let crazyGamesRoomTracked = false;
+      let crazyGamesRoomJoinable = false;
+      let crazyGamesRoomGameStyle = 'normal';
+      let crazyGamesMultiplayerSetupDone = false;
+      let crazyGamesMultiplayerSetupQueued = false;
+      let crazyGamesJoinRoomListener = null;
+      let crazyGamesLastInviteRoomCode = '';
+      let crazyGamesLastInviteAt = 0;
+
+      function getOnlinePlayerName() {
+        return String(window.__crazyGamesUsername || playerNames.p1 || '').trim();
+      }
+
+      function updateCrazyGamesRoom(isJoinable, mode = gameStyle || 'normal') {
+        crazyGamesRoomJoinable = !!isJoinable;
+        crazyGamesRoomGameStyle = mode || crazyGamesRoomGameStyle || 'normal';
+        if (!onlineRoomId || !window.__crazyGamesReady) return;
+        try {
+          const gameModule = window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.game;
+          if (!gameModule || typeof gameModule.updateRoom !== 'function') return;
+          const roomUpdate = {
+            roomId: String(onlineRoomId),
+            isJoinable: crazyGamesRoomJoinable
+          };
+          if (crazyGamesRoomJoinable) {
+            roomUpdate.inviteParams = {
+              roomCode: String(onlineRoomId),
+              gameStyle: String(crazyGamesRoomGameStyle || 'normal')
+            };
+          }
+          gameModule.updateRoom(roomUpdate);
+          crazyGamesRoomTracked = true;
+        } catch (error) {
+          console.warn('CrazyGames room update failed:', error);
+        }
+      }
+
+      function leaveCrazyGamesRoom() {
+        if (!crazyGamesRoomTracked) return;
+        try {
+          const gameModule = window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.game;
+          if (gameModule && typeof gameModule.leftRoom === 'function') gameModule.leftRoom();
+        } catch (error) {
+          console.warn('CrazyGames leaveRoom failed:', error);
+        }
+        crazyGamesRoomTracked = false;
+        crazyGamesRoomJoinable = false;
+      }
+
+      function handleCrazyGamesRoomInvite(inviteParams) {
+        if (!inviteParams || typeof inviteParams !== 'object') return false;
+        const roomCode = inviteParams.roomCode || inviteParams.roomId;
+        if (!roomCode || typeof window.joinOnlineRoom !== 'function') return false;
+        const normalizedRoomCode = String(roomCode);
+        if (crazyGamesLastInviteRoomCode === normalizedRoomCode && Date.now() - crazyGamesLastInviteAt < 2000) return true;
+        crazyGamesLastInviteRoomCode = normalizedRoomCode;
+        crazyGamesLastInviteAt = Date.now();
+        const mode = inviteParams.gameStyle || inviteParams.mode || 'normal';
+        window.joinOnlineRoom(normalizedRoomCode, String(mode));
+        return true;
+      }
+
+      function setupCrazyGamesMultiplayer() {
+        if (crazyGamesMultiplayerSetupDone) return;
+        if (!window.__crazyGamesReady) {
+          if (!crazyGamesMultiplayerSetupQueued && window.__crazyGamesInitPromise) {
+            crazyGamesMultiplayerSetupQueued = true;
+            window.__crazyGamesInitPromise.then((ready) => {
+              crazyGamesMultiplayerSetupQueued = false;
+              if (ready) setupCrazyGamesMultiplayer();
+            });
+          }
+          return;
+        }
+
+        const gameModule = window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.game;
+        if (!gameModule) return;
+        crazyGamesMultiplayerSetupDone = true;
+
+        if (typeof gameModule.addJoinRoomListener === 'function' && !crazyGamesJoinRoomListener) {
+          crazyGamesJoinRoomListener = (inviteParams) => handleCrazyGamesRoomInvite(inviteParams);
+          gameModule.addJoinRoomListener(crazyGamesJoinRoomListener);
+        }
+
+        let initialInviteParams = gameModule.inviteParams || null;
+        if (!initialInviteParams && typeof gameModule.getInviteParam === 'function') {
+          const roomCode = gameModule.getInviteParam('roomCode') || gameModule.getInviteParam('roomId');
+          if (roomCode) {
+            initialInviteParams = {
+              roomCode,
+              gameStyle: gameModule.getInviteParam('gameStyle') || 'normal'
+            };
+          }
+        }
+
+        const startedFromInvite = handleCrazyGamesRoomInvite(initialInviteParams);
+        if (!startedFromInvite && gameModule.isInstantMultiplayer === true && !window.__crazyGamesInstantStartRequested) {
+          window.__crazyGamesInstantStartRequested = true;
+          startOnlineServerConnectionWithRoom(null, 'normal');
+        } else if (onlineRoomId) {
+          updateCrazyGamesRoom(crazyGamesRoomJoinable, crazyGamesRoomGameStyle);
+        }
+      }
 
       function navigateTo(menuFunc, ...args) {
         menuHistory.push({ func: menuFunc, args: args });
@@ -10515,19 +10819,40 @@
         return false;
       }
 
-      function crazyGamesGameplayStart() {
+      function crazyGamesLoadingStop() {
         try {
-          if (window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.game) {
-            window.CrazyGames.SDK.game.gameplayStart();
+          if (!window.__crazyGamesReady || !window.__crazyGamesLoadingStarted || window.__crazyGamesLoadingStopped) return;
+          const gameModule = window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.game;
+          if (gameModule && typeof gameModule.loadingStop === 'function') {
+            gameModule.loadingStop();
+            window.__crazyGamesLoadingStopped = true;
           }
+        } catch (err) {
+          console.warn('CrazyGames loadingStop error:', err);
+        }
+      }
+
+      function crazyGamesGameplayStart() {
+        window.__crazyGamesGameplayActive = true;
+        const reportGameplayStart = () => {
+          if (!window.__crazyGamesGameplayActive || !window.__crazyGamesReady) return;
+          const gameModule = window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.game;
+          if (!gameModule) return;
+          crazyGamesLoadingStop();
+          gameModule.gameplayStart();
+        };
+        try {
+          if (window.__crazyGamesReady) reportGameplayStart();
+          else if (window.__crazyGamesInitPromise) window.__crazyGamesInitPromise.then(reportGameplayStart);
         } catch (err) {
           console.warn('CrazyGames gameplayStart error:', err);
         }
       }
 
       function crazyGamesGameplayStop() {
+        window.__crazyGamesGameplayActive = false;
         try {
-          if (window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.game) {
+          if (window.__crazyGamesReady && window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.game) {
             window.CrazyGames.SDK.game.gameplayStop();
           }
         } catch (err) {
@@ -10558,7 +10883,7 @@
       }
 
       const AdManager = {
-        cooldownMs: 45000,
+        cooldownMs: 30000,
         startAdChance: 0.30,
         snapshotDepth: 5,
         lastAdShownAt: 0,
@@ -10574,7 +10899,7 @@
         pendingRoundAd: false,
 
         isSdkReady() {
-          return !!(window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.ad);
+          return !!(window.__crazyGamesReady && window.__crazyGamesAdsEnabled && window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.ad);
         },
 
         isGlobalCooldownActive() {
@@ -10619,6 +10944,72 @@
             !this.adInProgress &&
             !this.isGlobalCooldownActive() &&
             !this.mandatoryAdShownThisMatch;
+        },
+
+        requestRewardedBeastStart(onSuccess, onFail) {
+          if (window.adsRemoved || !window.__crazyGamesAdsEnabled) {
+            this.beginMatchCycle();
+            if (onSuccess) onSuccess();
+            return;
+          }
+          if (!this.isSdkReady() || this.adInProgress) {
+            if (onFail) onFail(t('rewardedUnavailable'));
+            return;
+          }
+          this.adInProgress = true;
+          let adStarted = false;
+          let rewardSettled = false;
+          let safetyTimer = null;
+
+          const fail = (msg) => {
+            if (rewardSettled) return;
+            rewardSettled = true;
+            if (safetyTimer) { clearTimeout(safetyTimer); safetyTimer = null; }
+            this.adInProgress = false;
+            unmuteGameAudioAfterAd();
+            if (onFail) onFail(msg);
+          };
+
+          safetyTimer = setTimeout(() => {
+            if (!adStarted) fail(t('rewardedUnavailable'));
+          }, 10000);
+
+          crazyGamesGameplayStop();
+          muteGameAudioForAd();
+
+          const callbacks = {
+            adStarted: () => {
+              adStarted = true;
+              paused = true;
+              intermission = true;
+              muteGameAudioForAd();
+              if (safetyTimer) { clearTimeout(safetyTimer); safetyTimer = null; }
+            },
+            adFinished: () => {
+              if (rewardSettled) return;
+              if (!adStarted) {
+                fail(t('rewardedUnavailable'));
+                return;
+              }
+              rewardSettled = true;
+              this.adInProgress = false;
+              this.recordAdShown('reward');
+              this.beginMatchCycle();
+              unmuteGameAudioAfterAd();
+              if (onSuccess) onSuccess();
+            },
+            adError: (error) => {
+              console.warn('CrazyGames rewarded beast ad error:', error);
+              fail(t('rewardedUnavailable'));
+            }
+          };
+
+          try {
+            window.CrazyGames.SDK.ad.requestAd('rewarded', callbacks);
+          } catch (err) {
+            console.warn('Rewarded beast ad failed:', err);
+            fail(t('rewardedUnavailable'));
+          }
         },
 
         maybeShowStartAdThenStart(startFn) {
@@ -10711,13 +11102,7 @@
         },
 
         maybeShowGameOverAd(onDone) {
-          const shouldTry =
-            !this.rewardedPendingLoss &&
-            !this.startAdShownThisMatch &&
-            (this.sessionCompletedMatchCount % 2 === 0) &&
-            this.canShowMandatoryAd();
-
-          if (!shouldTry) {
+          if (!this.isSdkReady() || this.adInProgress || this.isGlobalCooldownActive()) {
             if (onDone) onDone();
             return;
           }
@@ -10733,7 +11118,7 @@
         maybeShowBetweenRoundsAd(onDone) {
           const shouldTry =
             roundCount > 0 &&
-            roundCount % 2 === 0 &&
+            roundCount % 2 !== 0 &&
             this.isSdkReady() &&
             !this.adInProgress &&
             !this.isGlobalCooldownActive();
@@ -10753,18 +11138,20 @@
 
         snapshotCounter: 0,
         captureRewardSnapshot() {
-          if (!(gameMode === '1P' && aiSnakeEnabled) || !snakes || !snakes.p1 || !snakes.p2 || this.rewardedUsedThisMatch) return;
+          if (gameMode !== '1P' || !snakes || !snakes.p1 || this.rewardedUsedThisMatch) return;
 
           this.snapshotCounter++;
           if (this.snapshotCounter < 8) return;
           this.snapshotCounter = 0;
 
-          // Old return check to satisfy regex replacement:
-          if (!(gameMode === '1P' && aiSnakeEnabled) || !snakes || !snakes.p1 || !snakes.p2 || this.rewardedUsedThisMatch) return;
+          if (gameMode !== '1P' || !snakes || !snakes.p1 || this.rewardedUsedThisMatch) return;
 
           const snapshot = cloneForGameState({
             capturedAt: performance.now(),
-            snakes,
+            snakes: {
+              p1: snakes.p1,
+              p2: snakes.p2 || null
+            },
             foods,
             barriers,
             portals,
@@ -10809,21 +11196,30 @@
         canOfferRewardedContinue() {
           const adblockActive = !!window.__crazyGamesAdblockActive;
           return gameMode === '1P' &&
-            aiSnakeEnabled &&
             !this.rewardedUsedThisMatch &&
             !this.adInProgress &&
-            !this.isGlobalCooldownActive() &&
             this.isSdkReady() &&
             !adblockActive &&
             this.rewardSnapshots.length > 0;
         },
 
         maybeInterceptAiLoss(result) {
-          if (!(gameMode === '1P' && aiSnakeEnabled && result === 'p2')) return false;
-          // Beta v2.52: Do not show the overlay if an ad cannot be shown anyway
+          return this.maybeInterceptLoss(result, false);
+        },
+
+        maybeInterceptSoloLoss() {
+          return this.maybeInterceptLoss('p1_self', true);
+        },
+
+        maybeInterceptLoss(result, isSolo = false) {
+          if (isSolo) {
+            if (gameMode !== '1P' || aiSnakeEnabled) return false;
+          } else {
+            if (!(gameMode === '1P' && aiSnakeEnabled && result === 'p2')) return false;
+          }
           if (!this.canOfferRewardedContinue()) return false;
           
-          this.rewardedPendingLoss = { result };
+          this.rewardedPendingLoss = { result, isSolo };
           this.showRewardedContinueOverlay();
           return true;
         },
@@ -10832,11 +11228,12 @@
           this.closeRewardedOverlay();
 
           const canContinue = this.canOfferRewardedContinue();
+          const isSolo = (gameMode === '1P' && !aiSnakeEnabled);
           const overlay = document.createElement('div');
           overlay.className = 'game-end-overlay rewarded-continue-overlay';
           overlay.innerHTML = `
             <div class="game-end-card rewarded-continue-card">
-              <div class="game-end-trophy">🤖</div>
+              <div class="game-end-trophy">${isSolo ? '❤️' : '🤖'}</div>
               <div class="game-end-title">${t('watchAdToContinue')}</div>
               <div class="game-end-actions">
                 <button class="game-end-btn" id="rewardedContinueBtn" ${canContinue ? '' : 'disabled'}>${t('yes')}</button>
@@ -10946,10 +11343,15 @@
 
           const complete = () => {
             this.closeRewardedOverlay();
+            const pendingLoss = this.rewardedPendingLoss;
             this.rewardedPendingLoss = null;
             paused = false;       // v2.39: overlay'dan kalma paused flag'ini temizle
             intermission = false; // v2.39: aynı şekilde intermission'ı temizle (startWinAnim set edecek)
-            finalizeCompetitiveResult(pending.result);
+            if (pendingLoss && pendingLoss.isSolo) {
+              show1PGameOver();
+            } else if (pendingLoss) {
+              finalizeCompetitiveResult(pendingLoss.result);
+            }
           };
 
           const overlay = document.querySelector('.rewarded-continue-overlay');
@@ -10983,7 +11385,7 @@
           if (typeof snapshot.matchStartTime === 'number') snapshot.matchStartTime += delta;
           shiftFoodTimestamps(snapshot.foods, delta);
           shiftSnakeTimestamps(snapshot.snakes.p1, delta);
-          shiftSnakeTimestamps(snapshot.snakes.p2, delta);
+          if (snapshot.snakes.p2) shiftSnakeTimestamps(snapshot.snakes.p2, delta);
 
           snakes = snapshot.snakes;
           foods = snapshot.foods;
@@ -11020,7 +11422,8 @@
           longestSnakeP1 = snapshot.longestSnakeP1;
           longestSnakeP2 = snapshot.longestSnakeP2;
 
-          snakes.p1 = buildRewardedContinueSnake(snapshot.snakes.p1, snapshot.snakes.p2, snapshot.barriers, snapshot.portals, snapshot.foods);
+          const enemySnake = snapshot.snakes ? snapshot.snakes.p2 : null;
+          snakes.p1 = buildRewardedContinueSnake(snapshot.snakes.p1, enemySnake, snapshot.barriers, snapshot.portals, snapshot.foods);
           barriersVersion++;
           markGridDirty();
           hideBanner();
@@ -11030,18 +11433,53 @@
           this.rewardSnapshots = [];
           winAnim.active = false;
           winAnim.final = false;
-          deathAnim.active = false;
-          paused = false;
-          intermission = false;
-          inCountdown = false;
-          last = performance.now();
           updateFoodCounters();
           updateUIVisibility();
-          if (gameMode !== '1P' || aiSnakeEnabled) {
-            updateTimerUI(Math.max(0, roundTimerEnd - performance.now()));
-          }
+          startRewardedResumeCountdown(3);
         }
       };
+
+      async function startRewardedResumeCountdown(n = 3) {
+        inCountdown = true;
+        intermission = true;
+        paused = false;
+        if (typeof render === 'function') render(0, 0);
+
+        const countStart = performance.now();
+        for (let i = n; i > 0; i--) {
+          showBanner(`<div class="countdown-text" style="color: #ff1744; text-shadow: 0 0 10px #ff1744;">${i}</div>`, false, 'countdown-banner');
+          SFX.countdownTick();
+          if (!await waitForGameFlow(gameDelay(800))) return;
+        }
+        const countElapsed = performance.now() - countStart;
+
+        if (typeof roundTimerEnd === 'number' && roundTimerEnd > 0) roundTimerEnd += countElapsed;
+        if (typeof bulkFoodEndTime === 'number' && bulkFoodEndTime > 0) bulkFoodEndTime += countElapsed;
+        if (typeof redBulkEndTime === 'number' && redBulkEndTime > 0) redBulkEndTime += countElapsed;
+        if (typeof slowEnd === 'number' && slowEnd > 0) slowEnd += countElapsed;
+        if (typeof flashColorEnd === 'number' && flashColorEnd > 0) flashColorEnd += countElapsed;
+        if (typeof sapphireTeleportEnd === 'number' && sapphireTeleportEnd > 0) sapphireTeleportEnd += countElapsed;
+        if (typeof matchStartTime === 'number' && matchStartTime > 0) matchStartTime += countElapsed;
+        if (typeof shiftFoodTimestamps === 'function') shiftFoodTimestamps(foods, countElapsed);
+        if (typeof shiftSnakeTimestamps === 'function') {
+          if (snakes && snakes.p1) shiftSnakeTimestamps(snakes.p1, countElapsed);
+          if (snakes && snakes.p2) shiftSnakeTimestamps(snakes.p2, countElapsed);
+        }
+
+        showBanner(`<div class="countdown-text start" style="color: #00e5ff; text-shadow: 0 0 8px #00e5ff;">${(t('start') || 'GO').toUpperCase()}</div>`, false, 'countdown-banner');
+        SFX.start();
+
+        intermission = false;
+        inCountdown = false;
+        paused = false;
+        last = performance.now();
+        if (gameMode !== '1P' || aiSnakeEnabled) {
+          updateTimerUI(Math.max(0, roundTimerEnd - performance.now()));
+        }
+
+        if (!await waitForGameFlow(gameDelay(600))) return;
+        hideBanner();
+      }
 
       function updateUIVisibility() {
         lastFoodP1 = null; lastFoodP2 = null; lastFood1P = null; lastLen1P = null;
@@ -11074,8 +11512,8 @@
           setMenuButtonLabel(UI.resetBtn, winAnim.final ? t('newGame') : t('reset'));
 
           if (isOnlineMode) {
-            UI.p1Label.textContent = myRole === 'p1' ? getOnlineDisplayName('p1', playerNames.p1) : getOnlineDisplayName('p1', partnerName);
-            UI.p2Label.textContent = myRole === 'p2' ? getOnlineDisplayName('p2', playerNames.p1) : getOnlineDisplayName('p2', partnerName);
+            UI.p1Label.textContent = myRole === 'p1' ? getOnlineDisplayName('p1', getOnlinePlayerName()) : getOnlineDisplayName('p1', partnerName);
+            UI.p2Label.textContent = myRole === 'p2' ? getOnlineDisplayName('p2', getOnlinePlayerName()) : getOnlineDisplayName('p2', partnerName);
           } else if (gameMode === '1P' && aiSnakeEnabled) {
             UI.p2Label.textContent = t('aiSnake');
             UI.timeLabel.style.display = 'none'; // v2.39: 1PvsAI'da zamanlayıcı yok
@@ -11354,6 +11792,10 @@
               <div id="pqs-nc-body">${ncBody}</div>
             </div>
             <button class="pc-qs-start-btn" id="pqs-start">${(t('start') || 'Start').toUpperCase()}</button>
+            <button class="pc-qs-start-beast-btn" id="pqs-start-beast" style="display:${qs2.playerMode === '1P' ? 'flex' : 'none'};">
+              <span class="pc-qs-beast-title"><i class="fa-solid fa-video"></i> ${(t('startWithBeast') || 'BEAST MODUYLA BAŞLA').toUpperCase()}</span>
+              <span class="pc-qs-beast-sub">${(window.adsRemoved || !window.__crazyGamesAdsEnabled) ? (t('startWithBeastVip') || '(VIP / Ücretsiz)') : (t('startWithBeastAd') || '(Reklam)')}</span>
+            </button>
             <div class="pc-qs-action-row">
               <button class="pc-qs-back-btn" id="pqs-back"><i class="fa-solid fa-arrow-left"></i></button>
               <button class="pc-qs-info-btn" id="pqs-info"><i class="fa-solid fa-question"></i></button>
@@ -11377,6 +11819,8 @@
               });
               updateDynamicCards();
               rebuildNameCard();
+              const beastBtn = document.getElementById('pqs-start-beast');
+              if (beastBtn) beastBtn.style.display = (qs2.playerMode === '1P') ? 'flex' : 'none';
             };
           });
 
@@ -11438,8 +11882,8 @@
             };
           });
 
-          // START
-          document.getElementById('pqs-start').onclick = () => {
+          // START / BEAST START
+          const startMatchWithQsSettings = (isBeastMode = false) => {
             saveNames();
             const showArena = qs2.gameStyle === 'normal' || qs2.gameStyle === 'fastCompetitive';
             if (!qs2.playerMode || !qs2.speedMode || !qs2.gameStyle || (showArena && !qs2.wallMode)) {
@@ -11480,13 +11924,33 @@
 
             if (AdManager.adInProgress) return;
             SFX.menuClick();
-            AdManager.maybeShowStartAdThenStart(async () => {
-              hideBanner(); paused = false;
-              document.getElementById('p1Label').textContent = playerNames.p1.trim() || t('p1');
-              if (gameMode === '2P') document.getElementById('p2Label').textContent = playerNames.p2.trim() || t('p2');
-              await softReset(true);
-            });
+
+            if (isBeastMode) {
+              AdManager.requestRewardedBeastStart(async () => {
+                startWithBeast = true;
+                hideBanner(); paused = false;
+                document.getElementById('p1Label').textContent = playerNames.p1.trim() || t('p1');
+                if (gameMode === '2P') document.getElementById('p2Label').textContent = playerNames.p2.trim() || t('p2');
+                await softReset(true);
+              }, (err) => {
+                if (err && typeof showToast === 'function') showToast(err);
+              });
+            } else {
+              startWithBeast = false;
+              AdManager.maybeShowStartAdThenStart(async () => {
+                hideBanner(); paused = false;
+                document.getElementById('p1Label').textContent = playerNames.p1.trim() || t('p1');
+                if (gameMode === '2P') document.getElementById('p2Label').textContent = playerNames.p2.trim() || t('p2');
+                await softReset(true);
+              });
+            }
           };
+
+          const pqsStart = document.getElementById('pqs-start');
+          if (pqsStart) pqsStart.onclick = () => startMatchWithQsSettings(false);
+
+          const pqsStartBeast = document.getElementById('pqs-start-beast');
+          if (pqsStartBeast) pqsStartBeast.onclick = () => startMatchWithQsSettings(true);
 
           // Back
           document.getElementById('pqs-back').onclick = () => { SFX.menuClick(); goBack(); };
@@ -11604,8 +12068,8 @@
           setMenuButtonLabel(UI.resetBtn, gameMode === '1P' ? t('resetRound') : t('reset'));
         }
         if (isOnlineMode) {
-          UI.p1Label.textContent = myRole === 'p1' ? getOnlineDisplayName('p1', playerNames.p1) : getOnlineDisplayName('p1', partnerName);
-          UI.p2Label.textContent = myRole === 'p2' ? getOnlineDisplayName('p2', playerNames.p1) : getOnlineDisplayName('p2', partnerName);
+          UI.p1Label.textContent = myRole === 'p1' ? getOnlineDisplayName('p1', getOnlinePlayerName()) : getOnlineDisplayName('p1', partnerName);
+          UI.p2Label.textContent = myRole === 'p2' ? getOnlineDisplayName('p2', getOnlinePlayerName()) : getOnlineDisplayName('p2', partnerName);
         } else {
           UI.p1Label.textContent = playerNames.p1.trim() || t('p1');
           UI.p2Label.textContent = playerNames.p2.trim() || t('p2');
@@ -12374,6 +12838,7 @@
       function cleanupOnlineGame() {
           invalidateGameFlow(true);
           winAnim.active = false; deathAnim.active = false; stopConfetti();
+        leaveCrazyGamesRoom();
         if (connectionTimeoutTimer) {
           clearTimeout(connectionTimeoutTimer);
           connectionTimeoutTimer = null;
@@ -12388,6 +12853,9 @@
         }
         clearOnlineRematchWait();
         isOnlineMode = false;
+        GRID_COLS = 64;
+        GRID_ROWS = 36;
+        resize();
         inCountdown = false;
         onlineRoomId = null;
         onlineMatchIndex = 0;
@@ -12554,7 +13022,6 @@
             <button class="btn big" id="onlinePauseResumeBtn" style="width:100%;">
               <span class="btn-menu-text">${t('onlineResume')}</span>
             </button>
-            <p class="main-menu-domain" style="margin-top: 15px; margin-bottom: 0; font-size: 11px; letter-spacing: 2px; opacity: 0.5;">2PLAYERSNAKE.COM</p>
           </div>
         `;
         document.getElementById('canvasWrap').appendChild(overlay);
@@ -12600,7 +13067,6 @@
                   </button>
                 </div>
               </div>
-              <p class="main-menu-domain">2PLAYERSNAKE.COM</p>
             </div>
           </div>
         `, false, 'main-menu-banner');
@@ -12659,7 +13125,6 @@
                   </button>
                 </div>
               </div>
-              <p class="main-menu-domain">2PLAYERSNAKE.COM</p>
             </div>
           </div>
         `, false, 'main-menu-banner');
@@ -12718,7 +13183,6 @@
                   </button>
                 </div>
               </div>
-              <p class="main-menu-domain">2PLAYERSNAKE.COM</p>
             </div>
           </div>
         `, false, 'main-menu-banner');
@@ -12771,7 +13235,6 @@
                   </button>
                 </div>
               </div>
-              <p class="main-menu-domain">2PLAYERSNAKE.COM</p>
             </div>
           </div>
         `, false, 'main-menu-banner');
@@ -12798,7 +13261,7 @@
 
       function createFriendlyRoom(mode) {
         if (!socket) return;
-        socket.emit('createRoom', { name: (playerNames.p1 || '').trim(), mode, platform: 'pc' });
+        socket.emit('createRoom', { name: getOnlinePlayerName(), mode, platform: 'pc' });
       }
 
       function openOnlineRoomCodeInputMenu() {
@@ -12825,7 +13288,6 @@
                   </button>
                 </div>
               </div>
-              <p class="main-menu-domain" style="margin-top: 20px;">2PLAYERSNAKE.COM</p>
             </div>
           </div>
         `, false, 'main-menu-banner');
@@ -12856,7 +13318,7 @@
             `, false, 'main-menu-banner');
 
             if (socket) {
-              socket.emit('joinRoom', { roomId: roomCode, name: (playerNames.p1 || '').trim(), platform: 'pc' });
+              socket.emit('joinRoom', { roomId: roomCode, name: getOnlinePlayerName(), platform: 'pc' });
             }
           };
           backBtn.onclick = () => {
@@ -12888,7 +13350,6 @@
                   <span class="btn-menu-text">${t('onlineCancel')}</span>
                 </button>
               </div>
-              <p class="main-menu-domain">2PLAYERSNAKE.COM</p>
             </div>
           </div>
         `, false, 'main-menu-banner');
@@ -12949,7 +13410,6 @@
                   <span class="btn-menu-text">${t('onlineLeaveRoom')}</span>
                 </button>
               </div>
-              <p class="main-menu-domain">2PLAYERSNAKE.COM</p>
             </div>
           </div>
         `, false, 'main-menu-banner');
@@ -12960,9 +13420,22 @@
           if (!codeDisplay || !leaveBtn) { requestAnimationFrame(wait); return; }
 
           codeDisplay.textContent = onlineRoomId || '-----';
-          codeDisplay.onclick = () => {
+          codeDisplay.onclick = async () => {
             SFX.menuClick();
-            navigator.clipboard.writeText(onlineRoomId).then(() => {
+            let shareValue = onlineRoomId;
+            try {
+              const gameModule = window.CrazyGames && window.CrazyGames.SDK && window.CrazyGames.SDK.game;
+              if (window.__crazyGamesReady && crazyGamesRoomTracked && gameModule && typeof gameModule.inviteLink === 'function') {
+                shareValue = await Promise.resolve(gameModule.inviteLink({
+                  roomCode: String(onlineRoomId),
+                  gameStyle: String(crazyGamesRoomGameStyle || 'normal')
+                })) || onlineRoomId;
+              }
+            } catch (err) {
+              console.warn('Could not create CrazyGames invite link:', err);
+            }
+            try {
+              await navigator.clipboard.writeText(String(shareValue));
               const prevText = codeDisplay.textContent;
               codeDisplay.textContent = t('onlineCopied');
               codeDisplay.style.color = '#39ff7a';
@@ -12970,9 +13443,9 @@
                 codeDisplay.textContent = prevText;
                 codeDisplay.style.color = '#35e6e6';
               }, 1200);
-            }).catch(err => {
+            } catch (err) {
               console.warn('Could not copy room code:', err);
-            });
+            }
           };
 
           leaveBtn.onclick = () => {
@@ -12980,6 +13453,7 @@
             if (socket) {
               socket.emit('leaveRoom', { roomId: onlineRoomId });
             }
+            leaveCrazyGamesRoom();
             onlineRoomId = null;
             navigateTo(openOnlineFriendMenu);
           };
@@ -12992,7 +13466,7 @@
         
         boostEnabled = true;
         matchmakingSeconds = 0;
-        socket.emit('joinMatchmaking', { name: (playerNames.p1 || '').trim(), platform: 'pc' });
+        socket.emit('joinMatchmaking', { name: getOnlinePlayerName(), platform: 'pc', requestedRows: 42 });
         
         showBanner(`
           <div class="main-menu-shell">
@@ -13011,7 +13485,6 @@
                   </button>
                 </div>
               </div>
-              <p class="main-menu-domain">2PLAYERSNAKE.COM</p>
             </div>
           </div>
         `, false, 'main-menu-banner online-matchmaking-banner');
@@ -13138,6 +13611,7 @@
           onlineMatchIndex = 0;
           myRole = 'p1'; // Creator is P1
           onlineSessionToken = data.sessionToken;
+          updateCrazyGamesRoom(true, data.mode || crazyGamesRoomGameStyle || 'normal');
           navigateTo(openOnlineRoomCodeMenu);
         });
 
@@ -13146,10 +13620,12 @@
           onlineMatchIndex = 0;
           myRole = 'p2'; // Joiner is P2
           onlineSessionToken = data.sessionToken;
+          updateCrazyGamesRoom(false, data.mode || 'normal');
         });
 
         onCurrentSocket('partnerJoined', (data) => {
           partnerName = data.partnerName;
+          updateCrazyGamesRoom(false, crazyGamesRoomGameStyle);
         });
 
         onCurrentSocket('matchFound', (data) => {
@@ -13160,6 +13636,7 @@
           partnerName = data.partnerName;
           onlineSessionToken = data.sessionToken;
           isOnlineMode = true;
+          updateCrazyGamesRoom(false, 'normal');
           hideBanner();
         });
 
@@ -13167,6 +13644,7 @@
                     invalidateGameFlow();
           isDemoMode = false;
           isOnlineMode = true;
+          updateCrazyGamesRoom(false, data.mode || crazyGamesRoomGameStyle);
           GRID_COLS = data.gridCols || 50;
           GRID_ROWS = data.gridRows || 30;
           normalFoodsEaten = data.normalFoodsEaten || 0;
@@ -13435,7 +13913,7 @@
               const baseKey = winner === 'p1' ? 'winP1' : 'winP2';
               const defaultTag = winner === 'p1' ? '>P1<' : '>P2<';
               const customName = isOnlineMode
-                ? getOnlineDisplayName(winner, winner === myRole ? playerNames.p1 : partnerName)
+                ? getOnlineDisplayName(winner, winner === myRole ? getOnlinePlayerName() : partnerName)
                 : (playerNames[winner] || '').trim();
               if (customName) {
                 winDisplayHTML = t(baseKey).replace(defaultTag, ` lang="en">${escapeHtml(customName)}<`);
@@ -13519,15 +13997,29 @@
         });
 
         onCurrentSocket('gameOver', async (data) => {
-          cleanupOnlineGame();
-          if (socket) {
-            const retiringSocket = socket;
-            socket = null;
-            retiringSocket.disconnect();
-          }
-          if (data.winner) {
-            showGameEndStats(data.winner);
+          dismissOnlineControls();
+          onlinePauseState = null;
+          const isForfeit = data.reason === 'forfeit';
+          const finalWinner = data.winner;
+          const savedRole = myRole;
+
+          // Reset match timers and room reference while retaining socket connectivity
+          onlineRoomId = null;
+          onlineMatchIndex = 0;
+          inCountdown = false;
+          clearOnlineRematchWait();
+          clearTimeout(connectionTimeoutTimer);
+
+          if (finalWinner) {
+            if (isForfeit && finalWinner === savedRole) {
+              SFX.win();
+              startConfetti(playerColors[savedRole] || '#ffffff');
+            }
+            AdManager.maybeShowGameOverAd(guardGameCallback(() => {
+              showGameEndStats(finalWinner, { isForfeit: isForfeit, wasOnline: true, savedRole: savedRole });
+            }));
           } else {
+            cleanupOnlineGame();
             if (!await waitForGameFlow(showOnlineAlert(data.reason === 'timeout' ? t('onlineGameTimeoutEnd') : t('onlineGameEnded')))) return;
             openMainMenu();
           }
@@ -13721,7 +14213,7 @@
           if (statusEl) statusEl.textContent = t('onlineJoiningRoom');
           const payload = {
             platform: 'pc',
-            playerName: (playerNames.p1 || '').trim()
+            playerName: getOnlinePlayerName()
           };
           if (roomCode) {
             payload.roomId = roomCode;
@@ -13822,12 +14314,6 @@
         <button class="btn big btn-menu-row" id="menuHighscore">
           <span class="btn-menu-text">${t('highscore')}</span>
         </button>
-        <button class="btn big btn-menu-row btn-iphone-play" id="menuPlayOnIphone">
-          <span class="btn-menu-text">${t('playOnIphone')}</span>
-        </button>
-        <button class="btn big btn-menu-row btn-android-play" id="menuPlayOnAndroid">
-          <span class="btn-menu-text">${t('playOnAndroid')}</span>
-        </button>
         <button class="btn big btn-menu-row btn-instagram" id="menuInstagram">
           <span class="btn-menu-text">${getMessageUsLabel()}</span>
         </button>
@@ -13835,22 +14321,18 @@
           <span class="btn-menu-text">${t('settings')}</span>
         </button>
       </div>
-      <p class="main-menu-domain">2PLAYERSNAKE.COM</p>
+      <p class="main-menu-privacy-note">${t('privacyNotice')}</p>
       </div>
       </div>`, false, 'main-menu-banner');
         const wait = () => {
           const p = document.getElementById('menuPlay');
           const s = document.getElementById('menuSettings');
           const h = document.getElementById('menuHighscore');
-          const pip = document.getElementById('menuPlayOnIphone');
-          const pa = document.getElementById('menuPlayOnAndroid');
           const ig = document.getElementById('menuInstagram');
-          if (!p || !s || !h || !pip || !pa || !ig) { requestAnimationFrame(wait); return; }
+          if (!p || !s || !h || !ig) { requestAnimationFrame(wait); return; }
           p.onclick = () => { SFX.menuClick(); navigateTo(openPlayModeSplitMenu); };
           s.onclick = () => { SFX.menuClick(); navigateTo(openSettings); };
           h.onclick = () => { SFX.menuClick(); navigateTo(openHighscore); };
-          pip.onclick = () => { SFX.menuClick(); window.open('https://apps.apple.com/us/app/2-player-snake/id6811546748', '_blank'); };
-          pa.onclick = () => { SFX.menuClick(); window.open('https://play.google.com/store/apps/details?id=com.twoplayersnake.app', '_blank'); };
           ig.onclick = () => { SFX.menuClick(); window.open('https://www.instagram.com/2playersnake', '_blank'); };
         }; wait();
         scheduleVersionCheck(true, 260);
@@ -13883,12 +14365,12 @@
         intermission = true;
         const onLabel = t('on') || 'ON';
         const offLabel = t('off') || 'OFF';
-        const soundLabel = `${t('sound')}: ${muted ? offLabel : onLabel}`;
+        const soundLabel = `${t('sound')}: ${isGameAudioMuted() ? offLabel : onLabel}`;
         showBanner(`<h1>${t('settings')}</h1>
       <div class="menu-action-stack">
       ${menuRowButton('toggleTheme', `${t('theme')}: ${getCurrentTheme()}`, document.documentElement.getAttribute('data-theme') === 'light' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>', 'big theme')}
       ${menuRowButton('toggleLang', `${t('language')}: ${t('languageName')}`, '<i class="fa-solid fa-globe"></i>', 'big language')}
-      ${menuRowButton('toggleSound', soundLabel, muted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>', 'big sound')}
+      ${menuRowButton('toggleSound', soundLabel, isGameAudioMuted() ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>', 'big sound')}
       ${menuRowButton('settingsDevelopers', t('developers'), '<i class="fa-solid fa-code"></i>', 'big developers')}
       ${menuBackButton('settingsBack')}
       </div>`);
@@ -14075,12 +14557,27 @@
       /* === Helpers === */
       // v2.95.5: Self Area 51 — per-half (vertical split) bounds & wrap helpers
       function selfArea51HalfBounds(ownerKey) {
-        // PC: vertical split. P1 → left half, P2 → right half.
+        if (GRID_COLS < GRID_ROWS) {
+          // Cross-Play / vertical layout: P2 top half, P1 bottom half
+          const half = (GRID_ROWS / 2) | 0;
+          if (ownerKey === 'p2') return { yMin: 0, yMax: half - 1 };
+          return { yMin: half, yMax: GRID_ROWS - 1 };
+        }
+        // Normal PC horizontal split. P1 → left half, P2 → right half.
         const half = (GRID_COLS / 2) | 0;
         if (ownerKey === 'p1') return { xMin: 0, xMax: half - 1 };
         return { xMin: half, xMax: GRID_COLS - 1 };
       }
       function selfArea51WrapForOwner(c, ownerKey) {
+        if (GRID_COLS < GRID_ROWS) {
+          const { yMin, yMax } = selfArea51HalfBounds(ownerKey);
+          let x = c.x, y = c.y;
+          if (x < 0) x = GRID_COLS - 1;
+          else if (x >= GRID_COLS) x = 0;
+          if (y < yMin) y = yMax;
+          else if (y > yMax) y = yMin;
+          return { x, y };
+        }
         const { xMin, xMax } = selfArea51HalfBounds(ownerKey);
         let x = c.x, y = c.y;
         if (x < xMin) x = xMax;
@@ -14178,6 +14675,15 @@
         }
         inCountdown = false; intermission = false; // Kontrolü burada aç
         crazyGamesGameplayStart();
+        if (startWithBeast && snakes && snakes.p1) {
+          const now = performance.now();
+          beastOwner = 'p1';
+          snakes.p1.powerEnd = now + BEAST_MODE_DURATION_MS;
+          snakes.p1.flashUntil = snakes.p1.powerEnd;
+          snakes.p1.flashColor = '#ff1744';
+          SFX.heart();
+          startWithBeast = false;
+        }
         if (!await waitForGameFlow(gameDelay(1000))) return;
         hideBanner();
       }
@@ -14497,6 +15003,8 @@
       let redBulkEndTime = 0;
       let doubleActive = false;
       let beastOwner = null;
+      let startWithBeast = false;
+      const BEAST_MODE_DURATION_MS = 8000;
 
       const ROUND_DURATION = 3 * 60 * 1000; // kept for reference, not used in v2.60
       const FAST_COMPETITIVE_DURATION = 3 * 60 * 1000; // v2.61: 3 minutes for fast competitive
@@ -15140,7 +15648,7 @@
               snakes[beastOwner].powerEnd = 0;
             }
             beastOwner = ownerKey;
-            s.powerEnd = now + 8000; // v2.60: 8 seconds
+            s.powerEnd = now + BEAST_MODE_DURATION_MS; // beast mode duration
             s.flashUntil = s.powerEnd;
             s.flashColor = '#ff1744';
             SFX.heart();
@@ -15851,7 +16359,7 @@
       }
 
       /* === v2.27: Game End Statistics Window === */
-      function showGameEndStats(winner) {
+      function showGameEndStats(winner, options = {}) {
         crazyGamesGameplayStop();
         // Remove any existing overlay
         const existing = document.querySelector('.game-end-overlay');
@@ -15860,6 +16368,8 @@
         intermission = true;
 
         const isSolo = (gameMode === '1P' && !aiSnakeEnabled);
+        const wasOnline = Boolean(options.wasOnline || isOnlineMode);
+        const isForfeit = Boolean(options.isForfeit);
         const winnerKey = isSolo ? 'p1' : winner;
         const loser = winnerKey === 'p1' ? 'p2' : 'p1';
         const winnerColor = playerColors[winnerKey] || (winnerKey === 'p1' ? '#00e5ff' : '#ff4fbf');
@@ -15904,6 +16414,7 @@
           <div class="game-end-card">
             <div class="game-end-trophy">🏆</div>
             ${lastGameNewRecord ? `<div class="game-end-badge new-record-badge">🌟 ${t('newRecord') || 'YENİ REKOR!'}</div>` : ''}
+            ${isForfeit ? `<div class="game-end-badge" style="margin-bottom:8px; background: rgba(255, 79, 191, 0.2); border: 1px solid var(--p1); color: #fff;">🏳️ ${t('onlinePartnerLeft')}</div>` : ''}
             <div class="game-end-title">${titleHtml}</div>
             <hr class="game-end-divider" style="background: linear-gradient(90deg, transparent, ${winnerColor}, transparent);">
             <div class="game-end-stats">
@@ -15947,48 +16458,33 @@
         document.getElementById('gameEndMenuBtn').addEventListener('click', () => {
           overlay.remove();
           stopConfetti();
-          const goMenu = () => {
-            if (isOnlineMode) {
-              leaveOnlineAfterStats();
+          if (wasOnline) {
+            if (isForfeit) {
+              cleanupOnlineGame();
+              openOnlineMenu();
             } else {
-              openMainMenu(false);
+              leaveOnlineAfterStats();
             }
-          };
-          if (AdManager.isSdkReady() && !AdManager.adInProgress) {
-            AdManager.showInterstitial({
-              type: 'next',
-              name: 'menu_after_stats',
-              recordKind: 'menu_after_stats',
-              onDone: guardGameCallback(goMenu)
-            });
           } else {
-            goMenu();
+            openMainMenu(false);
           }
         });
         document.getElementById('gameEndReplayBtn').addEventListener('click', () => {
           overlay.remove();
           stopConfetti();
-          if (isOnlineMode && socket && onlineRoomId) {
-            socket.emit('rematchIntent', { roomId: onlineRoomId });
-          }
-          // v3.2.3 fix: local mode restarts directly, online mode requests rematch
-          const goReplay = async () => {
-            if (isOnlineMode && socket && onlineRoomId) {
-              requestOnlineRematchFromStats();
+          if (wasOnline && isForfeit) {
+            if (socket && socket.connected) {
+              isOnlineMode = true;
+              startMatchmaking();
             } else {
-              AdManager.beginDirectRestartMatch();
-              softReset(true);
+              startOnlineServerConnection();
             }
-          };
-          if (AdManager.isSdkReady() && !AdManager.adInProgress) {
-            AdManager.showInterstitial({
-              type: 'next',
-              name: 'replay_after_stats',
-              recordKind: 'replay_after_stats',
-              onDone: guardGameCallback(goReplay)
-            });
+          } else if (isOnlineMode && socket && onlineRoomId) {
+            socket.emit('rematchIntent', { roomId: onlineRoomId });
+            requestOnlineRematchFromStats();
           } else {
-            goReplay();
+            AdManager.beginDirectRestartMatch();
+            softReset(true);
           }
         });
       }
@@ -16024,6 +16520,7 @@
             canvasWrap.classList.add('shake');
             setTimeout(() => {
               canvasWrap.classList.remove('shake');
+              if (AdManager.maybeInterceptSoloLoss()) return;
               show1PGameOver();
               // Don't clear game state here - let show1PGameOver handle it
             }, 400);
@@ -16670,7 +17167,9 @@
               hideBanner();
               const finalWinner = winAnim.winner;
               hideBanner();
-              showGameEndStats(finalWinner);
+              AdManager.maybeShowGameOverAd(guardGameCallback(() => {
+                showGameEndStats(finalWinner);
+              }));
               requestAnimationFrame(step); return;
             } else if (!winAnim.triggeredEnd) {
               winAnim.triggeredEnd = true;
@@ -16795,6 +17294,10 @@
           beastOwner = null;
           refreshFoodLocks();
           spawnFood();
+        }
+        if (beastOwner && snakes && snakes[beastOwner] && !isPowered(snakes[beastOwner])) {
+          beastOwner = null;
+          redFoodPresent = false;
         }
         const modeBoost = currentSpeedMode ? (MOD_SPEED[currentSpeedMode] || 1.0) : 1.0;
         const baseStepMs = 1000 / (BASE_TPS * modeBoost);
@@ -16968,7 +17471,7 @@
                 }
               }
 
-              if (aiSnakeEnabled && playerMovedThisStep) {
+              if (gameMode === '1P' && playerMovedThisStep) {
                 AdManager.captureRewardSnapshot();
               }
             }
@@ -17266,9 +17769,10 @@
           el.textContent = _splashLoadingTexts[lang] || _splashLoadingTexts.en;
       })();
 
-      // Loading bar progress controller
+      // The splash clock starts directly after the splash markup so the bar is
+      // visible while this large game script is still being parsed.
       const SPLASH_DURATION_MS = 2000;
-      const _splash = {
+      const _splash = window.__snakeSplash || {
           el: document.getElementById('loading-splash'),
           bar: document.getElementById('splashBarFill'),
           progress: 0,
@@ -17277,17 +17781,6 @@
           done: false,
           startedAt: performance.now()
       };
-      function splashTick(now) {
-          if (_splash.done) return;
-          const elapsed = Math.max(0, now - _splash.startedAt);
-          const ratio = Math.min(1, elapsed / SPLASH_DURATION_MS);
-          _splash.progress = ratio * 100;
-          if (_splash.bar) _splash.bar.style.width = _splash.progress + '%';
-          if (ratio < 1) {
-              _splash.timer = requestAnimationFrame(splashTick);
-          }
-      }
-      _splash.timer = requestAnimationFrame(splashTick);
 
       function splashComplete(cb) {
           _splash.done = true;
@@ -17305,9 +17798,17 @@
       }
 
       function initGame() {
+        crazyGamesLoadingStop();
         loadTheme();
         openMainMenu();
         applyLang();
+        if (!window.__crazyGamesUserUiListenerInstalled) {
+          window.__crazyGamesUserUiListenerInstalled = true;
+          window.addEventListener('crazygames:userchange', (event) => {
+            if (event.detail && event.detail.username && isOnlineMode) updateUIVisibility();
+          });
+        }
+        setupCrazyGamesMultiplayer();
         updateThemeUI();
         scheduleVersionCheck(true, 900);
         window.addEventListener('pageshow', () => scheduleVersionCheck(true, 120), { passive: true });
@@ -17321,10 +17822,11 @@
       // v2.93.2: Preroll removed on all platforms. Mobile preroll format caused
       // full-page redirect when dismissed, kicking users off the site.
       // Between-rounds and rewarded-continue ads remain active.
-      setTimeout(() => { splashComplete(initGame); }, SPLASH_DURATION_MS);
+      const splashElapsedMs = performance.now() - _splash.startedAt;
+      const splashRemainingMs = Math.max(0, SPLASH_DURATION_MS - splashElapsedMs);
+      setTimeout(() => { splashComplete(initGame); }, splashRemainingMs);
     })();
   </script>
 </body>
 
 </html>
-

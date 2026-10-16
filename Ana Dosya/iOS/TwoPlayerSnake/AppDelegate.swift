@@ -14,7 +14,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // RevenueCat / IAP: Uygulama içi satın alma altyapısını başlat
         IAPManager.shared.configure()
 
+        // Ana Ekran Hızlı Eylemleri (Quick Actions — 21 Dil)
+        Self.configureShortcutItems(for: application)
+
         return true
+    }
+
+    static func configureShortcutItems(for application: UIApplication = .shared) {
+        let normal1P = UIApplicationShortcutItem(
+            type: "normal_1p",
+            localizedTitle: AppStrings.Shortcuts.normal1P,
+            localizedSubtitle: nil,
+            icon: UIApplicationShortcutIcon(systemImageName: "person.fill"),
+            userInfo: nil
+        )
+        let fc2P = UIApplicationShortcutItem(
+            type: "fc_2p",
+            localizedTitle: AppStrings.Shortcuts.fastCompetitive2P,
+            localizedSubtitle: nil,
+            icon: UIApplicationShortcutIcon(systemImageName: "person.2.fill"),
+            userInfo: nil
+        )
+        let fc1PAI = UIApplicationShortcutItem(
+            type: "fc_1p_ai",
+            localizedTitle: AppStrings.Shortcuts.fastCompetitive1PAI,
+            localizedSubtitle: nil,
+            icon: UIApplicationShortcutIcon(systemImageName: "cpu"),
+            userInfo: nil
+        )
+        application.shortcutItems = [normal1P, fc2P, fc1PAI]
     }
 
     private func configureAudioSession() {
