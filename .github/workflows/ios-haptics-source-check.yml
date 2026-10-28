@@ -19,5 +19,6 @@ jobs:
         run: |
           xcrun swiftc -frontend -parse 'Ana Dosya/iOS/TwoPlayerSnake/Haptics/HapticManager.swift'
           xcrun swiftc -frontend -parse 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/GameScriptMessageHandler.swift'
+          xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios15.0-simulator -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" -typecheck 'Ana Dosya/iOS/TwoPlayerSnake/Haptics/HapticManager.swift'
           node --check 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/ios_bridge_bootstrap.js'
 
