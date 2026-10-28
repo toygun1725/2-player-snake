@@ -1,0 +1,23 @@
+name: iOS Fastlane Source Check (No App Build)
+on:
+  push:
+    branches: [codex/ios-cloud-check]
+    paths:
+      - 'Ana Dosya/iOS/fastlane/Fastfile'
+      - 'tools/check-ios-fastlane-config.cjs'
+      - '.github/workflows/ios-fastlane-source-check.yml'
+permissions:
+  contents: read
+jobs:
+  fastlane-source:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check Ruby syntax without running Fastlane
+        run: ruby -c 'Ana Dosya/iOS/fastlane/Fastfile'
+      - name: Verify the selected signing profile configuration
+        run: node tools/check-ios-fastlane-config.cjs

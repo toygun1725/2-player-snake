@@ -1,6 +1,15 @@
 import UIKit
 import WebKit
 import AVFoundation
+import StoreKit
+
+enum AutoReviewGate {
+    static func claim(version: String, defaults: UserDefaults) -> Bool {
+        guard !version.isEmpty, defaults.string(forKey: "lastAutoReviewRequestVersion") != version else { return false }
+        defaults.set(version, forKey: "lastAutoReviewRequestVersion")
+        return true
+    }
+}
 
 final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
 
@@ -67,6 +76,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         setupOfflineOverlay()
         setupNetworkMonitoring()
         setupKeyboardHandling()
+        NotificationCenter.default.addObserver(self, selector: #selector(appWillResignActive), name: NSNotification.Name("AppWillResignActive"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(appDidBecomeActive), name: NSNotification.Name("AppDidBecomeActive"), object: nil)
 
         GameCenterManager.shared.authenticateLocalPlayer(presentingVC: self)
 
@@ -80,6 +91,35 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         NotificationManager.shared.handleAppLaunch()
 
         loadGame()
+    }
+
+    @objc private func appWillResignActive() {
+        UIApplication.shared.isIdleTimerDisabled = false
+        webView?.evaluateJavaScript("if(typeof window.onAndroidPause==='function'){window.onAndroidPause();}", completionHandler: nil)
+    }
+
+    @objc private func appDidBecomeActive() {
+        webView?.evaluateJavaScript("if(typeof window.onAndroidResume==='function'){window.onAndroidResume();}", completionHandler: nil)
+        messageHandler?.refreshCloudSave()
+    }
+
+    func setGameActivityState(_ active: Bool) {
+        UIApplication.shared.isIdleTimerDisabled = active && UIApplication.shared.applicationState == .active
+    }
+
+    func requestAutomaticReviewIfEligible() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self,
+                  UIApplication.shared.applicationState == .active,
+                  self.presentedViewController == nil,
+                  let url = self.webView?.url, url.isFileURL || self.isTrustedGameUrl(url),
+                  let scene = self.viewIfLoaded?.window?.windowScene,
+                  scene.activationState == .foregroundActive,
+                  let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+                  !version.isEmpty else { return }
+            guard AutoReviewGate.claim(version: version, defaults: .standard) else { return }
+            SKStoreReviewController.requestReview(in: scene)
+        }
     }
 
     override func viewDidLayoutSubviews() {
@@ -356,6 +396,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     private func dismissTeaserVideo() {
         guard !isTeaserDismissed else { return }
         isTeaserDismissed = true
+        try? AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default)
 
         if let observer = playerLoopObserver {
             NotificationCenter.default.removeObserver(observer)
@@ -668,10 +709,7 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     }
 
     private func restoreLocalScoreBackupToGame() {
-        guard let backupJson = GameScriptMessageHandler.loadLocalBackupJson(adsRemoved: IAPManager.shared.isAdsRemoved) else {
-            return
-        }
-        evaluateJavaScript("if (typeof window.onCloudSaveLoaded === 'function') { window.onCloudSaveLoaded(\(backupJson)); }")
+        messageHandler.refreshCloudSave()
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
@@ -712,6 +750,30 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
     // MARK: - JavaScript Helper
     func evaluateJavaScript(_ script: String, completionHandler: ((Any?, Error?) -> Void)? = nil) {
         webView.evaluateJavaScript(script, completionHandler: completionHandler)
+    }
+
+    func sendCloudCallback(_ name: String, payload: [String: Any]) {
+        guard name == "onCloudSaveLoaded" || name == "onCloudSaveSyncResult",
+              let url = webView?.url, url.isFileURL || isTrustedGameUrl(url),
+              let encoded = try? JSONSerialization.data(withJSONObject: [payload]),
+              let json = String(data: encoded, encoding: .utf8) else { return }
+        let script = """
+        (function(){
+          if(typeof window.\(name)!=='function') return;
+          var data=\(json)[0];
+          if('\(name)'==='onCloudSaveLoaded' && typeof window.onCloudSaveSyncResult!=='function') {
+            try {
+              [['mobileScores','neoSnakeHighscoresMobile'],['pcScores','neoSnakeHighscores']].forEach(function(pair){
+                var local=JSON.parse(localStorage.getItem(pair[1])||'[]');
+                if(!Array.isArray(local)) throw new Error('invalid local scores');
+                data[pair[0]]=(data[pair[0]]||[]).filter(function(item){return !local.some(function(old){return old.name===item.name && old.score===item.score;});});
+              });
+            } catch(e) { return; }
+          }
+          window.\(name)(data);
+        })();
+        """
+        evaluateJavaScript(script)
     }
 
     @objc private func handlePremiumStatusChanged() {

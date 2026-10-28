@@ -1,5 +1,7 @@
 # 2 Player Snake - PC Surumu Yapay Zeka Rehberi
 
+> **Yerel hazırlık, yayın değil:** v3.6.5 PC çalışma dosyası oluşturuldu ve yeni sunucuyla yerel tarayıcı testleri yapıldı. Fiziksel kumanda ve diğer açık kontroller için [uygulama durum raporuna](Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md) bakın. Aşağıdaki v3.6.0 bilgileri tarihsel kayıttır.
+
 ## Final kaynak — v3.6.0 (Canlıda, 2026-10-07)
 
 - Online Boost/Dash yalnız iki PC oyuncusunun eşleştiği Hızlı Rekabetçi maçlarda kullanılabilir. PC–Mobile ve Mobile–Mobile odalarında iki oyuncu için de kapalıdır; rastgele eşleşme, özel oda, yeni round ve tekrar maç aynı kurala uyar.

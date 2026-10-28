@@ -38,6 +38,8 @@ Yazılım geçmişi olmayan bir video yapımcısı ve bir avukatın, yapay zekay
 
 ## 📂 Proje Dokümantasyonu
 
+**Geliştirme durumu:** v3.6.2–v3.6.5 değişiklikleri yerel çalışma alanında hazırlanıyor; v3.6.5 henüz yayımlanmadı. Yapılan kontroller ve açık konular için [v3.6.5 uygulama durum raporuna](MD%20Files/Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md) bakın.
+
 Tüm teknik kılavuzlar ve sürüm geçmişi [`MD Files/`](MD%20Files/) dizinindedir:
 - [Sürüm Notları (Release Notes)](MD%20Files/Release_Notes.md)
 - [v3.6.0 Online Boost Doğrulaması](MD%20Files/v3.6.0_Online_Boost_Verification.md)

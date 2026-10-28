@@ -18,7 +18,7 @@ class GameWebViewClient(
     private val onMainFrameLoadingStarted: (String) -> Unit,
     private val onTrustedPageFinished: (String) -> Unit,
     private val onMainFrameLoadFailed: () -> Unit,
-    private val onRenderProcessGone: () -> Unit
+    private val onRenderProcessGone: (WebView?) -> Unit
 ) : WebViewClient() {
 
     override fun shouldInterceptRequest(
@@ -46,7 +46,14 @@ class GameWebViewClient(
 
     private fun resolveBundledWebAsset(url: String): Triple<String, String, String?>? {
         val lower = url.lowercase()
+        val uri = Uri.parse(url)
+        val host = uri.host?.lowercase()
+        val assetPath = uri.path?.lowercase()
         return when {
+            uri.scheme.equals("https", ignoreCase = true) && host == "cdn.socket.io" && assetPath == "/4.7.5/socket.io.min.js" ->
+                Triple("web_assets/socket.io.min.js", "application/javascript", "UTF-8")
+            uri.scheme.equals("https", ignoreCase = true) && host == "2playersnake.com" && assetPath == "/wp-content/uploads/2026/04/2-player-snake-logo-v3-no-bg-500px-web.webp" ->
+                Triple("web_assets/2-Player-Snake-Logo-v3-no-bg-500px-web.webp", "image/webp", null)
             lower.contains("fonts.googleapis.com/css") && (lower.contains("orbitron") || lower.contains("vt323")) ->
                 Triple("web_assets/fonts.css", "text/css", "UTF-8")
             lower.endsWith("/orbitron.ttf") ->
@@ -112,7 +119,7 @@ class GameWebViewClient(
     }
 
     override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
-        onRenderProcessGone()
+        onRenderProcessGone(view)
         return true
     }
 

@@ -1,5 +1,7 @@
 # 2 Player Snake - Mobil Surumu Yapay Zeka Rehberi
 
+> **Yerel hazırlık, yayın değil:** v3.6.5 Mobile çalışma dosyası ve Android/iOS çevrimdışı kaynakları hazırlandı. Gerçek cihaz ve mağaza kontrolleri açık; ayrıntılar [uygulama durum raporunda](Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md). Aşağıdaki v3.6.0 bilgileri tarihsel kayıttır.
+
 ## Final kaynak — v3.6.0 (Canlıda, 2026-10-07)
 
 - Mobil istemcide Boost/Dash düğmesi veya klavye tetiklemesi bulunmaz. Mobile–Mobile ve PC–Mobile online maçlarda sunucu iki oyuncunun boost isteğini de reddeder; PC–PC Hızlı Rekabetçi maçlarda boost kullanılabilir.

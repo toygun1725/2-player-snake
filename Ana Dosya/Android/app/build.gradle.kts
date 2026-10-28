@@ -1,7 +1,15 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 }
+
+val localSigningProperties = Properties().apply {
+    rootProject.file("signing.local.properties").takeIf { it.isFile }?.inputStream()?.use { load(it) }
+}
+fun signingValue(environmentName: String, propertyName: String): String? =
+    System.getenv(environmentName)?.takeIf { it.isNotBlank() } ?: localSigningProperties.getProperty(propertyName)
 
 android {
     namespace = "com.twoplayersnake.app"
@@ -11,8 +19,8 @@ android {
         applicationId = "com.twoplayersnake.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 72
-        versionName = "v3.6.1"
+        versionCode = 73
+        versionName = "v3.6.5"
         buildConfigField("String", "GAME_URL_MOBILE", "\"https://2playersnake.com/wp-content/uploads/game-mobile/index.html\"")
         buildConfigField("String", "GAME_URL_PC", "\"https://2playersnake.com/wp-content/uploads/game/index.html\"")
 
@@ -26,9 +34,9 @@ android {
         create("release") {
             val keyFile = rootProject.file("../../Play Store Key/Play Store Key")
             storeFile = if (keyFile.exists()) keyFile else file("C:/Users/Toygun/Desktop/AI Games/2 Player Snake/Play Store Key/Play Store Key")
-            storePassword = "Kimlik17251994."
+            storePassword = signingValue("ANDROID_STORE_PASSWORD", "storePassword")
             keyAlias = "key0"
-            keyPassword = "Kimlik17251994."
+            keyPassword = signingValue("ANDROID_KEY_PASSWORD", "keyPassword")
         }
     }
 

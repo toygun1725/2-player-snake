@@ -1,0 +1,24 @@
+name: iOS Build Version Check (Read Only)
+on:
+  push:
+    branches: [codex/ios-cloud-check]
+    paths:
+      - 'tools/check-ios-app-build-versions.cjs'
+      - '.github/workflows/ios-build-versions-check.yml'
+permissions:
+  contents: read
+jobs:
+  list-ios-versions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read iOS upload version numbers
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: node tools/check-ios-app-build-versions.cjs

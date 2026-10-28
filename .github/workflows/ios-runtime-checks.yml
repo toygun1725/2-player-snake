@@ -23,3 +23,14 @@ jobs:
           node-version: '22'
       - name: JavaScript regression and native WebKit resource checks
         run: bash tools/test-ios-runtime.sh
+      - name: Type-check iOS cloud save source
+        run: xcrun swiftc -typecheck 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/CloudSaveStore.swift'
+      - name: Exercise cloud save parsing and merging
+        run: |
+          xcrun swiftc 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/CloudSaveStore.swift' tests/CloudSaveRecordProbe.swift tests/CloudSaveCoordinatorProbe.swift -o "$RUNNER_TEMP/cloud-save-probe"
+          "$RUNNER_TEMP/cloud-save-probe"
+      - name: Check Xcode cloud settings without building the app
+        run: |
+          xcodebuild -project 'Ana Dosya/iOS/TwoPlayerSnake.xcodeproj' -target TwoPlayerSnake -configuration Debug -sdk iphonesimulator -showBuildSettings -json > "$RUNNER_TEMP/cloud-debug-settings.json"
+          xcodebuild -project 'Ana Dosya/iOS/TwoPlayerSnake.xcodeproj' -target TwoPlayerSnake -configuration Release -sdk iphonesimulator -showBuildSettings -json > "$RUNNER_TEMP/cloud-release-settings.json"
+          node tools/check-ios-cloud-settings.cjs "$RUNNER_TEMP/cloud-debug-settings.json" "$RUNNER_TEMP/cloud-release-settings.json"

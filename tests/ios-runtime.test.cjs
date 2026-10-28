@@ -88,6 +88,13 @@ test('bridge forwards unlockAchievement and review requests to native shell', ()
   assert.ok(actions.includes('emit'));
   assert.ok(actions.includes('requestReview'));
 });
+test('iOS bridge forwards the complete v1 cloud request without changing the request ID', () => {
+  const f = bridgeFixture();
+  const snapshot = {schemaVersion: 1, requestId: 'request-1', mobileScores: [{name: 'A', score: 5}], pcScores: [], achievements: ['ACH_FIRST_FOOD']};
+  f.context.Android.saveCloudState(JSON.stringify(snapshot));
+  assert.equal(f.messages.at(-1).action, 'saveCloudState');
+  assert.deepEqual(JSON.parse(f.messages.at(-1).payload), snapshot);
+});
 
 function aiFixture(html, ios = true, appleDevice = false) {
   const source = html.slice(html.indexOf('const _aiCache ='), html.indexOf('function softReset('));
@@ -803,7 +810,8 @@ test('v3.6.1 mobile/pc and current fallbacks retain forfeit ad monetization, mat
   ];
   for (const p of targets) {
     const html = read(p);
-    assert.ok(html.includes("const VERSION = 'v3.6.1';"), p);
+    const expectedVersion = p.includes('mobile_offline_fallback.html') ? 'v3.6.5' : 'v3.6.1';
+    assert.ok(html.includes(`const VERSION = '${expectedVersion}';`), p);
     assert.doesNotMatch(html, /ACH_SPEED_DEMON/, `Unmapped ACH_SPEED_DEMON must not exist in ${p}`);
     assert.match(html, /data\.reason === 'forfeit'/);
     assert.match(html, /AdManager\.maybeShowGameOverAd/);

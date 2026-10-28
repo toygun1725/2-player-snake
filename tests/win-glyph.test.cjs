@@ -4,7 +4,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
-const read = kind => fs.readFileSync(path.join(root, `Ana Dosya/${kind}/Beta/v3/2 Player Snake ${kind} v3.6.1.html`), 'utf8').replace(/\r\n/g, '\n');
+const version = process.env.SNAKE_TEST_VERSION || '3.6.1';
+const read = kind => fs.readFileSync(path.join(root, `Ana Dosya/${kind}/Beta/v3/2 Player Snake ${kind} v${version}.html`), 'utf8').replace(/\r\n/g, '\n');
 function fn(source, name, indent) {
   const start = source.indexOf(indent + 'function ' + name + '(');
   assert.ok(start >= 0, name);

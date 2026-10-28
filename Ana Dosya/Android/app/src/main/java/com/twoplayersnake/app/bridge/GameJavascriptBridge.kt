@@ -8,7 +8,6 @@ import android.os.VibratorManager
 import android.util.Log
 import android.webkit.JavascriptInterface
 import com.twoplayersnake.app.prefs.AppPreferences
-import com.twoplayersnake.app.cloud.CloudSaveManager
 import org.json.JSONObject
 import com.google.android.gms.games.PlayGames
 
@@ -21,8 +20,30 @@ class GameJavascriptBridge(
     private val onBuyRemoveAds: () -> Unit = {},
     private val onRestorePurchases: () -> Unit = {},
     // v3.3.2 — Native PGS ekranı açılamazsa HTML fallback tetiklenir
-    private val onShowAchievementsFailed: () -> Unit = {}
+    private val onShowAchievementsFailed: () -> Unit = {},
+    private val onGameActivityState: (Boolean) -> Unit = {},
+    private val onSaveCloudState: (String) -> Unit = {},
+    private val onLegacyHighScore: (String, String) -> Unit = { _, _ -> },
+    private val onHapticsChanged: () -> Unit = {}
 ) {
+    @JavascriptInterface
+    fun setHapticsEnabled(enabled: Boolean) {
+        if (!isCallAllowed()) return
+        preferences.vibrationEnabled = enabled
+        onHapticsChanged()
+    }
+
+    @JavascriptInterface
+    fun setGameActivityState(active: Boolean) {
+        if (!isCallAllowed()) return
+        onGameActivityState(active)
+    }
+
+    @JavascriptInterface
+    fun saveCloudState(payloadJson: String?) {
+        if (!isCallAllowed() || payloadJson.isNullOrBlank()) return
+        onSaveCloudState(payloadJson)
+    }
     private val achievementMap = mapOf(
         "ACH_FIRST_FOOD" to "CgkInayM2KgMEAIQCw",
         "ACH_AI_HUNTER" to "CgkInayM2KgMEAIQCA",
@@ -320,14 +341,8 @@ class GameJavascriptBridge(
     @JavascriptInterface
     fun notifyHighScore(scoresJson: String?, platform: String?) {
         if (!isCallAllowed() || scoresJson.isNullOrBlank()) return
-        val activity = context as android.app.Activity
         val resolvedPlatform = if (platform == "pc") "pc" else "mobile"
-        CloudSaveManager.save(
-            activity   = activity,
-            scoresJson = scoresJson,
-            platform   = resolvedPlatform,
-            adsRemoved = preferences.adsRemoved
-        )
+        onLegacyHighScore(scoresJson, resolvedPlatform)
     }
 
     // v3.3.2 — Sidekick: Ana menüden "Başarımlar" butonuna basınca PGS native ekranı açılır

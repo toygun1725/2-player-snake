@@ -21,10 +21,11 @@ function fixture(extra = {}) {
   return context;
 }
 
-test('Mobile v3.6.1 and both packaged fallbacks are identical; Mobile and PC scripts parse', () => {
+test('current Mobile and both packaged fallbacks are identical; v3.6.1 Mobile and PC scripts parse', () => {
+  const currentMobile = fs.readFileSync(path.join(root, 'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.6.5.html'), 'utf8');
   for (const fallback of ['Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html',
     'Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html']) {
-    assert.equal(fs.readFileSync(path.join(root, fallback), 'utf8'), html);
+    assert.ok(fs.readFileSync(path.join(root, fallback), 'utf8') === currentMobile, `${fallback} differs from current Mobile`);
   }
   const pc = fs.readFileSync(path.join(root, 'Ana Dosya/PC/Beta/v3/2 Player Snake PC v3.6.1.html'), 'utf8');
   for (const [source, version] of [[html, 'v3.6.1'], [pc, 'v3.6.1']]) {

@@ -1,0 +1,25 @@
+name: iOS iCloud Capability Check (Read Only)
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/ios-cloud-check]
+    paths:
+      - 'tools/check-ios-icloud-capability.cjs'
+      - '.github/workflows/ios-cloud-capability-check.yml'
+permissions:
+  contents: read
+jobs:
+  apple-capability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read the game bundle's iCloud capability
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: node tools/check-ios-icloud-capability.cjs

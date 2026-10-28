@@ -62,13 +62,26 @@ import com.twoplayersnake.app.notifications.NotificationWorker
 import java.util.concurrent.TimeUnit
 // v3.3.2 — Klavye + Cloud Save
 import android.view.KeyEvent
-import com.twoplayersnake.app.cloud.CloudSaveManager
+import com.twoplayersnake.app.cloud.CloudSaveCoordinator
 
 class MainActivity : AppCompatActivity() {
+    private var activityInForeground = false
+    private var gameRequestsWake = false
+
+    private fun updateScreenAwake() {
+        if (activityInForeground && gameRequestsWake) {
+            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
     private lateinit var binding: ActivityMainBinding
+    private var gameWebView: WebView? = null
+    private var rendererRecoveryAttempts = 0
     private lateinit var preferences: AppPreferences
     private lateinit var networkMonitor: NetworkMonitor
     private lateinit var gameBridge: GameJavascriptBridge
+    private lateinit var cloudSaveCoordinator: CloudSaveCoordinator
     private lateinit var adManager: AdManager
 
     private var pageReady = false
@@ -118,6 +131,34 @@ class MainActivity : AppCompatActivity() {
 
         preferences = AppPreferences(this)
         networkMonitor = NetworkMonitor(this)
+        cloudSaveCoordinator = CloudSaveCoordinator(this, { preferences.adsRemoved }) { data ->
+            if (!isFinishing && !isDestroyed) {
+                if (data.adsRemoved && !preferences.adsRemoved) {
+                    preferences.adsRemoved = true
+                    publishSettingsToGame()
+                }
+                if (currentTrustedPage) {
+                    val quoted = org.json.JSONObject.quote(data.toJson(includeAdsRemoved = false).toString())
+                    val script = """
+                        (function(){
+                          if(typeof window.onCloudSaveLoaded!=='function') return;
+                          var data=JSON.parse($quoted);
+                          if(typeof window.onCloudSaveSyncResult!=='function') {
+                            try {
+                              [['mobileScores','neoSnakeHighscoresMobile'],['pcScores','neoSnakeHighscores']].forEach(function(pair){
+                                var local=JSON.parse(localStorage.getItem(pair[1])||'[]');
+                                if(!Array.isArray(local)) throw new Error('invalid local scores');
+                                data[pair[0]]=(data[pair[0]]||[]).filter(function(item){return !local.some(function(old){return old.name===item.name && old.score===item.score;});});
+                              });
+                            } catch(e) { return; }
+                          }
+                          window.onCloudSaveLoaded(data);
+                        })();
+                    """.trimIndent()
+                    gameWebView?.evaluateJavascript(script, null)
+                }
+            }
+        }
         
         adManager = AdManager(this)
         adManager.initialize()
@@ -152,21 +193,40 @@ class MainActivity : AppCompatActivity() {
             onRestorePurchases = {
                 runOnUiThread { launchRestoreFlow() }
             },
+            onHapticsChanged = {
+                runOnUiThread { publishSettingsToGame() }
+            },
             // v3.3.2 — Native PGS ekranı açılamazsa HTML başarım menüsü fallback olarak açılır
             onShowAchievementsFailed = {
                 runOnUiThread {
-                    binding.webView.evaluateJavascript(
+                    gameWebView?.evaluateJavascript(
                         "if(typeof window.openHtmlAchievementsMenu==='function'){window.openHtmlAchievementsMenu();}",
                         null
                     )
                 }
+            },
+            onGameActivityState = { active ->
+                runOnUiThread { gameRequestsWake = active; updateScreenAwake() }
+            },
+            onSaveCloudState = { payload ->
+                runOnUiThread {
+                    if (currentTrustedPage) {
+                        val id = runCatching { org.json.JSONObject(payload).optString("requestId", "") }.getOrDefault("")
+                        val accepted = id.isNotEmpty() && cloudSaveCoordinator.accept(payload)
+                        val result = org.json.JSONObject().put("requestId", id).put("status", if (accepted) "success" else "failure")
+                        gameWebView?.evaluateJavascript("if(typeof window.onCloudSaveSyncResult==='function'){window.onCloudSaveSyncResult($result);}", null)
+                    }
+                }
+            },
+            onLegacyHighScore = { scores, platform ->
+                runOnUiThread { if (currentTrustedPage) cloudSaveCoordinator.acceptLegacy(scores, platform) }
             }
         )
 
         enableImmersiveMode()
         setupBackPress()
         setupNativeUi()
-        setupWebView()
+        createGameWebView()
         refreshLauncherShortcuts()
 
         // Handle shortcut intent if present
@@ -222,21 +282,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
-        binding.webView.evaluateJavascript("if (typeof window.onAndroidPause === 'function') { window.onAndroidPause(); }", null)
-        binding.webView.onPause()
-        binding.webView.pauseTimers()
+        activityInForeground = false
+        updateScreenAwake()
+        gameWebView?.evaluateJavascript("if (typeof window.onAndroidPause === 'function') { window.onAndroidPause(); }", null)
+        gameWebView?.onPause()
+        gameWebView?.pauseTimers()
         stopLoadingMediaPlayback()
         super.onPause()
     }
 
     override fun onResume() {
         super.onResume()
+        activityInForeground = true
+        gameRequestsWake = false
+        updateScreenAwake()
         NotificationHelper.clearDeliveredNotifications(this)
-        binding.webView.onResume()
-        binding.webView.resumeTimers()
+        gameWebView?.onResume()
+        gameWebView?.resumeTimers()
         enableImmersiveMode()
         publishSettingsToGame()
-        binding.webView.evaluateJavascript("if (typeof window.onAndroidResume === 'function') { window.onAndroidResume(); }", null)
+        gameWebView?.evaluateJavascript("if (typeof window.onAndroidResume === 'function') { window.onAndroidResume(); }", null)
+        if (::cloudSaveCoordinator.isInitialized) cloudSaveCoordinator.refresh()
         // Arkaplan'dan donulunce loading overlay hala aciksa teaser'i yeniden baslatir.
         // setVideoURI(null) VideoView'in internal MediaPlayer'ini tamamen temizledigi icin
         // bu olmadan Android bazi versiyonlarda VideoView.onResume() ile sesi sizmaya devam eder.
@@ -251,7 +317,7 @@ class MainActivity : AppCompatActivity() {
             ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE,
             ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW,
             ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL -> {
-                binding.webView.evaluateJavascript(
+                gameWebView?.evaluateJavascript(
                     "if (typeof window.onAndroidTrimMemory === 'function') { window.onAndroidTrimMemory('critical'); }",
                     null
                 )
@@ -260,11 +326,11 @@ class MainActivity : AppCompatActivity() {
             ComponentCallbacks2.TRIM_MEMORY_BACKGROUND,
             ComponentCallbacks2.TRIM_MEMORY_MODERATE,
             ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> {
-                binding.webView.evaluateJavascript(
+                gameWebView?.evaluateJavascript(
                     "if (typeof window.onAndroidTrimMemory === 'function') { window.onAndroidTrimMemory('background'); }",
                     null
                 )
-                binding.webView.clearCache(false)
+                gameWebView?.clearCache(false)
                 System.gc()
             }
         }
@@ -272,11 +338,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onLowMemory() {
         super.onLowMemory()
-        binding.webView.evaluateJavascript(
+        gameWebView?.evaluateJavascript(
             "if (typeof window.onAndroidTrimMemory === 'function') { window.onAndroidTrimMemory('low'); }",
             null
         )
-        binding.webView.clearCache(false)
+        gameWebView?.clearCache(false)
         System.gc()
     }
 
@@ -314,7 +380,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         stopLoadingMediaPlayback()
-        binding.webView.apply {
+        gameWebView?.apply {
             stopLoading()
             onPause()
             pauseTimers()
@@ -326,8 +392,19 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    private fun createGameWebView() {
+        val view = WebView(this)
+        gameWebView = view
+        binding.webViewContainer.addView(view, android.widget.FrameLayout.LayoutParams(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT
+        ))
+        setupWebView()
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
-    private fun setupWebView() = with(binding.webView) {
+    private fun setupWebView() = with(requireNotNull(gameWebView)) {
+        val configuredView = this
         setBackgroundColor(android.graphics.Color.BLACK)
         isHorizontalScrollBarEnabled = false
         isVerticalScrollBarEnabled = false
@@ -377,6 +454,7 @@ class MainActivity : AppCompatActivity() {
         webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 super.onProgressChanged(view, newProgress)
+                if (view !== gameWebView) return
                 lastProgress = newProgress
                 binding.loadingProgress.progress = newProgress
                 binding.loadingPercent.text = getString(R.string.loading_percent, newProgress)
@@ -389,12 +467,14 @@ class MainActivity : AppCompatActivity() {
 
         webViewClient = GameWebViewClient(
             context = this@MainActivity,
-            onMainFrameLoadingStarted = { url ->
+            onMainFrameLoadingStarted = pageStarted@ { url ->
+                if (configuredView !== gameWebView) return@pageStarted
                 currentTrustedPage = TrustedWebOrigin.isTrustedTopLevelUrl(url)
                 pageReady = false
                 showLoadingState()
             },
-            onTrustedPageFinished = { url ->
+            onTrustedPageFinished = pageFinished@ { url ->
+                if (configuredView !== gameWebView) return@pageFinished
                 currentTrustedPage = TrustedWebOrigin.isTrustedTopLevelUrl(url)
                 pageReady = true
                 pageHasLoadedOnce = true
@@ -403,34 +483,15 @@ class MainActivity : AppCompatActivity() {
                 applyGpgpcUiScaleTweaks()
                 publishSettingsToGame()
 
-                // v3.3.2 — Cloud Save: sayfa yüklendikten sonra cloud verisi çekip HTML'e inject et
-                CloudSaveManager.load(this@MainActivity) { json ->
-                    if (json != null) {
-                        // Premium durumu cloud'dan geldiyse sessizce set et (asla false yazma)
-                        runCatching {
-                            val obj = org.json.JSONObject(json)
-                            if (obj.optBoolean("adsRemoved", false) && !preferences.adsRemoved) {
-                                preferences.adsRemoved = true
-                                runOnUiThread { publishSettingsToGame() }
-                                Log.d("CloudSave", "adsRemoved cloud'dan geri yüklendi.")
-                            }
-                        }
-                        // HTML'ye inject et
-                        runOnUiThread {
-                            binding.webView.evaluateJavascript(
-                                "if(typeof window.onCloudSaveLoaded==='function'){window.onCloudSaveLoaded($json);}",
-                                null
-                            )
-                        }
-                    }
-                }
+                cloudSaveCoordinator.refresh()
 
                 // Logic changed: wait for user to click START if progress is 100%
                 if (lastProgress == 100) {
                     showStartButton()
                 }
             },
-            onMainFrameLoadFailed = {
+            onMainFrameLoadFailed = pageFailed@ {
+                if (configuredView !== gameWebView) return@pageFailed
                 currentTrustedPage = false
                 pageReady = false
                 
@@ -440,13 +501,21 @@ class MainActivity : AppCompatActivity() {
                     showOfflineState()
                 }
             },
-            onRenderProcessGone = {
-                currentTrustedPage = false
-                pageReady = false
-                
-                if (!networkMonitor.isOnline() && !pageHasLoadedOnce) {
-                    hideLoadingState()
-                    showOfflineState()
+            onRenderProcessGone = { failedView ->
+                if (failedView != null && failedView === gameWebView) {
+                    currentTrustedPage = false
+                    pageReady = false
+                    binding.webViewContainer.removeView(failedView)
+                    gameWebView = null
+                    failedView.destroy()
+                    if (rendererRecoveryAttempts < 2) {
+                        rendererRecoveryAttempts++
+                        createGameWebView()
+                        loadGame()
+                    } else {
+                        hideLoadingState()
+                        showOfflineState()
+                    }
                 }
             }
         )
@@ -454,11 +523,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupNativeUi() {
         binding.retryButton.setOnClickListener {
-            if (networkMonitor.isOnline()) {
-                loadGame()
-            } else {
-                showOfflineState()
-            }
+            rendererRecoveryAttempts = 0
+            if (gameWebView == null) createGameWebView()
+            loadGame()
         }
 
         binding.startButton.setOnClickListener {
@@ -518,7 +585,7 @@ class MainActivity : AppCompatActivity() {
 
         // Smart Caching: Online iken sunucuyu kontrol et, offline iken cache'den aç.
         val isOnline = networkMonitor.isOnline()
-        binding.webView.settings.cacheMode = if (isOnline) {
+        gameWebView?.settings?.cacheMode = if (isOnline) {
             WebSettings.LOAD_DEFAULT
         } else {
             WebSettings.LOAD_CACHE_ELSE_NETWORK
@@ -530,7 +597,7 @@ class MainActivity : AppCompatActivity() {
             val baseFallback = TrustedWebOrigin.OFFLINE_FALLBACK_URL
             if (!shortcutParam.isNullOrBlank()) "$baseFallback?shortcut=$shortcutParam" else baseFallback
         }
-        binding.webView.loadUrl(targetUrl)
+        gameWebView?.loadUrl(targetUrl)
     }
 
     private fun isRunningOnPlayGamesPc(): Boolean {
@@ -585,7 +652,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun publishSettingsToGame() {
         if (!pageReady || !currentTrustedPage) return
-        JavascriptBridgeInjector.publishSettings(binding.webView, preferences)
+        gameWebView?.let { JavascriptBridgeInjector.publishSettings(it, preferences) }
     }
 
     private fun applyGpgpcUiScaleTweaks() {
@@ -648,7 +715,7 @@ html.gpgpc-webview-tune body.hud-collapsed {
             })();
         """.trimIndent()
 
-        binding.webView.evaluateJavascript(script, null)
+        gameWebView?.evaluateJavascript(script, null)
     }
 
     private fun showLoadingState() {
@@ -759,9 +826,27 @@ html.gpgpc-webview-tune body.hud-collapsed {
             this,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    when {
-                        binding.webView.canGoBack() -> binding.webView.goBack()
-                        else -> showExitDialog()
+                    if (!pageReady || !currentTrustedPage) {
+                        showExitDialog()
+                        return
+                    }
+                    var completed = false
+                    val timeout = Runnable {
+                        if (!completed) {
+                            completed = true
+                            showExitDialog()
+                        }
+                    }
+                    val handler = Handler(Looper.getMainLooper())
+                    handler.postDelayed(timeout, 1500L)
+                    gameWebView?.evaluateJavascript(
+                        "typeof window.handleNativeBackPress === 'function' ? window.handleNativeBackPress() : null"
+                    ) { value ->
+                        if (completed) return@evaluateJavascript
+                        completed = true
+                        handler.removeCallbacks(timeout)
+                        val result = runCatching { org.json.JSONTokener(value ?: "null").nextValue() }.getOrNull()
+                        if (result != "CONSUMED") showExitDialog()
                     }
                 }
             }
@@ -783,12 +868,12 @@ html.gpgpc-webview-tune body.hud-collapsed {
     private fun notifyNativeAdPresented(callbackId: String?) {
         if (callbackId.isNullOrBlank()) return
         val script = "if (typeof window.__onNativeAdPresented === 'function') { window.__onNativeAdPresented('$callbackId'); }"
-        binding.webView.evaluateJavascript(script, null)
+        gameWebView?.evaluateJavascript(script, null)
     }
 
     private fun resumeGameAfterAd(callbackId: String?, success: Boolean) {
         val script = "if (typeof window.__onNativeAdDone === 'function') { window.__onNativeAdDone('${callbackId ?: ""}', $success); }"
-        binding.webView.evaluateJavascript(script, null)
+        gameWebView?.evaluateJavascript(script, null)
     }
 
     private fun enableImmersiveMode() {
@@ -837,7 +922,7 @@ html.gpgpc-webview-tune body.hud-collapsed {
                 val isPremium = customerInfo.entitlements["remove_ads"]?.isActive == true
                 if (preferences.adsRemoved != isPremium) {
                     preferences.adsRemoved = isPremium
-                    runOnUiThread { publishSettingsToGame() }
+                    runOnUiThread { publishSettingsToGame(); cloudSaveCoordinator.entitlementChanged() }
                 }
             }
         )
@@ -891,6 +976,7 @@ html.gpgpc-webview-tune body.hud-collapsed {
                             val isPremium = customerInfo.entitlements["remove_ads"]?.isActive == true
                             preferences.adsRemoved = isPremium
                             publishSettingsToGame()
+                            cloudSaveCoordinator.entitlementChanged()
                             if (isPremium) {
                                 MaterialAlertDialogBuilder(this)
                                     .setTitle(AppStrings.IAP.removeAdsSuccessTitle)
@@ -922,6 +1008,7 @@ html.gpgpc-webview-tune body.hud-collapsed {
                 preferences.adsRemoved = isPremium
                 runOnUiThread {
                     publishSettingsToGame()
+                    cloudSaveCoordinator.entitlementChanged()
                     val msg = if (isPremium) {
                         AppStrings.IAP.restoreSuccessMessage
                     } else {
@@ -1011,7 +1098,7 @@ html.gpgpc-webview-tune body.hud-collapsed {
         // PC HTML'nin dinlediği KeyboardEvent formatı
         val js = "document.dispatchEvent(new KeyboardEvent('$eventType'," +
             "{key:'$jsKey',code:'$jsKey',bubbles:true,cancelable:true}));"
-        binding.webView.evaluateJavascript(js, null)
+        gameWebView?.evaluateJavascript(js, null)
         return true
     }
 

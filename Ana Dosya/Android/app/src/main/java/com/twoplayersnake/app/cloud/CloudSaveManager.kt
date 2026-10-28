@@ -81,10 +81,17 @@ object CloudSaveManager {
                     onResult(String(data))
                     Log.d(TAG, "Snapshot yüklendi (çakışma → sunucu versiyonu).")
                 } else {
-                    val data = dataOrConflict.data!!.snapshotContents.readFully()
-                    val json = String(data)
-                    onResult(if (json.isBlank()) null else json)
-                    Log.d(TAG, "Snapshot yüklendi.")
+                    val snapshot = dataOrConflict.data!!
+                    val json = try {
+                        String(snapshot.snapshotContents.readFully()).takeIf { it.isNotBlank() }
+                    } catch (error: Exception) {
+                        Log.w(TAG, "Snapshot okunamadı", error)
+                        null
+                    } finally {
+                        PlayGames.getSnapshotsClient(activity).discardAndClose(snapshot)
+                    }
+                    onResult(json)
+                    Log.d(TAG, "Snapshot yükleme işlemi tamamlandı.")
                 }
             }
             .addOnFailureListener {

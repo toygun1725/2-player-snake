@@ -1,0 +1,20 @@
+name: iOS Test Environment Check (Read Only)
+on:
+  push:
+    branches: [codex/ios-cloud-check]
+    paths:
+      - 'tools/check-icloud-test-environment.swift'
+      - '.github/workflows/ios-test-environment-check.yml'
+permissions:
+  contents: read
+jobs:
+  inspect-environment:
+    runs-on: macos-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check available simulator and macOS account signal
+        run: |
+          xcrun simctl list devices available --json > "$RUNNER_TEMP/ios-devices.json"
+          python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print("Available simulator devices:", sum(len(v) for v in d["devices"].values()))' "$RUNNER_TEMP/ios-devices.json"
+          python3 -c 'import subprocess; subprocess.run(["xcrun", "swift", "tools/check-icloud-test-environment.swift"], timeout=30, check=True)' || echo 'Account signal unavailable; no conclusion about CloudKit or simulator login.'

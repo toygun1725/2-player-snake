@@ -111,6 +111,9 @@ function buildSnakeSyncPayload(snake, now) {
         grow: snake.grow,
         score: snake.score,
         foodCount: snake.foodCount || 0,
+        lastMoveIntervalMs: snake.lastMoveIntervalMs || 0,
+        moveSequence: snake.moveSequence || 0,
+        positionDiscontinuitySequence: snake.positionDiscontinuitySequence || 0,
         powerTimeLeft: Math.max(0, snake.powerEnd - now),
         slowTimeLeft: Math.max(0, snake.slowEnd - now),
         flashTimeLeft: Math.max(0, snake.flashUntil - now),
@@ -123,6 +126,7 @@ function buildSnakeSyncPayload(snake, now) {
 function buildGameUpdatePayload(room, now) {
     ensureWorldSync(room);
     const payload = {
+        roundId: room.roundId,
         snakes: {
             p1: buildSnakeSyncPayload(room.snakes.p1, now),
             p2: buildSnakeSyncPayload(room.snakes.p2, now)
@@ -191,12 +195,17 @@ function clearRoomTimers(room) {
     if (room.gameTimeout) clearTimeout(room.gameTimeout);
     if (room.pauseTimer) clearInterval(room.pauseTimer);
     if (room.graceTimer) clearTimeout(room.graceTimer);
+    if (room.graceTimers) Object.values(room.graceTimers).forEach(timer => clearTimeout(timer));
+    if (room.countdownTimer) clearTimeout(room.countdownTimer);
     if (room.nextRoundTimer) clearTimeout(room.nextRoundTimer);
     if (room.rematchTimer) clearTimeout(room.rematchTimer);
     if (room.postGameCleanupTimer) clearTimeout(room.postGameCleanupTimer);
     room.gameTimeout = null;
     room.pauseTimer = null;
     room.graceTimer = null;
+    room.graceTimers = {};
+    room.countdownTimer = null;
+    room.countdownDeadline = 0;
     room.nextRoundTimer = null;
     room.rematchTimer = null;
     room.postGameCleanupTimer = null;
@@ -231,6 +240,8 @@ function resetRoomForRematch(room) {
     room.previousState = null;
     room.pausedBy = null;
     room.pauseStartTime = 0;
+    room.disconnectedRoles = { p1: false, p2: false };
+    room.countdownKind = null;
     room.pauseTimeLeft = 0;
     room.normalFoodsEaten = 0;
     room.foods = [];
@@ -449,12 +460,18 @@ function spawnBarriers(room, desiredCount) {
         for (let y = cy - 3; y <= cy + 3; y++) baseOcc.add(x + ',' + y);
     }
 
-    const addSnakeOcc = (s) => {
+    const addSnakeOcc = (s, ownerKey) => {
         if (!s || !s.segments) return;
         s.segments.forEach((seg, idx) => {
             if (idx === 0) {
                 for (let bx = -1; bx <= 1; bx++) {
-                    for (let by = -1; by <= 1; by++) baseOcc.add((seg.x + bx) + ',' + (seg.y + by));
+                    for (let by = -1; by <= 1; by++) {
+                        const raw = {x: seg.x + bx, y: seg.y + by};
+                        const cell = room.mode === 'selfArea51'
+                            ? selfArea51WrapForOwner(room, raw, ownerKey)
+                            : {x: (raw.x + cols) % cols, y: (raw.y + rows) % rows};
+                        baseOcc.add(cell.x + ',' + cell.y);
+                    }
                 }
             } else {
                 baseOcc.add(seg.x + ',' + seg.y);
@@ -462,10 +479,11 @@ function spawnBarriers(room, desiredCount) {
         });
     };
     if (room.snakes) {
-        addSnakeOcc(room.snakes.p1);
-        addSnakeOcc(room.snakes.p2);
+        addSnakeOcc(room.snakes.p1, 'p1');
+        addSnakeOcc(room.snakes.p2, 'p2');
     }
 
+    const currentBarrierCells = new Set();
     while (room.barriers.length < desiredCount && attempts++ < maxAttempts) {
         const base = TETROMINO_SHAPES[Math.floor(Math.random() * TETROMINO_SHAPES.length)];
         const rot = Math.floor(Math.random() * 4);
@@ -477,7 +495,6 @@ function spawnBarriers(room, desiredCount) {
         cells = translateCells(cells, dx, dy);
 
         let valid = true;
-        const currentBarrierCells = getBarrierCellsSet(room);
         for (const c of cells) {
             if (c.x < 0 || c.x >= cols || c.y < 0 || c.y >= rows) { valid = false; break; }
             const key = c.x + ',' + c.y;
@@ -485,20 +502,20 @@ function spawnBarriers(room, desiredCount) {
         }
         if (!valid) continue;
         room.barriers.push({ cells });
+        cells.forEach(c => currentBarrierCells.add(c.x + ',' + c.y));
     }
 }
 
 function spawnPortals(room) {
     if (room.teleportingOwner) return;
+    const previousPortals = room.portals || [];
     room.portals = [];
-    markWorldDirty(room, 'portals');
     for (let i = 0; i < 2; i++) {
         const cell = findFreeCell(room);
-        if (cell) {
-            room.portals.push({ x: cell.x, y: cell.y, id: i });
-            markWorldDirty(room, 'portals');
-        }
+        if (!cell) { room.portals = previousPortals; room.portalTimer = 15000; return; }
+        room.portals.push({ x: cell.x, y: cell.y, id: i });
     }
+    markWorldDirty(room, 'portals');
     room.portalTimer = 15000;
 }
 
@@ -665,6 +682,7 @@ function startGameLoop(room) {
 }
 
 function initGameInRoom(room) {
+    room.roundId = (room.roundId || 0) + 1;
     resetWorldSync(room);
     room.normalFoodsEaten = 0;
 
@@ -725,6 +743,9 @@ function initGameInRoom(room) {
             grow: 0,
             score: 0,
             foodCount: 0,
+            moveSequence: 0,
+            positionDiscontinuitySequence: 0,
+            lastMoveIntervalMs: 0,
             powerEnd: 0,
             slowEnd: 0,
             flashUntil: 0,
@@ -740,6 +761,9 @@ function initGameInRoom(room) {
             grow: 0,
             score: 0,
             foodCount: 0,
+            moveSequence: 0,
+            positionDiscontinuitySequence: 0,
+            lastMoveIntervalMs: 0,
             powerEnd: 0,
             slowEnd: 0,
             flashUntil: 0,
@@ -769,6 +793,7 @@ function initGameInRoom(room) {
     room.roundTimer = (room.mode === 'normal' || room.mode === 'selfArea51') ? 999999 : 180;
 
     io.to(room.id).emit('gameInit', {
+        roundId: room.roundId,
         snakes: room.snakes,
         foods: room.foods,
         mode: room.mode,
@@ -789,39 +814,112 @@ function initGameInRoom(room) {
     // Start tick loops
     if (room.gameTimeout) clearTimeout(room.gameTimeout);
 
-    // Countdown interval
-    let countdownInterval = setInterval(() => {
-        if (!rooms[room.id]) {
-            clearInterval(countdownInterval);
-            return;
-        }
+    room.countdownKind = 'initial';
+    scheduleRoomCountdown(room, 1000);
+}
 
-        // Pause countdown if game is currently paused due to disconnects
-        if (room.state === 'paused') {
-            return;
-        }
+function resolveServerSimultaneousIntent(room, now) {
+    const s1 = room.snakes.p1, s2 = room.snakes.p2;
+    if (!s1?.segments.length || !s2?.segments.length) return null;
+    const cols = room.gridCols || GRID_COLS, rows = room.gridRows || GRID_ROWS;
+    const target = (s, key) => {
+        const dir = s.dir.x !== -s.nextDir.x || s.dir.y !== -s.nextDir.y ? s.nextDir : s.dir;
+        const raw = {x: s.segments[0].x + dir.x, y: s.segments[0].y + dir.y};
+        return room.mode === 'selfArea51' ? selfArea51WrapForOwner(room, raw, key) : {x: (raw.x + cols) % cols, y: (raw.y + rows) % rows};
+    };
+    const a = target(s1, 'p1'), b = target(s2, 'p2');
+    const isPortal = cell => room.mode === 'adventure' && room.portals?.length === 2 && room.portals.some(p => p.x === cell.x && p.y === cell.y);
+    const portalA = isPortal(a), portalB = isPortal(b);
+    if (portalA && portalB && !room.teleportingOwner) return 'draw';
+    if (portalA || portalB || room.mode === 'selfArea51') return null;
+    const h1 = s1.segments[0], h2 = s2.segments[0];
+    if (a.x === h2.x && a.y === h2.y && b.x === h1.x && b.y === h1.y && now >= s1.powerEnd && now >= s2.powerEnd) {
+        return s1.segments.length > s2.segments.length ? 'p1' : s2.segments.length > s1.segments.length ? 'p2' : 'draw';
+    }
+    return null;
+}
 
-        room.countdownValue--;
-        if (room.countdownValue <= 0) {
-            clearInterval(countdownInterval);
-            room.state = 'playing';
+function resolveServerCollisions(room, now) {
+    // Check collisions (Game Over / Round Over rules)
+    let p1Dead = false;
+    let p2Dead = false;
 
-            if (room.mode === 'selfArea51') {
-                const now = Date.now();
-                room.selfArea51StartTime = now;
-                room.selfArea51GreenSpawnAt = now + 15000;
-                room.selfArea51GreenActive = false;
-                room.selfArea51GreenLastMove = 0;
+    const p1 = room.snakes.p1;
+    const p2 = room.snakes.p2;
+
+    if (p1 && p1.hitBarrier) p1Dead = true;
+    if (p2 && p2.hitBarrier) p2Dead = true;
+
+    const p1Head = p1.segments[0];
+    const p2Head = p2.segments[0];
+
+    const intangible1 = now < p1.powerEnd;
+    const intangible2 = now < p2.powerEnd;
+
+    // P1 self-collision (ignored if intangible)
+    if (!intangible1) {
+        for (let i = 1; i < p1.segments.length; i++) {
+            if (p1Head.x === p1.segments[i].x && p1Head.y === p1.segments[i].y) {
+                if (room.mode === 'selfArea51') {
+                    p1.segments = p1.segments.slice(0, i);
+                    break;
+                } else {
+                    p1Dead = true;
+                }
             }
-
-            io.to(room.id).emit('gameStart', { state: room.state });
-            
-            // Start regular game loop. Clients interpolate between server states.
-            startGameLoop(room);
-        } else {
-            io.to(room.id).emit('countdownTick', { countdownValue: room.countdownValue });
         }
-    }, 1000);
+    }
+    // P2 self-collision (ignored if intangible)
+    if (!intangible2) {
+        for (let i = 1; i < p2.segments.length; i++) {
+            if (p2Head.x === p2.segments[i].x && p2Head.y === p2.segments[i].y) {
+                if (room.mode === 'selfArea51') {
+                    p2.segments = p2.segments.slice(0, i);
+                    break;
+                } else {
+                    p2Dead = true;
+                }
+            }
+        }
+    }
+
+    // Cross-collision checks
+    if (p1Head.x === p2Head.x && p1Head.y === p2Head.y) {
+        if (!intangible1 && !intangible2) {
+            const l1 = p1.segments.length;
+            const l2 = p2.segments.length;
+            if (l1 > l2) {
+                p2Dead = true;
+            } else if (l2 > l1) {
+                p1Dead = true;
+            } else {
+                p1Dead = true;
+                p2Dead = true;
+            }
+        }
+    } else {
+        // P1 colliding with P2 body (ignored if P1 is intangible)
+        if (!intangible1) {
+            for (let i = 0; i < p2.segments.length; i++) {
+                if (p1Head.x === p2.segments[i].x && p1Head.y === p2.segments[i].y) {
+                    p1Dead = true;
+                }
+            }
+        }
+        // P2 colliding with P1 body (ignored if P2 is intangible)
+        if (!intangible2) {
+            for (let i = 0; i < p1.segments.length; i++) {
+                if (p2Head.x === p1.segments[i].x && p2Head.y === p1.segments[i].y) {
+                    p2Dead = true;
+                }
+            }
+        }
+    }
+
+    if (p1Dead && p2Dead) return 'draw';
+    if (p1Dead) return 'p2';
+    if (p2Dead) return 'p1';
+    return null;
 }
 
 function gameTick60FPS(room, dt) {
@@ -883,30 +981,29 @@ function gameTick60FPS(room, dt) {
     let roundEndedByShrink = false;
     let shrinkWinner = null;
     const players = ['p1', 'p2'];
-    players.forEach(p => {
-        if (roundEndedByShrink) return;
+    const intervals = {}, moveCounts = {p1: 0, p2: 0};
+    for (const p of players) {
         const s = room.snakes[p];
-        if (!s || s.segments.length === 0) return;
-
-        // Calculate current effective speed (Golden Ratio 93.9 ms / 10.65 TPS baseline across all modes)
+        if (!s || !s.segments.length) continue;
         let speed = BASE_TPS * MOD_SPEED.NORMAL;
-
-        // Apply speed boosts/slowdowns (calibrated to humane, controllable arcade levels)
-        if (now < s.powerEnd) {
-            speed *= 1.25; // Beast mode speed boost (~75.1 ms)
-        }
-        if (isBoostAllowed(room) && now < s.dashEndTime) {
-            speed *= 1.45; // Fast Competitive dash boost (~64.7 ms, tactical surge without suicidal panic)
-        }
-        if (now < s.slowEnd) {
-            speed *= 0.65; // Sapphire slow effect (~144.5 ms)
-        }
-
+        if (now < s.powerEnd) speed *= 1.25;
+        if (isBoostAllowed(room) && now < s.dashEndTime) speed *= 1.45;
+        if (now < s.slowEnd) speed *= 0.65;
+        intervals[p] = 1000 / speed;
         s.acc += dt;
-        const stepInterval = 1000 / speed;
-
-        let moveGuard = 0;
-        while (s.acc >= stepInterval && moveGuard++ < 3) {
+    }
+    while (!roundEndedByShrink && room.state === 'playing') {
+        const ready = players.filter(p => room.snakes[p] && room.snakes[p].segments.length && moveCounts[p] < 3 && room.snakes[p].acc >= intervals[p]);
+        if (!ready.length) break;
+        if (ready.length === 2) {
+            const result = resolveServerSimultaneousIntent(room, now);
+            if (result) { endRound(room, result); return; }
+        }
+        ready.forEach(p => {
+            if (roundEndedByShrink || room.state !== 'playing') return;
+            const s = room.snakes[p];
+            const stepInterval = intervals[p];
+            moveCounts[p]++;
             s.hitBarrier = false;
             anyMoved = true;
             // Lock and apply direction
@@ -955,6 +1052,7 @@ function gameTick60FPS(room, dt) {
                         room.teleportStepsRemaining = s.segments.length;
                         nextX = op.x;
                         nextY = op.y;
+                        s.positionDiscontinuitySequence = (s.positionDiscontinuitySequence || 0) + 1;
                     }
                 }
             }
@@ -977,6 +1075,8 @@ function gameTick60FPS(room, dt) {
             }
 
             // Add new head
+            s.lastMoveIntervalMs = stepInterval;
+            s.moveSequence = (s.moveSequence || 0) + 1;
             s.segments.unshift({ x: nextX, y: nextY });
 
             // Check food collision
@@ -1010,9 +1110,9 @@ function gameTick60FPS(room, dt) {
                         // Shrink opponent by 1, but NEVER KILL (minimum length 1)
                         const otherRole = p === 'p1' ? 'p2' : 'p1';
                         const other = room.snakes[otherRole];
-                        if (other && other.segments && other.segments.length > 1) {
-                            other.segments.pop();
-                            if (other.grow > 0) other.grow = Math.max(0, other.grow - 1);
+                        if (other && other.segments) {
+                            if (other.grow > 0) other.grow--;
+                            else if (other.segments.length > 1) other.segments.pop();
                         }
 
                         s.flashUntil = now + 500;
@@ -1118,8 +1218,17 @@ function gameTick60FPS(room, dt) {
 
             s.acc -= stepInterval;
             if (s.acc > stepInterval) s.acc = stepInterval; // Prevent lag jump
+        });
+        if (room.state !== 'playing') return;
+        if (roundEndedByShrink) { endRound(room, shrinkWinner); return; }
+        if (room.mode === 'selfArea51') {
+            const l1 = room.snakes.p1.segments.length, l2 = room.snakes.p2.segments.length;
+            if (l1 >= 51 || l2 >= 51) { endRound(room, l1 >= 51 && l2 >= 51 ? 'draw' : l1 >= 51 ? 'p1' : 'p2'); return; }
         }
-    });
+        const collisionWinner = resolveServerCollisions(room, now);
+        if (collisionWinner) { endRound(room, collisionWinner); return; }
+    }
+    if (room.state !== 'playing') return;
 
     // Check if ruby burst foods expired (when beast mode ends)
     players.forEach(p => {
@@ -1158,96 +1267,26 @@ function gameTick60FPS(room, dt) {
         }
     }
 
-    // Check collisions (Game Over / Round Over rules)
-    let p1Dead = false;
-    let p2Dead = false;
-
-    const p1 = room.snakes.p1;
-    const p2 = room.snakes.p2;
-
-    if (p1 && p1.hitBarrier) p1Dead = true;
-    if (p2 && p2.hitBarrier) p2Dead = true;
-
-    const p1Head = p1.segments[0];
-    const p2Head = p2.segments[0];
-
-    const intangible1 = now < p1.powerEnd;
-    const intangible2 = now < p2.powerEnd;
-
-    // P1 self-collision (ignored if intangible)
-    if (!intangible1) {
-        for (let i = 1; i < p1.segments.length; i++) {
-            if (p1Head.x === p1.segments[i].x && p1Head.y === p1.segments[i].y) {
-                if (room.mode === 'selfArea51') {
-                    p1.segments = p1.segments.slice(0, i);
-                    break;
-                } else {
-                    p1Dead = true;
-                }
-            }
-        }
-    }
-    // P2 self-collision (ignored if intangible)
-    if (!intangible2) {
-        for (let i = 1; i < p2.segments.length; i++) {
-            if (p2Head.x === p2.segments[i].x && p2Head.y === p2.segments[i].y) {
-                if (room.mode === 'selfArea51') {
-                    p2.segments = p2.segments.slice(0, i);
-                    break;
-                } else {
-                    p2Dead = true;
-                }
-            }
-        }
-    }
-
-    // Cross-collision checks
-    if (p1Head.x === p2Head.x && p1Head.y === p2Head.y) {
-        if (!intangible1 && !intangible2) {
-            const l1 = p1.segments.length;
-            const l2 = p2.segments.length;
-            if (l1 > l2) {
-                p2Dead = true;
-            } else if (l2 > l1) {
-                p1Dead = true;
-            } else {
-                p1Dead = true;
-                p2Dead = true;
-            }
-        }
-    } else {
-        // P1 colliding with P2 body (ignored if P1 is intangible)
-        if (!intangible1) {
-            for (let i = 0; i < p2.segments.length; i++) {
-                if (p1Head.x === p2.segments[i].x && p1Head.y === p2.segments[i].y) {
-                    p1Dead = true;
-                }
-            }
-        }
-        // P2 colliding with P1 body (ignored if P2 is intangible)
-        if (!intangible2) {
-            for (let i = 0; i < p1.segments.length; i++) {
-                if (p2Head.x === p1.segments[i].x && p2Head.y === p1.segments[i].y) {
-                    p2Dead = true;
-                }
-            }
-        }
-    }
-
-    if (p1Dead && p2Dead) {
-        endRound(room, 'draw');
-    } else if (p1Dead) {
-        endRound(room, 'p2');
-    } else if (p2Dead) {
-        endRound(room, 'p1');
+    const collisionWinner = resolveServerCollisions(room, now);
+    if (collisionWinner) {
+        endRound(room, collisionWinner);
     } else if (anyMoved) {
-        // Only sync when state actually changed. Static world data is sent only when dirty.
         const payload = buildGameUpdatePayload(room, now);
         emitGameUpdate(room, payload, Date.now() - tickStartedAt);
     }
 }
 
+function roundSummary(room) {
+    const summary = {};
+    for (const key of ['p1', 'p2']) {
+        const snake = room.snakes && room.snakes[key];
+        summary[key] = { foodCount: snake?.foodCount || 0, length: snake?.segments?.length || 0 };
+    }
+    return summary;
+}
+
 function endRound(room, winner) {
+    if (room.state === 'roundOver' || room.state === 'postGame') return;
     room.state = 'roundOver';
     if (room.gameTimeout) {
         clearTimeout(room.gameTimeout);
@@ -1265,6 +1304,8 @@ function endRound(room, winner) {
     const isGameOver = room.scores.p1 >= maxWins || room.scores.p2 >= maxWins;
 
     io.to(room.id).emit('roundOver', {
+        roundId: room.roundId,
+        roundStats: roundSummary(room),
         winner,
         scores: room.scores,
         isGameOver
@@ -1279,53 +1320,97 @@ function endRound(room, winner) {
     } else {
         // Automatically start the next round in 4 seconds
         if (room.nextRoundTimer) clearTimeout(room.nextRoundTimer);
-        room.nextRoundTimer = setTimeout(() => {
-            if (rooms[room.id] && rooms[room.id].state === 'roundOver') {
-                rooms[room.id].nextRoundTimer = null;
-                initGameInRoom(rooms[room.id]);
-            }
-        }, 4000);
+        scheduleNextRound(room, 4000);
     }
+}
+
+function scheduleNextRound(room, delayMs) {
+    if (room.nextRoundTimer) clearTimeout(room.nextRoundTimer);
+    room.nextRoundDeadline = Date.now() + Math.max(0, delayMs);
+    room.nextRoundTimer = setTimeout(() => {
+        if (rooms[room.id] === room && room.state === 'roundOver') {
+            room.nextRoundTimer = null;
+            initGameInRoom(room);
+        }
+    }, Math.max(0, delayMs));
+}
+
+function shiftRoomDeadlines(room, delta) {
+    for (const snake of Object.values(room.snakes || {})) {
+        for (const key of ['powerEnd', 'slowEnd', 'flashUntil', 'dashEndTime', 'dashCooldown']) {
+            if (snake && typeof snake[key] === 'number' && snake[key] > 0) snake[key] += delta;
+        }
+    }
+    for (const food of room.foods || []) if (food.relocateTime > 0) food.relocateTime += delta;
+    if (room.selfArea51GreenSpawnAt > 0) room.selfArea51GreenSpawnAt += delta;
+    if (room.selfArea51GreenLastMove > 0) room.selfArea51GreenLastMove += delta;
+}
+
+function finishRoomPause(room, restoredState) {
+    const pauseDurationMs = room.pauseStartTime ? Math.max(0, Date.now() - room.pauseStartTime) : 0;
+    const resumeGeneration = room.resumeGeneration || 0;
+    if (restoredState === 'playing') shiftRoomDeadlines(room, pauseDurationMs);
+    room.pauseStartTime = 0;
+    room.previousState = null;
+    room.pausedBy = null;
+    return { resumeGeneration, pauseDurationMs, restoredState };
+}
+
+function scheduleRoomCountdown(room, delayMs) {
+    if (room.countdownTimer) clearTimeout(room.countdownTimer);
+    room.countdownDeadline = Date.now() + Math.max(0, delayMs);
+    room.countdownTimer = setTimeout(() => {
+        room.countdownTimer = null;
+        if (rooms[room.id] !== room || room.state !== 'countdown') return;
+        room.countdownValue--;
+        if (room.countdownValue > 0) {
+            const event = room.countdownKind === 'resume' ? 'gameResumeCountdown' : 'countdownTick';
+            io.to(room.id).emit(event, { countdownValue: room.countdownValue });
+            scheduleRoomCountdown(room, 1000);
+            return;
+        }
+        const isResume = room.countdownKind === 'resume';
+        const resumeInfo = isResume ? finishRoomPause(room, 'playing') : {};
+        room.countdownKind = null;
+        room.countdownDeadline = 0;
+        room.state = 'playing';
+        room.lastTickTime = Date.now();
+        if (!isResume && room.mode === 'selfArea51') {
+            room.selfArea51StartTime = room.lastTickTime;
+            room.selfArea51GreenSpawnAt = room.lastTickTime + 15000;
+            room.selfArea51GreenActive = false;
+            room.selfArea51GreenLastMove = 0;
+        }
+        io.to(room.id).emit('gameStart', { state: room.state, ...resumeInfo });
+        startGameLoop(room);
+    }, Math.max(0, delayMs));
 }
 
 function autoResumeRoom(room) {
     if (room.state !== 'paused') return;
-    
+    if (room.disconnectedRoles && (room.disconnectedRoles.p1 || room.disconnectedRoles.p2)) return;
     if (room.pauseTimer) clearInterval(room.pauseTimer);
-
-    if (room.pauseStartTime) {
-        const pauseDuration = Date.now() - room.pauseStartTime;
-        if (room.selfArea51GreenSpawnAt) room.selfArea51GreenSpawnAt += pauseDuration;
-        if (room.selfArea51GreenLastMove) room.selfArea51GreenLastMove += pauseDuration;
+    room.pauseTimer = null;
+    if (room.previousState === 'countdown' && room.countdownKind === 'initial') {
+        const resumeInfo = finishRoomPause(room, 'countdown');
+        room.state = 'countdown';
+        io.to(room.id).emit('gameResumeState', resumeInfo);
+        scheduleRoomCountdown(room, room.countdownRemainingMs ?? 1000);
+        return;
     }
-    
+    if (room.previousState === 'roundOver') {
+        const resumeInfo = finishRoomPause(room, 'roundOver');
+        room.state = 'roundOver';
+        io.to(room.id).emit('gameResumeState', resumeInfo);
+        scheduleNextRound(room, room.nextRoundRemainingMs ?? 4000);
+        return;
+    }
+    const wasInterrupted = room.countdownKind === 'resume';
     room.state = 'countdown';
-    room.countdownValue = 3;
+    room.countdownKind = 'resume';
+    if (!wasInterrupted) room.countdownValue = 3;
     io.to(room.id).emit('gameResumeCountdown', { countdownValue: room.countdownValue });
-
-    let resumeCountdownInterval = setInterval(() => {
-        if (!rooms[room.id]) {
-            clearInterval(resumeCountdownInterval);
-            return;
-        }
-        
-        if (room.state !== 'countdown') {
-            clearInterval(resumeCountdownInterval);
-            return;
-        }
-
-        room.countdownValue--;
-        if (room.countdownValue > 0) {
-            io.to(room.id).emit('gameResumeCountdown', { countdownValue: room.countdownValue });
-        } else {
-            clearInterval(resumeCountdownInterval);
-            room.state = 'playing';
-            room.lastTickTime = Date.now();
-            io.to(room.id).emit('gameStart');
-            
-            startGameLoop(room);
-        }
-    }, 1000);
+    scheduleRoomCountdown(room, wasInterrupted ? (room.countdownRemainingMs ?? 1000) : 1000);
 }
 
 function handleDisconnect(socket) {
@@ -1339,14 +1424,29 @@ function handleDisconnect(socket) {
         const isP2 = room.p2 && room.p2.id === socket.id;
 
         if (isP1 || isP2) {
-            const remainingPlayer = isP1 ? room.p2 : room.p1;
             const disconnectedRole = isP1 ? 'p1' : 'p2';
 
             if (room.state === 'countdown' || room.state === 'playing' || room.state === 'roundOver' || room.state === 'paused') {
-                // Trigger 15-second grace period
-                room.previousState = room.state === 'paused' ? (room.previousState || 'playing') : room.state;
+                room.disconnectedRoles = room.disconnectedRoles || { p1: false, p2: false };
+                room.graceTimers = room.graceTimers || {};
+                room.disconnectGeneration = room.disconnectGeneration || { p1: 0, p2: 0 };
+                room.disconnectedRoles[disconnectedRole] = true;
+                const generation = ++room.disconnectGeneration[disconnectedRole];
+                if (!room.pauseStartTime) {
+                    room.pauseStartTime = Date.now();
+                    room.resumeGeneration = (room.resumeGeneration || 0) + 1;
+                }
+                if (room.state === 'countdown') {
+                    room.countdownRemainingMs = Math.max(0, room.countdownDeadline - Date.now());
+                    if (room.countdownTimer) clearTimeout(room.countdownTimer);
+                    room.countdownTimer = null;
+                    if (room.countdownKind === 'initial') room.previousState = 'countdown';
+                    else room.previousState = 'playing';
+                } else if (room.state === 'roundOver') {
+                    room.previousState = 'roundOver';
+                    room.nextRoundRemainingMs = Math.max(0, room.nextRoundDeadline - Date.now());
+                } else if (room.state === 'playing') room.previousState = 'playing';
                 room.state = 'paused';
-                room.pauseStartTime = Date.now();
                 if (room.gameTimeout) {
                     clearTimeout(room.gameTimeout);
                     room.gameTimeout = null;
@@ -1363,15 +1463,15 @@ function handleDisconnect(socket) {
                 });
 
                 // Set grace period timer
-                room.graceTimer = setTimeout(() => {
-                    if (rooms[roomId]) {
-                        // Declare remaining player as winner
-                        io.to(room.id).emit('gameOver', {
-                            winner: isP1 ? 'p2' : 'p1',
-                            reason: 'forfeit'
-                        });
-                        delete rooms[roomId];
+                if (room.graceTimers[disconnectedRole]) clearTimeout(room.graceTimers[disconnectedRole]);
+                room.graceTimers[disconnectedRole] = setTimeout(() => {
+                    if (rooms[roomId] !== room || !room.disconnectedRoles[disconnectedRole] || room.disconnectGeneration[disconnectedRole] !== generation) return;
+                    const otherRole = isP1 ? 'p2' : 'p1';
+                    if (!room.disconnectedRoles[otherRole]) {
+                        io.to(room.id).emit('gameOver', { winner: otherRole, reason: 'forfeit', roundId: room.roundId, roundStats: roundSummary(room) });
                     }
+                    clearRoomTimers(room);
+                    delete rooms[roomId];
                 }, 15000);
             } else {
                 // Simple lobby disconnect
@@ -1555,6 +1655,7 @@ io.on('connection', (socket) => {
             return;
         }
 
+        if (room.rematchVotes && room.rematchVotes[role]) return;
         room.state = 'rematchWaiting';
         room.rematchVotes = room.rematchVotes || {};
         room.rematchVotes[role] = true;
@@ -1565,8 +1666,7 @@ io.on('connection', (socket) => {
             io.to(otherPlayer.id).emit('opponentRematchIntent', { role: role });
         }
 
-        if (room.rematchTimer) clearTimeout(room.rematchTimer);
-        room.rematchTimer = setTimeout(() => {
+        if (!room.rematchTimer) room.rematchTimer = setTimeout(() => {
             const currentRoom = rooms[data.roomId];
             if (!currentRoom || currentRoom.state !== 'rematchWaiting') return;
 
@@ -1599,10 +1699,6 @@ io.on('connection', (socket) => {
 
         room.rematchReadys = room.rematchReadys || {};
         room.rematchReadys[role] = true;
-
-        // Ensure votes map is also updated
-        room.rematchVotes = room.rematchVotes || {};
-        room.rematchVotes[role] = true;
 
         if (room.rematchReadys.p1 && room.rematchReadys.p2) {
             if (room.rematchTimer) clearTimeout(room.rematchTimer);
@@ -1699,6 +1795,8 @@ io.on('connection', (socket) => {
         room.state = 'paused';
         room.pausedBy = role;
         room.pauseStartTime = Date.now();
+        room.resumeGeneration = (room.resumeGeneration || 0) + 1;
+        room.countdownKind = null;
         room.pauseTimeLeft = 15;
         if (room.gameTimeout) {
             clearTimeout(room.gameTimeout);
@@ -1754,13 +1852,7 @@ io.on('connection', (socket) => {
         const opponent = role === 'p1' ? 'p2' : 'p1';
 
         // Clear intervals
-        if (room.gameTimeout) {
-            clearTimeout(room.gameTimeout);
-            room.gameTimeout = null;
-        }
-        if (room.pauseTimer) clearInterval(room.pauseTimer);
-        if (room.graceTimer) clearTimeout(room.graceTimer);
-        if (room.nextRoundTimer) clearTimeout(room.nextRoundTimer);
+        clearRoomTimers(room);
 
         // Instantly award maxWins to opponent (adjusting for endRound increment)
         const maxWins = (room.mode === 'selfArea51') ? 1 : 5;
@@ -1793,29 +1885,18 @@ io.on('connection', (socket) => {
         }
 
         if (isP1 || isP2) {
-            clearTimeout(room.graceTimer); // Stop disconnect countdown
+            const role = isP1 ? 'p1' : 'p2';
+            room.disconnectedRoles = room.disconnectedRoles || { p1: false, p2: false };
+            room.disconnectedRoles[role] = false;
+            if (room.graceTimers && room.graceTimers[role]) {
+                clearTimeout(room.graceTimers[role]);
+                delete room.graceTimers[role];
+            }
             socket.join(room.id);
-            
-            // Restore state
-            const stateToRestore = room.previousState || 'playing';
-            
-            io.to(room.id).emit('playerReconnected', { role: isP1 ? 'p1' : 'p2', restoredState: stateToRestore });
-            
-            // Restart game loop or trigger resume countdown if we restored to playing state
-            if (stateToRestore === 'playing') {
-                room.state = 'paused'; // Temporarily pause to let autoResumeRoom trigger countdown
+            if (!room.disconnectedRoles.p1 && !room.disconnectedRoles.p2 && room.state === 'paused') {
+                const stateToRestore = room.previousState || 'playing';
+                io.to(room.id).emit('playerReconnected', { role, restoredState: stateToRestore });
                 autoResumeRoom(room);
-            } else {
-                room.state = stateToRestore;
-                if (stateToRestore === 'roundOver') {
-                    if (room.nextRoundTimer) clearTimeout(room.nextRoundTimer);
-                    room.nextRoundTimer = setTimeout(() => {
-                        if (rooms[room.id] && rooms[room.id].state === 'roundOver') {
-                            rooms[room.id].nextRoundTimer = null;
-                            initGameInRoom(rooms[room.id]);
-                        }
-                    }, 1200);
-                }
             }
         } else {
             socket.emit('errorMsg', { message: 'Bağlantı doğrulanamadı (geçersiz kimlik bilgisi).' });

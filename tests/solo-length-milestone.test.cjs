@@ -249,12 +249,13 @@ runTest('the render path places the number below snakes and food', () => {
   assert.ok(calls.indexOf('drawSoloLengthMilestone') < calls.indexOf('drawFoods'));
 });
 
-runTest('v3.6.1 scripts parse and mobile packaged fallbacks match', () => {
+runTest('v3.6.1 scripts parse and mobile packaged fallbacks match current Mobile', () => {
   assert.match(source, /const VERSION = 'v3\.6\.1';/);
   for (const script of source.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)) new vm.Script(script[1]);
   if (kind === 'Mobile') for (const file of ['Ana Dosya/Android/app/src/main/assets/offline/mobile_offline_fallback.html',
     'Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html']) {
-    assert.equal(fs.readFileSync(path.join(root, file), 'utf8'), source);
+    const currentMobile = fs.readFileSync(path.join(root, 'Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.6.5.html'), 'utf8');
+    assert.ok(fs.readFileSync(path.join(root, file), 'utf8') === currentMobile, `${file} differs from current Mobile`);
   }
 });
 }

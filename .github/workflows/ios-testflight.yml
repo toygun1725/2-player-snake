@@ -86,4 +86,3 @@ jobs:
           name: 2PlayerSnake-iOS-IPA
           path: 'Ana Dosya/iOS/**/*.ipa'
           if-no-files-found: ignore
-

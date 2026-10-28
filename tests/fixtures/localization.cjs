@@ -15,7 +15,7 @@ function dictionary(source, name) {
   throw Error(`Cannot read dictionary ${name}`);
 }
 
-function catalog(kind, version = '3.6.1') {
+function catalog(kind, version = process.env.SNAKE_TEST_VERSION || '3.6.1') {
   const source = fs.readFileSync(`Ana Dosya/${kind}/Beta/v3/2 Player Snake ${kind} v${version}.html`, 'utf8');
   const strings = dictionary(source, 'STRINGS');
   const extra = dictionary(source, 'EXTRA_STRINGS');

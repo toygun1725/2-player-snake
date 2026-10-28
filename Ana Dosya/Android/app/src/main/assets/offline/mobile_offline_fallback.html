@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>2 Player Snake Mobile v3.6.1 - Play Online & Local</title>
+    <title>2 Player Snake Mobile v3.6.5 - Play Online & Local</title>
     <script>
         // Only a native shell that advertises the bundled asset handler uses local URLs.
         window.__twoPlayerSnakeUseNativeAssets = window.__twoPlayerSnakePlatform === 'ios' &&
@@ -17,7 +17,7 @@
 
     <!-- Open Graph / Social Media / Google Search Thumbnail Meta Tags -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="2 Player Snake Mobile v3.6.1 - Play Online & Local">
+    <meta property="og:title" content="2 Player Snake Mobile v3.6.5 - Play Online & Local">
     <meta property="og:description" content="Play 2 Player Snake online – challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
     <meta property="og:url" content="https://2playersnake.com/wp-content/uploads/game-mobile/index.html">
     <meta property="og:image" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
@@ -35,7 +35,7 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="2 Player Snake Mobile v3.6.1 - Play Online & Local">
+    <meta name="twitter:title" content="2 Player Snake Mobile v3.6.5 - Play Online & Local">
     <meta name="twitter:description" content="Play 2 Player Snake online – challenge a friend on the same screen in a fast-paced, competitive multiplayer snake game. Free on PC & mobile, no download.">
     <meta name="twitter:image" content="https://2playersnake.com/wp-content/uploads/2026/09/cropped-2PS-Logo-512x512-1.png">
 
@@ -137,7 +137,7 @@
         }
     </script>
 
-    <!-- Version: v3.6.1 Mobile -->
+    <!-- Version: v3.6.5 Mobile -->
     <style>
         :root {
             --bg: #0b0f14;
@@ -1376,6 +1376,12 @@
         }
 
         @keyframes ripple-anim {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+
+        /* Alternating names restart a reused ripple without a layout read. */
+        @keyframes ripple-anim-alt {
             0% { transform: scale(0); opacity: 1; }
             100% { transform: scale(1.4); opacity: 0; }
         }
@@ -4125,6 +4131,9 @@
             border-color: #0f172a;
         }
         /* ===== End Quick Setup ===== */
+        .banner.settings-banner { box-sizing: border-box; max-height: calc(100vh - 20px); max-height: calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); overflow-y: auto; overscroll-behavior: contain; }
+        .settings-banner .btn-menu-text { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+        .gamepad-focus, .ctrl-switch:focus-within { outline: 3px solid #35e6e6 !important; outline-offset: 3px; }
         </style>
 </head>
 
@@ -4396,10 +4405,10 @@
     <script>
         (() => {
             /* ==============================
-              2 Player Snake - Beta v3.6.1 Mobile
+              2 Player Snake - Beta v3.6.5 Mobile
               ============================= */
 
-            const VERSION = 'v3.6.1';
+            const VERSION = 'v3.6.5';
             if (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:') {
                 window.__twoPlayerSnakeOfflineMode = true;
             }
@@ -4456,6 +4465,65 @@
             let lastP1Update = 0;
             let lastP2Update = 0;
             let onlineRoomId = null;
+            let lastAppliedResumeGeneration = -1;
+            let onlineSnapOnNextUpdate = true;
+      let onlineStatsMatchKey = null;
+      let onlineRoundId = null;
+      let onlineLocalRoundId = 0;
+      const recordedOnlineRounds = new Set();
+      function observeOnlineLengths(state) {
+        if (!state) return;
+        longestSnakeP1 = Math.max(longestSnakeP1, state.p1?.segments?.length || 0);
+        longestSnakeP2 = Math.max(longestSnakeP2, state.p2?.segments?.length || 0);
+      }
+      function recordOnlineRound(data) {
+        const id = data.roundId ?? onlineRoundId;
+        if (id == null || recordedOnlineRounds.has(id)) return;
+        const summary = data.roundStats || {
+          p1: { foodCount: snakes?.p1?.foodCount || 0, length: snakes?.p1?.segments?.length || 0 },
+          p2: { foodCount: snakes?.p2?.foodCount || 0, length: snakes?.p2?.segments?.length || 0 }
+        };
+        recordedOnlineRounds.add(id);
+        matchTotalFoodP1 += summary.p1?.foodCount || 0;
+        matchTotalFoodP2 += summary.p2?.foodCount || 0;
+        longestSnakeP1 = Math.max(longestSnakeP1, summary.p1?.length || 0);
+        longestSnakeP2 = Math.max(longestSnakeP2, summary.p2?.length || 0);
+      }
+            function prepareOnlineInterpolation(oldSnake, nextSnake, now, forceSnap) {
+                const oldHead = oldSnake.segments && oldSnake.segments[0];
+                const newHead = nextSnake.segments && nextSnake.segments[0];
+                if (!oldHead || !newHead) return false;
+                const hasSequence = Number.isSafeInteger(oldSnake.moveSequence) && Number.isSafeInteger(nextSnake.moveSequence);
+                const delta = hasSequence ? nextSnake.moveSequence - oldSnake.moveSequence : null;
+                const discontinuity = Number.isSafeInteger(oldSnake.positionDiscontinuitySequence) &&
+                    Number.isSafeInteger(nextSnake.positionDiscontinuitySequence) &&
+                    nextSnake.positionDiscontinuitySequence !== oldSnake.positionDiscontinuitySequence;
+                const moved = hasSequence ? delta > 0 : oldHead.x !== newHead.x || oldHead.y !== newHead.y;
+                const snap = forceSnap || discontinuity || (hasSequence && delta !== null && delta > 1);
+                if (snap) {
+                    nextSnake.prev = nextSnake.segments.map(cell => ({ ...cell }));
+                    nextSnake._interpStart = now;
+                } else if (moved) {
+                    nextSnake.prev = nextSnake.segments.map((cell, index) => ({ ...(oldSnake.segments[index] || cell) }));
+                    nextSnake._interpStart = now;
+                } else {
+                    nextSnake.prev = nextSnake.segments.map((cell, index) => ({ ...((oldSnake.prev || oldSnake.segments)[index] || cell) }));
+                    nextSnake._interpStart = oldSnake._interpStart;
+                }
+                // A portal discontinuity travels through the remaining body on later moves.
+                if (gameStyle === 'adventure' && moved && nextSnake.prev) {
+                    nextSnake.segments.forEach((cell, i) => {
+                        const prev = nextSnake.prev[i];
+                        if (!prev) return;
+                        const dx = Math.abs(cell.x - prev.x), dy = Math.abs(cell.y - prev.y);
+                        if (Math.min(dx, GRID_COLS - dx) + Math.min(dy, GRID_ROWS - dy) > 1) nextSnake.prev[i] = { ...cell };
+                    });
+                }
+                nextSnake._interpInterval = moved && Number.isFinite(nextSnake.lastMoveIntervalMs) && nextSnake.lastMoveIntervalMs > 0
+                    ? nextSnake.lastMoveIntervalMs : oldSnake._interpInterval;
+                return moved || snap;
+            }
+
             let onlineMatchIndex = 0;
             let myRole = null; // 'p1' or 'p2'
             let onlineSessionToken = null;
@@ -4490,8 +4558,26 @@
                     szX, szY, xOffset, yOffset };
             }
 
+            let webHapticsEnabled = localStorage.getItem('neoSnakeHapticsEnabled') !== '0';
+            let nativeHapticsEnabled = typeof window.TwoPlayerSnakeAppSettings?.vibrationEnabled === 'boolean'
+                ? window.TwoPlayerSnakeAppSettings.vibrationEnabled : null;
+            function hapticsSettingAvailable() {
+                return !isAndroidApp() || typeof window.Android.setHapticsEnabled === 'function';
+            }
+            function hapticsSettingValue() {
+                return isAndroidApp() ? nativeHapticsEnabled : webHapticsEnabled;
+            }
+            function refreshHapticsSettingButton() {
+                const button = document.getElementById('toggleHaptics');
+                if (!button) return;
+                const value = hapticsSettingValue();
+                button.disabled = value === null;
+                const text = button.querySelector('.btn-menu-text');
+                if (text) text.textContent = value === null ? t('haptics') : `${t('haptics')}: ${value ? t('soundOn') : t('soundOff')}`;
+            }
             let lastVibrateTime = 0;
             function hapticVibrate(duration) {
+                if (!isAndroidApp() && !webHapticsEnabled) return;
                 const now = performance.now();
                 const isPattern = Array.isArray(duration);
                 const mainDur = isPattern ? duration[0] : duration;
@@ -4514,6 +4600,7 @@
 
             // Semantic haptic: Android'e event tipini doğrudan iletir (tier seçimi Android'de)
             function hapticTyped(eventType) {
+                if (!isAndroidApp() && !webHapticsEnabled) return;
                 if (window.Android && typeof window.Android.hapticEvent === 'function') {
                     window.Android.hapticEvent(eventType, null);
                 } else {
@@ -4739,6 +4826,7 @@
                     const wasUnlocked = localStorage.getItem('ach_unlocked_' + key) === 'true';
                     if (!wasUnlocked) {
                         localStorage.setItem('ach_unlocked_' + key, 'true');
+                        queueCloudSave();
                         console.log("Achievement unlocked: " + key);
                     }
                     
@@ -5182,7 +5270,7 @@
                     play: 'खेलें', settings: 'सेटिंग्स', instructions: 'नियम', developers: 'डेवलपर्स', mainMenu: 'मुख्य मेन्यू',
                     snakeSpeed: 'साँप की गति', selectDifficulty: 'कठिनाई चुनें', difficulty: 'कठिनाई', difficultyEasy: 'आसान', difficultyNormal: 'सामान्य', difficultyHard: 'कठिन', easy: 'धीमा', hard: 'कठिन', wallMode: 'एरिना प्रकार', walls: 'दीवारें', noWalls: 'बिना दीवार', back: 'वापस',
                       startMatch: 'मैच शुरू करें!', startGame: 'गेम शुरू करें!', suddenDeath: 'सडन डेथ',
-                    rateUs: 'قيّمنا!', highscore: 'हाई स्कोर', highscoresTitle: 'हाई स्कोर', top10Scores: 'टॉप 10 स्कोर', noScores: 'अभी कोई स्कोर नहीं।',
+                    rateUs: 'हमें रेट करें!', highscore: 'हाई स्कोर', highscoresTitle: 'हाई स्कोर', top10Scores: 'टॉप 10 स्कोर', noScores: 'अभी कोई स्कोर नहीं।',
                     removeAds: 'विज्ञापन हटाएं', restorePurchases: 'खरीदारी पुनः प्राप्त करें', continueForFree: 'मुफ़्त जारी रखें',
                     sound: 'ध्वनि', soundOn: 'चालू', soundOff: 'बंद', winsTheMatch: 'मैच जीत गया!', gameDuration: 'गेम अवधि', totalFood: 'कुल भोजन', longestSnakeLabel: 'सबसे लंबा साँप', roundsWon: 'जीते गए राउंड', wonTheMatch: '{name} जीता!',
                     normalMode: 'नॉर्मल', fastCompetitiveMode: 'फास्ट कॉम्पिटिटिव', selfArea51Mode: 'Self Area 51', aiSnake: 'AI साँप', yes: 'हाँ', no: 'नहीं', winAI: '<span class="p2">AI</span> जीता!',
@@ -5251,7 +5339,7 @@
                     play: 'العب', settings: 'الإعدادات', instructions: 'القواعد', developers: 'المطورون', mainMenu: 'القائمة الرئيسية',
                     snakeSpeed: 'سرعة الثعبان', selectDifficulty: 'اختر الصعوبة', difficulty: 'الصعوبة', difficultyEasy: 'سهل', difficultyNormal: 'عادي', difficultyHard: 'صعب', easy: 'بطيء', hard: 'صعب', wallMode: 'نوع الساحة', walls: 'جدران', noWalls: 'بدون جدران', back: 'رجوع',
                       startMatch: 'ابدأ المباراة!', startGame: 'ابدأ اللعبة!', suddenDeath: 'موت مفاجئ',
-                    rateUs: 'به ما امتیاز بده!', highscore: 'أعلى النقاط', highscoresTitle: 'أعلى النقاط', top10Scores: 'أفضل 10 نقاط', noScores: 'لا توجد نقاط بعد.',
+                    rateUs: 'قيّمنا!', highscore: 'أعلى النقاط', highscoresTitle: 'أعلى النقاط', top10Scores: 'أفضل 10 نقاط', noScores: 'لا توجد نقاط بعد.',
                     removeAds: 'إزالة الإعلانات', restorePurchases: 'استعادة المشتريات', continueForFree: 'الاستمرار مجاناً',
                     sound: 'الصوت', soundOn: 'تشغيل', soundOff: 'إيقاف', winsTheMatch: 'يفوز بالمباراة!', gameDuration: 'مدة اللعبة', totalFood: 'إجمالي الطعام', longestSnakeLabel: 'أطول ثعبان', roundsWon: 'الجولات المربوحة', wonTheMatch: '{name} فاز!',
                     normalMode: 'عادي', fastCompetitiveMode: 'تنافس سريع', selfArea51Mode: 'Self Area 51', aiSnake: 'ثعبان الذكاء الاصطناعي', yes: 'نعم', no: 'لا', winAI: '<span class="p2">AI</span> فاز!',
@@ -5890,8 +5978,8 @@
     play: 'Παίξε', settings: 'Ρυθμίσεις', instructions: 'Κανόνες', developers: 'Προγραμματιστές', mainMenu: 'Κύριο Μενού',
     snakeSpeed: 'Ταχύτητα Φιδιού', selectDifficulty: 'Επιλογή Δυσκολίας', difficulty: 'Δυσκολία', difficultyEasy: 'Εύκολο', difficultyNormal: 'Κανονικό', difficultyHard: 'Δύσκολο', easy: 'Αργά', hard: 'ΔΥΣΚΟΛΟ', wallMode: 'Τύπος Αρένας', walls: 'Με Τοίχους', noWalls: 'Χωρίς Τοίχους', back: 'Πίσω',
       startMatch: 'Έναρξη Αγώνα!', startGame: 'Έναρξη Παιχνιδιού!', suddenDeath: 'ΑΙΦΝΙΔΙΟΣ ΘΑΝΑΤΟΣ',
-    rateUs: 'Оцініть нас!', highscore: 'Υψηλό Σκορ', highscoresTitle: 'Υψηλά Σκορ', top10Scores: 'Κορυφαία 10 Σκορ', noScores: 'Δεν υπάρχουν σκορ ακόμα.',
-    removeAds: 'Видалити рекламу', restorePurchases: 'Відновити покупки', continueForFree: 'Продовжити безкоштовно',
+    rateUs: 'Αξιολογήστε μας!', highscore: 'Υψηλό Σκορ', highscoresTitle: 'Υψηλά Σκορ', top10Scores: 'Κορυφαία 10 Σκορ', noScores: 'Δεν υπάρχουν σκορ ακόμα.',
+    removeAds: 'Αφαίρεση διαφημίσεων', restorePurchases: 'Επαναφορά αγορών', continueForFree: 'Συνέχεια δωρεάν',
     sound: 'Ήχος', soundOn: 'ΕΝΕΡΓΟ', soundOff: 'ΑΝΕΝΕΡΓΟ', winsTheMatch: 'Κέρδισε τον Αγώνα!', gameDuration: 'Διάρκεια Παιχνιδιού', totalFood: 'Συνολικό Φαγητό', longestSnakeLabel: 'Μεγαλύτερο Φίδι', roundsWon: 'Γύροι που Κερδήθηκαν', wonTheMatch: '{name} Κέρδισε!',
     normalMode: 'Κανονικό', fastCompetitiveMode: 'Γρήγορος Ανταγωνισμός', selfArea51Mode: 'Self Area 51', aiSnake: 'ΦΙΔΙ AI', yes: 'ΝΑΙ', no: 'ΟΧΙ', winAI: '<span class="p2">AI</span> Κέρδισε!',
     theme: 'Θέμα', dark: 'Σκοτεινό', light: 'Φωτεινό',
@@ -8487,6 +8575,22 @@
             Object.keys(CONTROLS_STRINGS).forEach(locale => {
                 EXTRA_STRINGS[locale] = { ...(EXTRA_STRINGS[locale] || {}), ...CONTROLS_STRINGS[locale] };
             });
+            const FEEDBACK_SETTINGS_STRINGS = {
+                tr:{haptics:'Titreşim',screenShake:'Ekran sarsıntısı'}, en:{haptics:'Vibration',screenShake:'Screen shake'},
+                fr:{haptics:'Vibrations',screenShake:'Tremblement de l’écran'}, it:{haptics:'Vibrazione',screenShake:'Scuotimento schermo'},
+                es:{haptics:'Vibración',screenShake:'Sacudida de pantalla'}, de:{haptics:'Vibration',screenShake:'Bildschirmwackeln'},
+                zh:{haptics:'振动',screenShake:'屏幕震动'}, hi:{haptics:'कंपन',screenShake:'स्क्रीन हिलना'},
+                pl:{haptics:'Wibracje',screenShake:'Drżenie ekranu'}, ptbr:{haptics:'Vibração',screenShake:'Tremor de tela'},
+                ar:{haptics:'الاهتزاز',screenShake:'اهتزاز الشاشة'}, ru:{haptics:'Вибрация',screenShake:'Тряска экрана'},
+                id:{haptics:'Getaran',screenShake:'Guncangan layar'}, ja:{haptics:'振動',screenShake:'画面の揺れ'},
+                ko:{haptics:'진동',screenShake:'화면 흔들림'}, vi:{haptics:'Rung',screenShake:'Rung màn hình'},
+                th:{haptics:'การสั่น',screenShake:'หน้าจอสั่น'}, tl:{haptics:'Panginginig',screenShake:'Pagyanig ng screen'},
+                nl:{haptics:'Trilling',screenShake:'Schermschudding'}, el:{haptics:'Δόνηση',screenShake:'Τρέμουλο οθόνης'},
+                cs:{haptics:'Vibrace',screenShake:'Otřesy obrazovky'}
+            };
+            Object.keys(FEEDBACK_SETTINGS_STRINGS).forEach(locale => {
+                EXTRA_STRINGS[locale] = { ...(EXTRA_STRINGS[locale] || {}), ...FEEDBACK_SETTINGS_STRINGS[locale] };
+            });
             const LANG_STORAGE_KEY = 'neoSnakeLangMobile';
             const langCycle = ['en', 'tr', 'fr', 'it', 'es', 'de', 'zh', 'hi', 'pl', 'ptbr', 'ar', 'ru', 'id', 'ja', 'ko', 'vi', 'th', 'tl', 'nl', 'el', 'cs'];
             function detectBrowserLang() {
@@ -9029,7 +9133,18 @@
                 maxOffset: window.isAndroidWebView ? 4 : 7,
                 t: 0
             };
+            let screenShakeEnabled = localStorage.getItem('neoSnakeScreenShake') !== '0';
+            function setScreenShakeEnabled(enabled) {
+                screenShakeEnabled = enabled;
+                localStorage.setItem('neoSnakeScreenShake', enabled ? '1' : '0');
+                if (!enabled) {
+                    screenShake.trauma = 0;
+                    const wrap = document.getElementById('canvasWrap');
+                    if (wrap) wrap.classList.remove('shake');
+                }
+            }
             function addTrauma(amount) {
+                if (!screenShakeEnabled) return;
                 screenShake.trauma = Math.min(1.0, screenShake.trauma + amount);
             }
             let hitStopUntil = 0;
@@ -9108,10 +9223,27 @@
                 } catch (e) {}
             }
 
+            function setupMasterAudio(ctx) {
+                if (ctx._snakeMasterOutput) return ctx._snakeMasterOutput;
+                try {
+                    const master = ctx.createGain();
+                    const compressor = ctx.createDynamicsCompressor();
+                    master.gain.value = 1;
+                    compressor.threshold.value = -18;
+                    compressor.knee.value = 12;
+                    compressor.ratio.value = 3;
+                    compressor.attack.value = 0.003;
+                    compressor.release.value = 0.15;
+                    master.connect(compressor); compressor.connect(ctx.destination);
+                    ctx._snakeMasterOutput = master;
+                } catch (_) { ctx._snakeMasterOutput = ctx.destination; }
+                return ctx._snakeMasterOutput;
+            }
             function ensureAudio() {
                 if (!audioCtx || audioCtx.state === 'closed') {
                     try {
                         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        setupMasterAudio(audioCtx);
                         setupAudioStateMonitoring(audioCtx);
                     } catch (e) {}
                 }
@@ -9164,6 +9296,7 @@
                 } catch (e) {}
                 try {
                     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    setupMasterAudio(audioCtx);
                     setupAudioStateMonitoring(audioCtx);
                     // prime immediately — we are inside a user gesture so resume is allowed
                     audioCtx.resume().then(() => primeAudioContext(audioCtx)).catch(() => {});
@@ -9216,7 +9349,7 @@
                     if (sweep) { o.frequency.linearRampToValueAtTime(freq * (1 + sweep), now + dur); }
                     g.gain.value = 0; g.gain.linearRampToValueAtTime(gain, now + attack);
                     g.gain.linearRampToValueAtTime(0.0001, now + Math.max(dur - 0.01, 0) + release);
-                    o.connect(g).connect(audioCtx.destination); o.start(now); o.stop(now + dur + release + 0.03);
+                    o.connect(g).connect(setupMasterAudio(audioCtx)); o.start(now); o.stop(now + dur + release + 0.03);
                 } catch (e) { }
             }
             const SFX = {
@@ -9263,7 +9396,7 @@
                     hapticTyped('heavy');
                     const wobble = 1 + (Math.random() - 0.5) * 0.06;
                     tone(180 * wobble, 0.20, { type: 'sawtooth', gain: 0.08, sweep: -0.35 });
-                    canvasWrap.classList.add('shake');
+                    if (screenShakeEnabled) canvasWrap.classList.add('shake');
                     setTimeout(() => canvasWrap.classList.remove('shake'), 200);
                 },
                 drawCrash() {
@@ -9272,7 +9405,7 @@
                     hapticTyped('heavy');
                     tone(220, 0.25, { type: 'sawtooth', gain: 0.1, sweep: -0.5 });
                     tone(160, 0.25, { type: 'square', gain: 0.1, sweep: -0.5 });
-                    canvasWrap.classList.add('shake');
+                    if (screenShakeEnabled) canvasWrap.classList.add('shake');
                     setTimeout(() => canvasWrap.classList.remove('shake'), 200);
                 },
                 start() { tone(420, 0.10, { type: 'sine', gain: 0.05 }); setTimeout(() => tone(640, 0.12, { type: 'sine', gain: 0.05 }), 120); setTimeout(() => tone(860, 0.14, { type: 'sine', gain: 0.05 }), 260); },
@@ -9392,6 +9525,16 @@
             let startWithBeast = false;
             let lastStableLengthP1 = 0, frozenPanelLengthP1 = null;
             let matchStartTime = 0, matchTotalFoodP1 = 0, matchTotalFoodP2 = 0, longestSnakeP1 = 0, longestSnakeP2 = 0;
+            let reviewNotifiedForMatch = false;
+            function notifyNativeMatchResult(isForfeit = false) {
+                if (!IS_IOS_SHELL || isDemoMode || isForfeit || reviewNotifiedForMatch) return;
+                const handler = window.webkit?.messageHandlers?.iOS;
+                if (!handler || typeof handler.postMessage !== 'function') return;
+                try {
+                    handler.postMessage({ action: 'matchResult', payload: { isMatchFinal: true, isForfeit: false } });
+                    reviewNotifiedForMatch = true;
+                } catch (_) { /* A later valid result can retry. */ }
+            }
             let last = 0, acc1 = 0, acc2 = 0;
             let timerEnded = false, roundTimerEnd = 0;
             let paused = false, inCountdown = false, intermission = false, isDemoMode = false;
@@ -9460,9 +9603,9 @@
 
             function shiftFoodTimestamps(foodList, delta) {
                 for (const food of foodList || []) {
-                    if (typeof food.expiryTime === 'number') food.expiryTime += delta;
+                    if (typeof food.expiryTime === 'number' && food.expiryTime > 0) food.expiryTime += delta;
                     if (typeof food.spawnAt === 'number') food.spawnAt += delta;
-                    if (typeof food.relocateTime === 'number') food.relocateTime += delta;
+                    if (typeof food.relocateTime === 'number' && food.relocateTime > 0) food.relocateTime += delta;
                 }
             }
 
@@ -9470,7 +9613,7 @@
                 if (!snake) return;
                 const timestampKeys = ['powerEnd', 'flashUntil', 'shakeUntil', 'slowEnd'];
                 for (const key of timestampKeys) {
-                    if (typeof snake[key] === 'number') snake[key] += delta;
+                    if (typeof snake[key] === 'number' && snake[key] > 0) snake[key] += delta;
                 }
                 if (Array.isArray(snake.digestAnims)) {
                     for (const anim of snake.digestAnims) {
@@ -9685,7 +9828,7 @@
                 },
 
                 showInterstitial({ type, name, recordKind, soundMode = null, onDone }) {
-                    if (!this.isSdkReady() || this.adInProgress || this.isGlobalCooldownActive()) {
+                    if (window.adsRemoved === true || !this.isSdkReady() || this.adInProgress || this.isGlobalCooldownActive()) {
                         if (onDone) onDone();
                         return;
                     }
@@ -9786,6 +9929,17 @@
                             p2: snakes.p2 || null
                         },
                         foods,
+                        barriers,
+                        portals,
+                        adventureRound,
+                        attemptedPortalEntry,
+                        portalTimerMs,
+                        teleportingOwner,
+                        teleportStepsRemaining,
+                        selfArea51GreenActive,
+                        selfArea51GreenSpawnAt,
+                        selfArea51GreenLastMove,
+                        comboState,
                         stats,
                         games,
                         acc1,
@@ -9816,7 +9970,7 @@
                     return gameMode === '1P' &&
                         !this.rewardedUsedThisMatch &&
                         !this.adInProgress &&
-                        this.isSdkReady() &&
+                        (window.adsRemoved === true || this.isSdkReady()) &&
                         this.rewardSnapshots.length > 0;
                 },
 
@@ -9890,6 +10044,11 @@
                 requestRewardedContinue() {
                     if (!this.canOfferRewardedContinue()) return;
 
+                    if (window.adsRemoved === true) {
+                        if (this.restoreRewardSnapshot()) this.rewardedUsedThisMatch = true;
+                        return;
+                    }
+
                     this.adInProgress = true;
                     let rewardFlowAvailable = false;
                     let rewardSettled = false;
@@ -9916,13 +10075,11 @@
                             adViewed: () => {
                                 rewardSettled = true;
                                 this.adInProgress = false;
-                                this.rewardedUsedThisMatch = true;
                                 this.recordAdShown('reward');
-                                this.closeRewardedOverlay();
                                 window._adJustFinished = true;
                                 resumeAudioContext();
                                 setTimeout(resumeAudioContext, 150);
-                                this.restoreRewardSnapshot();
+                                if (this.restoreRewardSnapshot()) this.rewardedUsedThisMatch = true;
                             },
                             adDismissed: () => {
                                 rewardSettled = true;
@@ -9980,21 +10137,46 @@
                     const baseSnapshot = this.rewardSnapshots[this.rewardSnapshots.length - 1] || this.rewardSnapshots[0];
                     if (!baseSnapshot) {
                         this.finalizePendingLoss(t('rewardedUnavailable'));
-                        return;
+                        return false;
                     }
 
                     const snapshot = cloneForGameState(baseSnapshot);
                     const delta = performance.now() - snapshot.capturedAt;
 
-                    if (typeof snapshot.roundTimerEnd === 'number') snapshot.roundTimerEnd += delta;
+                    const revivedSnake = buildRewardedContinueSnake(snapshot.snakes.p1, snapshot.snakes.p2, snapshot.barriers, snapshot.portals, snapshot.foods);
+                    if (!revivedSnake) {
+                        this.finalizePendingLoss(t('rewardedUnavailable'));
+                        return false;
+                    }
+
+                    if (typeof snapshot.roundTimerEnd === 'number' && snapshot.roundTimerEnd > 0) snapshot.roundTimerEnd += delta;
                     if (typeof snapshot.redBulkEndTime === 'number' && snapshot.redBulkEndTime) snapshot.redBulkEndTime += delta;
-                    if (typeof snapshot.matchStartTime === 'number') snapshot.matchStartTime += delta;
+                    if (typeof snapshot.matchStartTime === 'number' && snapshot.matchStartTime > 0) snapshot.matchStartTime += delta;
                     shiftFoodTimestamps(snapshot.foods, delta);
                     shiftSnakeTimestamps(snapshot.snakes.p1, delta);
                     if (snapshot.snakes.p2) shiftSnakeTimestamps(snapshot.snakes.p2, delta);
+                    const opponentPop = snapshot.snakes.p2 && snapshot.snakes.p2.gulpPop;
+                    if (opponentPop && opponentPop.start > 0 && snapshot.capturedAt - opponentPop.start < opponentPop.duration) opponentPop.start += delta;
+                    if (snapshot.selfArea51GreenSpawnAt > 0) snapshot.selfArea51GreenSpawnAt += delta;
+                    if (snapshot.selfArea51GreenLastMove > 0) snapshot.selfArea51GreenLastMove += delta;
+                    for (const state of Object.values(snapshot.comboState || {})) {
+                        if (state.lastEatAt > 0 && snapshot.capturedAt - state.lastEatAt <= 1500) state.lastEatAt += delta;
+                    }
 
                     snakes = snapshot.snakes;
                     foods = snapshot.foods;
+                    barriers = snapshot.barriers;
+                    portals = snapshot.portals;
+                    adventureRound = snapshot.adventureRound;
+                    attemptedPortalEntry = snapshot.attemptedPortalEntry;
+                    portalTimerMs = snapshot.portalTimerMs;
+                    teleportingOwner = snapshot.teleportingOwner;
+                    teleportStepsRemaining = snapshot.teleportStepsRemaining;
+                    selfArea51GreenActive = snapshot.selfArea51GreenActive;
+                    selfArea51GreenSpawnAt = snapshot.selfArea51GreenSpawnAt;
+                    selfArea51GreenLastMove = snapshot.selfArea51GreenLastMove;
+                    Object.assign(comboState.p1, snapshot.comboState.p1);
+                    Object.assign(comboState.p2, snapshot.comboState.p2);
                     stats = snapshot.stats;
                     games = snapshot.games;
                     acc1 = snapshot.acc1;
@@ -10014,8 +10196,7 @@
                     longestSnakeP1 = snapshot.longestSnakeP1;
                     longestSnakeP2 = snapshot.longestSnakeP2;
 
-                    const enemySnake = snapshot.snakes ? snapshot.snakes.p2 : null;
-                    snakes.p1 = buildRewardedContinueSnake(snapshot.snakes.p1, enemySnake);
+                    snakes.p1 = revivedSnake;
                     drawSeries();
                     hideBanner();
                     stopConfetti();
@@ -10029,6 +10210,7 @@
                     updateFoodCounters();
                     updateUIVisibility();
                     startRewardedResumeCountdown(3);
+                    return true;
                 }
             };
 
@@ -10049,10 +10231,18 @@
                 if (typeof roundTimerEnd === 'number' && roundTimerEnd > 0) roundTimerEnd += countElapsed;
                 if (typeof redBulkEndTime === 'number' && redBulkEndTime > 0) redBulkEndTime += countElapsed;
                 if (typeof matchStartTime === 'number' && matchStartTime > 0) matchStartTime += countElapsed;
+                if (selfArea51GreenSpawnAt > 0) selfArea51GreenSpawnAt += countElapsed;
+                if (selfArea51GreenLastMove > 0) selfArea51GreenLastMove += countElapsed;
+                for (const state of Object.values(comboState)) {
+                    if (state.lastEatAt > 0 && countStart - state.lastEatAt <= 1500) state.lastEatAt += countElapsed;
+                }
                 if (typeof shiftFoodTimestamps === 'function') shiftFoodTimestamps(foods, countElapsed);
                 if (typeof shiftSnakeTimestamps === 'function') {
                     if (snakes && snakes.p1) shiftSnakeTimestamps(snakes.p1, countElapsed);
                     if (snakes && snakes.p2) shiftSnakeTimestamps(snakes.p2, countElapsed);
+                    for (const snake of Object.values(snakes || {})) {
+                        if (snake && snake.gulpPop && snake.gulpPop.start > 0 && countStart - snake.gulpPop.start < snake.gulpPop.duration) snake.gulpPop.start += countElapsed;
+                    }
                 }
 
                 showBanner(`<div class="countdown-text start" style="color: #00e5ff; text-shadow: 0 0 8px #00e5ff;">${(t('start') || 'GO').toUpperCase()}</div>`, false, 'countdown-banner');
@@ -10396,7 +10586,35 @@
                 document.querySelectorAll('.playIcon').forEach(icon => icon.style.display = paused ? 'block' : 'none');
             }
 
+            let offlinePauseStartedAt = null;
+            function shiftAllGameTimestamps(delta, startedAt) {
+                if (roundTimerEnd > 0) roundTimerEnd += delta;
+                if (matchStartTime > 0) matchStartTime += delta;
+                if (redBulkEndTime > 0) redBulkEndTime += delta;
+                if (selfArea51GreenSpawnAt > 0) selfArea51GreenSpawnAt += delta;
+                if (selfArea51GreenLastMove > 0) selfArea51GreenLastMove += delta;
+                for (const food of foods || []) {
+                    if (typeof food.spawnAt === 'number') food.spawnAt += delta;
+                    if (food.relocateTime > 0) food.relocateTime += delta;
+                    if (food.expiryTime > 0) food.expiryTime += delta;
+                }
+                for (const snake of Object.values(snakes || {})) {
+                    if (!snake) continue;
+                    shiftSnakeTimestamps(snake, delta);
+                    if (snake.gulpPop && snake.gulpPop.start > 0 && startedAt - snake.gulpPop.start < snake.gulpPop.duration) snake.gulpPop.start += delta;
+                }
+                for (const state of Object.values(comboState)) {
+                    if (state.lastEatAt > 0 && startedAt - state.lastEatAt <= 1500) state.lastEatAt += delta;
+                }
+            }
             function setPauseState(nextPaused, withSound = false) {
+                if (!isOnlineMode && !isDemoMode && gameMode && currentSpeedMode && snakes && !inCountdown && !intermission) {
+                    if (!paused && nextPaused) offlinePauseStartedAt = performance.now();
+                    else if (paused && !nextPaused && offlinePauseStartedAt !== null) {
+                        shiftAllGameTimestamps(performance.now() - offlinePauseStartedAt, offlinePauseStartedAt);
+                        offlinePauseStartedAt = null;
+                    }
+                } else if (!nextPaused) offlinePauseStartedAt = null;
                 paused = nextPaused;
                 if (withSound) {
                     if (paused) SFX.pause();
@@ -10606,6 +10824,12 @@
                     if (aiDotsEl) aiDotsEl.style.display = '';
                     if (p2DotsEl) p2DotsEl.style.display = '';
                     if (p1OppDotsEl) p1OppDotsEl.style.display = '';
+
+                    const isSelf51 = gameStyle === 'selfArea51';
+                    [p1StatPanel, p2StatPanel, aiStatPanel, p1OppPanel, document.getElementById('p2OpponentPanel')]
+                        .forEach(panel => { if (panel) panel.classList.toggle('self51-active', isSelf51); });
+                    if (isSelf51 && timeLabel) timeLabel.style.display = 'none';
+                    if (isSelf51) updateSelfArea51Panels();
 
                     drawSeries();
                     applyPlayerControlLayout('p1', p1ControlLayout);
@@ -10846,6 +11070,7 @@
 
                 const render = () => {
                     const isFastAI = qs.playerMode === '1P' && qs.gameStyle === 'fastCompetitive';
+                    if (isFastAI && qs.speedMode === 'EXTREME') qs.speedMode = 'FAST';
                     const showArena = !qs.gameStyle || qs.gameStyle === 'normal' || qs.gameStyle === 'fastCompetitive';
                     const speedTitle = isFastAI ? t('difficulty') : t('snakeSpeed');
                     const speedBtn1  = isFastAI ? t('difficultyEasy') : t('easy');
@@ -10871,19 +11096,19 @@
                           <div class="qs-name-color-col">
                             <div class="qs-player-label">P1</div>
                             <input class="qs-name-input" id="qs-p1name" type="text" lang="en"
-                              placeholder="${t('namePlaceholder')}" maxlength="12" value="${qs.p1Name}">
+                              placeholder="${t('namePlaceholder')}" maxlength="12" value="${escapeHtml(qs.p1Name)}">
                             <div class="qs-color-row" style="${gridStyle}">${p1Dots}</div>
                           </div>
                           <div class="qs-name-color-col">
                             <div class="qs-player-label">P2</div>
                             <input class="qs-name-input" id="qs-p2name" type="text" lang="en"
-                              placeholder="${t('namePlaceholder')}" maxlength="12" value="${qs.p2Name}">
+                              placeholder="${t('namePlaceholder')}" maxlength="12" value="${escapeHtml(qs.p2Name)}">
                             <div class="qs-color-row" style="${gridStyle}">${p2Dots}</div>
                           </div>
                         </div>` : `
                         <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
                           <input class="qs-name-input" id="qs-p1name" type="text" lang="en"
-                            placeholder="${t('namePlaceholder')}" maxlength="12" value="${qs.p1Name}"
+                            placeholder="${t('namePlaceholder')}" maxlength="12" value="${escapeHtml(qs.p1Name)}"
                             style="max-width:220px;">
                           <div class="qs-color-row" style="${gridStyle}">${p1Dots}</div>
                         </div>`;
@@ -10953,6 +11178,15 @@
                         if (el) el.onclick = () => {
                             saveNames(); SFX.menuClick();
                             qs.playerMode = id === '1p' ? '1P' : '2P';
+                            if (qs.playerMode === '2P') {
+                                const palette = COLOR_PALETTE.filter(c => c.name !== 'Lime');
+                                if (!palette.some(c => c.hex === qs.p1Color)) {
+                                    qs.p1Color = palette.find(c => c.hex !== qs.p2Color).hex;
+                                }
+                                if (!palette.some(c => c.hex === qs.p2Color) || qs.p1Color === qs.p2Color) {
+                                    qs.p2Color = palette.find(c => c.hex !== qs.p1Color).hex;
+                                }
+                            }
                             render();
                         };
                     });
@@ -11416,6 +11650,8 @@
             document.querySelectorAll('.turn-btn').forEach(btn => {
                 const player = btn.dataset.player;
                 const turnDir = btn.dataset.dir; // 'left' or 'right'
+                const ripplePool = [];
+                let rippleIndex = 0;
 
                 const handlePress = (e) => {
                     e.preventDefault();
@@ -11439,8 +11675,15 @@
 
                     // Reduced size multiplier so the animation visibly travels to the border and stops
                     const size = Math.max(rect.width, rect.height) * 1.0;
-                    const ripple = document.createElement('span');
-                    ripple.className = 'turn-btn-ripple';
+                    let ripple = ripplePool[rippleIndex];
+                    if (!ripple) {
+                        ripple = document.createElement('span');
+                        ripple.className = 'turn-btn-ripple';
+                        ripplePool[rippleIndex] = ripple;
+                        btn.appendChild(ripple);
+                    }
+                    ripple.style.animationName = ripple.style.animationName === 'ripple-anim-alt' ? 'ripple-anim' : 'ripple-anim-alt';
+                    rippleIndex = (rippleIndex + 1) % 4;
                     ripple.style.width = ripple.style.height = `${size}px`;
                     ripple.style.left = `${x - size / 2}px`;
                     ripple.style.top = `${y - size / 2}px`;
@@ -11453,8 +11696,6 @@
                     ripple.style.boxShadow = `0 0 25px ${playerColorHex}`;
                     ripple.style.filter = "brightness(1.4) saturate(1.4)";
 
-                    btn.appendChild(ripple);
-                    setTimeout(() => ripple.remove(), 450);
                     // --------------------------------------
 
                     ensureAudio();
@@ -11500,8 +11741,9 @@
                     }
                 };
 
-                btn.addEventListener('touchstart', handlePress, { passive: false });
-                btn.addEventListener('mousedown', handlePress, { passive: false }); // Also handle mouse for testing
+                btn.style.touchAction = 'none';
+                btn.addEventListener('pointerdown', handlePress, { passive: false });
+                btn.addEventListener('click', e => { if (e.detail === 0) handlePress(e); });
             });
 
             /* === v3.3.9: D-Pad & Controls Modal System (Independent P1/P2) === */
@@ -11813,6 +12055,123 @@
                 applyPlayerControlLayout('p2', p2ControlLayout);
             }
 
+
+      // GAMEPAD_V365_BEGIN: kept inline for the offline single-file games.
+      function createGamepadController(adapter) {
+        const previous = new Map();
+        let topology = '', menuRoot = null, menuFirst = null, returnFocus = null, focused = null;
+        const button = (pad, i) => !!(pad.buttons[i] && (pad.buttons[i].pressed || pad.buttons[i].value > 0.5));
+        function direction(pad, stick, useDpad) {
+          if (useDpad) {
+            if (button(pad, 12)) return 'up';
+            if (button(pad, 13)) return 'down';
+            if (button(pad, 14)) return 'left';
+            if (button(pad, 15)) return 'right';
+          }
+          const x = Number(pad.axes[stick] || 0), y = Number(pad.axes[stick + 1] || 0);
+          if (!Number.isFinite(x) || !Number.isFinite(y) || Math.hypot(x, y) < 0.45) return null;
+          return Math.abs(x) > Math.abs(y) ? (x < 0 ? 'left' : 'right') : (y < 0 ? 'up' : 'down');
+        }
+        function clearFocus() {
+          if (focused) focused.classList.remove('gamepad-focus');
+          focused = null;
+        }
+        function focusElement(el) {
+          if (!el) return;
+          clearFocus();
+          if (el.matches('.pause-bubble, .ctrl-opt-card')) el.tabIndex = 0;
+          el.classList.add('gamepad-focus');
+          focused = el;
+          el.focus({ preventScroll: true });
+          if (typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        }
+        function choices(root) {
+          return Array.from(root.querySelectorAll('button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), .pause-bubble, .ctrl-opt-card'))
+            .filter(el => el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden' && !el.closest('[inert], [aria-hidden="true"]'));
+        }
+        function updateMenu(root) {
+          const first = root && root.firstElementChild;
+          if (root === menuRoot && first === menuFirst) return;
+          if (!menuRoot && root) returnFocus = document.activeElement;
+          clearFocus();
+          menuRoot = root; menuFirst = first;
+          if (root) {
+            const items = choices(root);
+            const selected = items.includes(document.activeElement) ? document.activeElement : items[0];
+            focusElement(selected);
+          } else {
+            if (returnFocus && returnFocus.isConnected && typeof returnFocus.focus === 'function') returnFocus.focus({ preventScroll: true });
+            returnFocus = null;
+          }
+        }
+        function poll() {
+          let pads = [];
+          try { pads = Array.from(navigator.getGamepads ? navigator.getGamepads() : []).filter(p => p && p.connected && p.mapping === 'standard'); }
+          catch (_) { pads = []; }
+          const signature = pads.map(p => `${p.index}:${p.id}`).join('|');
+          if (topology !== signature) { topology = signature; previous.clear(); }
+          if (!pads.length || document.hidden || adapter.blocked()) {
+            previous.clear(); updateMenu(null); return;
+          }
+          let root = adapter.menuRoot();
+          updateMenu(root);
+          const twoPlayer = adapter.isLocalTwoPlayer();
+          for (let i = 0; i < pads.length && i < 2; i++) {
+            const pad = pads[i], prev = previous.get(pad.index) || {};
+            const left = direction(pad, 0, true), right = direction(pad, 2, false);
+            const a = button(pad, 0), b = button(pad, 1), start = button(pad, 9), rt = button(pad, 7), lt = button(pad, 6);
+            previous.set(pad.index, { left, right, a, b, start, rt, lt });
+            if (start && !prev.start && adapter.canPause()) {
+              adapter.pause(adapter.isOnline() ? adapter.onlineRole() : (twoPlayer && pads.length > 1 && i === 1 ? 'p2' : 'p1'));
+              break;
+            }
+            if (root) {
+              if (left && left !== prev.left) {
+                const items = choices(root), at = items.indexOf(document.activeElement);
+                if (items.length) focusElement(items[(Math.max(at, 0) + (left === 'up' || left === 'left' ? -1 : 1) + items.length) % items.length]);
+              }
+              if (a && !prev.a) {
+                const active = document.activeElement;
+                if (active && root.contains(active) && choices(root).includes(active)) active.click();
+                break;
+              }
+              if (b && !prev.b) { adapter.back(root); break; }
+              continue;
+            }
+            if (!adapter.canMove()) continue;
+            if (i > 0 && !twoPlayer) continue;
+            const role = adapter.isOnline() ? adapter.onlineRole() : (i === 1 ? 'p2' : 'p1');
+            if (left && left !== prev.left) adapter.move(role, left);
+            if (twoPlayer && pads.length === 1 && right && right !== prev.right) adapter.move('p2', right);
+            if (rt && !prev.rt) adapter.boost(role);
+            if (twoPlayer && pads.length === 1 && lt && !prev.lt) adapter.boost('p2');
+          }
+        }
+        return { poll };
+      }
+      // GAMEPAD_V365_END
+
+            const gamepadController = createGamepadController({
+                blocked: () => AdManager.adInProgress,
+                menuRoot: () => document.querySelector('#controlsModalOverlay.active, .online-alert-overlay, .rewarded-continue-overlay, .game-end-overlay, .pause-bubbles') || (!banner.inert ? banner : null),
+                isOnline: () => isOnlineMode,
+                onlineRole: () => myRole,
+                isLocalTwoPlayer: () => !isOnlineMode && gameMode === '2P',
+                canPause: () => !!(snakes && (isOnlineMode || currentSpeedMode) && !inCountdown && !intermission && !isDemoMode && !document.querySelector('#controlsModalOverlay.active, .online-alert-overlay, .rewarded-continue-overlay, .game-end-overlay')),
+                canMove: () => !!(snakes && (isOnlineMode || currentSpeedMode) && !inCountdown && !intermission && !paused && !isDemoMode),
+                pause: role => showPauseMenu(role),
+                back: () => window.handleNativeBackPress(),
+                move: (role, key) => {
+                    if (!role || !snakes[role]) return;
+                    const target = dirMap[key];
+                    if (!target) return;
+                    if (isOnlineMode) {
+                        if (role === myRole && socket && !opposite(target, snakes[role].dir)) socket.emit('directionChange', { roomId: onlineRoomId, direction: getAbsoluteDir(key) });
+                    } else queueSnakeDirection(snakes[role], target);
+                },
+                boost: () => {} // Mobile has no dash action.
+            });
+
             function queueSnakeDirection(s, targetDir) {
                 if (!s || !targetDir) return;
                 if (!s.inputQueue) s.inputQueue = [];
@@ -11866,27 +12225,49 @@
                 }
             }
 
+            const activeDpadPointers = new Map();
+            function updateDpadPointer(id, button) {
+                const previous = activeDpadPointers.get(id);
+                if (previous === button) return;
+                activeDpadPointers.set(id, button);
+                if (previous && !Array.from(activeDpadPointers.values()).includes(previous)) previous.classList.remove('pressed');
+                if (button) {
+                    button.classList.add('pressed');
+                    handleDpadPress(button.dataset.player, button.dataset.dir);
+                }
+            }
+            function releaseDpadPointer(id) {
+                if (!activeDpadPointers.has(id)) return;
+                const previous = activeDpadPointers.get(id);
+                activeDpadPointers.delete(id);
+                if (previous && !Array.from(activeDpadPointers.values()).includes(previous)) previous.classList.remove('pressed');
+            }
+            function clearAllPressedInputs() {
+                for (const id of Array.from(activeDpadPointers.keys())) releaseDpadPointer(id);
+                document.querySelectorAll('.dpad-btn.pressed').forEach(btn => btn.classList.remove('pressed'));
+                if (touchGesture.active) { touchGesture.active = false; touchGesture.endTime = performance.now(); }
+            }
+            window.addEventListener('blur', clearAllPressedInputs);
             function initDpadButtons() {
-                document.querySelectorAll('.dpad-btn').forEach(btn => {
-                    const player = btn.dataset.player;
-                    const dir = btn.dataset.dir;
-
-                    const handlePress = (e) => {
+                document.querySelectorAll('.dpad-cluster').forEach(cluster => {
+                    cluster.addEventListener('pointerdown', e => {
+                        const button = e.target.closest('.dpad-btn');
+                        if (!button || !cluster.contains(button)) return;
                         e.preventDefault();
                         e.stopPropagation();
-                        btn.classList.add('pressed');
-                        handleDpadPress(player, dir);
-                    };
-                    const handleRelease = () => {
-                        btn.classList.remove('pressed');
-                    };
-
-                    btn.addEventListener('touchstart', handlePress, { passive: false });
-                    btn.addEventListener('touchend', handleRelease, { passive: true });
-                    btn.addEventListener('touchcancel', handleRelease, { passive: true });
-                    btn.addEventListener('mousedown', handlePress, { passive: false });
-                    btn.addEventListener('mouseup', handleRelease, { passive: true });
-                    btn.addEventListener('mouseleave', handleRelease, { passive: true });
+                        try { cluster.setPointerCapture(e.pointerId); } catch (_) { /* cancellation still clears state */ }
+                        updateDpadPointer(e.pointerId, button);
+                    });
+                    cluster.addEventListener('pointermove', e => {
+                        if (!activeDpadPointers.has(e.pointerId)) return;
+                        if (e.cancelable) e.preventDefault();
+                        const target = document.elementFromPoint(e.clientX, e.clientY);
+                        const button = target && target.closest('.dpad-btn');
+                        updateDpadPointer(e.pointerId, button && cluster.contains(button) ? button : null);
+                    });
+                    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => {
+                        cluster.addEventListener(type, e => releaseDpadPointer(e.pointerId));
+                    });
                 });
             }
 
@@ -11966,9 +12347,11 @@
             (function initSwipeControls() {
                 const SWIPE_THRESHOLD = 30; // px minimum to count as a swipe
                 let swipeStartX = 0, swipeStartY = 0;
+                let swipePointerId = null;
 
                 const canvasEl = document.getElementById('game');
                 if (!canvasEl) return;
+                canvasEl.style.touchAction = 'none';
 
                 function getCanvasPoint(clientX, clientY) {
                     const rect = canvasEl.getBoundingClientRect();
@@ -11980,43 +12363,36 @@
                     };
                 }
 
-                canvasEl.addEventListener('touchstart', function(e) {
+                canvasEl.addEventListener('pointerdown', function(e) {
                     if (!isSwipeControlEnabled) return; // v3.3.8: respect swipe toggle
-                    if (gameMode === '2P') return; // disabled for local 2P
-                    const t = e.touches[0];
-                    swipeStartX = t.clientX;
-                    swipeStartY = t.clientY;
-                    const pt = getCanvasPoint(t.clientX, t.clientY);
+                    if (!isOnlineMode && gameMode === '2P') return;
+                    if (swipePointerId !== null) return;
+                    swipePointerId = e.pointerId;
+                    try { canvasEl.setPointerCapture(e.pointerId); } catch (_) { /* pointer cancellation handles cleanup */ }
+                    swipeStartX = e.clientX;
+                    swipeStartY = e.clientY;
+                    const pt = getCanvasPoint(e.clientX, e.clientY);
                     touchGesture.active = true;
                     touchGesture.startX = pt.x;
                     touchGesture.startY = pt.y;
                     touchGesture.currentX = pt.x;
                     touchGesture.currentY = pt.y;
                     touchGesture.endTime = 0;
-                }, { passive: true });
+                });
 
-                canvasEl.addEventListener('touchmove', function(e) {
-                    if (!touchGesture.active) return;
-                    const t = e.touches[0];
-                    if (!t) return;
-                    const pt = getCanvasPoint(t.clientX, t.clientY);
+                canvasEl.addEventListener('pointermove', function(e) {
+                    if (e.pointerId !== swipePointerId || !touchGesture.active) return;
+                    const pt = getCanvasPoint(e.clientX, e.clientY);
                     touchGesture.currentX = pt.x;
                     touchGesture.currentY = pt.y;
-                }, { passive: true });
-
-                canvasEl.addEventListener('touchend', function(e) {
-                    if (touchGesture.active) {
-                        touchGesture.active = false;
-                        touchGesture.endTime = performance.now();
-                    }
-                    if (!isSwipeControlEnabled) return; // v3.3.8: respect swipe toggle
-                    if (gameMode === '2P') return; // disabled for local 2P
-                    if (!snakes || inCountdown || intermission || paused || !currentSpeedMode) return;
-                    const t = e.changedTouches[0];
-                    const dx = t.clientX - swipeStartX;
-                    const dy = t.clientY - swipeStartY;
+                    if (!isSwipeControlEnabled || (!isOnlineMode && gameMode === '2P')) return;
+                    if (!snakes || inCountdown || intermission || paused || (!isOnlineMode && !currentSpeedMode)) return;
+                    const dx = e.clientX - swipeStartX;
+                    const dy = e.clientY - swipeStartY;
                     const absDx = Math.abs(dx), absDy = Math.abs(dy);
-                    if (Math.max(absDx, absDy) < SWIPE_THRESHOLD) return; // too short, ignore
+                    if (Math.max(absDx, absDy) < SWIPE_THRESHOLD) return;
+                    swipeStartX = e.clientX;
+                    swipeStartY = e.clientY;
 
                     // Determine swipe direction
                     let swipeDirKey;
@@ -12028,8 +12404,8 @@
 
                     if (isOnlineMode) {
                         // Online: control own snake
-                        if (!snakes[myRole]) return;
-                        socket.emit('directionChange', { roomId: onlineRoomId, direction: swipeDirKey });
+                        if (!snakes[myRole] || !socket || !onlineRoomId) return;
+                        socket.emit('directionChange', { roomId: onlineRoomId, direction: getAbsoluteDir(swipeDirKey) });
                         hapticVibrate(15);
                         return;
                     }
@@ -12037,20 +12413,23 @@
                     // Offline 1P: control p1 snake
                     const snake = snakes.p1;
                     if (!snake) return;
-                    const dirRotation = ['up', 'right', 'down', 'left'];
                     const newDir = { up: {x:0,y:-1}, down: {x:0,y:1}, left: {x:-1,y:0}, right: {x:1,y:0} }[swipeDirKey];
                     if (newDir) {
                         queueSnakeDirection(snake, newDir);
                         hapticVibrate(10);
                     }
-                }, { passive: true });
+                });
 
-                canvasEl.addEventListener('touchcancel', function(e) {
+                function finishSwipe(e) {
+                    if (e.pointerId !== swipePointerId) return;
+                    swipePointerId = null;
                     if (touchGesture.active) {
                         touchGesture.active = false;
                         touchGesture.endTime = performance.now();
                     }
-                }, { passive: true });
+                }
+                ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => canvasEl.addEventListener(type, finishSwipe));
+                window.addEventListener('blur', () => { swipePointerId = null; });
             })();
 
 
@@ -12149,7 +12528,7 @@
           ${isAndroidApp() ? `<button class="btn big btn-menu-row" id="menuAchievements">
             <span class="btn-menu-icon">🏅</span>
             <span class="btn-menu-sep"></span>
-            <span class="btn-menu-text">${t('achievements')}</span>
+            <span class="btn-menu-text">${ACHIEVEMENT_MENU_TITLES[lang] || ACHIEVEMENT_MENU_TITLES.en}</span>
           </button>` : ''}
           ${isAndroidApp() ? `<button class="btn big btn-menu-row" id="menuRateUs">
             <span class="btn-menu-icon">&#11088;</span>
@@ -12420,6 +12799,53 @@
                 return showOnlineDialog(message, { title, confirm: true });
             }
 
+            window.handleNativeBackPress = function() {
+                if (document.querySelector('#controlsModalOverlay.active')) {
+                    closeControlsModal();
+                    return 'CONSUMED';
+                }
+                if (document.querySelector('.rewarded-continue-overlay')) {
+                    AdManager.finalizePendingLoss();
+                    return 'CONSUMED';
+                }
+                const alert = document.querySelector('.online-alert-overlay');
+                if (alert) {
+                    const button = alert.querySelector('#onlineAlertCancel') || alert.querySelector('#onlineAlertOk');
+                    if (button) button.click();
+                    return 'CONSUMED';
+                }
+                if (banner.classList.contains('online-pause-banner') && onlinePauseState) {
+                    if (onlinePauseState.pausedBy === myRole) {
+                        const resume = document.getElementById('btnOnlineResume');
+                        if (resume) resume.click();
+                    }
+                    return 'CONSUMED';
+                }
+                if (settingsFromPause && currentMenuScreen === MENU_IDS.SETTINGS) {
+                    settingsFromPause = false;
+                    intermission = false;
+                    hideBanner();
+                    showPauseMenu(pauseFromPlayer);
+                    return 'CONSUMED';
+                }
+                const resultMenu = document.querySelector('.game-end-overlay #gameEndMenuBtn');
+                if (resultMenu) { resultMenu.click(); return 'CONSUMED'; }
+                if (isOnlineMode && onlineRoomId && myRole && snakes && !inCountdown && !intermission && !isDemoMode) {
+                    if (!paused) showPauseMenu(myRole);
+                    return 'CONSUMED';
+                }
+                if (!isOnlineMode && !isDemoMode && gameMode && currentSpeedMode && snakes && !inCountdown && !intermission) {
+                    if (!paused) showPauseMenu('p1');
+                    else if (document.querySelector('.pause-bubbles')) closePauseBubbles(true);
+                    return 'CONSUMED';
+                }
+                if (menuHistory.length > 0 || currentMenuScreen !== MENU_IDS.MAIN) {
+                    goBack(MENU_IDS.MAIN);
+                    return 'CONSUMED';
+                }
+                return 'EXIT';
+            };
+
             async function requestOnlineRematchFromStats() {
                 if (!isOnlineMode || !socket || !onlineRoomId) {
                     await showOnlineAlert(t('onlineDisconnected'));
@@ -12432,6 +12858,8 @@
             }
 
             function cleanupOnlineGame() {
+          onlineStatsMatchKey = null; onlineRoundId = null; onlineLocalRoundId = 0; recordedOnlineRounds.clear();
+                lastAppliedResumeGeneration = -1;
                 dismissOnlineControls();
                 onlinePauseState = null;
                 invalidateGameFlow(true);
@@ -12567,12 +12995,16 @@
             }
 
             window.onAndroidPause = function() {
+                clearAllPressedInputs();
                 if (socket && isOnlineMode && onlineRoomId) {
                     socket.disconnect();
+                } else if (!isOnlineMode && !isDemoMode && !paused && gameMode && currentSpeedMode && snakes && !inCountdown && !intermission && !AdManager.adInProgress) {
+                    showPauseMenu('p1');
                 }
             };
 
             window.onAndroidResume = function() {
+                updateGameWakeState(true);
                 if (isOnlineMode && onlineRoomId) {
                     reconnectOnlineGame();
                 }
@@ -12580,8 +13012,28 @@
 
             // v3.3.1: Receives native settings (incl. adsRemoved) pushed by the Android shell.
             window.onAndroidSettings = function(settings) {
+                if (settings && (settings.vibrationEnabled === true || settings.vibrationEnabled === false || settings.vibrationEnabled === 'true' || settings.vibrationEnabled === 'false')) {
+                    nativeHapticsEnabled = settings.vibrationEnabled === true || settings.vibrationEnabled === 'true';
+                    refreshHapticsSettingButton();
+                }
                 if (settings && typeof settings.adsRemoved !== 'undefined') {
                     window.adsRemoved = settings.adsRemoved === true || settings.adsRemoved === 'true';
+                    if (currentMenuScreen !== MENU_IDS.SETTINGS || !banner.classList.contains('settings-banner')) return;
+                    const restore = banner.querySelector('#menuRestorePurchases');
+                    if (window.adsRemoved) {
+                        if (restore) restore.remove();
+                    } else if (isAndroidApp() && !restore) {
+                        const back = banner.querySelector('#settingsBack');
+                        const divider = back && back.closest('.menu-back-divider');
+                        if (!divider) return;
+                        const button = document.createElement('button');
+                        button.className = 'btn big btn-menu-row';
+                        button.id = 'menuRestorePurchases';
+                        button.innerHTML = `<span class="btn-menu-icon">🔄</span><span class="btn-menu-sep"></span><span class="btn-menu-text"></span>`;
+                        button.querySelector('.btn-menu-text').textContent = t('restorePurchases');
+                        button.onclick = () => { SFX.menuClick(); if (window.Android && typeof window.Android.restorePurchases === 'function') window.Android.restorePurchases(); };
+                        divider.before(button);
+                    }
                 }
             };
 
@@ -12716,6 +13168,13 @@
                 if (!socket) return;
                 onCurrentSocket('disconnect', () => { dismissOnlineControls(); onlinePauseState = null; });
 
+                function applyOnlineResumeTime(data) {
+                    if (!data || !Number.isSafeInteger(data.resumeGeneration) || data.resumeGeneration <= lastAppliedResumeGeneration || !Number.isFinite(data.pauseDurationMs) || data.pauseDurationMs < 0) return;
+                    lastAppliedResumeGeneration = data.resumeGeneration;
+                    if (matchStartTime > 0) matchStartTime += data.pauseDurationMs;
+                }
+                onCurrentSocket('gameResumeState', applyOnlineResumeTime);
+
                 onCurrentSocket('roomCreated', (data) => {
                     myRole = 'p1';
                     onlineRoomId = data.roomId;
@@ -12750,6 +13209,19 @@
                 });
 
                 onCurrentSocket('gameInit', (data) => {
+          const matchKey = String(onlineRoomId) + ':' + onlineMatchIndex;
+          if (onlineStatsMatchKey !== matchKey) {
+            onlineStatsMatchKey = matchKey;
+            reviewNotifiedForMatch = false;
+            AchievementTracker.resetMatch();
+            recordedOnlineRounds.clear();
+            matchStartTime = performance.now();
+            matchTotalFoodP1 = 0; matchTotalFoodP2 = 0;
+            longestSnakeP1 = 0; longestSnakeP2 = 0;
+          }
+          onlineRoundId = data.roundId ?? ++onlineLocalRoundId;
+          observeOnlineLengths(data.snakes);
+          onlineSnapOnNextUpdate = true;
                     dismissOnlineControls(); onlinePauseState = null;
                     invalidateGameFlow();
                     setOnlineRandomColors(onlineRoomId, onlineMatchIndex);
@@ -12791,6 +13263,7 @@
                     gameStyle = data.mode;
                     foods = data.foods;
                     snakes = data.snakes;
+          observeOnlineLengths(snakes);
                     countdownValue = data.countdownValue;
                     barriers = data.barriers || [];
                     portals = data.portals || [];
@@ -12820,7 +13293,9 @@
                     SFX.countdownTick();
                 });
 
-                onCurrentSocket('gameStart', () => {
+                onCurrentSocket('gameStart', (data) => {
+          if (data && Number.isSafeInteger(data.resumeGeneration)) onlineSnapOnNextUpdate = true;
+                    applyOnlineResumeTime(data);
                     dismissOnlineControls(); onlinePauseState = null;
                     inCountdown = false;
                     const startColor = ((games.p1 + games.p2) % 2 !== 0) ? playerColors.p2 : playerColors.p1;
@@ -12834,12 +13309,18 @@
                 });
 
                 onCurrentSocket('gameUpdate', (data) => {
+          if (data.roundId != null && onlineRoundId != null && data.roundId !== onlineRoundId) return;
+                    if (snakes && data.snakes && ['p1', 'p2'].some(key => {
+                        const oldSnake = snakes[key], nextSnake = data.snakes[key];
+                        return oldSnake && nextSnake && Number.isSafeInteger(oldSnake.moveSequence) && Number.isSafeInteger(nextSnake.moveSequence) && nextSnake.moveSequence < oldSnake.moveSequence;
+                    })) return;
                     // Check if anyone ate food for particles & sound
                     if (snakes && data.snakes) {
                         for (const key of ['p1', 'p2']) {
                             const oldS = snakes[key];
                             const newS = data.snakes[key];
                             if (oldS && newS && newS.score > oldS.score) {
+                                if(key===myRole) { AchievementTracker.unlock('ACH_FIRST_FOOD'); if(newS.powerTimeLeft>0 && !(oldS.powerEnd>performance.now())) AchievementTracker.unlock('ACH_RAINBOW_POWER'); }
                                 const head = newS.segments[0];
                                 const eatenFood = foods.find(f => f.x === head.x && f.y === head.y);
                                 if (eatenFood) {
@@ -12920,38 +13401,36 @@
                         redFoodPresent = data.foods.some(f => f.type === 'heart');
                     }
 
-                    // Preserve digestAnims & update prev ONLY when head actually moved
-                    if (snakes && data.snakes) {
-                        for (const key of ['p1', 'p2']) {
-                            if (snakes[key] && data.snakes[key]) {
-                                // Carry over client-side digestAnims and concatenate any new ones from the server packet processing above
-                                data.snakes[key].digestAnims = (snakes[key].digestAnims || []).concat(data.snakes[key].digestAnims || []);
-                                data.snakes[key].gulpPop = snakes[key].gulpPop || data.snakes[key].gulpPop || { start: 0, duration: 140 };
+                    // The server sequence identifies skipped moves and teleport discontinuities.
+          if (snakes && data.snakes) {
+            const now = performance.now();
+            for (const key of ['p1', 'p2']) {
+              const oldSnake = snakes[key], nextSnake = data.snakes[key];
+              if (!oldSnake || !nextSnake) continue;
+              if (gameStyle === 'adventure' && key === myRole && Number.isSafeInteger(oldSnake.positionDiscontinuitySequence) && Number.isSafeInteger(nextSnake.positionDiscontinuitySequence)) {
+                const portalUses = Math.max(0, nextSnake.positionDiscontinuitySequence - oldSnake.positionDiscontinuitySequence);
+                AchievementTracker.state.portalsUsedInMatch += portalUses;
+                if (AchievementTracker.state.portalsUsedInMatch >= 5) AchievementTracker.unlock('ACH_DIMENSION_TRAVELER');
+              }
+              nextSnake.digestAnims = (oldSnake.digestAnims || []).concat(nextSnake.digestAnims || []);
+              nextSnake.gulpPop = nextSnake.gulpPop || oldSnake.gulpPop || { start: 0, duration: 140 };
+              const oldTail = oldSnake.segments[oldSnake.segments.length - 1];
+              const newTail = nextSnake.segments[nextSnake.segments.length - 1];
+              const moved = prepareOnlineInterpolation(oldSnake, nextSnake, now, onlineSnapOnNextUpdate);
+              if (moved) {
+                if (key === 'p1') lastP1Update = now; else lastP2Update = now;
+                if (oldTail && newTail && (oldTail.x !== newTail.x || oldTail.y !== newTail.y) && typeof recordGridTrail === 'function') recordGridTrail(oldTail.x, oldTail.y, key);
+              }
+            }
+          }
+          onlineSnapOnNextUpdate = false;
 
-                                const oldHead = snakes[key].segments[0];
-                                const newHead = data.snakes[key].segments[0];
-                                if (oldHead && newHead && (oldHead.x !== newHead.x || oldHead.y !== newHead.y)) {
-                                    // Head moved — snapshot prev and reset per-snake timestamp
-                                    data.snakes[key].prev = snakes[key].segments.map(seg => ({ ...seg }));
-                                    if (key === 'p1') lastP1Update = performance.now();
-                                    else lastP2Update = performance.now();
-                                    const oldTail = snakes[key].segments[snakes[key].segments.length - 1];
-                                    const newTail = data.snakes[key].segments[data.snakes[key].segments.length - 1];
-                                    if (oldTail && newTail && (oldTail.x !== newTail.x || oldTail.y !== newTail.y)) {
-                                        if (typeof recordGridTrail === 'function') recordGridTrail(oldTail.x, oldTail.y, key);
-                                    }
-                                } else {
-                                    // Head didn't move — keep existing prev and timestamp
-                                    data.snakes[key].prev = snakes[key].prev || snakes[key].segments.map(seg => ({ ...seg }));
-                                }
-                            }
-                        }
-                    }
-
-                    snakes = data.snakes;
+          snakes = data.snakes;
+          observeOnlineLengths(snakes);
                     if (data.foods) {
                         foods = data.foods;
                     }
+                    if (Array.isArray(data.barriers)) barriers = data.barriers;
                     if (data.portals) {
                         portals = data.portals;
                     }
@@ -12981,6 +13460,11 @@
                 });
 
                 onCurrentSocket('roundOver', (data) => {
+          recordOnlineRound(data);
+          if (data.winner === 'draw') AchievementTracker.state.hadSuddenDeathInMatch=true;
+          const localRoleForAchievement=myRole, opponentRoleForAchievement=localRoleForAchievement==='p1'?'p2':'p1';
+          if(data.scores && data.scores[opponentRoleForAchievement]===4 && data.scores[localRoleForAchievement]===0) AchievementTracker.state.isFourDown=true;
+          if (data.winner === myRole && data.roundStats?.[myRole]?.length === 1) AchievementTracker.unlock('ACH_STUBBORN_SURVIVOR');
                     dismissOnlineControls(); onlinePauseState = null;
                     intermission = true;
                     let winner = data.winner;
@@ -13090,6 +13574,7 @@
                 });
 
                 onCurrentSocket('playerReconnected', () => {
+          onlineSnapOnNextUpdate = true;
                     dismissOnlineControls(); onlinePauseState = null;
                     paused = false;
                     hideBanner();
@@ -13098,6 +13583,7 @@
                 });
 
                 onCurrentSocket('gameOver', async (data) => {
+          if (data.reason === 'forfeit') recordOnlineRound(data);
                     dismissOnlineControls(); 
                     onlinePauseState = null;
                     const isForfeit = data.reason === 'forfeit';
@@ -13647,15 +14133,12 @@
                     if (yesBtn && noBtn) {
                         yesBtn.onclick = () => {
                             SFX.menuClick();
-                            isOnlineMode = false;
-                            GRID_COLS = 24;
-                            GRID_ROWS = 36;
+                            cleanupOnlineGame();
                             gameStyle = 'fastCompetitive';
                             gameMode = '1P';
                             aiSnakeEnabled = true;
                             currentSpeedMode = 'NORMAL';
                             currentWallMode = MOD_WALLS.NONE;
-                            if (socket) { socket.disconnect(); socket = null; }
                             hideBanner();
                             resetRound(3);
                         };
@@ -13726,6 +14209,9 @@
                 const soundLabel = `${t('sound')}: ${muted ? t('soundOff') : t('soundOn')}`;
                 const langLabel = `${t('language')}: ${t('languageName')}`;
                 const themeLabel = `${t('theme')}: ${getCurrentTheme()}`;
+                const hapticsValue = hapticsSettingValue();
+                const hapticsLabel = hapticsValue === null ? t('haptics') : `${t('haptics')}: ${hapticsValue ? t('soundOn') : t('soundOff')}`;
+                const shakeLabel = `${t('screenShake')}: ${screenShakeEnabled ? t('soundOn') : t('soundOff')}`;
                 showBanner(`<h1>${t('settings')}</h1>
       <div style="display:flex;flex-direction:column;gap:8px;align-items:center;margin-top:12px; width: 100%;">
         <button class="btn big btn-menu-row" id="toggleLang">
@@ -13742,6 +14228,14 @@
           <span class="btn-menu-icon"><i class="fa-solid fa-volume-high"></i></span>
           <span class="btn-menu-sep"></span>
           <span class="btn-menu-text">${soundLabel}</span>
+        </button>
+        ${hapticsSettingAvailable() ? `<button class="btn big btn-menu-row" id="toggleHaptics" ${hapticsValue === null ? 'disabled' : ''}>
+          <span class="btn-menu-icon"><i class="fa-solid fa-mobile-screen"></i></span><span class="btn-menu-sep"></span>
+          <span class="btn-menu-text">${hapticsLabel}</span>
+        </button>` : ''}
+        <button class="btn big btn-menu-row" id="toggleScreenShake">
+          <span class="btn-menu-icon"><i class="fa-solid fa-display"></i></span><span class="btn-menu-sep"></span>
+          <span class="btn-menu-text">${shakeLabel}</span>
         </button>
         <button class="btn big btn-menu-row" id="toggleTheme">
           <span class="btn-menu-icon"><i class="fa-solid fa-circle-half-stroke"></i></span>
@@ -13792,6 +14286,24 @@
                     localStorage.setItem('neoSnakeMutedMobile', muted ? '1' : '0');
                     updateSoundIcons();
                     syncAdSoundConfig();
+                    openSettings();
+                };
+                const hapticsButton = document.getElementById('toggleHaptics');
+                if (hapticsButton) hapticsButton.onclick = () => {
+                    SFX.menuClick();
+                    if (isAndroidApp()) {
+                        if (nativeHapticsEnabled !== null && typeof window.Android.setHapticsEnabled === 'function') {
+                            window.Android.setHapticsEnabled(!nativeHapticsEnabled);
+                        }
+                    } else {
+                        webHapticsEnabled = !webHapticsEnabled;
+                        localStorage.setItem('neoSnakeHapticsEnabled', webHapticsEnabled ? '1' : '0');
+                        refreshHapticsSettingButton();
+                    }
+                };
+                document.getElementById('toggleScreenShake').onclick = () => {
+                    SFX.menuClick();
+                    setScreenShakeEnabled(!screenShakeEnabled);
                     openSettings();
                 };
                 document.getElementById('toggleTheme').onclick = () => {
@@ -13861,36 +14373,93 @@
                 lastGameNewRecord = false;
                 if (score <= 0) return;
                 try {
-                    const scoresJSON = localStorage.getItem('neoSnakeHighscoresMobile');
-                    let scores = scoresJSON ? JSON.parse(scoresJSON) : [];
+                    let scores = readCloudScores('neoSnakeHighscoresMobile');
                     const prevTop = scores.length > 0 ? (scores[0].score || 0) : 0;
                     if (score > prevTop) {
                         lastGameNewRecord = true;
                     }
-                    scores.push({ name, score });
-                    scores.sort((a, b) => b.score - a.score);
-                    if (scores.length > 10) scores = scores.slice(0, 10);
+                    scores = mergeCloudScores(scores, [{ name, score }]);
                     localStorage.setItem('neoSnakeHighscoresMobile', JSON.stringify(scores));
+                    queueCloudSave();
                     // v3.3.2 — Cloud Save: Android native'e bildir
-                    if (typeof Android !== 'undefined' && typeof Android.notifyHighScore === 'function') {
+                    if (!hasCloudSaveBridge() && typeof Android !== 'undefined' && typeof Android.notifyHighScore === 'function') {
                         Android.notifyHighScore(JSON.stringify(scores), 'mobile');
                     }
                 } catch (e) { console.error("Could not save high score", e); }
             }
 
             // v3.3.2 — Cloud Save: Android shell bu fonksiyonu yükleme sonrası çağırır
-            window.onCloudSaveLoaded = function(data) {
-                try {
-                    if (data && Array.isArray(data.mobileScores) && data.mobileScores.length > 0) {
-                        const local = JSON.parse(localStorage.getItem('neoSnakeHighscoresMobile') || '[]');
-                        const merged = [...local, ...data.mobileScores]
-                            .sort((a, b) => b.score - a.score).slice(0, 10);
-                        localStorage.setItem('neoSnakeHighscoresMobile', JSON.stringify(merged));
-                        console.log('Cloud Save: ' + merged.length + ' mobile skor geri yüklendi.');
-                    }
-                } catch(e) { console.error('onCloudSaveLoaded hata', e); }
-            };
+            // Cloud snapshots use the same logical IDs on both HTML clients.
+      const CLOUD_ACHIEVEMENT_IDS = ['ACH_FIRST_FOOD','ACH_AI_HUNTER','ACH_STUBBORN_SURVIVOR','ACH_RAINBOW_POWER','ACH_GIANT_SNAKE','ACH_ZERO_ERROR','ACH_FEARLESS','ACH_DIMENSION_TRAVELER','ACH_ROBOT_TAMER','ACH_LAST_SECOND_HERO','ACH_GREAT_COMEBACK','ACH_NO_DRAW','ACH_GHOST_PASS','ACH_LIGHTNING_REFLEX','ACH_ADVENTURE_COMPLETE'];
+      const CLOUD_SCORE_KEYS = {mobileScores:'neoSnakeHighscoresMobile', pcScores:'neoSnakeHighscores'};
+      let cloudRevision = 0, cloudSentRevision = 0, cloudInFlight = null, cloudRequestCounter = 0, cloudDirty = false, cloudRequestTimeout = null;
+      function cloudScalarCompare(a,b) {
+        const left=Array.from(a, c=>c.codePointAt(0)), right=Array.from(b, c=>c.codePointAt(0));
+        for(let i=0;i<Math.min(left.length,right.length);i++) if(left[i]!==right[i]) return left[i]-right[i];
+        return left.length-right.length;
+      }
+      function mergeCloudScores(...lists) {
+        const unique=new Map();
+        for(const list of lists) {
+          if(!Array.isArray(list)) throw new Error('Invalid cloud score list');
+          for(const entry of list) {
+            if(!entry || typeof entry.name!=='string' || !Number.isSafeInteger(entry.score) || entry.score<0) throw new Error('Invalid cloud score');
+            unique.set(JSON.stringify([entry.name,entry.score]), {name:entry.name,score:entry.score});
+          }
+        }
+        return [...unique.values()].sort((a,b)=>b.score-a.score || cloudScalarCompare(a.name,b.name)).slice(0,10);
+      }
+      function readCloudScores(key) {
+        const raw=localStorage.getItem(key); const list=raw===null?[]:JSON.parse(raw);
+        return mergeCloudScores(list);
+      }
+      function buildCloudSnapshot() {
+        return {schemaVersion:1, mobileScores:readCloudScores(CLOUD_SCORE_KEYS.mobileScores), pcScores:readCloudScores(CLOUD_SCORE_KEYS.pcScores), achievements:CLOUD_ACHIEVEMENT_IDS.filter(id=>localStorage.getItem('ach_unlocked_'+id)==='true')};
+      }
+      function hasCloudSaveBridge() { return typeof Android!=='undefined' && typeof Android.saveCloudState==='function'; }
+      function flushCloudSave() {
+        if(!hasCloudSaveBridge() || !cloudDirty || cloudInFlight) return;
+        let snapshot;
+        try { snapshot=buildCloudSnapshot(); } catch(e) { console.warn('Cloud snapshot retained locally',e); return; }
+        const requestId=Date.now().toString(36)+'-'+(++cloudRequestCounter);
+        cloudInFlight=requestId; cloudSentRevision=cloudRevision;
+        cloudRequestTimeout=setTimeout(()=>{ if(cloudInFlight===requestId) { cloudInFlight=null; cloudRequestTimeout=null; } }, 10000);
+        try { Android.saveCloudState(JSON.stringify({...snapshot,requestId})); }
+        catch(e) { cloudInFlight=null; clearTimeout(cloudRequestTimeout); cloudRequestTimeout=null; console.warn('Cloud save request failed',e); }
+      }
+      function queueCloudSave() {
+        if(!hasCloudSaveBridge()) return;
+        cloudRevision++; cloudDirty=true;
+        try { localStorage.setItem('neoSnakeCloudPending','true'); } catch(_) {}
+        flushCloudSave();
+      }
+      function retryCloudSave() { if(!hasCloudSaveBridge()) return; if(localStorage.getItem('neoSnakeCloudPending')==='true') cloudDirty=true; flushCloudSave(); }
+      window.onCloudSaveSyncResult=function(result) {
+        if(!result || result.requestId!==cloudInFlight) return;
+        cloudInFlight=null;
+        if(cloudRequestTimeout!==null) { clearTimeout(cloudRequestTimeout); cloudRequestTimeout=null; }
+        if(result.status!=='success') return;
+        if(cloudRevision===cloudSentRevision) { cloudDirty=false; try { localStorage.removeItem('neoSnakeCloudPending'); } catch(_) {} }
+        else flushCloudSave();
+      };
+      window.onCloudSaveLoaded=function(data) {
+        try {
+          if(!data || typeof data!=='object' || (data.schemaVersion!=null && data.schemaVersion!==1)) return;
+          if(data.schemaVersion===1 && (!Array.isArray(data.mobileScores) || !Array.isArray(data.pcScores) || !Array.isArray(data.achievements))) return;
+          const merged={};
+          for(const field of Object.keys(CLOUD_SCORE_KEYS)) {
+            if(data[field]!==undefined) merged[field]=mergeCloudScores(readCloudScores(CLOUD_SCORE_KEYS[field]),data[field]);
+          }
+          if(data.achievements!==undefined && (!Array.isArray(data.achievements) || data.achievements.some(id=>typeof id!=='string'))) return;
+          for(const field of Object.keys(merged)) localStorage.setItem(CLOUD_SCORE_KEYS[field],JSON.stringify(merged[field]));
+          for(const id of data.achievements||[]) if(CLOUD_ACHIEVEMENT_IDS.includes(id)) localStorage.setItem('ach_unlocked_'+id,'true');
+          if (currentMenuScreen === MENU_IDS.HIGHSCORE) openHighscore(); else if (currentMenuScreen === MENU_IDS.ACHIEVEMENTS) window.openHtmlAchievementsMenu();
+        } catch(e) { console.warn('Cloud data not applied',e); }
+      };
+      document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible') retryCloudSave();});
+      setTimeout(()=>queueCloudSave(),0);
 
+      const ACHIEVEMENT_MENU_TITLES={tr:'Başarımlar',en:'Achievements',fr:'Succès',it:'Obiettivi',es:'Logros',de:'Erfolge',zh:'成就',hi:'उपलब्धियाँ',pl:'Osiągnięcia','pt-BR':'Conquistas',ptbr:'Conquistas',ar:'الإنجازات',ru:'Достижения',id:'Pencapaian',ja:'実績',ko:'업적',vi:'Thành tích',th:'ความสำเร็จ',tl:'Mga Nakamit',nl:'Prestaties',el:'Επιτεύγματα',cs:'Úspěchy'};
             const ACHIEVEMENT_DETAILS = [
                 {
                     key: 'ACH_FIRST_FOOD',
@@ -13983,6 +14552,15 @@
                     desc: { tr: 'Macera (Adventure) modunda bir maç kazan.', en: 'Win a match in Adventure mode.' }
                 }
             ];
+            const ACHIEVEMENT_TRANSLATIONS = {"fr":[["Première bouchée","Mangez votre première nourriture."],["Chasseur d’IA","Gagnez une partie contre l’IA."],["Survivant tenace","Gagnez une manche ou une partie avec une longueur de 1."],["Pouvoir arc-en-ciel","Mangez un rubis pour activer le mode Bête."],["Serpent géant","Atteignez une longueur de 30."],["Sans faute","Gagnez une partie 5 à 0."],["Sans peur","Commencez une partie en mode Aventure."],["Voyageur dimensionnel","Utilisez les portails 5 fois dans une même partie."],["Dompteur de robots","Battez l’IA 5 à 0 en Compétition rapide."],["Héros de dernière seconde","Gagnez dans les 3 dernières secondes ou à la fin du temps."],["Grand retour","Gagnez après avoir été mené 0 à 4."],["Pas de match nul","Gagnez une partie avec au moins une manche en mort subite."],["Passage fantôme","Traversez le corps adverse en mode Bête."],["Réflexe éclair","Gagnez une partie en moins de 60 secondes."],["Conquérant de l’aventure","Gagnez une partie en mode Aventure."]],"it":[["Primo boccone","Mangia il tuo primo cibo."],["Cacciatore di IA","Vinci una partita contro l’IA."],["Sopravvissuto tenace","Vinci un round o una partita con lunghezza 1."],["Potere arcobaleno","Mangia un rubino per attivare la modalità Bestia."],["Serpente gigante","Raggiungi una lunghezza di 30."],["Senza errori","Vinci una partita 5-0."],["Senza paura","Inizia una partita in modalità Avventura."],["Viaggiatore dimensionale","Usa i portali 5 volte nella stessa partita."],["Domatore di robot","Batti l’IA 5-0 in Competizione veloce."],["Eroe dell’ultimo secondo","Vinci negli ultimi 3 secondi o allo scadere del tempo."],["Grande rimonta","Vinci dopo essere stato sotto 0-4."],["Nessun pareggio","Vinci una partita con almeno un round a morte improvvisa."],["Passaggio fantasma","Attraversa il corpo avversario in modalità Bestia."],["Riflesso fulmineo","Vinci una partita in meno di 60 secondi."],["Conquistatore dell’avventura","Vinci una partita in modalità Avventura."]],"es":[["Primer bocado","Come tu primera comida."],["Cazador de IA","Gana una partida contra la IA."],["Superviviente tenaz","Gana una ronda o partida con longitud 1."],["Poder arcoíris","Come un rubí para activar el modo Bestia."],["Serpiente gigante","Alcanza una longitud de 30."],["Sin errores","Gana una partida 5-0."],["Sin miedo","Inicia una partida en modo Aventura."],["Viajero dimensional","Usa los portales 5 veces en una partida."],["Domador de robots","Vence a la IA 5-0 en Competición rápida."],["Héroe del último segundo","Gana en los últimos 3 segundos o al terminar el tiempo."],["Gran remontada","Gana después de ir perdiendo 0-4."],["Sin empate","Gana una partida con al menos una ronda de muerte súbita."],["Paso fantasma","Atraviesa el cuerpo rival en modo Bestia."],["Reflejo relámpago","Gana una partida en menos de 60 segundos."],["Conquistador de la aventura","Gana una partida en modo Aventura."]],"de":[["Erster Bissen","Iss dein erstes Futter."],["KI-Jäger","Gewinne ein Match gegen die KI."],["Hartnäckiger Überlebender","Gewinne eine Runde oder ein Match mit Länge 1."],["Regenbogenkraft","Iss einen Rubin, um den Biestmodus zu aktivieren."],["Riesenschlange","Erreiche eine Schlangenlänge von 30."],["Fehlerfrei","Gewinne ein Match mit 5:0."],["Furchtlos","Starte ein Match im Abenteuermodus."],["Dimensionsreisender","Benutze Portale 5-mal in einem Match."],["Roboterbändiger","Besiege die KI im schnellen Wettbewerb mit 5:0."],["Held der letzten Sekunde","Gewinne in den letzten 3 Sekunden oder nach Zeitablauf."],["Großes Comeback","Gewinne nach einem 0:4-Rückstand."],["Kein Unentschieden","Gewinne ein Match mit mindestens einer Sudden-Death-Runde."],["Geisterdurchgang","Durchquere den gegnerischen Körper im Biestmodus."],["Blitzreflex","Gewinne ein Match in unter 60 Sekunden."],["Abenteuerbezwinger","Gewinne ein Match im Abenteuermodus."]],"zh":[["第一口","吃下第一个食物。"],["AI猎手","战胜AI赢得一场比赛。"],["顽强生存者","以长度1赢得一局或一场比赛。"],["彩虹之力","吃下红宝石以激活野兽模式。"],["巨蛇","让蛇的长度达到30。"],["零失误","以5比0赢得比赛。"],["无所畏惧","开始一场冒险模式比赛。"],["次元旅者","在一场比赛中使用传送门5次。"],["机器人驯服者","在快速竞技模式中以5比0战胜AI。"],["最后一秒英雄","在最后3秒或时间结束时获胜。"],["绝地反击","在0比4落后后赢得比赛。"],["拒绝平局","赢得一场至少有一局进入突然死亡的比赛。"],["幽灵穿越","在野兽模式下穿过对手的身体。"],["闪电反应","在60秒内赢得比赛。"],["冒险征服者","赢得一场冒险模式比赛。"]],"hi":[["पहला निवाला","अपना पहला भोजन खाएँ।"],["एआई शिकारी","एआई के विरुद्ध मैच जीतें।"],["अडिग योद्धा","लंबाई 1 पर राउंड या मैच जीतें।"],["इंद्रधनुष शक्ति","बीस्ट मोड चालू करने के लिए रूबी खाएँ।"],["विशाल साँप","साँप की लंबाई 30 तक पहुँचाएँ।"],["बिना गलती","मैच 5-0 से जीतें।"],["निडर","एडवेंचर मोड में मैच शुरू करें।"],["आयामी यात्री","एक मैच में पोर्टल का 5 बार उपयोग करें।"],["रोबोट विजेता","तेज़ प्रतिस्पर्धा में एआई को 5-0 से हराएँ।"],["आखिरी पल का नायक","अंतिम 3 सेकंड में या समय समाप्त होने पर जीतें।"],["शानदार वापसी","0-4 से पिछड़ने के बाद मैच जीतें।"],["कोई बराबरी नहीं","ऐसा मैच जीतें जिसमें कम से कम एक राउंड सडन डेथ तक पहुँचे।"],["भूतिया रास्ता","बीस्ट मोड में प्रतिद्वंद्वी के शरीर से गुजरें।"],["बिजली जैसी प्रतिक्रिया","60 सेकंड से कम में मैच जीतें।"],["एडवेंचर विजेता","एडवेंचर मोड में मैच जीतें।"]],"pl":[["Pierwszy kęs","Zjedz pierwszy pokarm."],["Łowca SI","Wygraj mecz z SI."],["Uparty ocalały","Wygraj rundę lub mecz przy długości 1."],["Tęczowa moc","Zjedz rubin, aby aktywować tryb Bestii."],["Gigantyczny wąż","Osiągnij długość 30."],["Bez błędu","Wygraj mecz 5-0."],["Nieustraszony","Rozpocznij mecz w trybie Przygody."],["Podróżnik wymiarów","Użyj portali 5 razy w jednym meczu."],["Pogromca robotów","Pokonaj SI 5-0 w szybkiej rywalizacji."],["Bohater ostatniej sekundy","Wygraj w ostatnich 3 sekundach lub po upływie czasu."],["Wielki powrót","Wygraj mecz po przegrywaniu 0-4."],["Bez remisu","Wygraj mecz z co najmniej jedną rundą nagłej śmierci."],["Widmowe przejście","Przeniknij przez ciało przeciwnika w trybie Bestii."],["Błyskawiczny refleks","Wygraj mecz w mniej niż 60 sekund."],["Pogromca przygody","Wygraj mecz w trybie Przygody."]],"pt-BR":[["Primeira mordida","Coma sua primeira comida."],["Caçador de IA","Vença uma partida contra a IA."],["Sobrevivente teimoso","Vença uma rodada ou partida com comprimento 1."],["Poder arco-íris","Coma um rubi para ativar o modo Fera."],["Cobra gigante","Alcance comprimento 30."],["Sem erros","Vença uma partida por 5-0."],["Destemido","Inicie uma partida no modo Aventura."],["Viajante dimensional","Use portais 5 vezes em uma partida."],["Domador de robôs","Vença a IA por 5-0 no Competitivo rápido."],["Herói do último segundo","Vença nos últimos 3 segundos ou ao fim do tempo."],["Grande virada","Vença após estar perdendo por 0-4."],["Sem empate","Vença uma partida com pelo menos uma rodada de morte súbita."],["Passagem fantasma","Atravesse o corpo do adversário no modo Fera."],["Reflexo relâmpago","Vença uma partida em menos de 60 segundos."],["Conquistador da aventura","Vença uma partida no modo Aventura."]],"ar":[["اللقمة الأولى","تناول طعامك الأول."],["صياد الذكاء الاصطناعي","اربح مباراة ضد الذكاء الاصطناعي."],["الناجي العنيد","اربح جولة أو مباراة بطول 1."],["قوة قوس قزح","تناول ياقوتة لتفعيل وضع الوحش."],["الثعبان العملاق","اجعل طول الثعبان يصل إلى 30."],["بلا أخطاء","اربح مباراة بنتيجة 5-0."],["بلا خوف","ابدأ مباراة في وضع المغامرة."],["مسافر الأبعاد","استخدم البوابات 5 مرات في مباراة واحدة."],["مروض الروبوتات","اهزم الذكاء الاصطناعي 5-0 في التنافس السريع."],["بطل اللحظة الأخيرة","اربح في آخر 3 ثوانٍ أو عند انتهاء الوقت."],["عودة رائعة","اربح المباراة بعد التأخر 0-4."],["لا تعادل","اربح مباراة شهدت جولة واحدة على الأقل من الموت المفاجئ."],["عبور الشبح","اعبر جسم الخصم في وضع الوحش."],["رد فعل البرق","اربح مباراة في أقل من 60 ثانية."],["فاتح المغامرة","اربح مباراة في وضع المغامرة."]],"ru":[["Первый укус","Съешьте первую еду."],["Охотник на ИИ","Выиграйте матч против ИИ."],["Упрямый выживший","Выиграйте раунд или матч с длиной 1."],["Радужная сила","Съешьте рубин, чтобы включить режим Зверя."],["Гигантская змея","Достигните длины 30."],["Без ошибок","Выиграйте матч со счётом 5:0."],["Бесстрашный","Начните матч в режиме приключения."],["Путешественник между мирами","Используйте порталы 5 раз за матч."],["Укротитель роботов","Победите ИИ со счётом 5:0 в быстрой игре."],["Герой последней секунды","Победите за последние 3 секунды или по истечении времени."],["Великое возвращение","Выиграйте матч после счёта 0:4."],["Без ничьей","Выиграйте матч хотя бы с одним раундом внезапной смерти."],["Призрачный проход","Пройдите сквозь тело соперника в режиме Зверя."],["Молниеносная реакция","Выиграйте матч менее чем за 60 секунд."],["Покоритель приключений","Выиграйте матч в режиме приключения."]],"id":[["Gigitan Pertama","Makan makanan pertamamu."],["Pemburu AI","Menangkan pertandingan melawan AI."],["Penyintas Tangguh","Menangkan ronde atau pertandingan dengan panjang 1."],["Kekuatan Pelangi","Makan rubi untuk mengaktifkan mode Buas."],["Ular Raksasa","Capai panjang ular 30."],["Tanpa Kesalahan","Menangkan pertandingan 5-0."],["Tak Kenal Takut","Mulai pertandingan dalam mode Petualangan."],["Penjelajah Dimensi","Gunakan portal 5 kali dalam satu pertandingan."],["Penjinak Robot","Kalahkan AI 5-0 dalam Kompetitif Cepat."],["Pahlawan Detik Terakhir","Menang dalam 3 detik terakhir atau saat waktu habis."],["Kebangkitan Besar","Menangkan pertandingan setelah tertinggal 0-4."],["Tanpa Seri","Menangkan pertandingan dengan setidaknya satu ronde kematian mendadak."],["Lintasan Hantu","Tembus tubuh lawan dalam mode Buas."],["Refleks Kilat","Menangkan pertandingan dalam kurang dari 60 detik."],["Penakluk Petualangan","Menangkan pertandingan dalam mode Petualangan."]],"ja":[["最初のひと口","初めてのエサを食べる。"],["AIハンター","AIとの試合に勝利する。"],["不屈の生存者","長さ1でラウンドまたは試合に勝つ。"],["虹の力","ルビーを食べてビーストモードを発動する。"],["巨大なヘビ","ヘビの長さを30にする。"],["ノーミス","試合に5対0で勝つ。"],["恐れ知らず","アドベンチャーモードで試合を始める。"],["次元の旅人","1試合でポータルを5回使う。"],["ロボット使い","高速対戦でAIに5対0で勝つ。"],["ラストセカンドの英雄","残り3秒以内または時間切れで勝つ。"],["大逆転","0対4から試合に勝つ。"],["引き分けなし","サドンデスを含む試合に勝つ。"],["ゴーストパス","ビーストモードで相手の体を通り抜ける。"],["電光石火の反射","60秒未満で試合に勝つ。"],["冒険の征服者","アドベンチャーモードで試合に勝つ。"]],"ko":[["첫 한입","첫 먹이를 먹으세요."],["AI 사냥꾼","AI와의 경기에서 승리하세요."],["끈질긴 생존자","길이 1로 라운드나 경기에서 승리하세요."],["무지개 힘","루비를 먹어 비스트 모드를 활성화하세요."],["거대 뱀","뱀의 길이를 30으로 만드세요."],["무결점","경기에서 5-0으로 승리하세요."],["두려움 없이","모험 모드에서 경기를 시작하세요."],["차원 여행자","한 경기에서 포털을 5번 사용하세요."],["로봇 조련사","빠른 경쟁에서 AI를 5-0으로 이기세요."],["마지막 순간의 영웅","마지막 3초 안이나 시간 종료로 승리하세요."],["대역전","0-4로 뒤진 뒤 경기에서 승리하세요."],["무승부는 없다","서든 데스 라운드가 있는 경기에서 승리하세요."],["유령 통과","비스트 모드에서 상대 몸을 통과하세요."],["번개 반사 신경","60초 이내에 경기에서 승리하세요."],["모험 정복자","모험 모드 경기에서 승리하세요."]],"vi":[["Miếng đầu tiên","Ăn thức ăn đầu tiên."],["Thợ săn AI","Thắng một trận đấu với AI."],["Người sống sót kiên cường","Thắng một ván hoặc trận khi có chiều dài 1."],["Sức mạnh cầu vồng","Ăn hồng ngọc để kích hoạt chế độ Quái thú."],["Rắn khổng lồ","Đạt chiều dài 30."],["Không sai sót","Thắng trận với tỷ số 5-0."],["Không sợ hãi","Bắt đầu trận ở chế độ Phiêu lưu."],["Lữ khách không gian","Dùng cổng 5 lần trong một trận."],["Người thuần hóa rô-bốt","Đánh bại AI 5-0 trong Cạnh tranh nhanh."],["Anh hùng giây cuối","Thắng trong 3 giây cuối hoặc khi hết giờ."],["Lội ngược dòng","Thắng trận sau khi bị dẫn 0-4."],["Không hòa","Thắng trận có ít nhất một ván sinh tử."],["Xuyên bóng ma","Xuyên qua thân đối thủ trong chế độ Quái thú."],["Phản xạ chớp nhoáng","Thắng trận trong dưới 60 giây."],["Chinh phục phiêu lưu","Thắng một trận ở chế độ Phiêu lưu."]],"th":[["คำแรก","กินอาหารชิ้นแรก"],["นักล่า AI","ชนะการแข่งขันกับ AI"],["ผู้รอดชีวิตผู้ไม่ยอมแพ้","ชนะรอบหรือการแข่งขันขณะมีความยาว 1"],["พลังสายรุ้ง","กินทับทิมเพื่อเปิดโหมดอสูร"],["งูยักษ์","ทำให้งูมีความยาว 30"],["ไร้ข้อผิดพลาด","ชนะการแข่งขัน 5-0"],["ไร้ความกลัว","เริ่มการแข่งขันในโหมดผจญภัย"],["นักเดินทางข้ามมิติ","ใช้ประตูมิติ 5 ครั้งในการแข่งขันเดียว"],["ผู้ปราบหุ่นยนต์","ชนะ AI 5-0 ในโหมดแข่งขันเร็ว"],["ฮีโร่วินาทีสุดท้าย","ชนะใน 3 วินาทีสุดท้ายหรือเมื่อหมดเวลา"],["กลับมาอย่างยิ่งใหญ่","ชนะการแข่งขันหลังจากตามอยู่ 0-4"],["ไม่มีเสมอ","ชนะการแข่งขันที่มีรอบตัดสินอย่างน้อยหนึ่งรอบ"],["ทะลุร่าง","ทะลุร่างคู่แข่งในโหมดอสูร"],["ปฏิกิริยาสายฟ้า","ชนะการแข่งขันในเวลาไม่ถึง 60 วินาที"],["ผู้พิชิตการผจญภัย","ชนะการแข่งขันในโหมดผจญภัย"]],"tl":[["Unang Kagat","Kainin ang iyong unang pagkain."],["Manghuhuli ng AI","Manalo ng laban kontra AI."],["Matibay na Nakaligtas","Manalo ng round o laban nang may habang 1."],["Lakas ng Bahaghari","Kumain ng rubi para i-activate ang Beast Mode."],["Higanteng Ahas","Umabot sa habang 30."],["Walang Mali","Manalo ng laban nang 5-0."],["Walang Takot","Magsimula ng laban sa Adventure mode."],["Manlalakbay ng Dimensyon","Gamitin ang mga portal nang 5 beses sa isang laban."],["Tagapagsanay ng Robot","Talunin ang AI nang 5-0 sa mabilis na kompetisyon."],["Bayani sa Huling Segundo","Manalo sa huling 3 segundo o kapag naubos ang oras."],["Mahusay na Pagbawi","Manalo matapos mahuli nang 0-4."],["Walang Tabla","Manalo ng laban na may hindi bababa sa isang sudden-death round."],["Daan ng Multo","Dumaan sa katawan ng kalaban gamit ang Beast Mode."],["Mabilis na Repleks","Manalo ng laban sa loob ng wala pang 60 segundo."],["Manlulupig ng Pakikipagsapalaran","Manalo ng laban sa Adventure mode."]],"nl":[["Eerste hap","Eet je eerste voedsel."],["AI-jager","Win een wedstrijd tegen de AI."],["Vasthoudende overlever","Win een ronde of wedstrijd met lengte 1."],["Regenboogkracht","Eet een robijn om de Beestmodus te activeren."],["Reuzenslang","Bereik een lengte van 30."],["Foutloos","Win een wedstrijd met 5-0."],["Onverschrokken","Begin een wedstrijd in de avonturenmodus."],["Dimensiereiziger","Gebruik portalen 5 keer in één wedstrijd."],["Robottemmer","Versla de AI met 5-0 in de snelle competitie."],["Held van de laatste seconde","Win in de laatste 3 seconden of wanneer de tijd om is."],["Grote comeback","Win een wedstrijd na een 0-4 achterstand."],["Geen gelijkspel","Win een wedstrijd met minstens één sudden-deathronde."],["Spookdoorgang","Ga door het lichaam van je tegenstander in de Beestmodus."],["Bliksemreflex","Win een wedstrijd in minder dan 60 seconden."],["Avonturenveroveraar","Win een wedstrijd in de avonturenmodus."]],"el":[["Πρώτη μπουκιά","Φάε την πρώτη τροφή σου."],["Κυνηγός AI","Κέρδισε έναν αγώνα απέναντι στην AI."],["Επίμονος επιζών","Κέρδισε γύρο ή αγώνα με μήκος 1."],["Δύναμη ουράνιου τόξου","Φάε ένα ρουμπίνι για να ενεργοποιήσεις τη λειτουργία Θηρίου."],["Γιγάντιο φίδι","Φτάσε σε μήκος 30."],["Χωρίς λάθη","Κέρδισε έναν αγώνα με 5-0."],["Ατρόμητος","Ξεκίνα αγώνα στη λειτουργία Περιπέτειας."],["Ταξιδιώτης διαστάσεων","Χρησιμοποίησε πύλες 5 φορές σε έναν αγώνα."],["Δαμαστής ρομπότ","Νίκησε την AI με 5-0 στον Γρήγορο Ανταγωνισμό."],["Ήρωας τελευταίου δευτερολέπτου","Κέρδισε στα τελευταία 3 δευτερόλεπτα ή όταν λήξει ο χρόνος."],["Μεγάλη ανατροπή","Κέρδισε αγώνα αφού βρέθηκες πίσω με 0-4."],["Χωρίς ισοπαλία","Κέρδισε αγώνα με τουλάχιστον έναν γύρο αιφνίδιου θανάτου."],["Πέρασμα φαντάσματος","Πέρασε μέσα από το σώμα του αντιπάλου στη λειτουργία Θηρίου."],["Αστραπιαίο αντανακλαστικό","Κέρδισε αγώνα σε λιγότερο από 60 δευτερόλεπτα."],["Κατακτητής περιπέτειας","Κέρδισε αγώνα στη λειτουργία Περιπέτειας."]],"cs":[["První sousto","Sněz své první jídlo."],["Lovec AI","Vyhraj zápas proti AI."],["Houževnatý přeživší","Vyhraj kolo nebo zápas s délkou 1."],["Duhová síla","Sněz rubín a aktivuj režim Bestie."],["Obří had","Dosáhni délky 30."],["Bez chyby","Vyhraj zápas 5-0."],["Nebojácný","Začni zápas v režimu Dobrodružství."],["Cestovatel dimenzemi","Použij portály 5krát v jednom zápase."],["Krotitel robotů","Poraz AI 5-0 v rychlé soutěži."],["Hrdina poslední sekundy","Vyhraj v posledních 3 sekundách nebo po vypršení času."],["Velký návrat","Vyhraj zápas po prohrávání 0-4."],["Bez remízy","Vyhraj zápas alespoň s jedním kolem náhlé smrti."],["Průchod duchem","Projeď tělem soupeře v režimu Bestie."],["Bleskový reflex","Vyhraj zápas za méně než 60 sekund."],["Dobyvatel dobrodružství","Vyhraj zápas v režimu Dobrodružství."]]};
+            for (const [language, entries] of Object.entries(ACHIEVEMENT_TRANSLATIONS)) {
+              entries.forEach(([title, description], index) => {
+                const targetLanguage = language === 'pt-BR' ? 'ptbr' : language;
+                ACHIEVEMENT_DETAILS[index].title[targetLanguage] = title;
+                ACHIEVEMENT_DETAILS[index].desc[targetLanguage] = description;
+              });
+            }
+
 
             function openAchievementsMenu() {
                 // Ana menü her platformda anında oyunun kendi başarımlar penceresini açar.
@@ -14019,7 +14597,7 @@
                     `;
                 }).join('');
 
-                const headerTitle = t('achievementsTitle') || (lang === 'tr' ? 'Başarımlar' : 'Achievements');
+                const headerTitle = ACHIEVEMENT_MENU_TITLES[lang] || ACHIEVEMENT_MENU_TITLES.en;
                 showBanner(`<h1>🏅 ${headerTitle}</h1>
                     <div class="achievements-list-container" style="width: 290px; max-height: 280px; overflow-y: auto; margin:10px auto; text-align:left; font-size: 14px; line-height: 1.4; padding-right: 5px;">
                         ${cardsHTML}
@@ -14117,13 +14695,16 @@
                 }
 
                 // Snake safe zones
-                const addSnakeOcc = (s) => {
+                const addSnakeOcc = (s, ownerKey) => {
                     if (!s || !s.segments) return;
                     s.segments.forEach((seg, idx) => {
                         if (idx === 0) {
                             // Head safety zone: 3x3
                             for (let bx = -1; bx <= 1; bx++) {
-                                for (let by = -1; by <= 1; by++) baseOcc.add((seg.x + bx) + ',' + (seg.y + by));
+                                for (let by = -1; by <= 1; by++) {
+                                    const c = handleBoundaries({x: seg.x + bx, y: seg.y + by}, ownerKey);
+                                    if (c) baseOcc.add(c.x + ',' + c.y);
+                                }
                             }
                         } else {
                             // Body: just the segment itself
@@ -14132,10 +14713,11 @@
                     });
                 };
                 if (snakes) {
-                    addSnakeOcc(snakes.p1);
-                    addSnakeOcc(snakes.p2);
+                    addSnakeOcc(snakes.p1, 'p1');
+                    addSnakeOcc(snakes.p2, 'p2');
                 }
 
+                const currentBarrierCells = new Set();
                 while (barriers.length < desiredCount && attempts++ < maxAttempts) {
                     const base = TETROMINO_SHAPES[(Math.random() * TETROMINO_SHAPES.length) | 0];
                     const rot = (Math.random() * 4) | 0;
@@ -14148,22 +14730,22 @@
 
                     let valid = true;
                     // Current round barriers
-                    const currentBarrierCells = getBarrierCellsSet();
-                    
                     for (const c of cells) {
                         if (c.x < 0 || c.x >= GRID_COLS || c.y < 0 || c.y >= GRID_ROWS) { valid = false; break; }
-                        const key = c.y * GRID_COLS + c.x;
+                        const key = c.x + ',' + c.y;
                         if (baseOcc.has(key) || currentBarrierCells.has(key)) { valid = false; break; }
                     }
                     if (!valid) continue;
                     barriers.push({ cells });
+                    cells.forEach(c => currentBarrierCells.add(c.x + ',' + c.y));
                 }
             }
 
 
             function spawnPortals() {
                 if (teleportingOwner) return;
-                portals = [];
+                const previousPortals = portals;
+        portals = [];
                 for (let i = 0; i < 2; i++) {
                     let tries = 0;
                     const occ = new Set();
@@ -14173,7 +14755,7 @@
                     for (const b of barriers) { if (b && b.cells) for (const c of b.cells) occ.add(c.x + ',' + c.y); }
                     portals.forEach(p => occ.add(p.x + ',' + p.y));
                     let p;
-                    do { p = rngCell(); tries++; if (tries > 800) return; } while (occ.has(p.x + ',' + p.y));
+                    do { p = rngCell(); tries++; if (tries > 800) { portals = previousPortals; portalTimerMs = PORTAL_CYCLE_MS; return; } } while (occ.has(p.x + ',' + p.y));
                     portals.push({ x: p.x, y: p.y, id: i });
                 }
                 portalTimerMs = PORTAL_CYCLE_MS;
@@ -14223,7 +14805,7 @@
             // P1 occupies the BOTTOM half (closer to P1 controls), P2 occupies the TOP half.
             function selfArea51HalfBounds(ownerKey) {
                 const half = (GRID_ROWS / 2) | 0;
-                if (ownerKey === 'p2') return { yMin: 0, yMax: half - 1 };
+                if (ownerKey === 'p2') return { yMin: Math.min(NOTCH_SAFE_ROWS, half - 1), yMax: half - 1 };
                 return { yMin: half, yMax: GRID_ROWS - 1 };
             }
             function selfArea51WrapForOwner(c, ownerKey) {
@@ -14242,9 +14824,11 @@
                 };
             }
             function findFreeFoodCellForHalf(occ, ownerKey) {
-                let cell, tries = 0;
-                do { cell = rngCellForHalf(ownerKey); tries++; if (tries > 800) break; } while (occ.has(cell.x + ',' + cell.y));
-                return cell;
+                for (let tries = 0; tries < 800; tries++) {
+                    const cell = rngCellForHalf(ownerKey);
+                    if (!occ.has(cell.x + ',' + cell.y)) return cell;
+                }
+                return null;
             }
 
             async function countdown(n) {
@@ -14385,7 +14969,7 @@
                 const segments = [{ x: head.x, y: head.y }];
                 let cursor = { ...head };
                 for (let i = 1; i < len; i++) {
-                    const next = handleBoundaries({ x: cursor.x - dir.x, y: cursor.y - dir.y });
+                    const next = handleBoundaries({ x: cursor.x - dir.x, y: cursor.y - dir.y }, 'p1');
                     if (!next) return null;
                     segments.push(next);
                     cursor = next;
@@ -14397,7 +14981,7 @@
             function getRespawnTargetHead(head, dir, distance = 15) {
                 let cursor = { ...head };
                 for (let i = 0; i < distance; i++) {
-                    const next = handleBoundaries({ x: cursor.x - dir.x, y: cursor.y - dir.y });
+                    const next = handleBoundaries({ x: cursor.x - dir.x, y: cursor.y - dir.y }, 'p1');
                     if (!next) break;
                     cursor = next;
                 }
@@ -14405,7 +14989,7 @@
             }
 
             function findSafeRewardRespawnHead(targetHead, dir, len, blockedCells) {
-                const start = handleBoundaries(targetHead) || rngCell();
+                const start = handleBoundaries(targetHead, 'p1');
                 if (!start) return null;
 
                 const queue = [start];
@@ -14415,7 +14999,7 @@
                 while (queue.length) {
                     const cell = queue.shift();
                     const segments = buildRespawnSegments(cell, dir, len);
-                    const forwardCell = handleBoundaries({ x: cell.x + dir.x, y: cell.y + dir.y });
+                    const forwardCell = handleBoundaries({ x: cell.x + dir.x, y: cell.y + dir.y }, 'p1');
                     const isSafe = segments &&
                         forwardCell &&
                         segments.every(seg => !blockedCells.has(seg.x + ',' + seg.y)) &&
@@ -14424,7 +15008,7 @@
                     if (isSafe) return cell;
 
                     for (const stepDir of searchDirs) {
-                        const next = handleBoundaries({ x: cell.x + stepDir.x, y: cell.y + stepDir.y });
+                        const next = handleBoundaries({ x: cell.x + stepDir.x, y: cell.y + stepDir.y }, 'p1');
                         if (!next) continue;
                         const key = next.x + ',' + next.y;
                         if (visited.has(key)) continue;
@@ -14436,7 +15020,7 @@
                 return null;
             }
 
-            function buildRewardedContinueSnake(snapshotSnake, enemySnake) {
+            function buildRewardedContinueSnake(snapshotSnake, enemySnake, barrierList = [], portalList = [], foodList = []) {
                 const dir = snapshotSnake && snapshotSnake.dir ? { ...snapshotSnake.dir } : { ...dirMap.right };
                 const originalHead = snapshotSnake && snapshotSnake.segments && snapshotSnake.segments[0]
                     ? { ...snapshotSnake.segments[0] }
@@ -14445,6 +15029,11 @@
                 if (enemySnake && Array.isArray(enemySnake.segments)) {
                     enemySnake.segments.forEach(seg => blockedCells.add(seg.x + ',' + seg.y));
                 }
+                for (const barrier of barrierList || []) {
+                    if (barrier && Array.isArray(barrier.cells)) barrier.cells.forEach(cell => blockedCells.add(cell.x + ',' + cell.y));
+                }
+                for (const portal of portalList || []) if (portal) blockedCells.add(portal.x + ',' + portal.y);
+                for (const food of foodList || []) if (food) blockedCells.add(food.x + ',' + food.y);
 
                 const targetHead = getRespawnTargetHead(originalHead, dir, 15);
                 const fallbackHead = findSafeRewardRespawnHead(
@@ -14458,15 +15047,9 @@
                     findSafeRewardRespawnHead(originalHead, dir, 5, blockedCells) ||
                     fallbackHead;
 
-                const segments = buildRespawnSegments(
-                    safeHead || originalHead,
-                    dir,
-                    5
-                ) || createSnake(
-                    fallbackHead || { x: Math.floor(GRID_COLS / 2), y: Math.floor(GRID_ROWS / 2) },
-                    dir,
-                    5
-                ).segments;
+                if (!safeHead) return null;
+                const segments = buildRespawnSegments(safeHead, dir, 5);
+                if (!segments) return null;
 
                 return {
                     segments,
@@ -14474,7 +15057,7 @@
                     dir: { ...dir },
                     nextDir: { ...dir },
                     inputQueue: [],
-                    grow: 0,
+                    grow: Math.max(0, (snapshotSnake?.segments?.length || 0) - 5) + Math.max(0, snapshotSnake?.grow || 0),
                     powerEnd: 0,
                     flashUntil: 0,
                     flashColor: null,
@@ -14760,6 +15343,7 @@
                 }
 
                 if (full) {
+                    reviewNotifiedForMatch = false;
                     games = { p1: 0, p2: 0 }; drawSeries();
                     stats.p1Food = 0; stats.p2Food = 0; updateFoodCounters();
                     roundCount = 0;
@@ -14910,6 +15494,7 @@
                         if (b && b.cells) for (const c of b.cells) occ.add(c.x + ',' + c.y);
                     }
                 }
+                if (gameStyle === 'adventure') for (const p of portals || []) occ.add(p.x + ',' + p.y);
                 return occ;
             }
 
@@ -14961,11 +15546,12 @@
             }
             function relocateGreenDiamonds() {
                 const greens = foods.filter(f => f.type === 'green');
-                if (greens.length === 0) return;
-                clearGreenDiamonds();
-                spawnGreenDiamondForHalf('p1');
-                spawnGreenDiamondForHalf('p2');
-                selfArea51GreenActive = true;
+                for (const green of greens) {
+                    const occ = buildOccupancyForHalf();
+                    occ.delete(green.x + ',' + green.y);
+                    const cell = findFreeFoodCellForHalf(occ, green.selfArea51Half);
+                    if (cell) { green.x = cell.x; green.y = cell.y; }
+                }
                 selfArea51GreenLastMove = performance.now();
             }
             function maybeSpawnGreenDiamonds(now) {
@@ -14983,6 +15569,7 @@
             }
 
             function spawnFood() {
+                if (redBulkEndTime && foods.some(food => food.rubyBurst)) return;
                 if (gameStyle === 'selfArea51') {
                     spawnSelfArea51Foods();
                     return;
@@ -15197,8 +15784,8 @@
                                 const otherKey = ownerKey === 'p1' ? 'p2' : 'p1';
                                 const other = snakes[otherKey];
                                 if (other && other.segments && other.segments.length > 1) {
-                                    other.segments.pop();
-                                    if (other.grow > 0) other.grow = Math.max(0, other.grow - 1);
+                                    if (other.grow > 0) other.grow--;
+                                    else other.segments.pop();
                                 }
                                 s.flashUntil = now + 500;
                                 s.flashColor = '#39ff7a';
@@ -15293,7 +15880,29 @@
                 }
             }
 
-            function bodyAdvance(s, ownerKey) {
+            function resolveSimultaneousIntent(s1, s2) {
+        if (!s1 || !s2 || !s1.segments.length || !s2.segments.length) return null;
+        const target = (s, key) => {
+          let direction = s.nextDir;
+          if (s.inputQueue && s.inputQueue.length && !opposite(s.inputQueue[0], s.dir)) direction = s.inputQueue[0];
+          if (opposite(direction, s.dir)) direction = s.dir;
+          const head = s.segments[0];
+          return handleBoundaries({ x: head.x + direction.x, y: head.y + direction.y }, key);
+        };
+        const a = target(s1, 'p1'), b = target(s2, 'p2');
+        if (!a || !b) return null;
+        const portalA = gameStyle === 'adventure' && portals.length === 2 && isPortalCell(a.x, a.y);
+        const portalB = gameStyle === 'adventure' && portals.length === 2 && isPortalCell(b.x, b.y);
+        if (portalA && portalB && !teleportingOwner) return 'draw';
+        if (portalA || portalB || gameStyle === 'selfArea51') return null;
+        const h1 = s1.segments[0], h2 = s2.segments[0];
+        if (a.x === h2.x && a.y === h2.y && b.x === h1.x && b.y === h1.y && !isPowered(s1) && !isPowered(s2)) {
+          return s1.segments.length > s2.segments.length ? 'p1' : s2.segments.length > s1.segments.length ? 'p2' : 'draw';
+        }
+        return null;
+      }
+
+      function bodyAdvance(s, ownerKey) {
                 if (s.inputQueue && s.inputQueue.length > 0) {
                     const queued = s.inputQueue.shift();
                     if (!opposite(queued, s.dir)) {
@@ -15305,15 +15914,16 @@
                 const nextPos = { x: head.x + s.dir.x, y: head.y + s.dir.y };
                 let nextHead = handleBoundaries(nextPos, ownerKey);
 
+                let portalJump = false;
                 // Adventure mode: portal teleport
                 if (gameStyle === 'adventure' && portals.length === 2 && nextHead) {
                     if (isPortalCell(nextHead.x, nextHead.y)) {
                         const otherKey = ownerKey === 'p1' ? 'p2' : 'p1';
                         if (!teleportingOwner && attemptedPortalEntry[otherKey]) { endGame('draw'); return false; }
                         if (teleportingOwner && teleportingOwner !== ownerKey) { endGame(otherKey); return false; }
-                        AchievementTracker.state.portalsUsedInMatch++;
-                        if (AchievementTracker.state.portalsUsedInMatch >= 5) {
-                            AchievementTracker.unlock('ACH_DIMENSION_TRAVELER');
+                        if (ownerKey === (isOnlineMode ? myRole : 'p1')) {
+                            AchievementTracker.state.portalsUsedInMatch++;
+                            if (AchievementTracker.state.portalsUsedInMatch >= 5) AchievementTracker.unlock('ACH_DIMENSION_TRAVELER');
                         }
                         attemptedPortalEntry[ownerKey] = true;
                         const op = otherPortal(nextHead.x, nextHead.y);
@@ -15322,6 +15932,7 @@
                             teleportingOwner = ownerKey;
                             teleportStepsRemaining = s.segments.length;
                             nextHead = { x: op.x, y: op.y };
+                            portalJump = true;
                         }
                     }
                 }
@@ -15330,6 +15941,7 @@
                     barrierHitThisStep[ownerKey] = !!(nextHead && (_tickBarrierSet || getBarrierCellsSet()).has(nextHead.y * GRID_COLS + nextHead.x));
                 }
                 s.prev = s.segments.map(c => ({ ...c }));
+                if (portalJump) s.prev[0] = { ...nextHead };
                 if (!nextHead) { // Wall collision
                     if (currentWallMode === MOD_WALLS.SOLID) {
                         if (gameMode === '1P' && !aiSnakeEnabled) {
@@ -15350,6 +15962,22 @@
                     if (typeof recordGridTrail === 'function' && vacated) {
                         recordGridTrail(vacated.x, vacated.y, ownerKey);
                     }
+                }
+                if (gameStyle === 'adventure') {
+                  s.segments.forEach((cell, i) => {
+                    const prev = s.prev[i];
+                    if (!prev) return;
+                    const dx = Math.abs(cell.x - prev.x), dy = Math.abs(cell.y - prev.y);
+                    if (Math.min(dx, GRID_COLS - dx) + Math.min(dy, GRID_ROWS - dy) > 1) s.prev[i] = { ...cell };
+                  });
+                }
+                if (gameStyle === 'adventure' && teleportingOwner === ownerKey) {
+                  teleportStepsRemaining = Math.max(0, teleportStepsRemaining - 1);
+                  if (teleportStepsRemaining === 0) {
+                    teleportingOwner = null;
+                    attemptedPortalEntry = { p1: false, p2: false };
+                    portalTimerMs = PORTAL_CYCLE_MS;
+                  }
                 }
                 return true;
             }
@@ -15938,7 +16566,8 @@ function startWinAnim(winner, final = false) {
 
                 // Achievement Tracker: Match End Result Hooks
                 const localRole = options.savedRole || (isOnlineMode ? myRole : 'p1');
-                if (winnerKey === localRole && !isSolo) {
+                if (winnerKey === localRole && !isSolo && !isForfeit) {
+                    if (!wasOnline && gameMode === '1P' && aiSnakeEnabled && winnerKey === 'p1') AchievementTracker.unlock('ACH_AI_HUNTER');
                     // ZERO_ERROR: Win match 5-0 (matches to 5 rounds)
                     if (winnerRounds >= 5 && loserRounds === 0) {
                         AchievementTracker.unlock('ACH_ZERO_ERROR');
@@ -15952,7 +16581,7 @@ function startWinAnim(winner, final = false) {
                         AchievementTracker.unlock('ACH_GREAT_COMEBACK');
                     }
                     // LIGHTNING_REFLEX: Win match in less than 60 seconds
-                    if (durationMs < 60000) {
+                    if (!isSelf51 && durationMs < 60000) {
                         AchievementTracker.unlock('ACH_LIGHTNING_REFLEX');
                     }
                     // ADVENTURE_COMPLETE: Win match in Adventure mode
@@ -16009,6 +16638,7 @@ function startWinAnim(winner, final = false) {
       </div>
     `;
                 document.body.appendChild(overlay);
+                notifyNativeMatchResult(isForfeit);
 
                 // Add a small delay to ensure elements are rendered before attaching listeners
                 setGameTimeout(() => {
@@ -16086,8 +16716,7 @@ function startWinAnim(winner, final = false) {
                     const localRole = isOnlineMode ? myRole : 'p1';
                     if (winner === localRole) {
                         const winSnake = snakes && snakes[winner];
-                        const minLen = (winner === 'p1') ? AchievementTracker.state.minP1LengthThisRound : AchievementTracker.state.minP2LengthThisRound;
-                        if ((winSnake && winSnake.segments.length === 1) || minLen === 1) {
+                        if (winSnake && winSnake.segments.length === 1) {
                             AchievementTracker.unlock('ACH_STUBBORN_SURVIVOR');
                         }
                     }
@@ -16733,7 +17362,7 @@ function startWinAnim(winner, final = false) {
                     alpha1 = Math.max(0, Math.min(1, alpha1));
                     alpha2 = Math.max(0, Math.min(1, alpha2));
                 }
-                const shakeActive = (typeof screenShake !== 'undefined') && screenShake.trauma > 0;
+                const shakeActive = screenShakeEnabled && (typeof screenShake !== 'undefined') && screenShake.trauma > 0;
                 let shakeX = 0, shakeY = 0;
                 if (shakeActive) {
                     const shakePower = screenShake.trauma * screenShake.trauma;
@@ -16885,7 +17514,37 @@ function renderWinAnim() {
                 }
             }
 
-            function step(time) {
+            let wakeSentinel = null, wakePending = false, wakeAttempted = false, wakeActive = null;
+      function notifyNativeGameActivity(active) {
+        try { if (typeof Android !== 'undefined' && typeof Android.setGameActivityState === 'function') Android.setGameActivityState(active); } catch (_) {}
+      }
+      function updateGameWakeState(force = false) {
+        const lobby = !!socket && (currentMenuScreen === MENU_IDS.ONLINE_LOBBY || currentMenuScreen === MENU_IDS.ONLINE_CONNECTING);
+        const playing = !!snakes && !!gameMode && !isDemoMode && !paused && (!intermission || inCountdown) && !winAnim.active && !deathAnim.active;
+        const active = document.visibilityState === 'visible' && (lobby || playing);
+        if (force || active !== wakeActive) {
+          wakeActive = active;
+          wakeAttempted = false;
+          notifyNativeGameActivity(active);
+        }
+        if (!active) {
+          if (wakeSentinel) { const old = wakeSentinel; wakeSentinel = null; Promise.resolve().then(() => old.release()).catch(() => {}); }
+          return;
+        }
+        if (!wakeSentinel && !wakePending && !wakeAttempted && navigator.wakeLock && navigator.wakeLock.request) {
+          wakeAttempted = true; wakePending = true;
+          Promise.resolve().then(() => navigator.wakeLock.request('screen')).then(lock => {
+            if (!wakeActive) { Promise.resolve().then(() => lock.release()).catch(() => {}); return; }
+            wakeSentinel = lock;
+            lock.addEventListener('release', () => { if (wakeSentinel === lock) wakeSentinel = null; });
+          }).catch(() => {}).finally(() => { wakePending = false; });
+        }
+      }
+      document.addEventListener('visibilitychange', () => updateGameWakeState(true));
+
+      function step(time) {
+        gamepadController.poll();
+                updateGameWakeState();
                 if (!last) last = time;
                 let delta = time - last;
                 last = time;
@@ -16977,8 +17636,8 @@ function renderWinAnim() {
                         if (snakes.p2.powerEnd > 0 && now < snakes.p2.powerEnd) speed2 *= 1.45;
                         if (snakes.p2.slowEnd > 0 && now < snakes.p2.slowEnd) speed2 *= 0.5;
 
-                        const stepInterval1 = 1000 / speed1;
-                        const stepInterval2 = 1000 / speed2;
+                        const stepInterval1 = snakes.p1._interpInterval || 1000 / speed1;
+                        const stepInterval2 = snakes.p2._interpInterval || 1000 / speed2;
 
                         const elapsed1 = now - lastP1Update;
                         const elapsed2 = now - lastP2Update;
@@ -17003,15 +17662,6 @@ function renderWinAnim() {
                     portalTimerMs -= delta;
                     if (portalTimerMs <= 0 && !teleportingOwner) spawnPortals();
                 }
-                // Adventure teleport countdown
-                if (gameStyle === 'adventure' && teleportingOwner) {
-                    teleportStepsRemaining = Math.max(0, teleportStepsRemaining - 1);
-                    if (teleportStepsRemaining === 0) {
-                        teleportingOwner = null;
-                        attemptedPortalEntry = { p1: false, p2: false };
-                        portalTimerMs = PORTAL_CYCLE_MS;
-                    }
-                }
                 // Check if beast mode has ended
                 if (beastOwner && snakes[beastOwner] && !isPowered(snakes[beastOwner])) {
                     beastOwner = null;
@@ -17032,57 +17682,47 @@ function renderWinAnim() {
                     let p2MovedThisStep = false;
 
                     acc1 += delta;
-                    let interval1 = 1000 / speed1;
-                    if (acc1 >= interval1) {
-                        prepareMovementTick();
-                        if (isDemoMode && snakes.p1 && snakes.p2) {
-                            const m1 = measuredAIMove(snakes.p1, snakes.p2, foods, currentWallMode);
-                            if (m1) snakes.p1.nextDir = m1;
-                        }
-                        moveSnake(snakes.p1, 'p1');
-                        acc1 -= interval1;
-                        if (acc1 > interval1) acc1 = interval1; // Clamp to prevent fast-forward on lag
-                        playerMovedThisStep = true;
-                    }
-
-                    if ((intermission && !isDemoMode) || winAnim.active) { requestAnimationFrame(step); return; }
-
-                    if (gameMode === '2P' || (gameMode === '1P' && aiSnakeEnabled) || isDemoMode) {
-                        // AI movement calculation
-                         
-
-                        // v2.82: Rebalanced AI difficulty with 'Orta' (60%)
-                        let speedFactor = 0.60;
-                        if (currentSpeedMode === 'EASY') speedFactor = 0.60;
-                        else if (currentSpeedMode === 'NORMAL') speedFactor = 0.60;
-                        else if (currentSpeedMode === 'FAST') speedFactor = 0.80;
-                        else if (currentSpeedMode === 'EXTREME') speedFactor = 0.85;
-
+                    const interval1 = 1000 / speed1;
+                    const hasP2 = gameMode === '2P' || (gameMode === '1P' && aiSnakeEnabled) || isDemoMode;
+                    let interval2 = Infinity;
+                    if (hasP2 && snakes.p2) {
+                        let speedFactor = currentSpeedMode === 'EXTREME' ? 0.85 : currentSpeedMode === 'FAST' ? 0.80 : 0.60;
                         const aiSpeedFactor = (gameMode === '1P' && aiSnakeEnabled) ? speedFactor : 1.0;
-                        const aiDifficultyFactor = 1.0; // Retired in v2.60
-                        
-                        // v2.97.0:
-                        // - 2P mode: P2 beast behaves exactly like P1 (speed + RGB aura).
-                        // - 1P vs AI: AI can keep RGB aura when powered but must not gain beast speed boost.
                         let aiP2SpeedMult = speedMult(snakes.p2);
                         if (gameMode === '1P' && aiSnakeEnabled && gameStyle === 'fastCompetitive' && isPowered(snakes.p2)) {
                             aiP2SpeedMult = (performance.now() < snakes.p2.slowEnd) ? 0.5 : 1.0;
                         }
-                        effectiveSpeed2 = BASE_TPS * MOD_SPEED[currentSpeedMode] * aiP2SpeedMult * aiSpeedFactor * aiDifficultyFactor;
+                        effectiveSpeed2 = BASE_TPS * MOD_SPEED[currentSpeedMode] * aiP2SpeedMult * aiSpeedFactor;
                         if (isDemoMode) effectiveSpeed2 *= 0.6;
                         acc2 += delta;
-                        let interval2 = 1000 / effectiveSpeed2;
-                        if (acc2 >= interval2) {
-                            prepareMovementTick();
-                            if ((isDemoMode || (gameMode === '1P' && aiSnakeEnabled)) && snakes.p1 && snakes.p2) {
-                                const m2 = measuredAIMove(snakes.p2, snakes.p1, foods, currentWallMode);
-                                if (m2) snakes.p2.nextDir = m2;
-                            } 
-                            moveSnake(snakes.p2, 'p2');
-                            acc2 -= interval2;
-                            if (acc2 > interval2) acc2 = interval2;
-                            p2MovedThisStep = true;
-                        }
+                        interval2 = 1000 / effectiveSpeed2;
+                    }
+                    const move1 = acc1 >= interval1, move2 = hasP2 && acc2 >= interval2;
+                    if (move1 || move2) prepareMovementTick();
+                    if (move1 && isDemoMode && snakes.p2) {
+                        const m1 = measuredAIMove(snakes.p1, snakes.p2, foods, currentWallMode);
+                        if (m1) snakes.p1.nextDir = m1;
+                    }
+                    if (move2 && (isDemoMode || (gameMode === '1P' && aiSnakeEnabled)) && snakes.p1 && snakes.p2) {
+                        const m2 = measuredAIMove(snakes.p2, snakes.p1, foods, currentWallMode);
+                        if (m2) snakes.p2.nextDir = m2;
+                    }
+                    if (move1 && move2) {
+                        const result = resolveSimultaneousIntent(snakes.p1, snakes.p2);
+                        if (result && !isDemoMode) { endGame(result); requestAnimationFrame(step); return; }
+                    }
+                    if (move1) {
+                        moveSnake(snakes.p1, 'p1');
+                        acc1 -= interval1;
+                        if (acc1 > interval1) acc1 = interval1;
+                        playerMovedThisStep = true;
+                    }
+                    if ((intermission && !isDemoMode) || winAnim.active) { requestAnimationFrame(step); return; }
+                    if (move2) {
+                        moveSnake(snakes.p2, 'p2');
+                        acc2 -= interval2;
+                        if (acc2 > interval2) acc2 = interval2;
+                        p2MovedThisStep = true;
                     }
 
                     if ((intermission && !isDemoMode) || winAnim.active) { requestAnimationFrame(step); return; }
@@ -17148,21 +17788,22 @@ function renderWinAnim() {
                     // Handle diamond relocation
                     foods.forEach(f => {
                         if (f.type === 'diamond' && f.relocateTime && performance.now() > f.relocateTime) {
-                            let tries = 0, newPos;
+                            let tries = 0, newPos = null;
                             const occ = new Set();
                             if (snakes && snakes.p1) snakes.p1.segments.forEach(s => occ.add(s.x + ',' + s.y));
                             if (snakes && snakes.p2) snakes.p2.segments.forEach(s => occ.add(s.x + ',' + s.y));
                             foods.forEach(food => { if (food !== f) occ.add(food.x + ',' + food.y); });
-                            do {
-                                newPos = rngCell();
-                                tries++;
-                                if (tries > 800) break;
-                            } while (occ.has(newPos.x + ',' + newPos.y));
+                            for (const barrier of barriers || []) if (barrier && Array.isArray(barrier.cells)) barrier.cells.forEach(cell => occ.add(cell.x + ',' + cell.y));
+                            for (const portal of portals || []) if (portal) occ.add(portal.x + ',' + portal.y);
+                            while (tries++ < 800) {
+                                const candidate = rngCell();
+                                if (candidate && !occ.has(candidate.x + ',' + candidate.y)) { newPos = candidate; break; }
+                            }
                             if (newPos) {
                                 f.x = newPos.x;
                                 f.y = newPos.y;
                             }
-                            f.relocateTime += 3000;
+                            f.relocateTime = performance.now() + 3000;
                         }
                     });
 
@@ -17342,19 +17983,18 @@ function renderWinAnim() {
             // v2.93.0: Loading splash with progress bar + preroll
             const _splashLoadingTexts = {
                 tr: 'Y\u00fckleniyor...', en: 'Loading...', fr: 'Chargement...', de: 'Laden...',
-                es: 'Cargando...', it: 'Caricamento...', pt: 'Carregando...', nl: 'Laden...',
+                es: 'Cargando...', it: 'Caricamento...', ptbr: 'Carregando...', nl: 'Laden...',
                 pl: '\u0141adowanie...', ru: '\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430...', ja: '\u8aad\u307f\u8fbc\u307f\u4e2d...', ko: '\ub85c\ub529 \uc911...',
                 zh: '\u52a0\u8f7d\u4e2d...', ar: '\u062c\u0627\u0631\u064a \u0627\u0644\u062a\u062d\u0645\u064a\u0644...', hi: '\u0932\u094b\u0921 \u0939\u094b \u0930\u0939\u093e \u0939\u0948...', vi: '\u0110ang t\u1ea3i...',
-                th: '\u0e01\u0e33\u0e25\u0e31\u0e07\u0e42\u0e2b\u0e25\u0e14...', id: 'Memuat...', ms: 'Memuatkan...', fil: 'Naglo-load...',
-                sv: 'Laddar...'
+                th: '\u0e01\u0e33\u0e25\u0e31\u0e07\u0e42\u0e2b\u0e25\u0e14...', id: 'Memuat...', tl: 'Naglo-load...',
+                el: 'Φόρτωση...', cs: 'Načítání...'
             };
             (function initSplashText() {
                 const el = document.getElementById('splashText');
                 if (!el) return;
-                const saved = localStorage.getItem('snakeLang');
-                const nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
-                const lang = saved || (nav in _splashLoadingTexts ? nav : 'en');
-                el.textContent = _splashLoadingTexts[lang] || _splashLoadingTexts.en;
+                const code = String(lang).toLowerCase().replace('-', '');
+                const splashLang = code === 'fil' ? 'tl' : code;
+                el.textContent = _splashLoadingTexts[splashLang] || _splashLoadingTexts.en;
             })();
 
             // Loading bar progress controller

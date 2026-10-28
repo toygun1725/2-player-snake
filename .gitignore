@@ -12,6 +12,7 @@
 **/.gradle-home/
 **/build/
 **/local.properties
+**/signing.local.properties
 **/.idea/
 **/*.iml
 **/*.aab
