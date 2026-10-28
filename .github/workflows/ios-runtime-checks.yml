@@ -27,6 +27,6 @@ jobs:
         run: xcrun swiftc -typecheck 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/CloudSaveStore.swift'
       - name: Exercise cloud save parsing and merging
         run: |
-          xcrun swiftc 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/CloudSaveStore.swift' tests/CloudSaveRecordProbe.swift -o "$RUNNER_TEMP/cloud-save-probe"
+          xcrun swiftc 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/CloudSaveStore.swift' tests/CloudSaveRecordProbe.swift tests/CloudSaveCoordinatorProbe.swift -o "$RUNNER_TEMP/cloud-save-probe"
           "$RUNNER_TEMP/cloud-save-probe"
 

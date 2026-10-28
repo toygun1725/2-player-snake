@@ -22,6 +22,7 @@ struct CloudSaveRecordProbe {
             preconditionFailure("Malformed scores must not be accepted")
         } catch {}
         print("Cloud save parsing and merge probe passed")
+        try CloudSaveCoordinatorProbe.run()
     }
 }
 

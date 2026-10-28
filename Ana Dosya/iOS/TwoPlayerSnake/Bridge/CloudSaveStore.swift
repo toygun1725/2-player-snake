@@ -68,10 +68,62 @@ struct CloudSaveRecord {
     }
 }
 
+enum CloudFetchResult { case found(CKRecord), missing, failure }
+enum CloudWriteResult { case saved, conflict, failure }
+
+/// The network adapter is replaceable so the real coordinator can be tested offline.
+protocol CloudSaveTransport: AnyObject {
+    func account(_ completion: @escaping (String?) -> Void)
+    func fetch(_ completion: @escaping (CloudFetchResult) -> Void)
+    func save(_ record: CKRecord, completion: @escaping (CloudWriteResult) -> Void)
+    func cancel()
+}
+
+private final class CloudKitTransport: CloudSaveTransport {
+    private let container: CKContainer
+    private let recordID = CKRecord.ID(recordName: "twoPlayerSnakeSaveV1")
+    private var operation: CKModifyRecordsOperation?
+
+    init(identifier: String) { container = CKContainer(identifier: identifier) }
+
+    func account(_ completion: @escaping (String?) -> Void) {
+        container.accountStatus { [container] status, error in
+            guard error == nil, status == .available else { completion(nil); return }
+            container.fetchUserRecordID { id, error in completion(error == nil ? id?.recordName : nil) }
+        }
+    }
+
+    func fetch(_ completion: @escaping (CloudFetchResult) -> Void) {
+        container.privateCloudDatabase.fetch(withRecordID: recordID) { record, error in
+            if let error = error as? CKError, error.code == .unknownItem { completion(.missing) }
+            else if error == nil, let record = record { completion(.found(record)) }
+            else { completion(.failure) }
+        }
+    }
+
+    func save(_ record: CKRecord, completion: @escaping (CloudWriteResult) -> Void) {
+        let operation = CKModifyRecordsOperation(recordsToSave: [record], recordIDsToDelete: nil)
+        operation.savePolicy = .ifServerRecordUnchanged
+        operation.modifyRecordsCompletionBlock = { saved, _, error in
+            if error == nil, saved?.count == 1 { completion(.saved); return }
+            if let error = error as? CKError,
+               error.code == .serverRecordChanged || (error.partialErrorsByItemID?.values.contains { ($0 as? CKError)?.code == .serverRecordChanged } ?? false) {
+                completion(.conflict)
+            } else { completion(.failure) }
+        }
+        self.operation = operation
+        container.privateCloudDatabase.add(operation)
+    }
+
+    func cancel() { operation?.cancel(); operation = nil }
+}
+
 /// Keeps local and legacy data intact when KVS is unavailable, malformed, or newer than v1.
 final class CloudSaveStore: NSObject {
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
     private let store = NSUbiquitousKeyValueStore.default
+    private let suppliedTransport: CloudSaveTransport?
+    private let usesKVS: Bool
     private let backupKey = "twoplayersnake_cloud_save_v1_backup"
     private let legacyKey = "twoplayersnake_cloud_save_backup"
     private let pendingKey = "twoplayersnake_cloud_save_v1_pending"
@@ -83,25 +135,41 @@ final class CloudSaveStore: NSObject {
     private var syncGeneration = 0
     private var readScheduled = false
     // No container identifier is supplied until signing and iCloud setup are verified.
-    private lazy var cloudContainer: CKContainer? = {
+    private lazy var cloudTransport: CloudSaveTransport? = {
+        if let supplied = suppliedTransport { return supplied }
         guard let identifier = Bundle.main.object(forInfoDictionaryKey: "SnakeCloudKitContainerIdentifier") as? String,
               identifier.hasPrefix("iCloud."), !identifier.contains("$(") else { return nil }
-        return CKContainer(identifier: identifier)
+        return CloudKitTransport(identifier: identifier)
     }()
     private let cloudRecordID = CKRecord.ID(recordName: "twoPlayerSnakeSaveV1")
     private let cloudAccountKey = "twoplayersnake_cloudkit_v1_account"
     private var cloudGeneration = 0
     private var cloudBusy = false
     private var cloudNeedsRun = false
-    private var cloudOperation: CKModifyRecordsOperation?
     var onLoaded: (([String: Any]) -> Void)?
 
     override init() {
+        defaults = .standard
+        suppliedTransport = nil
+        usesKVS = true
         super.init()
+        setupObservers()
+        beginCloudRead()
+    }
+
+    /// Test-only injection also avoids touching the machine's real iCloud KVS.
+    init(defaults: UserDefaults, transport: CloudSaveTransport) {
+        self.defaults = defaults
+        suppliedTransport = transport
+        usesKVS = false
+        super.init()
+        setupObservers()
+    }
+
+    private func setupObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(cloudChanged(_:)), name: NSUbiquitousKeyValueStore.didChangeExternallyNotification, object: store)
         NotificationCenter.default.addObserver(self, selector: #selector(identityChanged), name: .NSUbiquityIdentityDidChange, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(identityChanged), name: .CKAccountChanged, object: nil)
-        beginCloudRead()
     }
 
     deinit { NotificationCenter.default.removeObserver(self) }
@@ -151,8 +219,7 @@ final class CloudSaveStore: NSObject {
         }
         defaults.set(true, forKey: pendingKey)
         cloudGeneration += 1
-        cloudOperation?.cancel()
-        cloudOperation = nil
+        cloudTransport?.cancel()
         cloudBusy = false
         cloudNeedsRun = false
         beginCloudRead(replacing: true)
@@ -160,6 +227,7 @@ final class CloudSaveStore: NSObject {
 
     /// Defer importing KVS data while account synchronization is in progress.
     private func beginCloudRead(replacing: Bool = false) {
+        guard usesKVS else { return }
         if readScheduled && !replacing { return }
         syncGeneration += 1
         let generation = syncGeneration
@@ -226,55 +294,45 @@ final class CloudSaveStore: NSObject {
 
     /// CloudKit stays disabled unless an explicitly configured container exists.
     private func requestCloudSync() {
-        guard let container = cloudContainer else { return }
+        guard let transport = cloudTransport else { return }
         cloudNeedsRun = true
         guard !cloudBusy else { return }
         cloudBusy = true
         cloudNeedsRun = false
         let generation = cloudGeneration
-        container.accountStatus { [weak self] status, error in
+        transport.account { [weak self] account in
             DispatchQueue.main.async {
                 guard let self = self, self.cloudGeneration == generation else { return }
-                guard error == nil, status == .available else { self.finishCloudSync(generation, succeeded: false); return }
-                self.findCloudAccount(container, generation: generation)
-            }
-        }
-    }
-
-    private func findCloudAccount(_ container: CKContainer, generation: Int) {
-        container.fetchUserRecordID { [weak self] id, error in
-            DispatchQueue.main.async {
-                guard let self = self, self.cloudGeneration == generation else { return }
-                guard error == nil, let id = id else { self.finishCloudSync(generation, succeeded: false); return }
-                let account = id.recordName
+                guard let account = account else { self.finishCloudSync(generation, succeeded: false); return }
                 if let bound = self.defaults.string(forKey: self.cloudAccountKey), bound != account {
                     self.finishCloudSync(generation, succeeded: false)
                     return
                 }
                 self.defaults.set(account, forKey: self.cloudAccountKey)
-                self.fetchCloudRecord(container, account: account, generation: generation, attempt: 0)
+                self.fetchCloudRecord(transport, account: account, generation: generation, attempt: 0)
             }
         }
     }
 
-    private func fetchCloudRecord(_ container: CKContainer, account: String, generation: Int, attempt: Int) {
-        container.privateCloudDatabase.fetch(withRecordID: cloudRecordID) { [weak self] record, error in
+    private func fetchCloudRecord(_ transport: CloudSaveTransport, account: String, generation: Int, attempt: Int) {
+        transport.fetch { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self, self.cloudGeneration == generation else { return }
-                if let error = error as? CKError, error.code == .unknownItem {
-                    self.prepareCloudWrite(container, account: account, generation: generation, attempt: attempt,
+                switch result {
+                case .missing:
+                    self.prepareCloudWrite(transport, account: account, generation: generation, attempt: attempt,
                                            record: CKRecord(recordType: "SnakeSave", recordID: self.cloudRecordID), isNew: true)
-                } else if error == nil, let record = record {
-                    self.prepareCloudWrite(container, account: account, generation: generation, attempt: attempt,
+                case .found(let record):
+                    self.prepareCloudWrite(transport, account: account, generation: generation, attempt: attempt,
                                            record: record, isNew: false)
-                } else {
+                case .failure:
                     self.finishCloudSync(generation, succeeded: false)
                 }
             }
         }
     }
 
-    private func prepareCloudWrite(_ container: CKContainer, account: String, generation: Int,
+    private func prepareCloudWrite(_ transport: CloudSaveTransport, account: String, generation: Int,
                                    attempt: Int, record: CKRecord, isNew: Bool) {
         do {
             var records = [try localRecord()]
@@ -294,38 +352,28 @@ final class CloudSaveStore: NSObject {
             }
             record["payload"] = payload as CKRecordValue
             // Recheck the account immediately before submitting a write.
-            container.fetchUserRecordID { [weak self] id, error in
+            transport.account { [weak self] currentAccount in
                 DispatchQueue.main.async {
                     guard let self = self, self.cloudGeneration == generation else { return }
-                    guard error == nil, id?.recordName == account else { self.finishCloudSync(generation, succeeded: false); return }
-                    let operation = CKModifyRecordsOperation(recordsToSave: [record], recordIDsToDelete: nil)
-                    operation.savePolicy = .ifServerRecordUnchanged
-                    operation.modifyRecordsCompletionBlock = { [weak self] saved, _, error in
+                    guard currentAccount == account else { self.finishCloudSync(generation, succeeded: false); return }
+                    transport.save(record) { [weak self] result in
                         DispatchQueue.main.async {
                             guard let self = self, self.cloudGeneration == generation else { return }
-                            self.cloudOperation = nil
-                            if error == nil, saved?.count == 1 {
+                            switch result {
+                            case .saved:
                                 self.finishCloudSync(generation, succeeded: true)
-                            } else if attempt < 2, self.isCloudConflict(error) {
-                                self.fetchCloudRecord(container, account: account, generation: generation, attempt: attempt + 1)
-                            } else {
+                            case .conflict where attempt < 2:
+                                self.fetchCloudRecord(transport, account: account, generation: generation, attempt: attempt + 1)
+                            case .conflict, .failure:
                                 self.finishCloudSync(generation, succeeded: false)
                             }
                         }
                     }
-                    self.cloudOperation = operation
-                    container.privateCloudDatabase.add(operation)
                 }
             }
         } catch {
             finishCloudSync(generation, succeeded: false)
         }
-    }
-
-    private func isCloudConflict(_ error: Error?) -> Bool {
-        guard let error = error as? CKError else { return false }
-        if error.code == .serverRecordChanged { return true }
-        return error.partialErrorsByItemID?.values.contains { ($0 as? CKError)?.code == .serverRecordChanged } ?? false
     }
 
     private func finishCloudSync(_ generation: Int, succeeded: Bool) {
