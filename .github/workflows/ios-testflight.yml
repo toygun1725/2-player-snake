@@ -50,7 +50,7 @@ jobs:
 
       - name: 🔑 Sabit Dağıtım Sertifikasını Yükle (GitHub Secret'tan)
         env:
-          DIST_CERT_SECRET: ${{ secrets.IOS_SIGNING_P12_V2 }}
+          DIST_CERT_SECRET: ${{ secrets.IOS_SIGNING_P12_V3 }}
         run: |
           CERT_DATA="$DIST_CERT_SECRET"
           if [ -n "$CERT_DATA" ]; then
@@ -74,7 +74,7 @@ jobs:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          CI_KEYCHAIN_PASSWORD: ${{ secrets.IOS_SIGNING_PASSWORD_V2 }}
+          CI_KEYCHAIN_PASSWORD: ${{ secrets.IOS_SIGNING_PASSWORD_V3 }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
           SNAKE_ENABLE_TESTFLIGHT_CLOUDKIT: ${{ inputs.icloud_testflight }}
         run: |

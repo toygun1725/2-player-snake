@@ -8,10 +8,10 @@ const workflow = fs.readFileSync('.github/workflows/ios-testflight.yml', 'utf8')
 test('iOS workflow never caches, downloads or publishes its signing identity', () => {
   assert.doesNotMatch(workflow, /actions\/cache@|actions\/download-artifact@/);
   assert.doesNotMatch(workflow, /iOS-Distribution-Certificate-p12|certs\/\*\.p12|certs\/\*\.base64/);
-  assert.match(workflow, /secrets\.IOS_SIGNING_P12_V2/);
+  assert.match(workflow, /secrets\.IOS_SIGNING_P12_V3/);
   assert.doesNotMatch(workflow, /secrets\.DISTRIBUTION_CERTIFICATE|secrets\.APPLE_CERT_P12_BASE64|secrets\.CI_KEYCHAIN_PASSWORD/);
   assert.match(workflow, /if \[ -n "\$CERT_DATA" \]; then[\s\S]*?else[\s\S]*?exit 1[\s\S]*?fi/);
-  assert.match(workflow, /CI_KEYCHAIN_PASSWORD:\s*\$\{\{ secrets\.IOS_SIGNING_PASSWORD_V2 \}\}/);
+  assert.match(workflow, /CI_KEYCHAIN_PASSWORD:\s*\$\{\{ secrets\.IOS_SIGNING_PASSWORD_V3 \}\}/);
   assert.match(workflow, /if \[ -z "\$CI_KEYCHAIN_PASSWORD" \]; then[\s\S]*?exit 1[\s\S]*?fi/);
 });
 
@@ -47,4 +47,6 @@ test('release lane requests the new profile without automatically changing it', 
   assert.doesNotMatch(fastfile, /BundleIdCapability\.create/);
   assert.doesNotMatch(fastfile, /\bget_certificates\s*\(/);
   assert.doesNotMatch(fastfile, /security export/);
+  assert.doesNotMatch(fastfile, /sh\([^\n]*keychain_password/);
+  assert.match(fastfile, /Open3\.capture3\("security", "import"/);
 });

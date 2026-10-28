@@ -1,6 +1,8 @@
 # 2 Player Snake - iOS Fastlane Fastfile
 # macOS gerektirmeden GitHub Actions üzerinde iOS derleme ve TestFlight yükleme hattı
 
+require "open3"
+
 default_platform(:ios)
 
 platform :ios do
@@ -48,7 +50,8 @@ platform :ios do
     UI.message("Aktif Anahtarlık Dosyası: #{actual_keychain_path}")
 
     # Anahtarlığı listeye ekle ve kilidini aç
-    sh("security unlock-keychain -p '#{keychain_password}' '#{actual_keychain_path}'") rescue nil
+    _, _, unlock_status = Open3.capture3("security", "unlock-keychain", "-p", keychain_password, actual_keychain_path)
+    UI.user_error!("Geçici anahtarlık açılamadı.") unless unlock_status.success?
     sh("security default-keychain -s '#{actual_keychain_path}'") rescue nil
 
     # 4. Apple Sertifikalarını ve Dağıtım Profilini Otomatik Çek / Senkronize Et
@@ -69,9 +72,13 @@ platform :ios do
       p12_path = File.join(certs_dir, "dist_certificate.p12")
 
       if File.exist?(p12_path)
-        UI.success("Önbellekten kayıtlı dağıtım sertifikası bulundu: #{p12_path}")
-        sh("security import '#{p12_path}' -k '#{actual_keychain_path}' -P '#{keychain_password}' -T /usr/bin/codesign -T /usr/bin/security")
-        sh("security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '#{keychain_password}' '#{actual_keychain_path}'") rescue nil
+        UI.success("Dağıtım sertifikası bulundu.")
+        # Fastlane's sh action adds command arguments to its public summary, so
+        # keep all password-bearing commands out of that action and its logs.
+        _, _, import_status = Open3.capture3("security", "import", p12_path, "-k", actual_keychain_path, "-P", keychain_password, "-T", "/usr/bin/codesign", "-T", "/usr/bin/security")
+        UI.user_error!("Dağıtım sertifikası macOS anahtarlığına aktarılamadı.") unless import_status.success?
+        _, _, partition_status = Open3.capture3("security", "set-key-partition-list", "-S", "apple-tool:,apple:,codesign:", "-s", "-k", keychain_password, actual_keychain_path)
+        UI.user_error!("İmzalama anahtarının erişimi ayarlanamadı.") unless partition_status.success?
       else
         UI.user_error!("Dağıtım sertifikası eksik; yeni sertifika otomatik oluşturulmaz.")
       end
