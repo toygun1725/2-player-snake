@@ -188,6 +188,15 @@ platform :ios do
       build_output_dir = File.expand_path("../build", __dir__)
       workspace_path = File.expand_path("../TwoPlayerSnake.xcworkspace", __dir__)
 
+      # Opt-in is reserved for a TestFlight validation build. The ordinary
+      # Release configuration remains local-only until real CloudKit testing.
+      cloudkit_testflight = ENV["SNAKE_ENABLE_TESTFLIGHT_CLOUDKIT"] == "true"
+      build_xcargs = "CURRENT_PROJECT_VERSION=#{build_num} MARKETING_VERSION=#{version_num}"
+      if cloudkit_testflight
+        build_xcargs += " CODE_SIGN_ENTITLEMENTS=TwoPlayerSnake/CloudKit.staged.entitlements SNAKE_CLOUDKIT_CONTAINER_ID=iCloud.com.twoplayersnake.app"
+        UI.message("TestFlight iCloud doğrulaması için CloudKit yapılandırması seçildi.")
+      end
+
       build_params = {
         scheme: "TwoPlayerSnake",
         output_directory: build_output_dir,
@@ -196,7 +205,7 @@ platform :ios do
         export_method: "app-store",
         export_options: export_opts,
         codesigning_identity: "Apple Distribution",
-        xcargs: "CURRENT_PROJECT_VERSION=#{build_num} MARKETING_VERSION=#{version_num}"
+        xcargs: build_xcargs
       }
 
       if File.exist?(workspace_path)
@@ -219,40 +228,7 @@ platform :ios do
       )
       UI.success("2 Player Snake basariyla TestFlight'a yuklendi!")
 
-      # 9. App Store Metadata + Ekran Goruntuleri Yukle (deliver)
-      # Dir.pwd = git checkout kozu (github actions workspace)
-      repo_root  = Dir.pwd
-      meta_path  = File.join(repo_root, "Ana Dosya", "iOS", "fastlane", "metadata")
-      shots_path = File.join(repo_root, "Ana Dosya", "iOS", "fastlane", "screenshots")
-      UI.message("Metadata path: #{meta_path}")
-      UI.message("Screenshots path: #{shots_path}")
-      UI.message("Metadata exists: #{Dir.exist?(meta_path)}")
-      UI.message("Screenshots exists: #{Dir.exist?(shots_path)}")
-
-      if Dir.exist?(meta_path) || Dir.exist?(shots_path)
-        UI.message("App Store metadata ve ekran goruntuleri yukleniyor...")
-        begin
-          upload_to_app_store(
-            api_key: api_key,
-            app_identifier: "com.twoplayersnake.app",
-            skip_binary_upload: true,
-            skip_screenshots: !Dir.exist?(shots_path),
-            skip_metadata: !Dir.exist?(meta_path),
-            overwrite_screenshots: true,
-            submit_for_review: false,
-            screenshots_path: shots_path,
-            metadata_path: meta_path,
-            force: true,
-            precheck_include_in_app_purchases: false
-          )
-          UI.success("App Store metadata ve ekran goruntuleri yuklendi!")
-        rescue => ex
-          UI.important("App Store metadata yukleme uyarisi: #{ex.message}")
-          UI.important(ex.backtrace.first(5).join("\n"))
-        end
-      else
-        UI.important("Metadata/screenshots klasoru bulunamadi, deliver atlandi.")
-      end
+      # Store listing changes are a separate, explicitly authorized operation.
     else
       UI.user_error!("TwoPlayerSnake.xcodeproj bulunamadı! Lütfen proje yolunu kontrol edin: #{proj_path}")
     end

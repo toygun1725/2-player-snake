@@ -33,4 +33,5 @@ jobs:
         run: |
           xcodebuild -project 'Ana Dosya/iOS/TwoPlayerSnake.xcodeproj' -target TwoPlayerSnake -configuration Debug -sdk iphonesimulator -showBuildSettings -json > "$RUNNER_TEMP/cloud-debug-settings.json"
           xcodebuild -project 'Ana Dosya/iOS/TwoPlayerSnake.xcodeproj' -target TwoPlayerSnake -configuration Release -sdk iphonesimulator -showBuildSettings -json > "$RUNNER_TEMP/cloud-release-settings.json"
-          node tools/check-ios-cloud-settings.cjs "$RUNNER_TEMP/cloud-debug-settings.json" "$RUNNER_TEMP/cloud-release-settings.json"
+          xcodebuild -project 'Ana Dosya/iOS/TwoPlayerSnake.xcodeproj' -target TwoPlayerSnake -configuration Release -sdk iphonesimulator -showBuildSettings -json CODE_SIGN_ENTITLEMENTS=TwoPlayerSnake/CloudKit.staged.entitlements SNAKE_CLOUDKIT_CONTAINER_ID=iCloud.com.twoplayersnake.app > "$RUNNER_TEMP/cloud-testflight-settings.json"
+          node tools/check-ios-cloud-settings.cjs "$RUNNER_TEMP/cloud-debug-settings.json" "$RUNNER_TEMP/cloud-release-settings.json" "$RUNNER_TEMP/cloud-testflight-settings.json"
