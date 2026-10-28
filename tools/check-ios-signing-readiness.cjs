@@ -6,6 +6,12 @@ const fs = require('node:fs');
 const { spawnSync } = require('node:child_process');
 
 function fail(message) { console.log(message); process.exitCode = 1; }
+const targetProfileName = '2 Player Snake App Store V2 2026';
+function selectTargetProfile(profiles) {
+  const matches = profiles.filter(p => p.attributes?.profileType === 'IOS_APP_STORE' &&
+    p.attributes?.profileState === 'ACTIVE' && p.attributes?.name === targetProfileName);
+  return matches.length === 1 ? matches[0] : null;
+}
 function openssl(args, input) {
   const r = spawnSync('openssl', args, { input, maxBuffer: 4 * 1024 * 1024 });
   if (r.status !== 0) throw new Error('openssl failed');
@@ -50,7 +56,7 @@ async function main() {
   url.searchParams.set('filter[identifier]', 'com.twoplayersnake.app');
   url.searchParams.set('include', 'profiles');
   url.searchParams.set('limit[profiles]', '50');
-  url.searchParams.set('fields[profiles]', 'profileType,profileState');
+  url.searchParams.set('fields[profiles]', 'name,profileType,profileState');
   const response = await fetch(url, { headers, redirect: 'error' });
   if (!response.ok) return fail(`Apple profile lookup failed: HTTP ${response.status}.`);
   const body = await response.json();
@@ -58,9 +64,9 @@ async function main() {
   if (!links || !Array.isArray(links.data) || links.links?.next) return fail('Profile list incomplete.');
   const profiles = (body.included || []).filter(p => p.type === 'profiles' && links.data.some(l => l.id === p.id && l.type === p.type));
   if (profiles.length !== links.data.length) return fail('Profile details incomplete.');
-  const active = profiles.filter(p => p.attributes?.profileType === 'IOS_APP_STORE' && p.attributes?.profileState === 'ACTIVE');
-  if (active.length !== 1) return fail('Expected exactly one active App Store profile.');
-  const profileUrl = new URL(`https://api.appstoreconnect.apple.com/v1/profiles/${encodeURIComponent(active[0].id)}`);
+  const targetProfile = selectTargetProfile(profiles);
+  if (!targetProfile) return fail('Expected exactly one active App Store profile with the new profile name.');
+  const profileUrl = new URL(`https://api.appstoreconnect.apple.com/v1/profiles/${encodeURIComponent(targetProfile.id)}`);
   profileUrl.searchParams.set('fields[profiles]', 'profileContent');
   const detail = await fetch(profileUrl, { headers, redirect: 'error' });
   if (!detail.ok) return fail(`Profile content lookup failed: HTTP ${detail.status}.`);
@@ -76,5 +82,5 @@ async function main() {
   console.log('Active App Store profile contains the distribution certificate: yes.');
   console.log('This check does not sign an app or verify device iCloud synchronization.');
 }
-main().catch(() => fail('Signing readiness could not be determined.'));
-
+if (require.main === module) main().catch(() => fail('Signing readiness could not be determined.'));
+module.exports = { selectTargetProfile };

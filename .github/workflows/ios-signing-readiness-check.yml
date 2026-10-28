@@ -7,7 +7,6 @@ on:
       - '.github/workflows/ios-signing-readiness-check.yml'
 permissions:
   contents: read
-  actions: read
 jobs:
   signing-readiness:
     runs-on: ubuntu-latest
@@ -17,33 +16,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check whether a certificate secret exists
-        id: identity
-        env:
-          DIST_CERT_SECRET: ${{ secrets.DISTRIBUTION_CERTIFICATE }}
-          FALLBACK_CERT_SECRET: ${{ secrets.APPLE_CERT_P12_BASE64 }}
-        run: |
-          if [ -n "$DIST_CERT_SECRET" ] || [ -n "$FALLBACK_CERT_SECRET" ]; then
-            echo 'missing=false' >> "$GITHUB_OUTPUT"
-          else
-            echo 'missing=true' >> "$GITHUB_OUTPUT"
-          fi
-      - name: Retrieve existing distribution identity on the temporary runner
-        if: steps.identity.outputs.missing == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: iOS-Distribution-Certificate-p12
-          path: ${{ runner.temp }}/ios-signing-readiness
-          github-token: ${{ github.token }}
-          run-id: 35006468857
       - name: Compare signing identity with active profile
         env:
-          DIST_CERT_SECRET: ${{ secrets.DISTRIBUTION_CERTIFICATE }}
-          FALLBACK_CERT_SECRET: ${{ secrets.APPLE_CERT_P12_BASE64 }}
-          CERT_PATH: ${{ runner.temp }}/ios-signing-readiness/dist_certificate.p12
-          CI_KEYCHAIN_PASSWORD: ${{ secrets.CI_KEYCHAIN_PASSWORD || 'SnakeCI_Temp_Pass_2026' }}
+          DIST_CERT_SECRET: ${{ secrets.IOS_SIGNING_P12_V2 }}
+          CI_KEYCHAIN_PASSWORD: ${{ secrets.IOS_SIGNING_PASSWORD_V2 }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
         run: node tools/check-ios-signing-readiness.cjs
-
