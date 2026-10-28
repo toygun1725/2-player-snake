@@ -14,7 +14,7 @@ on:
       version_number:
         description: 'Pazarlama Sürüm Numarası (Örn: 3.3.5 veya 3.3.6)'
         required: false
-        default: '3.6.1'
+        default: '3.6.5'
   push:
     tags:
       - 'ios-v*'
@@ -51,37 +51,13 @@ jobs:
           CERT_DATA="${DIST_CERT_SECRET:-$FALLBACK_CERT_SECRET}"
           if [ -n "$CERT_DATA" ]; then
             mkdir -p "Ana Dosya/iOS/certs"
-            echo "$CERT_DATA" | base64 --decode > "Ana Dosya/iOS/certs/dist_certificate.p12"
-            echo "Sabit dağıtım sertifikası GitHub Secrets üzerinden başarıyla yüklendi."
+            printf '%s' "$CERT_DATA" | base64 --decode > "Ana Dosya/iOS/certs/dist_certificate.p12"
+            test -s "Ana Dosya/iOS/certs/dist_certificate.p12"
+            echo "Dağıtım sertifikası güvenli değişkenden hazırlandı."
           else
-            echo "Sabit sertifika secret'ı tanımlanmamış, standart akış devam ediyor."
+            echo "Dağıtım sertifikası güvenli değişkeni eksik; build başlatılmadı."
+            exit 1
           fi
-
-      - name: 🔑 Sertifika Önbelleği (Certificate Cache)
-        uses: actions/cache@v4
-        with:
-          path: Ana Dosya/iOS/certs
-          key: ios-certs-v2-${{ secrets.APPLE_TEAM_ID }}-${{ hashFiles('Ana Dosya/iOS/certs/dist_certificate.p12') }}
-          restore-keys: |
-            ios-certs-v2-${{ secrets.APPLE_TEAM_ID }}-
-
-      - name: Check cached signing identity
-        id: signing-material
-        run: |
-          if [ -s "Ana Dosya/iOS/certs/dist_certificate.p12" ]; then
-            echo "missing=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "missing=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Recover existing identity from successful Build 35
-        if: steps.signing-material.outputs.missing == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: iOS-Distribution-Certificate-p12
-          path: Ana Dosya/iOS/certs
-          github-token: ${{ github.token }}
-          run-id: 35006468857
 
       - name: 📦 CocoaPods Kurulumu (Google Mobile Ads SDK)
         run: |
@@ -94,9 +70,13 @@ jobs:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          CI_KEYCHAIN_PASSWORD: ${{ secrets.CI_KEYCHAIN_PASSWORD || 'SnakeCI_Temp_Pass_2026' }}
+          CI_KEYCHAIN_PASSWORD: ${{ secrets.CI_KEYCHAIN_PASSWORD }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |
+          if [ -z "$CI_KEYCHAIN_PASSWORD" ]; then
+            echo "Sertifika parolası güvenli değişkeni eksik; build başlatılmadı."
+            exit 1
+          fi
           cd "Ana Dosya/iOS"
           bundle exec fastlane beta build_number:"${{ github.event.inputs.build_number }}" version:"${{ github.event.inputs.version_number }}"
 
@@ -108,12 +88,3 @@ jobs:
           path: 'Ana Dosya/iOS/**/*.ipa'
           if-no-files-found: ignore
 
-      - name: 🔑 Dağıtım Sertifikasını Artifact Olarak Kaydet (Sabitleme için)
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: iOS-Distribution-Certificate-p12
-          path: |
-            Ana Dosya/iOS/certs/*.p12
-            Ana Dosya/iOS/certs/*.base64
-          if-no-files-found: ignore
