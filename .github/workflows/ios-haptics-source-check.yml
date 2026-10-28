@@ -1,4 +1,4 @@
-name: iOS Haptics Source Check
+name: iOS Haptics and Review Source Check
 on:
   push:
     branches: [codex/ios-cloud-check]
@@ -6,6 +6,8 @@ on:
       - 'Ana Dosya/iOS/TwoPlayerSnake/Haptics/HapticManager.swift'
       - 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/GameScriptMessageHandler.swift'
       - 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/ios_bridge_bootstrap.js'
+      - 'Ana Dosya/iOS/TwoPlayerSnake/ViewController.swift'
+      - 'tests/AutoReviewGateProbe.swift'
       - '.github/workflows/ios-haptics-source-check.yml'
 permissions:
   contents: read
@@ -19,6 +21,9 @@ jobs:
         run: |
           xcrun swiftc -frontend -parse 'Ana Dosya/iOS/TwoPlayerSnake/Haptics/HapticManager.swift'
           xcrun swiftc -frontend -parse 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/GameScriptMessageHandler.swift'
+          xcrun swiftc -frontend -parse 'Ana Dosya/iOS/TwoPlayerSnake/ViewController.swift'
           xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios15.0-simulator -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" -typecheck 'Ana Dosya/iOS/TwoPlayerSnake/Haptics/HapticManager.swift'
           node --check 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/ios_bridge_bootstrap.js'
+          python3 -c 'import re,pathlib,sys; v=pathlib.Path("Ana Dosya/iOS/TwoPlayerSnake/ViewController.swift").read_text(); h=pathlib.Path("Ana Dosya/iOS/TwoPlayerSnake/Bridge/GameScriptMessageHandler.swift").read_text(); g=re.search(r"(?ms)^enum AutoReviewGate \{.*?^\}",v); p=re.search(r"(?ms)^func isValidReviewMatchPayload\(.*?^\}",h); assert g and p; pathlib.Path(sys.argv[1]).write_text("import Foundation\nimport CoreFoundation\n"+g.group()+"\n"+p.group()+"\n"+pathlib.Path("tests/AutoReviewGateProbe.swift").read_text())' "$RUNNER_TEMP/review-gate-probe.swift"
+          xcrun swift "$RUNNER_TEMP/review-gate-probe.swift"
 

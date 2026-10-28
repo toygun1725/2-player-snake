@@ -5,6 +5,15 @@ import WebKit
 import StoreKit
 import GameKit
 
+func isValidReviewMatchPayload(_ payload: Any?) -> Bool {
+    guard let data = payload as? [String: Any],
+          let final = data["isMatchFinal"] as? NSNumber,
+          let forfeit = data["isForfeit"] as? NSNumber,
+          CFGetTypeID(final) == CFBooleanGetTypeID(), final.boolValue,
+          CFGetTypeID(forfeit) == CFBooleanGetTypeID(), !forfeit.boolValue else { return false }
+    return true
+}
+
 final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
 
     weak var viewController: ViewController?
@@ -124,6 +133,10 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
 
         case "requestReview":
             requestInAppReview()
+
+        case "matchResult":
+            guard message.frameInfo.isMainFrame, isValidReviewMatchPayload(payload) else { return }
+            viewController?.requestAutomaticReviewIfEligible()
 
         case "buyRemoveAds":
             handleBuyRemoveAds()
