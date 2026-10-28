@@ -11,6 +11,7 @@ func fail(_ message: String) -> Never {
 final class SmokeTest: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
     let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
     let resources: URL
+    let webDataStore = WKWebsiteDataStore.nonPersistent()
     var webView: WKWebView!
     var window: NSWindow!
     var stage = -1
@@ -27,14 +28,14 @@ final class SmokeTest: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
         try FileManager.default.copyItem(at: source.appendingPathComponent("WebAssets"), to: resources.appendingPathComponent("WebAssets"))
         try FileManager.default.copyItem(at: source.appendingPathComponent("Offline/offline_logo.png"), to: resources.appendingPathComponent("offline_logo.png"))
         window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 390, height: 844), styleMask: [.titled], backing: .buffered, defer: false)
-        _ = Timer.scheduledTimer(withTimeInterval: 70, repeats: false) { _ in fail("gameReady did not arrive within 70s") }
+        _ = Timer.scheduledTimer(withTimeInterval: 120, repeats: false) { _ in fail("gameReady did not arrive within 120s") }
         try loadStage()
     }
 
     func loadStage() throws {
         checking = false
         let config = WKWebViewConfiguration()
-        config.websiteDataStore = .nonPersistent()
+        config.websiteDataStore = webDataStore
         config.setURLSchemeHandler(BundleAssetHandler(resourceDirectory: resources), forURLScheme: "snake-asset")
         config.userContentController.add(self, name: "iOS")
         let assets = try BundleAssetHandler.bootstrapScript(resourceDirectory: resources)
@@ -55,6 +56,9 @@ final class SmokeTest: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
             let html = try String(contentsOf: root.appendingPathComponent("Ana Dosya/Mobile/Beta/v3/2 Player Snake Mobile v3.6.1.html"), encoding: .utf8)
             // HTTPS origin is intentional: fonts must also work across the custom-scheme boundary.
             webView.loadHTMLString(html, baseURL: URL(string: "https://2playersnake.com/wp-content/uploads/game-mobile/index.html"))
+        } else if stage == 1 {
+            let html = try String(contentsOf: root.appendingPathComponent("Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html"), encoding: .utf8)
+            webView.loadHTMLString(html, baseURL: URL(string: "https://2playersnake.com/wp-content/uploads/game-mobile/index.html?app_platform=ios"))
         } else {
             webView.loadFileURL(root.appendingPathComponent("Ana Dosya/iOS/TwoPlayerSnake/Resources/Offline/mobile_offline_fallback.html"), allowingReadAccessTo: root)
         }
@@ -96,6 +100,9 @@ final class SmokeTest: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
                     fonts: expected.every(f => loadedFonts.includes(f)), loadedFonts,
                     socket: typeof window.io === 'function',
                     offline: window.__twoPlayerSnakeOfflineMode === true || window.location.protocol === 'file:',
+                    origin: window.location.origin,
+                    migrationProbe: localStorage.getItem('__snake_testflight_origin_probe'),
+                    cloudBridge: typeof window.onCloudSaveSyncResult === 'function' && typeof window.Android?.saveCloudState === 'function',
                     blurRetained: !/backdrop-filter\\s*:\\s*none/.test(style),
                     menu: !!document.querySelector('#banner.show .main-menu-logo')
                 });
@@ -105,18 +112,33 @@ final class SmokeTest: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
                 guard error == nil, let result = value as? String,
                       let data = result.data(using: .utf8),
                       let fields = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { fail("DOM verification failed: \(String(describing: error))") }
-                print("WEBKIT stage=\(stage == 0 ? "https-origin" : "file-offline") \(result)")
+                print("WEBKIT stage=\(stage) \(result)")
                 guard let rev = fields["revision"] as? Int, rev >= 36,
                       fields["logo"] as? Bool == true,
                       fields["fonts"] as? Bool == true,
                       fields["socket"] as? Bool == true,
                       fields["blurRetained"] as? Bool == true,
                       fields["menu"] as? Bool == true,
-                      fields["offline"] as? Bool == (stage == 1) else { fail(result) }
-                if stage == 1 { print("WEBKIT PASS: HTTPS-origin and offline game resources/init verified"); exit(0) }
-                webView.configuration.userContentController.removeScriptMessageHandler(forName: "iOS")
-                stage = 1
-                do { try loadStage() } catch { fail(error.localizedDescription) }
+                      fields["offline"] as? Bool == (stage == 2) else { fail(result) }
+                if stage == 1 {
+                    guard fields["origin"] as? String == "https://2playersnake.com",
+                          fields["migrationProbe"] as? String == "kept",
+                          fields["cloudBridge"] as? Bool == true,
+                          webView.url?.host == "2playersnake.com" else { fail("bundled HTTPS test origin, storage, or cloud bridge did not match") }
+                }
+                if stage == 2 { print("WEBKIT PASS: HTTPS-origin, bundled TestFlight and offline game resources/init verified"); exit(0) }
+                if stage == 0 {
+                    webView.evaluateJavaScript("localStorage.setItem('__snake_testflight_origin_probe', 'kept')") { [self] _, error in
+                        guard error == nil else { fail("old-origin storage could not be set") }
+                        webView.configuration.userContentController.removeScriptMessageHandler(forName: "iOS")
+                        stage = 1
+                        do { try loadStage() } catch { fail(error.localizedDescription) }
+                    }
+                } else {
+                    webView.configuration.userContentController.removeScriptMessageHandler(forName: "iOS")
+                    stage = 2
+                    do { try loadStage() } catch { fail(error.localizedDescription) }
+                }
             }
         }
     }
