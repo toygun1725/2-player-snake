@@ -21,6 +21,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Check Fastlane syntax and signing configuration without running it
+        run: |
+          ruby -c 'Ana Dosya/iOS/fastlane/Fastfile'
+          node tools/check-ios-fastlane-config.cjs
       - name: JavaScript regression and native WebKit resource checks
         run: bash tools/test-ios-runtime.sh
       - name: Type-check iOS cloud save source
