@@ -45,6 +45,8 @@ test('release lane requests the new profile without automatically changing it', 
   assert.match(fastfile, /force:\s*false/);
   assert.match(fastfile, /get_provisioning_profile\([\s\S]*?readonly:\s*true/);
   assert.doesNotMatch(fastfile, /BundleIdCapability\.create/);
+  assert.match(fastfile, /bundle_id\.get_capabilities/);
+  assert.doesNotMatch(fastfile, /bundle_id\.get_bundle_id_capabilities/);
   assert.doesNotMatch(fastfile, /\bget_certificates\s*\(/);
   assert.doesNotMatch(fastfile, /security export/);
   assert.doesNotMatch(fastfile, /sh\([^\n]*keychain_password/);

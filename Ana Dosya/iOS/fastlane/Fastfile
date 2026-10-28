@@ -87,7 +87,7 @@ platform :ios do
       begin
         bundle_id = Spaceship::ConnectAPI::BundleId.find("com.twoplayersnake.app")
         UI.user_error!("Uygulamanın Apple App ID kaydı bulunamadı.") unless bundle_id
-        caps = bundle_id.get_bundle_id_capabilities
+        caps = bundle_id.get_capabilities
         UI.user_error!("Associated Domains yetkisi eksik; Apple hesabında ayrıca incelenmeli.") unless caps && caps.any? { |c| c.capability_type == "ASSOCIATED_DOMAINS" }
         UI.success("Associated Domains yetkisi App ID üzerinde etkin.")
       rescue => ex
