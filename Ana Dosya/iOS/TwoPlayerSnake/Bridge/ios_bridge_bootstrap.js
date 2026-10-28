@@ -81,6 +81,9 @@
     triggerVibration: function (durationMs) {
       postToNative("triggerVibration", { durationMs: durationMs });
     },
+    setHapticsEnabled: function (enabled) {
+      if (typeof enabled === "boolean") postToNative("setHapticsEnabled", { enabled: enabled });
+    },
     requestReview: function () {
       postToNative("requestReview", {});
     },
@@ -98,6 +101,12 @@
     },
     notifyHighScore: function (scoresJson, platform) {
       postToNative("notifyHighScore", { scoresJson: scoresJson, platform: platform });
+    },
+    saveCloudState: function (payloadJson) {
+      postToNative("saveCloudState", payloadJson);
+    },
+    setGameActivityState: function (active) {
+      postToNative("gameActivityState", { active: active === true });
     },
     showAchievements: function () {
       postToNative("showAchievements", {});
@@ -481,6 +490,9 @@
           touch-action: manipulation !important;
           -webkit-tap-highlight-color: transparent !important;
         }
+        .dpad-cluster, button.dpad-btn, button.turn-btn, #game {
+          touch-action: none !important;
+        }
       `;
 
       var target = document.head || document.documentElement;
@@ -608,3 +620,4 @@
   })();
 
 })();
+

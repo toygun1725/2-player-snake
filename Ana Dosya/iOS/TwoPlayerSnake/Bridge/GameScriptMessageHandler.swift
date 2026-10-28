@@ -1,4 +1,5 @@
 import Foundation
+import CoreFoundation
 import UIKit
 import WebKit
 import StoreKit
@@ -7,6 +8,13 @@ import GameKit
 final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
 
     weak var viewController: ViewController?
+    private lazy var cloudSaveStore: CloudSaveStore = {
+        let store = CloudSaveStore()
+        store.onLoaded = { [weak self] payload in self?.viewController?.sendCloudCallback("onCloudSaveLoaded", payload: payload) }
+        return store
+    }()
+
+    func refreshCloudSave() { cloudSaveStore.refresh() }
 
     init(viewController: ViewController) {
         self.viewController = viewController
@@ -102,6 +110,15 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
             }
             HapticManager.shared.triggerVibration(durationMs: ms)
 
+        case "setHapticsEnabled":
+            guard message.frameInfo.isMainFrame,
+                  let text = payload as? String, let bytes = text.data(using: .utf8),
+                  let data = (try? JSONSerialization.jsonObject(with: bytes)) as? [String: Any],
+                  let value = data["enabled"] as? NSNumber,
+                  CFGetTypeID(value) == CFBooleanGetTypeID() else { return }
+            HapticManager.shared.isHapticsEnabled = value.boolValue
+            viewController?.publishSettingsToGame()
+
         case "adBreak":
             handleAdBreak(payload: payload)
 
@@ -116,6 +133,21 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
 
         case "notifyHighScore":
             handleNotifyHighScore(payload: payload)
+
+        case "saveCloudState":
+            guard message.frameInfo.isMainFrame, let raw = payload as? String,
+                  let bytes = raw.data(using: .utf8),
+                  let data = (try? JSONSerialization.jsonObject(with: bytes)) as? [String: Any],
+                  let requestId = data["requestId"] as? String, !requestId.isEmpty else { return }
+            let ok = cloudSaveStore.accept(raw)
+            viewController?.sendCloudCallback("onCloudSaveSyncResult", payload: ["requestId": requestId, "status": ok ? "success" : "failure"])
+
+        case "gameActivityState":
+            var data = payload as? [String: Any]
+            if data == nil, let text = payload as? String, let bytes = text.data(using: .utf8) {
+                data = (try? JSONSerialization.jsonObject(with: bytes)) as? [String: Any]
+            }
+            viewController?.setGameActivityState(data?["active"] as? Bool ?? false)
 
         case "showAchievements":
             print("Bridge: Başarımlar Menüsü İstendi")
@@ -336,6 +368,7 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
         if let updatedData = try? JSONSerialization.data(withJSONObject: root),
            let updatedStr = String(data: updatedData, encoding: .utf8) {
             UserDefaults.standard.set(updatedStr, forKey: Self.localBackupDefaultsKey)
+            cloudSaveStore.refresh()
         }
     }
 
@@ -366,3 +399,4 @@ final class GameScriptMessageHandler: NSObject, WKScriptMessageHandler {
         return combined.prefix(maxStoredScores).map { ["name": $0.name, "score": $0.score] }
     }
 }
+

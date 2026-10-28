@@ -1,0 +1,23 @@
+name: iOS Haptics Source Check
+on:
+  push:
+    branches: [codex/ios-cloud-check]
+    paths:
+      - 'Ana Dosya/iOS/TwoPlayerSnake/Haptics/HapticManager.swift'
+      - 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/GameScriptMessageHandler.swift'
+      - 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/ios_bridge_bootstrap.js'
+      - '.github/workflows/ios-haptics-source-check.yml'
+permissions:
+  contents: read
+jobs:
+  parse-sources:
+    runs-on: macos-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse Swift and JavaScript sources without building an app
+        run: |
+          xcrun swiftc -frontend -parse 'Ana Dosya/iOS/TwoPlayerSnake/Haptics/HapticManager.swift'
+          xcrun swiftc -frontend -parse 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/GameScriptMessageHandler.swift'
+          node --check 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/ios_bridge_bootstrap.js'
+

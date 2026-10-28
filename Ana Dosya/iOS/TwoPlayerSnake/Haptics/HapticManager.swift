@@ -4,7 +4,10 @@ import AudioToolbox
 final class HapticManager {
     static let shared = HapticManager()
 
-    var isHapticsEnabled: Bool = true
+    private static let preferenceKey = "hapticsEnabled"
+    var isHapticsEnabled: Bool {
+        didSet { UserDefaults.standard.set(isHapticsEnabled, forKey: Self.preferenceKey) }
+    }
 
     private var selectionFeedback: UISelectionFeedbackGenerator?
     private var lightImpact: UIImpactFeedbackGenerator?
@@ -14,6 +17,7 @@ final class HapticManager {
     private var notificationFeedback: UINotificationFeedbackGenerator?
 
     private init() {
+        isHapticsEnabled = UserDefaults.standard.object(forKey: Self.preferenceKey) as? Bool ?? true
         prepareGenerators()
     }
 
@@ -153,3 +157,4 @@ final class HapticManager {
         }
     }
 }
+
