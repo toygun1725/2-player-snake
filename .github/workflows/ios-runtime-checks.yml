@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   workflow_call:
   push:
-    branches: [main]
+    branches: [main, codex/ios-cloud-check]
     paths:
       - 'Ana Dosya/iOS/**'
       - 'Ana Dosya/Mobile/Beta/v3/**'
@@ -23,3 +23,10 @@ jobs:
           node-version: '22'
       - name: JavaScript regression and native WebKit resource checks
         run: bash tools/test-ios-runtime.sh
+      - name: Type-check iOS cloud save source
+        run: xcrun swiftc -typecheck 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/CloudSaveStore.swift'
+      - name: Exercise cloud save parsing and merging
+        run: |
+          xcrun swiftc 'Ana Dosya/iOS/TwoPlayerSnake/Bridge/CloudSaveStore.swift' tests/CloudSaveRecordProbe.swift -o "$RUNNER_TEMP/cloud-save-probe"
+          "$RUNNER_TEMP/cloud-save-probe"
+
