@@ -171,6 +171,22 @@ enum CloudSaveCoordinatorProbe {
             RunLoop.current.run(until: Date().addingTimeInterval(0.05))
             precondition(transport.writeCalls == 0 && defaults.bool(forKey: pending))
         }
+        // KVS can report an account change before CloudKit does; it must also
+        // cancel the in-flight CloudKit operation and ignore its late result.
+        do {
+            let cloud = SimulatedCloud(), transport = SimulatedTransport(cloud), defaults = settings()
+            transport.holdFetches = true
+            let store = CloudSaveStore(defaults: defaults, transport: transport)
+            precondition(store.accept(json("Ada", 10)))
+            wait("KVS account-change fetch not queued") { transport.waitingFetches.count == 1 }
+            transport.identity = "account-b"
+            NotificationCenter.default.post(name: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
+                                            object: NSUbiquitousKeyValueStore.default,
+                                            userInfo: [NSUbiquitousKeyValueStoreChangeReasonKey: NSUbiquitousKeyValueStoreAccountChange])
+            transport.releaseFetch(.missing)
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+            precondition(transport.cancellations > 0 && transport.writeCalls == 0 && defaults.bool(forKey: pending))
+        }
         print("Cloud coordinator simulated conflict, retry, offline and account probes passed")
     }
 }

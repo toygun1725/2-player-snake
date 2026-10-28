@@ -261,8 +261,9 @@ final class CloudSaveStore: NSObject {
             return
         }
         if reason == NSUbiquitousKeyValueStoreAccountChange {
-            defaults.set(true, forKey: pendingKey)
-            beginCloudRead(replacing: true)
+            // A KVS account change can arrive independently of the CloudKit
+            // notification. Invalidate both paths before any delayed callback.
+            identityChanged()
             return
         }
         if reason == NSUbiquitousKeyValueStoreInitialSyncChange {
