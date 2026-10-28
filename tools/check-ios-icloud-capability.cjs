@@ -2,6 +2,7 @@
 
 // Read-only App Store Connect diagnostic. Never print credentials or tokens.
 const crypto = require('node:crypto');
+const { spawnSync } = require('node:child_process');
 
 async function main() {
   const keyId = process.env.APP_STORE_CONNECT_KEY_ID;
@@ -94,9 +95,42 @@ async function main() {
       }
       console.log(`Signing profiles found: ${profiles.length}.`);
       for (const [label, count] of counts) console.log(`Signing profile ${label}: ${count}.`);
+      const active = profiles.filter(p => p.attributes?.profileType === 'IOS_APP_STORE' && p.attributes?.profileState === 'ACTIVE');
+      if (active.length === 1) {
+        const endpoint = new URL(`https://api.appstoreconnect.apple.com/v1/profiles/${encodeURIComponent(active[0].id)}`);
+        endpoint.searchParams.set('fields[profiles]', 'profileContent');
+        try {
+          const detail = await fetch(endpoint, { headers: { Authorization: `Bearer ${token}` }, redirect: 'error' });
+          if (!detail.ok) console.log(`Profile content verification unavailable: HTTP ${detail.status}.`);
+          else {
+            const result = await detail.json();
+            const content = result.data?.attributes?.profileContent;
+            if (typeof content !== 'string' || !content) console.log('Profile content verification unavailable.');
+            else {
+              const decoded = spawnSync('openssl', ['cms', '-verify', '-inform', 'DER', '-noverify'], {
+                input: Buffer.from(content, 'base64'), maxBuffer: 4 * 1024 * 1024,
+              });
+              if (decoded.status !== 0) console.log('Profile entitlement decoding unavailable.');
+              else {
+                const script = [
+                  'import plistlib,sys',
+                  'p=plistlib.loads(sys.stdin.buffer.read())',
+                  'e=p.get("Entitlements",{})',
+                  'print("Profile CloudKit entitlement: " + ("present" if "CloudKit" in e.get("com.apple.developer.icloud-services",[]) else "missing"))',
+                  'print("Profile game iCloud container: " + ("present" if "iCloud.com.twoplayersnake.app" in e.get("com.apple.developer.icloud-container-identifiers",[]) else "missing"))',
+                  'print("Profile game App ID: " + ("matches" if e.get("application-identifier")=="GUFQF359Q7.com.twoplayersnake.app" else "does not match"))',
+                ].join(';');
+                const parsed = spawnSync('python3', ['-c', script], { input: decoded.stdout, maxBuffer: 4096 });
+                if (parsed.status !== 0) console.log('Profile entitlement parsing unavailable.');
+                else process.stdout.write(parsed.stdout);
+              }
+            }
+          }
+        } catch (_) { console.log('Profile entitlement verification unavailable.'); }
+      }
     }
   }
-  console.log('Container binding, signing profile, CloudKit schema, and device synchronization are not verified by this read-only check.');
+  console.log('Signing key availability, CloudKit schema, and device synchronization are not verified by this read-only check.');
 }
 
 main().catch(() => { console.log('Apple API response could not be interpreted.'); process.exitCode = 2; });
