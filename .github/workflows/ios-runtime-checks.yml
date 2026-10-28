@@ -25,6 +25,10 @@ jobs:
         run: |
           ruby -c 'Ana Dosya/iOS/fastlane/Fastfile'
           node tools/check-ios-fastlane-config.cjs
+          node --test tests/ios-cloudkit-testflight.test.cjs
+          xcrun swiftc -frontend -parse 'Ana Dosya/iOS/TwoPlayerSnake/ViewController.swift'
+          xcodebuild -help > "$RUNNER_TEMP/xcode-help.txt" 2>&1
+          grep -F 'testFlightInternalTestingOnly' "$RUNNER_TEMP/xcode-help.txt"
       - name: JavaScript regression and native WebKit resource checks
         run: bash tools/test-ios-runtime.sh
       - name: Type-check iOS cloud save source
@@ -37,5 +41,5 @@ jobs:
         run: |
           xcodebuild -project 'Ana Dosya/iOS/TwoPlayerSnake.xcodeproj' -target TwoPlayerSnake -configuration Debug -sdk iphonesimulator -showBuildSettings -json > "$RUNNER_TEMP/cloud-debug-settings.json"
           xcodebuild -project 'Ana Dosya/iOS/TwoPlayerSnake.xcodeproj' -target TwoPlayerSnake -configuration Release -sdk iphonesimulator -showBuildSettings -json > "$RUNNER_TEMP/cloud-release-settings.json"
-          xcodebuild -project 'Ana Dosya/iOS/TwoPlayerSnake.xcodeproj' -target TwoPlayerSnake -configuration Release -sdk iphonesimulator -showBuildSettings -json CODE_SIGN_ENTITLEMENTS=TwoPlayerSnake/CloudKit.staged.entitlements SNAKE_CLOUDKIT_CONTAINER_ID=iCloud.com.twoplayersnake.app > "$RUNNER_TEMP/cloud-testflight-settings.json"
+          xcodebuild -project 'Ana Dosya/iOS/TwoPlayerSnake.xcodeproj' -target TwoPlayerSnake -configuration Release -sdk iphonesimulator -showBuildSettings -json CODE_SIGN_ENTITLEMENTS=TwoPlayerSnake/CloudKit.staged.entitlements SNAKE_CLOUDKIT_CONTAINER_ID=iCloud.com.twoplayersnake.app SNAKE_TESTFLIGHT_BUNDLED_GAME=YES > "$RUNNER_TEMP/cloud-testflight-settings.json"
           node tools/check-ios-cloud-settings.cjs "$RUNNER_TEMP/cloud-debug-settings.json" "$RUNNER_TEMP/cloud-release-settings.json" "$RUNNER_TEMP/cloud-testflight-settings.json"

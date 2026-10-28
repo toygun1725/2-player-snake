@@ -77,6 +77,17 @@ final class SmokeTest: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
         }
     }
 
+    func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        if stage == 1, action.targetFrame?.isMainFrame == true {
+            guard let url = action.request.url,
+                  ["2playersnake.com", "www.2playersnake.com"].contains(url.host?.lowercased() ?? ""),
+                  url.path.hasPrefix("/wp-content/uploads/game-mobile/") else {
+                fail("bundled TestFlight navigation would be rejected by the native trust policy")
+            }
+        }
+        decisionHandler(.allow)
+    }
+
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let body = message.body as? [String: Any] else { return }
         if body["action"] as? String == "smokeError" {

@@ -163,6 +163,11 @@ platform :ios do
       export_opts = {
         method: "app-store"
       }
+      if ENV["SNAKE_ENABLE_TESTFLIGHT_CLOUDKIT"] == "true"
+        # This packaged-game build is for internal tests and must not be
+        # promoted to the App Store; the final build uses the production URL.
+        export_opts[:testFlightInternalTestingOnly] = true
+      end
       if profile_name && !profile_name.empty?
         export_opts[:provisioningProfiles] = {
           "com.twoplayersnake.app" => profile_name
@@ -193,7 +198,7 @@ platform :ios do
       cloudkit_testflight = ENV["SNAKE_ENABLE_TESTFLIGHT_CLOUDKIT"] == "true"
       build_xcargs = "CURRENT_PROJECT_VERSION=#{build_num} MARKETING_VERSION=#{version_num}"
       if cloudkit_testflight
-        build_xcargs += " CODE_SIGN_ENTITLEMENTS=TwoPlayerSnake/CloudKit.staged.entitlements SNAKE_CLOUDKIT_CONTAINER_ID=iCloud.com.twoplayersnake.app"
+        build_xcargs += " CODE_SIGN_ENTITLEMENTS=TwoPlayerSnake/CloudKit.staged.entitlements SNAKE_CLOUDKIT_CONTAINER_ID=iCloud.com.twoplayersnake.app SNAKE_TESTFLIGHT_BUNDLED_GAME=YES"
         UI.message("TestFlight iCloud doğrulaması için CloudKit yapılandırması seçildi.")
       end
 

@@ -17,10 +17,13 @@ assert.equal(release.SNAKE_CLOUDKIT_CONTAINER_ID || '', '');
 assert.equal(release.CODE_SIGN_ENTITLEMENTS, 'TwoPlayerSnake/TwoPlayerSnake.entitlements');
 assert.equal(debug.PRODUCT_BUNDLE_IDENTIFIER, 'com.twoplayersnake.app');
 assert.equal(release.PRODUCT_BUNDLE_IDENTIFIER, 'com.twoplayersnake.app');
+assert.equal(debug.SNAKE_TESTFLIGHT_BUNDLED_GAME, 'NO');
+assert.equal(release.SNAKE_TESTFLIGHT_BUNDLED_GAME, 'NO');
 if (process.argv[4]) {
   const testflight = settings(process.argv[4]);
   assert.equal(testflight.SNAKE_CLOUDKIT_CONTAINER_ID, 'iCloud.com.twoplayersnake.app');
   assert.equal(testflight.CODE_SIGN_ENTITLEMENTS, 'TwoPlayerSnake/CloudKit.staged.entitlements');
   assert.equal(testflight.PRODUCT_BUNDLE_IDENTIFIER, 'com.twoplayersnake.app');
+  assert.equal(testflight.SNAKE_TESTFLIGHT_BUNDLED_GAME, 'YES');
 }
 console.log('Xcode Debug configuration, Release safety gate, and optional TestFlight settings passed.');

@@ -470,9 +470,22 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
         components.queryItems = queryItems
 
         if let finalUrl = components.url {
-            // Stable per-build URL. Honor HTTP revalidation so a website update is not cached forever.
-            let request = URLRequest(url: finalUrl, cachePolicy: .reloadRevalidatingCacheData, timeoutInterval: 15)
-            activeNavigation = webView.load(request)
+            let useBundledTestGame = Bundle.main.object(forInfoDictionaryKey: "SnakeTestFlightBundledGame") as? String == "YES"
+            if useBundledTestGame {
+                guard let bundledURL = Bundle.main.url(forResource: "mobile_offline_fallback", withExtension: "html", subdirectory: "Offline")
+                        ?? Bundle.main.url(forResource: "mobile_offline_fallback", withExtension: "html"),
+                      let bundledHTML = try? String(contentsOf: bundledURL, encoding: .utf8) else {
+                    showOfflineOverlay()
+                    return
+                }
+                // Keep the live HTTPS origin and query items while testing the
+                // packaged game, so old web storage remains available.
+                activeNavigation = webView.loadHTMLString(bundledHTML, baseURL: finalUrl)
+            } else {
+                // Stable per-build URL. Honor HTTP revalidation so a website update is not cached forever.
+                let request = URLRequest(url: finalUrl, cachePolicy: .reloadRevalidatingCacheData, timeoutInterval: 15)
+                activeNavigation = webView.load(request)
+            }
 
             // A slow but connected page must not randomly become an offline session after 2.5 s.
             // Confirmed loss of connectivity still switches immediately in NetworkMonitor.

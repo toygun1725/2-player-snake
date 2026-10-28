@@ -12,6 +12,8 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>SnakeCloudKitContainerIdentifier</key>
 	<string>$(SNAKE_CLOUDKIT_CONTAINER_ID)</string>
+	<key>SnakeTestFlightBundledGame</key>
+	<string>$(SNAKE_TESTFLIGHT_BUNDLED_GAME)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
