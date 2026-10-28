@@ -30,8 +30,10 @@ async function main() {
 
   const query = new URL('https://api.appstoreconnect.apple.com/v1/bundleIds');
   query.searchParams.set('filter[identifier]', 'com.twoplayersnake.app');
-  query.searchParams.set('include', 'bundleIdCapabilities');
+  query.searchParams.set('include', 'bundleIdCapabilities,profiles');
   query.searchParams.set('limit[bundleIdCapabilities]', '50');
+  query.searchParams.set('limit[profiles]', '50');
+  query.searchParams.set('fields[profiles]', 'profileType,profileState');
   let response;
   try {
     response = await fetch(query, { headers: { Authorization: `Bearer ${token}` }, redirect: 'error' });
@@ -75,6 +77,23 @@ async function main() {
           console.log(`iCloud version option ${option.key}: ${option.enabled ? 'enabled' : 'disabled'}.`);
         }
       }
+    }
+  }
+  const profileLinks = body.data[0].relationships?.profiles;
+  if (!Array.isArray(profileLinks?.data) || profileLinks?.links?.next) {
+    console.log('Signing profile list is incomplete.');
+  } else {
+    const profiles = included.filter(item => item.type === 'profiles' && profileLinks.data.some(link => link.id === item.id && link.type === item.type));
+    if (profiles.length !== profileLinks.data.length) console.log('Signing profile details are incomplete.');
+    else {
+      const counts = new Map();
+      for (const profile of profiles) {
+        const safe = value => typeof value === 'string' && /^[A-Z0-9_]+$/.test(value) ? value : 'UNKNOWN';
+        const label = `${safe(profile.attributes?.profileType)} ${safe(profile.attributes?.profileState)}`;
+        counts.set(label, (counts.get(label) || 0) + 1);
+      }
+      console.log(`Signing profiles found: ${profiles.length}.`);
+      for (const [label, count] of counts) console.log(`Signing profile ${label}: ${count}.`);
     }
   }
   console.log('Container binding, signing profile, CloudKit schema, and device synchronization are not verified by this read-only check.');
