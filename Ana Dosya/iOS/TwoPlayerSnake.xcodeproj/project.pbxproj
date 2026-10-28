@@ -16,6 +16,7 @@
 		2P0000000000000000000019 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000018 /* NetworkMonitor.swift */; };
 		2P0000000000000000000021 /* AdManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000020 /* AdManager.swift */; };
 		2P0000000000000000000023 /* GameScriptMessageHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000022 /* GameScriptMessageHandler.swift */; };
+		2P0000000000000000000301 /* CloudSaveStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000300 /* CloudSaveStore.swift */; };
 		2P0000000000000000000087 /* IAPManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000086 /* IAPManager.swift */; };
 		2P0000000000000000000025 /* ios_bridge_bootstrap.js in Resources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000024 /* ios_bridge_bootstrap.js */; };
 		2P0000000000000000000027 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2P0000000000000000000026 /* LaunchScreen.storyboard */; };
@@ -50,6 +51,7 @@
 		2P0000000000000000000018 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		2P0000000000000000000020 /* AdManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdManager.swift; sourceTree = "<group>"; };
 		2P0000000000000000000022 /* GameScriptMessageHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScriptMessageHandler.swift; sourceTree = "<group>"; };
+		2P0000000000000000000300 /* CloudSaveStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSaveStore.swift; sourceTree = "<group>"; };
 		2P0000000000000000000086 /* IAPManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IAPManager.swift; sourceTree = "<group>"; };
 		2P0000000000000000000024 /* ios_bridge_bootstrap.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = ios_bridge_bootstrap.js; sourceTree = "<group>"; };
 		2P0000000000000000000028 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -196,6 +198,7 @@
 			isa = PBXGroup;
 			children = (
 				2P0000000000000000000022 /* GameScriptMessageHandler.swift */,
+				2P0000000000000000000300 /* CloudSaveStore.swift */,
 				2P0000000000000000000024 /* ios_bridge_bootstrap.js */,
 			);
 			path = Bridge;
@@ -275,6 +278,9 @@
 						CreatedOnToolsVersion = 15.0;
 						DevelopmentTeam = GUFQF359Q7;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.iCloud = { enabled = 1; };
+						};
 					};
 				};
 			};
@@ -348,6 +354,7 @@
 				2P0000000000000000000019 /* NetworkMonitor.swift in Sources */,
 				2P0000000000000000000021 /* AdManager.swift in Sources */,
 				2P0000000000000000000023 /* GameScriptMessageHandler.swift in Sources */,
+				2P0000000000000000000301 /* CloudSaveStore.swift in Sources */,
 				2P0000000000000000000087 /* IAPManager.swift in Sources */,
 				2P0000000000000000000103 /* GameCenterManager.swift in Sources */,
 				2P0000000000000000000112 /* NotificationManager.swift in Sources */,
@@ -523,9 +530,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = TwoPlayerSnake/TwoPlayerSnake.entitlements;
+				CODE_SIGN_ENTITLEMENTS = TwoPlayerSnake/CloudKit.staged.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 48;
+				SNAKE_CLOUDKIT_CONTAINER_ID = iCloud.com.twoplayersnake.app;
 				DEVELOPMENT_TEAM = GUFQF359Q7;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TwoPlayerSnake/Info.plist;
@@ -551,6 +559,7 @@
 				CODE_SIGN_ENTITLEMENTS = TwoPlayerSnake/TwoPlayerSnake.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 48;
+				SNAKE_CLOUDKIT_CONTAINER_ID = "";
 				DEVELOPMENT_TEAM = GUFQF359Q7;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TwoPlayerSnake/Info.plist;
@@ -593,3 +602,4 @@
 	};
 	rootObject = 2P0000000000000000000001 /* Project object */;
 }
+

@@ -10,6 +10,8 @@
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>SnakeCloudKitContainerIdentifier</key>
+	<string>$(SNAKE_CLOUDKIT_CONTAINER_ID)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -211,3 +213,4 @@
 	</array>
 </dict>
 </plist>
+

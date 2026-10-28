@@ -134,7 +134,8 @@ final class CloudSaveStore: NSObject {
     private var waitingForAccountSync = true
     private var syncGeneration = 0
     private var readScheduled = false
-    // No container identifier is supplied until signing and iCloud setup are verified.
+    // Debug supplies the verified container; Release stays disabled until real
+    // CloudKit, signing, and production schema have been verified.
     private lazy var cloudTransport: CloudSaveTransport? = {
         if let supplied = suppliedTransport { return supplied }
         guard let identifier = Bundle.main.object(forInfoDictionaryKey: "SnakeCloudKitContainerIdentifier") as? String,
