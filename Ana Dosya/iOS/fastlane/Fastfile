@@ -94,13 +94,15 @@ platform :ios do
         UI.user_error!("Associated Domains kontrolü başarısız: #{ex.message}")
       end
 
+      # readonly conflicts with an explicitly supplied force value in sigh.
+      # Remove the environment override as well; sigh defaults force to false.
+      ENV.delete("SIGH_FORCE")
       get_provisioning_profile(
         api_key: api_key,
         app_identifier: "com.twoplayersnake.app",
         provisioning_name: "2 Player Snake App Store V2 2026",
         ignore_profiles_with_different_name: true,
         cert_id: "ZPZMAX7K2S",
-        force: false,
         readonly: true
       )
     end

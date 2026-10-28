@@ -42,7 +42,8 @@ test('release lane requests the new profile without automatically changing it', 
   assert.match(fastfile, /provisioning_name:\s*"2 Player Snake App Store V2 2026"/);
   assert.match(fastfile, /ignore_profiles_with_different_name:\s*true/);
   assert.match(fastfile, /cert_id:\s*"ZPZMAX7K2S"/);
-  assert.match(fastfile, /force:\s*false/);
+  assert.doesNotMatch(fastfile, /\bforce\s*:/);
+  assert.match(fastfile, /ENV\.delete\("SIGH_FORCE"\)/);
   assert.match(fastfile, /get_provisioning_profile\([\s\S]*?readonly:\s*true/);
   assert.doesNotMatch(fastfile, /BundleIdCapability\.create/);
   assert.match(fastfile, /bundle_id\.get_capabilities/);
