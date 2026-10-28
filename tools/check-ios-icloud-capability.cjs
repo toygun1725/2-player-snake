@@ -117,7 +117,8 @@ async function main() {
                   'p=plistlib.loads(sys.stdin.buffer.read())',
                   'e=p.get("Entitlements",{})',
                   'print("Profile iCloud entitlement keys: " + (", ".join(sorted(k for k in e if "icloud" in k.lower() or "ubiquity" in k.lower())) or "none"))',
-                  'print("Profile CloudKit entitlement: " + ("present" if "CloudKit" in e.get("com.apple.developer.icloud-services",[]) else "missing"))',
+                  'v=e.get("com.apple.developer.icloud-services")',
+                  'print("Profile CloudKit allowlist: " + ("exact" if isinstance(v,list) and "CloudKit" in v else "wildcard" if v=="*" or isinstance(v,list) and "*" in v else "unknown or missing"))',
                   'print("Profile game iCloud container: " + ("present" if "iCloud.com.twoplayersnake.app" in e.get("com.apple.developer.icloud-container-identifiers",[]) else "missing"))',
                   'print("Profile game App ID: " + ("matches" if e.get("application-identifier")=="GUFQF359Q7.com.twoplayersnake.app" else "does not match"))',
                 ].join(';');
