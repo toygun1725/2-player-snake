@@ -1,5 +1,7 @@
 # 2 Player Snake - Mobil Surumu Yapay Zeka Rehberi
 
+> **29.10.2026 — son durum:** PC ve mobil 3.6.5 web sürümleri kullanıcı tarafından WordPress'e yüklendi; canlı sunucuda temel özel oda testi başarılı oldu. Sonraki değişiklikte yalnız ayarlar menüsündeki Instagram düğmesi kaldırıldı; geliştiricilerdeki bağlantı korundu ve 1P Başla/Beast düğmeleri eşit boyutlu yapıldı. Kullanıcı bu son mobil HTML'i de WordPress'e yükledi; canlı dosya yerel kaynakla birebir eşleşiyor. Aşağıdaki eski yayın hazırlığı notu tarihsel kayıttır.
+
 > **29.10.2026 — yayın hazırlığı:** v3.6.5 Mobile çalışma dosyası ve Android/iOS çevrimdışı kaynakları eşittir. PC ve mobil 3.6.5 HTML'leri canlı sunucuda geçici özel odada başlatma, oyun güncellemesi ve duraklatma/devam için kontrol edildi. Bu, tüm oyun durumlarının veya uygulama mağazası özelliklerinin test edildiği anlamına gelmez. Canlı mobil web sayfası kontrolde hâlâ v3.6.1 idi; web güncellemesini kullanıcı WordPress üzerinden yapar. Ayrıntılar [uygulama durum raporunda](Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md); aşağıdaki eski notlar tarihsel kayıttır.
 
 ## Final kaynak — v3.6.0 (Canlıda, 2026-10-07)

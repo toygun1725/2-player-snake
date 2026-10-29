@@ -3,11 +3,15 @@ package com.twoplayersnake.app.ui
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ComponentCallbacks2
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.drawable.Icon
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -90,6 +94,12 @@ class MainActivity : AppCompatActivity() {
     private var lastProgress = 0
     private var activeMediaPlayer: android.media.MediaPlayer? = null
     private var loadingVideoShouldPlay = false
+    private var ringerReceiverRegistered = false
+    private val ringerModeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == AudioManager.RINGER_MODE_CHANGED_ACTION) updateLoadingVideoVolume()
+        }
+    }
     private var shortcutParam: String? = null
     private var deepLinkRoom: String? = null
     private var deepLinkMode: String? = null
@@ -266,6 +276,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        if (!ringerReceiverRegistered) {
+            ContextCompat.registerReceiver(this, ringerModeReceiver,
+                IntentFilter(AudioManager.RINGER_MODE_CHANGED_ACTION), ContextCompat.RECEIVER_EXPORTED)
+            ringerReceiverRegistered = true
+        }
+        updateLoadingVideoVolume()
         networkMonitor.start { isOnline ->
             runOnUiThread {
                 if (isOnline && (binding.offlineOverlay.visibility == android.view.View.VISIBLE)) {
@@ -277,6 +293,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         stopLoadingMediaPlayback()
+        if (ringerReceiverRegistered) {
+            unregisterReceiver(ringerModeReceiver)
+            ringerReceiverRegistered = false
+        }
         super.onStop()
         networkMonitor.stop()
     }
@@ -751,8 +771,8 @@ html.gpgpc-webview-tune body.hud-collapsed {
             }
 
             mp.isLooping = true
-            mp.setVolume(1f, 1f)   // Teaser sesi acik — sessiz mod kaldirildi
             activeMediaPlayer = mp
+            updateLoadingVideoVolume()
             
             // Refined Center Crop scaling for VideoView
             val videoWidth = mp.videoWidth.toFloat()
@@ -774,6 +794,15 @@ html.gpgpc-webview-tune body.hud-collapsed {
                 mp.start()
             }
         }
+    }
+
+    private fun updateLoadingVideoVolume() {
+        val player = activeMediaPlayer ?: return
+        val normalRinger = runCatching {
+            (getSystemService(Context.AUDIO_SERVICE) as AudioManager).ringerMode == AudioManager.RINGER_MODE_NORMAL
+        }.getOrDefault(false)
+        val volume = if (loadingVideoShouldPlay && normalRinger) 1f else 0f
+        runCatching { player.setVolume(volume, volume) }
     }
 
     private fun hideLoadingState() {

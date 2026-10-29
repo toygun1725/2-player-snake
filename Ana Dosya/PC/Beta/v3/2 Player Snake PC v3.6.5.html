@@ -3782,8 +3782,10 @@
           40%{transform:translateX(6px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)}
         }
         .pc-qs-shake { animation: pc-qs-shake 0.35s ease; border-color:#ff4444!important; }
+        .pc-qs-start-actions { display: grid; grid-auto-rows: 1fr; gap: 8px; }
         .pc-qs-start-btn {
           width: 100%; padding: 15px; border-radius: 12px;
+          box-sizing: border-box;
           background: linear-gradient(135deg,#00e5ff 0%,#9b59b6 100%);
           border: none; color: #06080f; font-weight: 900; font-size: 26px;
           font-family: 'Orbitron', sans-serif; letter-spacing: 2px; cursor: pointer;
@@ -3793,11 +3795,11 @@
         .pc-qs-start-btn:hover { opacity: 0.9; }
         .pc-qs-start-btn:active { transform: scale(0.97); }
         .pc-qs-start-beast-btn {
-          width: 100%; padding: 12px 18px; border-radius: 12px;
+          width: 100%; padding: 12px 18px; border-radius: 12px; box-sizing: border-box;
           background: linear-gradient(135deg, #ff1744 0%, #ff5722 50%, #ff9100 100%);
           border: 1.5px solid rgba(255, 145, 0, 0.55); color: #fff;
           cursor: pointer; font-family: 'Orbitron', sans-serif;
-          margin-top: 8px; box-shadow: 0 4px 18px rgba(255, 23, 68, 0.42), 0 0 12px rgba(255, 87, 34, 0.35);
+          box-shadow: 0 4px 18px rgba(255, 23, 68, 0.42), 0 0 12px rgba(255, 87, 34, 0.35);
           display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
           transition: transform 0.15s, filter 0.15s, opacity 0.2s;
         }
@@ -11642,11 +11644,13 @@
               <div class="pc-qs-card-title">${t('colorPick')}</div>
               <div id="pqs-nc-body">${ncBody}</div>
             </div>
+            <div class="pc-qs-start-actions">
             <button class="pc-qs-start-btn" id="pqs-start">${(t('start') || 'Start').toUpperCase()}</button>
             <button class="pc-qs-start-beast-btn" id="pqs-start-beast" style="display:${qs2.playerMode === '1P' ? 'flex' : 'none'};">
               <span class="pc-qs-beast-title"><i class="fa-solid fa-video"></i> ${(t('startWithBeast') || 'BEAST MODUYLA BAŞLA').toUpperCase()}</span>
               <span class="pc-qs-beast-sub">${window.adsRemoved ? (t('startWithBeastVip') || '(VIP / Ücretsiz)') : (t('startWithBeastAd') || '(Reklam)')}</span>
             </button>
+            </div>
             <div class="pc-qs-action-row">
               <button class="pc-qs-back-btn" id="pqs-back"><i class="fa-solid fa-arrow-left"></i></button>
               <button class="pc-qs-info-btn" id="pqs-info"><i class="fa-solid fa-question"></i></button>

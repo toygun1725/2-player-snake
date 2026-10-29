@@ -3120,31 +3120,33 @@
           60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}
         }
         .qs-shake { animation: qs-shake 0.38s ease; border-color: #ff4444 !important; }
+        .qs-start-actions { display: grid; grid-auto-rows: 1fr; gap: 6px; margin-top: 6px; }
         .qs-start-btn {
           width: 100%; padding: 9px 13px; border-radius: 10px;
+          box-sizing: border-box;
           background: linear-gradient(135deg, #00e5ff 0%, #9b59b6 100%);
           border: none; color: #06080f; font-weight: 900; font-size: 26px;
           font-family: 'Orbitron', sans-serif; letter-spacing: 2px; cursor: pointer;
-          margin-top: 6px; box-shadow: 0 4px 22px rgba(0,229,255,0.32);
+          box-shadow: 0 4px 22px rgba(0,229,255,0.32);
           transition: opacity 0.2s, transform 0.15s;
         }
         .qs-start-btn:active { transform: scale(0.97); }
         .qs-start-beast-btn {
-          width: 100%; padding: 10px 14px; border-radius: 10px;
+          width: 100%; padding: 4px 10px; border-radius: 10px; box-sizing: border-box;
           background: linear-gradient(135deg, #ff1744 0%, #ff5722 50%, #ff9100 100%);
           border: 1.5px solid rgba(255, 145, 0, 0.55); color: #fff;
           cursor: pointer; font-family: 'Orbitron', sans-serif;
-          margin-top: 6px; box-shadow: 0 4px 18px rgba(255, 23, 68, 0.42), 0 0 12px rgba(255, 87, 34, 0.35);
+          box-shadow: 0 4px 18px rgba(255, 23, 68, 0.42), 0 0 12px rgba(255, 87, 34, 0.35);
           display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
           transition: transform 0.15s, filter 0.15s;
         }
         .qs-start-beast-btn:active { transform: scale(0.97); filter: brightness(1.15); }
         .qs-beast-title {
-          font-size: 16px; font-weight: 900; letter-spacing: 1.2px;
-          display: flex; align-items: center; justify-content: center; gap: 8px; text-shadow: 0 1px 5px rgba(0,0,0,0.7);
+          font-size: clamp(10px, 3.2vw, 14px); font-weight: 900; letter-spacing: 0.5px;
+          display: flex; align-items: center; justify-content: center; gap: 5px; text-shadow: 0 1px 5px rgba(0,0,0,0.7);
         }
         .qs-beast-title i {
-          font-size: 15px;
+          font-size: 13px;
         }
         .qs-beast-sub {
           font-size: 12px; font-weight: 700; color: #fff3e0;
@@ -11151,11 +11153,13 @@
             ${ncInner}
           </div>
         </div>
+        <div class="qs-start-actions">
         <button class="qs-start-btn" id="qs-start">${(t('start') || 'Start').toUpperCase()}</button>
         <button class="qs-start-beast-btn" id="qs-start-beast" style="display:${qs.playerMode === '1P' ? 'flex' : 'none'};">
           <span class="qs-beast-title"><i class="fa-solid fa-video"></i> ${(t('startWithBeast') || 'BEAST MODUYLA BAŞLA').toUpperCase()}</span>
           <span class="qs-beast-sub">${window.adsRemoved ? (t('startWithBeastVip') || '(VIP / Ücretsiz)') : (t('startWithBeastAd') || '(Reklam)')}</span>
         </button>
+        </div>
         ${buildMenuBackButton('qs-back')}
         <div style="text-align:center;margin-top:8px;">
           <button id="qs-info-btn" style="width:36px;height:36px;border-radius:50%;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:16px;border:1px solid rgba(255,255,255,0.18);background:rgba(8,12,22,0.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.65),inset 0 1px 0 rgba(255,255,255,0.1);cursor:pointer;"><i class="fa-solid fa-question"></i></button>
@@ -14242,11 +14246,6 @@
           <span class="btn-menu-sep"></span>
           <span class="btn-menu-text">${themeLabel}</span>
         </button>
-        <button class="btn big btn-menu-row" id="menuInstagram">
-          <span class="btn-menu-icon"><i class="fa-brands fa-instagram"></i></span>
-          <span class="btn-menu-sep"></span>
-          <span class="btn-menu-text">${getMessageUsLabel()}</span>
-        </button>
         <button class="btn big btn-menu-row" id="menuDevelopers">
           <span class="btn-menu-icon"><i class="fa-solid fa-code"></i></span>
           <span class="btn-menu-sep"></span>
@@ -14311,10 +14310,6 @@
                     toggleTheme();
                     openSettings();
                 };
-                const instBtn = document.getElementById('menuInstagram');
-                if (instBtn) {
-                    instBtn.onclick = () => { SFX.menuClick(); window.open('https://www.instagram.com/2playersnake', '_blank'); };
-                }
                 document.getElementById('menuDevelopers').onclick = () => { SFX.menuClick(); navigateToMenu(MENU_IDS.DEVELOPERS, 'forward'); };
                 const restoreBtn = document.getElementById('menuRestorePurchases');
                 if (restoreBtn) restoreBtn.onclick = () => { SFX.menuClick(); if (window.Android && typeof window.Android.restorePurchases === 'function') { window.Android.restorePurchases(); } };

@@ -1,5 +1,7 @@
 # 2 Player Snake - Android Surumu Yapay Zeka Rehberi
 
+> **29.10.2026 — ek değişiklik:** Yerel kaynakta açılış videosunun sesi telefonun sessiz/titreşim zil moduna göre ayarlanır; oyun çalışırken mod değişiklikleri de izlenir. Kotlin kaynak kontrolü başarılıdır; gerçek Android cihaz testi ve yeni uygulama paketi henüz yapılmadı. Mobil çevrimdışı HTML, son yerel mobil kaynakla eşit tutulur.
+
 > **29.10.2026 — yayın hazırlığı:** Android çevrimdışı dosyası v3.6.5 Mobile ile eşittir. Google Play'de en son görülen kod `72`; yerel proje `73` / `v3.6.5` olarak hazırlandı, ancak Android v3.6.5 paketi alınmadı. Build öncesinde kullanıcıya haber verilir ve kod yeniden kontrol edilir. Play Games, gerçek satın alma ve cihaz kontrolleri açıktır. Ayrıntılar [uygulama durum raporunda](Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md); aşağıdaki eski notlar tarihsel kayıttır.
 
 ## Güncel web/fallback kaynağı ve Native Sürüm — v3.6.1 (versionCode 72, 2026-10-16)

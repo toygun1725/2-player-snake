@@ -229,8 +229,8 @@ final class ViewController: UIViewController, WKNavigationDelegate, WKUIDelegate
             ?? Bundle.main.url(forResource: "loading_video", withExtension: "mp4")
 
         if let url = videoUrl {
-            // Ses ayarını yapılandır
-            try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
+            // The opening video respects the iPhone's Ring/Silent switch.
+            try? AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default, options: [.mixWithOthers])
             try? AVAudioSession.sharedInstance().setActive(true)
 
             let playerItem = AVPlayerItem(url: url)

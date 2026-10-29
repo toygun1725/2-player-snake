@@ -1,5 +1,7 @@
 # 2 Player Snake - PC Surumu Yapay Zeka Rehberi
 
+> **29.10.2026 — son durum:** PC ve mobil 3.6.5 web sürümleri kullanıcı tarafından WordPress'e yüklendi ve canlı sunucuda temel özel oda testi başarılı oldu. Sonraki değişiklikte 1P Başla/Beast düğmeleri eşit boyutlu yapıldı; PC ana menüsündeki ve geliştiriciler bölümündeki Instagram bağlantıları korunur. Kullanıcı bu son PC HTML'i de WordPress'e yükledi; canlı dosya yerel kaynakla birebir eşleşiyor. Aşağıdaki eski yayın hazırlığı notu tarihsel kayıttır.
+
 > **29.10.2026 — yayın hazırlığı:** v3.6.5 PC ve mobil HTML'leri canlı sunucuda geçici özel odada başlatma, oyun güncellemesi ve duraklatma/devam için kontrol edildi. Bu, tüm modların veya fiziksel kumandanın test edildiği anlamına gelmez. Canlı PC web sayfası kontrolde hâlâ v3.6.1 idi; web güncellemesini kullanıcı WordPress üzerinden yapar. Ayrıntılar [uygulama durum raporunda](Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md); aşağıdaki eski notlar tarihsel kayıttır.
 
 ## Final kaynak — v3.6.0 (Canlıda, 2026-10-07)
