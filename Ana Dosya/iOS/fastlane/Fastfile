@@ -8,6 +8,15 @@ default_platform(:ios)
 platform :ios do
   desc "TestFlight'a yeni bir iOS sürümü derler ve otomatik yükler"
   lane :beta do |options|
+    cloudkit_testflight = ENV["SNAKE_ENABLE_TESTFLIGHT_CLOUDKIT"] == "true"
+    cloudkit_release = ENV["SNAKE_ENABLE_RELEASE_CLOUDKIT"] == "true"
+    if cloudkit_testflight == cloudkit_release
+      UI.user_error!("iCloud açık iç test veya yayın adayı seçeneklerinden tam biri seçilmelidir.")
+    end
+    if cloudkit_release
+      # Also enforce the live-web check when the lane is invoked outside CI.
+      sh("node", File.expand_path("../../../tools/check-ios-live-release.cjs", __dir__))
+    end
     # 1. Gerekli Ortam Değişkenlerini Doğrula
     UI.user_error!("APP_STORE_CONNECT_KEY_ID eksik!") unless ENV["APP_STORE_CONNECT_KEY_ID"]
     UI.user_error!("APP_STORE_CONNECT_ISSUER_ID eksik!") unless ENV["APP_STORE_CONNECT_ISSUER_ID"]
@@ -172,7 +181,7 @@ platform :ios do
       export_opts = {
         method: "app-store"
       }
-      if ENV["SNAKE_ENABLE_TESTFLIGHT_CLOUDKIT"] == "true"
+      if cloudkit_testflight
         # This packaged-game build is for internal tests and must not be
         # promoted to the App Store; the final build uses the production URL.
         export_opts[:testFlightInternalTestingOnly] = true
@@ -202,14 +211,12 @@ platform :ios do
       build_output_dir = File.expand_path("../build", __dir__)
       workspace_path = File.expand_path("../TwoPlayerSnake.xcworkspace", __dir__)
 
-      # Opt-in is reserved for a TestFlight validation build. The ordinary
-      # Release configuration remains local-only until real CloudKit testing.
-      cloudkit_testflight = ENV["SNAKE_ENABLE_TESTFLIGHT_CLOUDKIT"] == "true"
+      # The internal build uses bundled HTML; the release candidate uses the
+      # separately verified live HTML while retaining the same CloudKit setup.
       build_xcargs = "CURRENT_PROJECT_VERSION=#{build_num} MARKETING_VERSION=#{version_num}"
-      if cloudkit_testflight
-        build_xcargs += " CODE_SIGN_ENTITLEMENTS=TwoPlayerSnake/CloudKit.staged.entitlements SNAKE_CLOUDKIT_CONTAINER_ID=iCloud.com.twoplayersnake.app SNAKE_TESTFLIGHT_BUNDLED_GAME=YES"
-        UI.message("TestFlight iCloud doğrulaması için CloudKit yapılandırması seçildi.")
-      end
+      build_xcargs += " CODE_SIGN_ENTITLEMENTS=TwoPlayerSnake/CloudKit.staged.entitlements SNAKE_CLOUDKIT_CONTAINER_ID=iCloud.com.twoplayersnake.app"
+      build_xcargs += " SNAKE_TESTFLIGHT_BUNDLED_GAME=#{cloudkit_testflight ? 'YES' : 'NO'}"
+      UI.message(cloudkit_testflight ? "iCloud açık iç test yapılandırması seçildi." : "iCloud açık yayın adayı yapılandırması seçildi.")
 
       build_params = {
         scheme: "TwoPlayerSnake",

@@ -20,6 +20,11 @@ on:
         type: boolean
         required: false
         default: false
+      icloud_release:
+        description: 'Canlı web sürümüyle kullanılacak iCloud açık yayın adayı'
+        type: boolean
+        required: false
+        default: false
   push:
     tags:
       - 'ios-v*'
@@ -36,6 +41,21 @@ jobs:
     steps:
       - name: 📥 Depoyu Klonla (Checkout)
         uses: actions/checkout@v4
+
+      - name: Web sürümü kontrolü için Node.js hazırla
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Yayın türünü ve canlı web sürümünü doğrula
+        env:
+          SNAKE_ENABLE_TESTFLIGHT_CLOUDKIT: ${{ inputs.icloud_testflight }}
+          SNAKE_ENABLE_RELEASE_CLOUDKIT: ${{ inputs.icloud_release }}
+        run: |
+          node tools/check-ios-release-mode.cjs
+          if [ "$SNAKE_ENABLE_RELEASE_CLOUDKIT" = "true" ]; then
+            node tools/check-ios-live-release.cjs
+          fi
 
       - name: ⚙️ Xcode ve SDK Bilgisi (Xcode 26+ / iOS 26 SDK)
         run: |
@@ -77,6 +97,7 @@ jobs:
           CI_KEYCHAIN_PASSWORD: ${{ secrets.IOS_SIGNING_PASSWORD_V3 }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
           SNAKE_ENABLE_TESTFLIGHT_CLOUDKIT: ${{ inputs.icloud_testflight }}
+          SNAKE_ENABLE_RELEASE_CLOUDKIT: ${{ inputs.icloud_release }}
         run: |
           if [ -z "$CI_KEYCHAIN_PASSWORD" ]; then
             echo "Sertifika parolası güvenli değişkeni eksik; build başlatılmadı."
