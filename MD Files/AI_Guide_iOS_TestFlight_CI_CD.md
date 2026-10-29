@@ -1,5 +1,7 @@
 # 2 Player Snake - iOS & TestFlight GitHub CI/CD Kurulum Rehberi (Mac Olmadan)
 
+> **29.10.2026 güncel durum:** iCloud açık, canlı mobil HTML kullanan iOS `3.6.5 (51)` [GitHub Actions](https://github.com/toygun1725/2-player-snake/actions/runs/40919194784) ile başarıyla TestFlight'a yüklendi; kullanıcı iPhone sessiz modunda açılış videosunun sessiz oynadığını bildirdi. Bu, App Store'a genel yayın değildir. İki cihaz arası iCloud eşitlemesi ve gerçek satın alma/geri yükleme testleri tamamlanmadı. Yeni build'den önce kullanıcıya haber verilip açık onay alınır. Aşağıdaki build 48 ve diğer önceki sürümler tarihsel kayıttır; güncel ayrıntılar [durum raporundadır](Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md).
+
 ## Güncel Native TestFlight ve App Store Gönderimi — v3.6.1 Build 48 (2026-10-16)
 
 - **Native TestFlight Paketi:** **Build 48 (v3.6.1)**

@@ -1,5 +1,7 @@
 # 2 Player Snake - Sürüm Notları (Release Notes)
 
+> **29.10.2026 güncel durum:** PC/mobil `v3.6.5` ve oyun sunucusu canlıdadır. iOS `3.6.5 (51)` TestFlight'a yüklendi ve kullanıcı iPhone'da sessiz mod video davranışını doğruladı. Android `v3.6.5 / 73` imzalı AAB hazırdır; Google Play'e yüklenmedi. Genel mağaza sürümleri son kontrolde iOS `3.6.1 (48)` ve Android `3.6.1 / 72` idi. Aşağıdaki mağaza incelemesi notları yazıldıkları tarihteki durumdur; güncel ayrıntılar [durum raporundadır](Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md).
+
 ## Mobile, Android (v3.6.1 / Code 72) & iOS (v3.6.1 / Build 48) — Mağaza İncelemesinde (2026-10-16)
 
 **Durum:** Hem Google Play Console (Üretim / Production kanalı, `versionCode: 72`, `versionName: "v3.6.1"`) hem de App Store Connect (iOS Sürüm `3.6.1`, `Build 48`, GitHub Actions Run #55) mağaza onayına gönderildi (**In Review / Waiting for Review**). Ayrıca App Store Connect üzerinde tüm dillerde ASO (Title, Subtitle, Keywords) optimizasyonu uygulandı.

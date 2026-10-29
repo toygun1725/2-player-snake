@@ -38,13 +38,10 @@ Yazılım geçmişi olmayan bir video yapımcısı ve bir avukatın, yapay zekay
 
 ## 📂 Proje Dokümantasyonu
 
-**Geliştirme durumu:** v3.6.2–v3.6.5 değişiklikleri hazırlanıyor; v3.6.5 web ve mağazalarda genel olarak yayımlanmadı. iOS `3.6.5 (49)` iç TestFlight sürümü yüklendi ve iPhone'da temel oynanış ile iCloud'a yazma/okuma doğrulandı. PC/mobil web ve diğer açık konular için [v3.6.5 uygulama durum raporuna](MD%20Files/Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md) bakın.
+**Geliştirme durumu (29.10.2026):** PC ve mobil web `v3.6.5` ile güncel oyun sunucusu canlıdadır. iOS `3.6.5 (51)` TestFlight'tadır; Android `v3.6.5 / 73` imzalı paket hazırdır, Google Play'e yüklenmemiştir. iPhone'da açılış videosunun sessiz mod davranışı doğrulandı. İki cihaz arası iCloud eşitlemesi ve gerçek satın alma/geri yükleme işlemleri henüz doğrulanmadı. Ayrıntılar [v3.6.5 uygulama durum raporundadır](MD%20Files/Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md).
 
 Tüm teknik kılavuzlar ve sürüm geçmişi [`MD Files/`](MD%20Files/) dizinindedir:
 - [Sürüm Notları (Release Notes)](MD%20Files/Release_Notes.md)
-- [v3.6.0 Online Boost Doğrulaması](MD%20Files/v3.6.0_Online_Boost_Verification.md)
-- [v3.5.9 Solo Uzunluk Göstergesi Doğrulaması](MD%20Files/v3.5.9_Solo_Milestone_Verification.md)
-- [v3.5.9 Kutlama Yazısı Doğrulaması](MD%20Files/v3.5.9_Win_Glyph_Verification.md)
 - [Mobil Web Geliştirici Kılavuzu](MD%20Files/AI_Guide_Mobile.md)
 - [PC Web Geliştirici Kılavuzu](MD%20Files/AI_Guide_PC.md)
 - [iOS Geliştirici Kılavuzu](MD%20Files/AI_Guide_iOS.md)
@@ -54,7 +51,7 @@ Tüm teknik kılavuzlar ve sürüm geçmişi [`MD Files/`](MD%20Files/) dizinind
 - [Reklam & Gelir Modeli Kılavuzu](MD%20Files/AI_Guide_Ads.md)
 - [App Store Açıklamaları (Tüm Diller)](MD%20Files/App_Store_Descriptions.md)
 
-> **Final Sürüm (Canlıda):** `v3.6.0` — Online Boost/Dash kuralı (yalnız PC–PC Hızlı Rekabetçi maçlarda aktif, cross-play ve mobil maçlarda kapalı), Android ve iOS çevrimdışı fallback eşitliği, 1P Normal 10'luk uzunluk kutlaması ve düzeltilmiş kutlama glifleri. PC ve Mobile için nihai final sürümdür ve canlı yayındadır. **195/195 otomatik test** ve **13 Socket.IO kontrolü** doğrulanmıştır ([v3.6.0 Online Boost Doğrulaması](MD%20Files/v3.6.0_Online_Boost_Verification.md)). Native sürümler Android Code 71 / v3.4.9 ve iOS Build 47 / 3.5.8 olarak kalır.
+> **Web ve mağaza durumu:** Web `v3.6.5` canlıdadır. Google Play'deki en son doğrulanan genel sürüm Android `v3.6.1 / 72`, App Store'daki sürüm iOS `3.6.1 / 48`'dir. Daha yeni iOS build 51 TestFlight'tadır; Android kod 73 paketinin mağaza yayını yapılmadı.
 
 ---
 © 2026 RomiToy Games. All rights reserved.
