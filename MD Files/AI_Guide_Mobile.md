@@ -1,6 +1,6 @@
 # 2 Player Snake - Mobil Surumu Yapay Zeka Rehberi
 
-> **Yerel hazırlık, yayın değil:** v3.6.5 Mobile çalışma dosyası ve Android/iOS çevrimdışı kaynakları hazırlandı. Gerçek cihaz ve mağaza kontrolleri açık; ayrıntılar [uygulama durum raporunda](Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md). Aşağıdaki v3.6.0 bilgileri tarihsel kayıttır.
+> **29.10.2026 — yayın hazırlığı:** v3.6.5 Mobile çalışma dosyası ve Android/iOS çevrimdışı kaynakları eşittir. PC ve mobil 3.6.5 HTML'leri canlı sunucuda geçici özel odada başlatma, oyun güncellemesi ve duraklatma/devam için kontrol edildi. Bu, tüm oyun durumlarının veya uygulama mağazası özelliklerinin test edildiği anlamına gelmez. Canlı mobil web sayfası kontrolde hâlâ v3.6.1 idi; web güncellemesini kullanıcı WordPress üzerinden yapar. Ayrıntılar [uygulama durum raporunda](Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md); aşağıdaki eski notlar tarihsel kayıttır.
 
 ## Final kaynak — v3.6.0 (Canlıda, 2026-10-07)
 

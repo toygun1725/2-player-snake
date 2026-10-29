@@ -1,6 +1,6 @@
 # 2 Player Snake - iOS Sürümü Yapay Zeka Rehberi
 
-> **Yerel hazırlık, yayın değil:** çalışma alanındaki çevrimdışı dosya v3.6.5 Mobile ile eşittir. App Store ve TestFlight'taki son sürüm `3.6.1` / `48` görülerek yerel proje `3.6.5` / `49` için hazırlandı; v3.6.5 build'i alınmadı. GitHub iş akışına doğru sürüm ve build numarası açıkça verilmelidir; yerel kaynaklar otomatik olarak GitHub'a aktarılmaz. Yeni CloudKit eşitlemesi Release'te kapalıdır ve gerçek iCloud/mağaza/cihaz doğrulaması açıktır. Bkz. [uygulama durum raporu](Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md). Aşağıdaki v3.6.1 bilgileri tarihsel kayıttır.
+> **29.10.2026 — iç test ve yayın hazırlığı:** `3.6.5 (49)` yalnız iç TestFlight'a yüklendi; kullanıcı iPhone'da oyunu açıp oynadı ve Apple kayıtlarında CloudKit özel veritabanına başarılı yazma/okuma görüldü. İki cihaz arası eşitleme ve son mağaza yayını doğrulanmadı. Yayın adayı iCloud'u açık ve canlı HTML'i kullanacak şekilde ayrıca hazırlanıyor; mevcut 49 numaralı iç test paketi son mağaza paketi değildir. Yeni build için önce kullanıcıya haber verilir. Ayrıntılar [uygulama durum raporunda](Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md); aşağıdaki eski sürüm notları tarihsel kayıttır.
 
 ## Güncel web/fallback kaynağı ve Native Sürüm — v3.6.1 (Build 48, 2026-10-16)
 

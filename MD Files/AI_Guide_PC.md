@@ -1,6 +1,6 @@
 # 2 Player Snake - PC Surumu Yapay Zeka Rehberi
 
-> **Yerel hazırlık, yayın değil:** v3.6.5 PC çalışma dosyası oluşturuldu ve yeni sunucuyla yerel tarayıcı testleri yapıldı. Fiziksel kumanda ve diğer açık kontroller için [uygulama durum raporuna](Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md) bakın. Aşağıdaki v3.6.0 bilgileri tarihsel kayıttır.
+> **29.10.2026 — yayın hazırlığı:** v3.6.5 PC ve mobil HTML'leri canlı sunucuda geçici özel odada başlatma, oyun güncellemesi ve duraklatma/devam için kontrol edildi. Bu, tüm modların veya fiziksel kumandanın test edildiği anlamına gelmez. Canlı PC web sayfası kontrolde hâlâ v3.6.1 idi; web güncellemesini kullanıcı WordPress üzerinden yapar. Ayrıntılar [uygulama durum raporunda](Planlanan%20G%C3%BCncellemeler/v3.6.5%20Uygulama%20Durum%20Raporu.md); aşağıdaki eski notlar tarihsel kayıttır.
 
 ## Final kaynak — v3.6.0 (Canlıda, 2026-10-07)
 
