@@ -2,8 +2,11 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const { verify } = require('../tools/check-ios-live-release.cjs');
 const { mode } = require('../tools/check-ios-release-mode.cjs');
+const { check } = require('../tools/check-ios-source-readiness.cjs');
 
 test('iOS build requires exactly one explicitly selected cloud mode', () => {
   assert.equal(mode({ SNAKE_ENABLE_TESTFLIGHT_CLOUDKIT: 'true', SNAKE_ENABLE_RELEASE_CLOUDKIT: 'false' }), 'internal');
@@ -22,4 +25,14 @@ test('live release only accepts matching reviewed CloudKit-compatible game sourc
   assert.throws(() => verify(reviewed, bundled, Buffer.from('different reviewed game')), /Bundled and reviewed/);
   assert.throws(() => verify(Buffer.from('v3.6.5'), Buffer.from('v3.6.5'), Buffer.from('v3.6.5')), /CloudKit-compatible/);
   assert.throws(() => verify(null, bundled, reviewed), /unavailable/);
+});
+
+test('current checkout contains the required iOS and mobile source set', () => {
+  assert.doesNotThrow(() => check());
+});
+
+test('old or incomplete checkout cannot be signed as the new release', () => {
+  const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'snake-old-source-'));
+  try { assert.throws(() => check(empty), /ENOENT/); }
+  finally { fs.rmdirSync(empty); }
 });

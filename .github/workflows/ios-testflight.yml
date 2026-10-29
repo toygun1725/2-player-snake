@@ -53,6 +53,7 @@ jobs:
           SNAKE_ENABLE_RELEASE_CLOUDKIT: ${{ inputs.icloud_release }}
         run: |
           node tools/check-ios-release-mode.cjs
+          node tools/check-ios-source-readiness.cjs
           if [ "$SNAKE_ENABLE_RELEASE_CLOUDKIT" = "true" ]; then
             node tools/check-ios-live-release.cjs
           fi

@@ -13,6 +13,7 @@ platform :ios do
     if cloudkit_testflight == cloudkit_release
       UI.user_error!("iCloud açık iç test veya yayın adayı seçeneklerinden tam biri seçilmelidir.")
     end
+    sh("node", File.expand_path("../../../tools/check-ios-source-readiness.cjs", __dir__))
     if cloudkit_release
       # Also enforce the live-web check when the lane is invoked outside CI.
       sh("node", File.expand_path("../../../tools/check-ios-live-release.cjs", __dir__))
